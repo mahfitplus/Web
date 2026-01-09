@@ -5,142 +5,345 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAH FIT | Socio</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    details.day{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.28);
+      border-radius: 14px;
+      overflow:hidden;
+      margin-top:12px;
+    }
+    summary.daySum{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      user-select:none;
+    }
+    summary.daySum::-webkit-details-marker{ display:none; }
+    .dayLeft{ display:flex; flex-direction:column; gap:4px; }
+    .dayLeft b{
+      font-size:14px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    .dayLeft .sub{
+      font-size:12px;
+      color: rgba(255,255,255,.68);
+    }
+    .chev{
+      width:34px;height:34px;
+      border-radius:10px;
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.85);
+      font-weight:900;
+      transition: transform .15s ease;
+    }
+    details[open] .chev{ transform: rotate(180deg); }
+
+    .dayBody{ padding:14px 14px 16px; border-top:1px solid rgba(255,255,255,.08); }
+
+    .exCard{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      margin-top:12px;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+    .exMain{ flex:1; min-width:0; }
+    .exTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .muscleTag{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      font-weight:900;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      color: rgba(255,255,255,.92);
+    }
+    .muscleTag .icon{
+      width:22px;height:22px;
+      border-radius:8px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.14);
+      border:1px solid rgba(0,200,255,.25);
+      color:#aeefff;
+      font-weight:900;
+    }
+    .exerciseName{
+      font-weight:900;
+      font-size:15px;
+      color:#fff;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 100%;
+    }
+
+    .chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color: rgba(255,255,255,.88);
+      font-weight:800;
+      font-size:13px;
+    }
+    .chip .cIcon{
+      width:22px;height:22px;
+      border-radius:999px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.12);
+      border:1px solid rgba(0,200,255,.22);
+      color:#baf2ff;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .note{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color: rgba(255,255,255,.78);
+      font-size:13px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
+    .note .bubble{
+      width:28px;height:28px;
+      border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(242,196,0,.10);
+      border:1px solid rgba(242,196,0,.22);
+      color:#ffe7a1;
+      font-weight:900;
+    }
+
+    .exDone{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:44px;
+      padding-top:8px;
+    }
+    .exDone input{
+      width:22px;height:22px;
+      accent-color: var(--brand);
+      cursor:pointer;
+    }
+
+    .metaLine{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color: rgba(255,255,255,.72);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    .metaLine .pill{ background: rgba(255,255,255,.04); }
+  </style>
 </head>
-<body>
+
+<body data-page="socio">
   <header class="topbar">
     <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
     <div class="nav-right">
       <span>Hola, <b id="who"></b></span>
-      <span class="badge">SOCIO</span>
-      <button id="logout" class="btn ghost small">Salir</button>
+      <span id="roleBadge" class="badge"></span>
+      <button id="btnLogout" class="btn ghost small">Salir</button>
     </div>
   </header>
 
   <main class="hero">
     <div class="container">
 
-      <div class="grid3">
-        <div class="kpi">
-          <div class="t">Plan</div>
-          <div class="v">Activo</div>
-          <div class="mini">demo</div>
+      <div class="kpi">
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Plan</div>
+          <b id="kPlan">Activo</b>
+          <div style="color:var(--muted);font-size:13px;" id="kNivel">(sin rutina)</div>
         </div>
-        <div class="kpi">
-          <div class="t">Acceso</div>
-          <div class="v">QR</div>
-          <div class="mini">demo</div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio</div>
+          <b id="kCardio">-</b>
+          <div style="color:var(--muted);font-size:13px;" id="kCardio2">-</div>
         </div>
-        <div class="kpi">
-          <div class="t">Agenda</div>
-          <div class="v">Turnos</div>
-          <div class="mini">demo</div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Días</div>
+          <b id="kDias">0</b>
+          <div style="color:var(--muted);font-size:13px;">Rutina semanal</div>
         </div>
       </div>
 
-      <div style="height:14px;"></div>
+      <div style="height:18px;"></div>
 
       <div class="card">
         <div class="head">
-          <strong>TU PLAN DE ENTRENAMIENTO</strong>
-          <span class="pill" id="assignedBy">Asignado por funcionario</span>
+          <strong>Tu plan de entrenamiento</strong>
+          <span class="pill">Por día (desplegable)</span>
         </div>
-
-        <div class="body" id="content"></div>
+        <div class="body" id="rutinaBox"></div>
       </div>
+
     </div>
   </main>
 
-<script src="assets/app.js"></script>
-<script>
-  const $ = (s)=>document.querySelector(s);
-  const me = requireAuth(["SOCIO"]);
-  if(!me) throw new Error("no session");
-  $("#who").textContent = me.nombre;
-
-  function renderRoutine(rv2){
-    const box = $("#content");
-    if(!rv2 || !rv2.routine){
-      box.innerHTML = `
-        <div class="notice">
-          <b>Plan de entrenamiento no asignado</b><br>
-          <span style="color:rgba(255,255,255,.75);">Tienes un plan activo, pero aún no se asigna una rutina específica.</span>
-        </div>
-      `;
-      return;
+  <script src="assets/app.js"></script>
+  <script>
+    function safe(v, fallback="-"){
+      return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
     }
 
-    const r = rv2.routine;
-    const m = r.meta || {};
-    const upd = rv2.actualizadoEn ? new Date(rv2.actualizadoEn).toLocaleString() : "-";
+    function getDoneKey(rut, day, idx){
+      return `mahfit_done_${rut}_${day}_${idx}`;
+    }
 
-    const days = (r.dias||[]).map((d, idx)=>{
-      const enf = (d.enfoque && d.enfoque.length) ? d.enfoque.join(" + ") : "-";
-      const exHtml = (d.ejercicios||[]).length
-        ? d.ejercicios.map(e=>`
-          <div class="exercise-card">
-            <div class="exercise-title">
-              <div>
-                <b>${(e.musculo||"-").toUpperCase()} — ${e.ejercicio||"-"}</b>
-                <div style="margin-top:6px;color:rgba(255,255,255,.70);font-size:13px;">
-                  ${e.obs ? "💬 "+e.obs : ""}
-                </div>
+    function renderDay(day, rutSocio){
+      const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
+      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
+      const total = ejercicios.length;
+
+      const cards = ejercicios.map((e, i)=>{
+        const doneKey = getDoneKey(rutSocio, day.dia, i);
+        const checked = localStorage.getItem(doneKey) === "1" ? "checked" : "";
+
+        const chipSeries = safe(e.series, "-");
+        const chipReps   = safe(e.reps, "-");
+        const chipCarga  = safe(e.carga, "-");
+        const chipDesc   = safe(e.descanso, "-");
+
+        const noteText = safe(e.obs, "");
+
+        return `
+          <div class="exCard">
+            <div class="exMain">
+              <div class="exTitle">
+                <span class="muscleTag"><span class="icon">🏋️</span>${safe(e.musculo,"Músculo")}</span>
+                <span class="exerciseName">${safe(e.ejercicio,"Ejercicio")}</span>
               </div>
-              <span class="pill">${e.descanso || "Desc: -"}</span>
+
+              <div class="chips">
+                <span class="chip"><span class="cIcon">≡</span>${chipSeries} series</span>
+                <span class="chip"><span class="cIcon">↻</span>${chipReps}</span>
+                <span class="chip"><span class="cIcon">⚖</span>${chipCarga}</span>
+                <span class="chip"><span class="cIcon">⏱</span>${chipDesc}</span>
+              </div>
+
+              ${noteText && noteText !== "-" ? `
+                <div class="note">
+                  <div class="bubble">💬</div>
+                  <div>${noteText}</div>
+                </div>
+              ` : ``}
             </div>
-            <div class="exercise-badges">
-              <span class="eb"><span>Series</span> <b>${e.series||"-"}</b></span>
-              <span class="eb"><span>Reps</span> <b>${e.reps||"-"}</b></span>
-              <span class="eb"><span>Carga</span> <b>${e.carga||"-"}</b></span>
-              <span class="eb"><span>Maq/Var</span> <b>${e.maq||"-"}</b></span>
+
+            <div class="exDone">
+              <input type="checkbox" ${checked} data-done="${doneKey}">
             </div>
           </div>
-        `).join("")
-        : `<div style="color:rgba(255,255,255,.70);">Sin ejercicios cargados.</div>`;
+        `;
+      }).join("");
 
       return `
-        <div class="acc-item">
-          <button class="acc-head" type="button" data-acc="${idx}">
-            <div>${d.dia} <small>· Enfoque: ${enf}</small></div>
-            <div class="pill">Abrir</div>
-          </button>
-          <div class="acc-body" data-body="${idx}">
-            ${exHtml}
+        <details class="day">
+          <summary class="daySum">
+            <div class="dayLeft">
+              <b>${safe(day.dia)}</b>
+              <div class="sub">
+                Enfocado: <span class="pill">${enfoque}</span>
+                · Ejercicios: <span class="pill">${total}</span>
+              </div>
+            </div>
+            <div class="chev">⌄</div>
+          </summary>
+          <div class="dayBody">
+            ${total ? cards : `<div class="notice"><b>Sin ejercicios</b><br>Este día aún no tiene ejercicios cargados.</div>`}
           </div>
-        </div>
+        </details>
       `;
-    }).join("");
+    }
 
-    box.innerHTML = `
-      <div class="notice">
-        <b>Rutina activa</b><br>
-        <span style="color:rgba(255,255,255,.75);">Última actualización: ${upd}</span>
-        <div style="margin-top:10px;">
-          <span class="pill">Nivel: ${m.nivel||"-"}</span>
-          <span class="pill">Fecha: ${m.fecha||"-"}</span>
-          <span class="pill">Cardio: ${m.cardio?.tipo||"NINGUNO"} ${m.cardio?.min||""} min</span>
-        </div>
-        <div style="margin-top:10px;color:rgba(255,255,255,.85);">
-          <b>Objetivo:</b> ${m.objetivo||"-"} · <b>Entrenos/semana:</b> ${m.vecesSemanaTxt||"-"}
-        </div>
-      </div>
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const user = requireAuth("SOCIO");
+      if(!user) return;
 
-      <div style="margin-top:12px;" class="accordion">
-        ${days || `<div style="padding:14px;color:rgba(255,255,255,.70);">Sin días cargados.</div>`}
-      </div>
-    `;
+      document.querySelector("#who").textContent = user.nombre;
+      document.querySelector("#roleBadge").textContent = "SOCIO";
 
-    box.querySelectorAll("[data-acc]").forEach(btn=>{
-      btn.onclick = ()=>{
-        const i = btn.getAttribute("data-acc");
-        const body = box.querySelector(`[data-body="${i}"]`);
-        if(body) body.classList.toggle("open");
-      };
+      const box = document.querySelector("#rutinaBox");
+
+      const rv2 = rutinaV2DeSocio(user.rut);
+      if(!rv2 || !rv2.routine){
+        box.innerHTML = `
+          <div class="notice">
+            <b>Plan de entrenamiento no asignado</b><br>
+            Tienes un plan activo, pero aún no se te asigna una rutina específica.
+          </div>
+        `;
+      }else{
+        const routine = rv2.routine;
+        const meta = routine.meta || {};
+        const cardio = meta.cardio || {};
+
+        document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
+        document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
+        document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
+        document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
+
+        const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
+        dias.sort((a,b)=>{
+          const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
+          const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
+          return na-nb;
+        });
+
+        box.innerHTML = `
+          <div class="metaLine">
+            <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
+            <span class="pill">Fecha: ${safe(meta.fecha,"-")}</span>
+          </div>
+          ${dias.map(d=>renderDay(d, user.rut)).join("")}
+        `;
+
+        box.querySelectorAll('[data-done]').forEach(chk=>{
+          chk.addEventListener("change", ()=>{
+            const key = chk.getAttribute("data-done");
+            localStorage.setItem(key, chk.checked ? "1" : "0");
+          });
+        });
+      }
+
+      document.querySelector("#btnLogout").addEventListener("click", ()=>{
+        clearSession();
+        window.location.href = "index.html";
+      });
     });
-  }
-
-  renderRoutine(rutinaV2DeSocio(me.rut));
-
-  $("#logout").onclick = ()=>{ clearSession(); window.location.href="index.html"; };
-</script>
+  </script>
 </body>
 </html>
+
+
