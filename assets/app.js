@@ -5,7 +5,9 @@
    - Evita que scripts de socio/rutinas corran antes de cargar data
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyyK5YEKZzywrLK9dWiiKhApulJtmY4usSTM7DdZxuUnyw0BwqtDRVRvZe2aZjny9Xl8A/exec";
+
+const API_URL = "https://script.google.com/macros/s/AKfycbxECRh_AKB8HTE6P74MrF4KFMprjmEH9RsJCXKk8MhcPDDguNqMCXenUprAkqSgv3kQFg/exec";
+
 
 // ====== Helpers ======
 const LS = {
@@ -439,3 +441,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(page === "funcionario") initFuncionario();
   // socio y rutinas ya traen scripts propios (no los tocamos)
 });
+
