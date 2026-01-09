@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Socio</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <span>Hola, <b id="who"></b></span>
+      <span class="badge">SOCIO</span>
+      <button id="logout" class="btn ghost small">Salir</button>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+
+      <div class="grid3">
+        <div class="kpi">
+          <div class="t">Plan</div>
+          <div class="v">Activo</div>
+          <div class="mini">demo</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Acceso</div>
+          <div class="v">QR</div>
+          <div class="mini">demo</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Agenda</div>
+          <div class="v">Turnos</div>
+          <div class="mini">demo</div>
+        </div>
+      </div>
+
+      <div style="height:14px;"></div>
+
+      <div class="card">
+        <div class="head">
+          <strong>TU PLAN DE ENTRENAMIENTO</strong>
+          <span class="pill" id="assignedBy">Asignado por funcionario</span>
+        </div>
+
+        <div class="body" id="content"></div>
+      </div>
+    </div>
+  </main>
+
+<script src="assets/app.js"></script>
+<script>
+  const $ = (s)=>document.querySelector(s);
+  const me = requireAuth(["SOCIO"]);
+  if(!me) throw new Error("no session");
+  $("#who").textContent = me.nombre;
+
+  function renderRoutine(rv2){
+    const box = $("#content");
+    if(!rv2 || !rv2.routine){
+      box.innerHTML = `
+        <div class="notice">
+          <b>Plan de entrenamiento no asignado</b><br>
+          <span style="color:rgba(255,255,255,.75);">Tienes un plan activo, pero aún no se asigna una rutina específica.</span>
+        </div>
+      `;
+      return;
+    }
+
+    const r = rv2.routine;
+    const m = r.meta || {};
+    const upd = rv2.actualizadoEn ? new Date(rv2.actualizadoEn).toLocaleString() : "-";
+
+    const days = (r.dias||[]).map((d, idx)=>{
+      const enf = (d.enfoque && d.enfoque.length) ? d.enfoque.join(" + ") : "-";
+      const exHtml = (d.ejercicios||[]).length
+        ? d.ejercicios.map(e=>`
+          <div class="exercise-card">
+            <div class="exercise-title">
+              <div>
+                <b>${(e.musculo||"-").toUpperCase()} — ${e.ejercicio||"-"}</b>
+                <div style="margin-top:6px;color:rgba(255,255,255,.70);font-size:13px;">
+                  ${e.obs ? "💬 "+e.obs : ""}
+                </div>
+              </div>
+              <span class="pill">${e.descanso || "Desc: -"}</span>
+            </div>
+            <div class="exercise-badges">
+              <span class="eb"><span>Series</span> <b>${e.series||"-"}</b></span>
+              <span class="eb"><span>Reps</span> <b>${e.reps||"-"}</b></span>
+              <span class="eb"><span>Carga</span> <b>${e.carga||"-"}</b></span>
+              <span class="eb"><span>Maq/Var</span> <b>${e.maq||"-"}</b></span>
+            </div>
+          </div>
+        `).join("")
+        : `<div style="color:rgba(255,255,255,.70);">Sin ejercicios cargados.</div>`;
+
+      return `
+        <div class="acc-item">
+          <button class="acc-head" type="button" data-acc="${idx}">
+            <div>${d.dia} <small>· Enfoque: ${enf}</small></div>
+            <div class="pill">Abrir</div>
+          </button>
+          <div class="acc-body" data-body="${idx}">
+            ${exHtml}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    box.innerHTML = `
+      <div class="notice">
+        <b>Rutina activa</b><br>
+        <span style="color:rgba(255,255,255,.75);">Última actualización: ${upd}</span>
+        <div style="margin-top:10px;">
+          <span class="pill">Nivel: ${m.nivel||"-"}</span>
+          <span class="pill">Fecha: ${m.fecha||"-"}</span>
+          <span class="pill">Cardio: ${m.cardio?.tipo||"NINGUNO"} ${m.cardio?.min||""} min</span>
+        </div>
+        <div style="margin-top:10px;color:rgba(255,255,255,.85);">
+          <b>Objetivo:</b> ${m.objetivo||"-"} · <b>Entrenos/semana:</b> ${m.vecesSemanaTxt||"-"}
+        </div>
+      </div>
+
+      <div style="margin-top:12px;" class="accordion">
+        ${days || `<div style="padding:14px;color:rgba(255,255,255,.70);">Sin días cargados.</div>`}
+      </div>
+    `;
+
+    box.querySelectorAll("[data-acc]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const i = btn.getAttribute("data-acc");
+        const body = box.querySelector(`[data-body="${i}"]`);
+        if(body) body.classList.toggle("open");
+      };
+    });
+  }
+
+  renderRoutine(rutinaV2DeSocio(me.rut));
+
+  $("#logout").onclick = ()=>{ clearSession(); window.location.href="index.html"; };
+</script>
+</body>
+</html>

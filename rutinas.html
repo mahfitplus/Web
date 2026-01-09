@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Creador de Rutinas</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .mini{ font-size:12px; color:rgba(255,255,255,.68); }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+
+    /* buscador socio */
+    .socio-search{ position:relative; }
+    .socio-results{
+      position:absolute;
+      top:44px; left:0; right:0;
+      z-index:50;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.92);
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow: 0 18px 50px rgba(0,0,0,.65);
+      display:none;
+      max-height:260px;
+      overflow:auto;
+    }
+    .socio-item{
+      padding:10px 12px;
+      cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .socio-item:hover{ background: rgba(255,255,255,.06); }
+    .socio-item b{ font-size:13px; }
+    .socio-item span{ font-size:12px; color:rgba(255,255,255,.65); }
+
+    /* table inputs */
+    .table input, .table select{
+      width:100%;
+      height:32px;
+      border-radius:9px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color:#fff;
+      padding:0 10px;
+      outline:none;
+      font-size:13px;
+    }
+    .table td{ padding:8px 8px; }
+    .table th{ padding:10px 8px; }
+
+    /* enfoque horizontal */
+    .focusWrap{ width:100%; display:flex; flex-direction:column; gap:10px; }
+    .focusGrid{
+      width:100%;
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap:10px 14px;
+      padding:12px 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius:12px;
+    }
+    @media (max-width: 1100px){ .focusGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 720px){ .focusGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .fItem{ display:flex; align-items:center; gap:8px; font-size:13px; color: rgba(255,255,255,.88); user-select:none; white-space:nowrap; }
+    .fItem input{ width:16px;height:16px; accent-color: var(--brand); cursor:pointer; }
+
+    .focusBadges{ display:flex; gap:6px; flex-wrap:wrap; }
+    .focusBadges .pill{ background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); }
+
+    .day-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <span>Hola, <b id="who"></b></span>
+      <span id="roleBadge" class="badge"></span>
+      <a class="btn ghost small" href="funcionario.html">Volver CRM</a>
+      <button id="btnLogout" class="btn ghost small">Salir</button>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+
+      <div class="card">
+        <div class="head">
+          <strong>CREADOR DE RUTINAS</strong>
+          <span class="pill">Días + ejercicios</span>
+        </div>
+
+        <div class="body form">
+
+          <!-- SOCIO + PROFESOR -->
+          <div class="split">
+            <div class="socio-search">
+              <label>Socio (buscar por RUT o nombre)</label>
+              <input id="socioSearch" class="input" placeholder="Escribe: nombre o RUT..." autocomplete="off" />
+              <div class="socio-results" id="socioResults"></div>
+              <div class="mini" style="margin-top:6px;">Escribe para filtrar, luego haz click en el socio.</div>
+              <div class="mini" id="socioSelected" style="margin-top:6px;"></div>
+
+              <!-- ÚLTIMA RUTINA -->
+              <div class="notice" id="lastRoutineBox" style="display:none;margin-top:10px;"></div>
+            </div>
+
+            <div>
+              <label>Profesor / Coach</label>
+              <input id="profesor" class="input" disabled />
+              <div class="mini" style="margin-top:6px;">Queda registrado como creador.</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <!-- META -->
+          <div class="split">
+            <div>
+              <label>Nivel</label>
+              <select id="nivel" class="input select">
+                <option>BÁSICO</option>
+                <option selected>INTERMEDIO</option>
+                <option>AVANZADO</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Objetivo</label>
+              <input id="objetivo" class="input" placeholder="Ej: Perder % graso / Hipertrofia / Fuerza" />
+            </div>
+          </div>
+
+          <div class="split">
+            <div>
+              <label>Veces por semana (informativo)</label>
+              <input id="vecesSemanaTxt" class="input" placeholder="Ej: 3 / 4 / 5" />
+              <div class="mini" style="margin-top:6px;">Ahora los días se agregan manualmente (hasta 7).</div>
+            </div>
+
+            <div>
+              <label>Cardio (después de la rutina)</label>
+              <div class="split">
+                <select id="cardioTipo" class="input select">
+                  <option value="NINGUNO">Ninguno</option>
+                  <option value="CAMINATA">Caminata</option>
+                  <option value="TROTE">Trote</option>
+                  <option value="BICICLETA">Bicicleta</option>
+                  <option value="ELIPTICA">Elíptica</option>
+                  <option value="HIIT">HIIT</option>
+                </select>
+                <input id="cardioMin" class="input" placeholder="Min" value="15" />
+              </div>
+              <div class="mini" style="margin-top:6px;">Ej: Elíptica 15 min.</div>
+            </div>
+          </div>
+
+          <div class="split">
+            <div>
+              <label>Frecuencia cardio (veces/semana)</label>
+              <input id="cardioFreq" class="input" placeholder="Ej: 3" value="3" />
+            </div>
+            <div>
+              <label>Fecha</label>
+              <input id="fecha" class="input" placeholder="dd-mm-aaaa" />
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <!-- AGREGAR DIAS -->
+          <div class="day-actions">
+            <button id="btnAddDay" class="btn primary" type="button">AGREGAR DÍA</button>
+
+            <span class="pill">Elegir</span>
+            <select id="dayPicker" class="input select" style="width:170px;">
+              <option value="1">Día 1</option>
+              <option value="2">Día 2</option>
+              <option value="3">Día 3</option>
+              <option value="4">Día 4</option>
+              <option value="5">Día 5</option>
+              <option value="6">Día 6</option>
+              <option value="7">Día 7</option>
+            </select>
+
+            <span class="mini">Agrega manualmente Día 1..7 (sin duplicar).</span>
+          </div>
+
+          <div id="daysContainer"></div>
+
+          <div class="actions">
+            <button id="btnGuardar" class="btn primary" type="button">GUARDAR RUTINA AL SOCIO</button>
+            <button id="btnVista" class="btn ghost" type="button">VISUALIZAR RUTINA</button>
+          </div>
+
+          <div id="msg" style="margin-top:10px;font-size:13px;"></div>
+
+          <!-- Vista tipo socio -->
+          <div id="previewSocio" style="display:none;margin-top:12px;" class="notice"></div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- datalists -->
+  <div id="datalistsMount" style="display:none;"></div>
+
+<script src="assets/app.js"></script>
+<script>
+  const $ = (s)=>document.querySelector(s);
+
+  function showMsg(msg, ok=false){
+    const el = $("#msg");
+    el.textContent = msg;
+    el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
+  }
+
+  function slugifyId(s){
+    return String(s||"")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replaceAll("/", "_")
+      .replaceAll(" ", "_")
+      .replace(/[^A-Za-z0-9_]/g,"");
+  }
+
+  // ✅ Cargamos base editable desde localStorage (ejercicios.html)
+  const EXERCISE_DB = loadExerciseDB();
+
+  const muscleOptions = [
+    "Pectoral","Espalda","Dorsales","Hombros","Bíceps","Tríceps",
+    "Cuádriceps","Isquiotibiales","Glúteos","Aductores/Abductores",
+    "Pantorrillas","Abdominales/Core","Cardio"
+  ];
+
+  let SOCIOS = [];
+  let selectedSocio = null;
+  const addedDays = new Set();
+
+  function datalistIdForMuscle(muscle){
+    return "dl_" + slugifyId(muscle);
+  }
+
+  function buildDatalists(){
+    const mount = $("#datalistsMount");
+    mount.innerHTML = "";
+    Object.keys(EXERCISE_DB || {}).forEach(m=>{
+      const id = datalistIdForMuscle(m);
+      const list = EXERCISE_DB[m] || [];
+      const dl = document.createElement("datalist");
+      dl.id = id;
+      dl.innerHTML = list.map(x => `<option value="${String(x).replaceAll('"','&quot;')}"></option>`).join("");
+      mount.appendChild(dl);
+    });
+  }
+
+  function setExerciseListForRow(tr){
+    const mus = tr.querySelector('[data-cell="musculo"]')?.value || "";
+    const exInput = tr.querySelector('[data-cell="ejercicio"]');
+    if(!exInput) return;
+
+    if(EXERCISE_DB[mus] && EXERCISE_DB[mus].length){
+      exInput.setAttribute("list", datalistIdForMuscle(mus));
+    } else {
+      exInput.removeAttribute("list");
+    }
+  }
+
+  function wireExerciseAutocomplete(){
+    document.querySelectorAll("tbody tr").forEach(tr=>{
+      const musSel = tr.querySelector('[data-cell="musculo"]');
+      const exInput = tr.querySelector('[data-cell="ejercicio"]');
+
+      if(musSel && !musSel.dataset.wired){
+        musSel.dataset.wired = "1";
+        musSel.addEventListener("change", ()=>{
+          setExerciseListForRow(tr);
+          if(exInput) exInput.value = "";
+        });
+      }
+
+      if(exInput && !exInput.dataset.wired){
+        exInput.dataset.wired = "1";
+        exInput.addEventListener("focus", ()=> setExerciseListForRow(tr));
+      }
+
+      setExerciseListForRow(tr);
+    });
+  }
+
+  function rowTemplate(){
+    const muscSel = muscleOptions.map(m=>`<option value="${m}">${m}</option>`).join("");
+    return `
+      <tr>
+        <td><select data-cell="musculo">${muscSel}</select></td>
+        <td><input data-cell="ejercicio" placeholder="Escribe o elige del listado..." autocomplete="off" /></td>
+        <td><input data-cell="maq" placeholder="N° maq / variante" /></td>
+        <td><input data-cell="obs" placeholder="Técnica / tempo / RIR..." /></td>
+        <td><input data-cell="series" placeholder="3" /></td>
+        <td><input data-cell="reps" placeholder="8-12" /></td>
+        <td><input data-cell="carga" placeholder="kg" /></td>
+        <td><input data-cell="descanso" placeholder="Ej: 1:30" /></td>
+        <td><button class="btn ghost small" type="button" data-del-row>Quitar</button></td>
+      </tr>
+    `;
+  }
+
+  function focusGridTemplate(dayIndex){
+    return `
+      <div class="focusWrap">
+        <div class="focusBadges" data-focus-badges="${dayIndex}"></div>
+        <div class="focusGrid" data-focus-grid="${dayIndex}">
+          ${muscleOptions.map(m=>`
+            <label class="fItem">
+              <input type="checkbox" value="${m}" data-focus="${dayIndex}">
+              <span>${m}</span>
+            </label>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function updateFocusBadges(dayIndex){
+    const badges = document.querySelector(`[data-focus-badges="${dayIndex}"]`);
+    const checked = Array.from(document.querySelectorAll(`input[data-focus="${dayIndex}"]:checked`)).map(x=>x.value);
+    if(!badges) return;
+    badges.innerHTML = checked.length
+      ? checked.map(v=>`<span class="pill">${v}</span>`).join("")
+      : `<span class="mini">Selecciona uno o más músculos para el enfoque del día.</span>`;
+  }
+
+  function dayCardTemplate(dayIndex){
+    return `
+      <div class="card" style="margin-top:14px;" data-day="${dayIndex}">
+        <div class="head" style="display:block;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <strong>DÍA ${dayIndex}</strong>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <button class="btn ghost small" type="button" data-add-row="${dayIndex}">+ Ejercicio</button>
+              <button class="btn ghost small" type="button" data-remove-day="${dayIndex}">Quitar Día</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <span class="pill">Enfocado</span>
+            ${focusGridTemplate(dayIndex)}
+          </div>
+        </div>
+
+        <div class="body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:140px;">Músculo</th>
+                <th>Ejercicio</th>
+                <th style="width:160px;">N°Maq/Var</th>
+                <th style="width:170px;">Obs.</th>
+                <th style="width:90px;">Series</th>
+                <th style="width:90px;">Reps</th>
+                <th style="width:90px;">Carga</th>
+                <th style="width:110px;">Descanso</th>
+                <th style="width:90px;">Acción</th>
+              </tr>
+            </thead>
+            <tbody data-tbody="${dayIndex}">
+              ${rowTemplate()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function wireDeleteButtons(){
+    document.querySelectorAll("[data-del-row]").forEach(b=>{
+      b.onclick = () => {
+        const tr = b.closest("tr");
+        const tbody = tr.parentElement;
+        if(tbody.children.length <= 1) return;
+        tr.remove();
+      };
+    });
+  }
+
+  function wireDayActions(){
+    document.querySelectorAll("[data-add-row]").forEach(btn=>{
+      btn.onclick = () => {
+        const day = btn.getAttribute("data-add-row");
+        const tbody = document.querySelector(`[data-tbody="${day}"]`);
+        tbody.insertAdjacentHTML("beforeend", rowTemplate());
+        wireDeleteButtons();
+        wireExerciseAutocomplete();
+      };
+    });
+
+    document.querySelectorAll("[data-remove-day]").forEach(btn=>{
+      btn.onclick = () => {
+        const day = Number(btn.getAttribute("data-remove-day"));
+        const card = document.querySelector(`[data-day="${day}"]`);
+        if(card) card.remove();
+        addedDays.delete(day);
+        showMsg(`Se quitó el Día ${day}.`, true);
+      };
+    });
+
+    document.querySelectorAll("input[data-focus]").forEach(chk=>{
+      chk.onchange = ()=> updateFocusBadges(chk.getAttribute("data-focus"));
+    });
+
+    wireDeleteButtons();
+    wireExerciseAutocomplete();
+  }
+
+  function filterSocios(q){
+    const query = norm(q);
+    if(!query) return SOCIOS.slice(0, 12);
+    return SOCIOS.filter(s=>{
+      return norm(s.rut).includes(query) || norm(s.nombre).includes(query);
+    }).slice(0, 20);
+  }
+
+  function renderSocioResults(list){
+    const box = $("#socioResults");
+    if(!list.length){
+      box.innerHTML = `<div class="socio-item"><span>Sin resultados</span></div>`;
+      box.style.display = "block";
+      return;
+    }
+
+    box.innerHTML = list.map(s => `
+      <div class="socio-item" data-rut="${s.rut}">
+        <b>${s.nombre}</b>
+        <span>${s.rut}</span>
+      </div>
+    `).join("");
+    box.style.display = "block";
+
+    box.querySelectorAll(".socio-item").forEach(item=>{
+      item.onclick = () => {
+        const rut = item.getAttribute("data-rut");
+        selectedSocio = SOCIOS.find(x=>x.rut===rut) || null;
+
+        $("#socioSearch").value = `${selectedSocio.nombre} — ${selectedSocio.rut}`;
+        $("#socioSelected").textContent = `Seleccionado: ${selectedSocio.nombre} (${selectedSocio.rut})`;
+        box.style.display = "none";
+
+        const rv2 = rutinaV2DeSocio(selectedSocio.rut);
+        showLastRoutineBox(rv2);
+      };
+    });
+  }
+
+  function setChecks(dayIndex, values){
+    const set = new Set(values || []);
+    document.querySelectorAll(`input[data-focus="${dayIndex}"]`).forEach(chk=>{
+      chk.checked = set.has(chk.value);
+    });
+    updateFocusBadges(dayIndex);
+  }
+
+  function ensureDayExists(dayNum){
+    if(addedDays.has(dayNum)) return;
+    $("#dayPicker").value = String(dayNum);
+    $("#btnAddDay").click();
+  }
+
+  function fillRoutineToUI(routine){
+    $("#nivel").value = routine.meta?.nivel || "INTERMEDIO";
+    $("#objetivo").value = routine.meta?.objetivo || "";
+    $("#vecesSemanaTxt").value = routine.meta?.vecesSemanaTxt || "";
+    $("#cardioTipo").value = routine.meta?.cardio?.tipo || "NINGUNO";
+    $("#cardioMin").value = routine.meta?.cardio?.min ?? "15";
+    $("#cardioFreq").value = routine.meta?.cardio?.freq ?? "3";
+    $("#fecha").value = routine.meta?.fecha || $("#fecha").value;
+
+    $("#daysContainer").innerHTML = "";
+    addedDays.clear();
+
+    (routine.dias || []).forEach(day=>{
+      const num = parseInt(String(day.dia||"").replaceAll(/\D/g,"")) || 0;
+      if(!num) return;
+
+      ensureDayExists(num);
+
+      const enfoques = Array.isArray(day.enfoque) ? day.enfoque : (day.enfoque ? [day.enfoque] : []);
+      setChecks(num, enfoques);
+
+      const tbody = document.querySelector(`[data-tbody="${num}"]`);
+      tbody.innerHTML = "";
+
+      const ejercicios = day.ejercicios || [];
+      if(!ejercicios.length){
+        tbody.insertAdjacentHTML("beforeend", rowTemplate());
+      }else{
+        ejercicios.forEach(ex=>{
+          tbody.insertAdjacentHTML("beforeend", rowTemplate());
+          const tr = tbody.lastElementChild;
+          tr.querySelector('[data-cell="musculo"]').value = ex.musculo || muscleOptions[0];
+          tr.querySelector('[data-cell="ejercicio"]').value = ex.ejercicio || "";
+          tr.querySelector('[data-cell="maq"]').value = ex.maq || "";
+          tr.querySelector('[data-cell="obs"]').value = ex.obs || "";
+          tr.querySelector('[data-cell="series"]').value = ex.series || "";
+          tr.querySelector('[data-cell="reps"]').value = ex.reps || "";
+          tr.querySelector('[data-cell="carga"]').value = ex.carga || "";
+          tr.querySelector('[data-cell="descanso"]').value = ex.descanso || "";
+        });
+      }
+    });
+
+    wireDayActions();
+  }
+
+  function showLastRoutineBox(rv2){
+    const box = $("#lastRoutineBox");
+    if(!rv2 || !rv2.routine){
+      box.style.display = "none";
+      box.innerHTML = "";
+      return;
+    }
+
+    const updated = rv2.actualizadoEn ? new Date(rv2.actualizadoEn).toLocaleString() : "-";
+    const nivel = rv2.routine.meta?.nivel || "-";
+    const objetivo = rv2.routine.meta?.objetivo || "-";
+    const dias = (rv2.routine.dias||[]).length;
+
+    box.style.display = "block";
+    box.innerHTML = `
+      <b>Última rutina encontrada</b><br>
+      <div style="margin-top:6px; font-size:13px;">
+        <span class="pill">Nivel: ${nivel}</span>
+        <span class="pill">Días: ${dias}</span>
+        <span class="pill">Últ. Modificación: ${updated}</span>
+      </div>
+      <div style="margin-top:8px; font-size:13px; color:rgba(255,255,255,.85);">
+        <b>Objetivo:</b> ${objetivo}
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn ghost" type="button" id="btnLoadLast">Cargar para editar</button>
+      </div>
+    `;
+
+    $("#btnLoadLast").onclick = ()=>{
+      fillRoutineToUI(rv2.routine);
+      showMsg("Rutina anterior cargada ✅ (puedes editar y guardar).", true);
+    };
+  }
+
+  function collectRoutine(){
+    if(!selectedSocio) throw new Error("Debes seleccionar un socio (buscando por nombre o RUT).");
+
+    const objetivo = $("#objetivo").value.trim();
+    if(!objetivo) throw new Error("Escribe el objetivo.");
+
+    const daysSorted = Array.from(addedDays).sort((a,b)=>a-b);
+    if(!daysSorted.length) throw new Error("Agrega al menos 1 día (Día 1..7).");
+
+    const dias = [];
+    for(const d of daysSorted){
+      const enfoque = Array.from(document.querySelectorAll(`input[data-focus="${d}"]:checked`)).map(x=>x.value);
+
+      const tbody = document.querySelector(`[data-tbody="${d}"]`);
+      const ejercicios = [];
+
+      tbody.querySelectorAll("tr").forEach(tr=>{
+        const musculo = tr.querySelector('[data-cell="musculo"]')?.value || "";
+        const ejercicio = tr.querySelector('[data-cell="ejercicio"]')?.value || "";
+        const maq = tr.querySelector('[data-cell="maq"]')?.value || "";
+        const obs = tr.querySelector('[data-cell="obs"]')?.value || "";
+        const series = tr.querySelector('[data-cell="series"]')?.value || "";
+        const reps = tr.querySelector('[data-cell="reps"]')?.value || "";
+        const carga = tr.querySelector('[data-cell="carga"]')?.value || "";
+        const descanso = tr.querySelector('[data-cell="descanso"]')?.value || "";
+
+        if(String(ejercicio).trim().length){
+          ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
+        }
+      });
+
+      dias.push({ dia:`Día ${d}`, enfoque, ejercicios });
+    }
+
+    return {
+      socio: { rut:selectedSocio.rut, nombre:selectedSocio.nombre },
+      meta: {
+        nivel: $("#nivel").value,
+        objetivo,
+        vecesSemanaTxt: $("#vecesSemanaTxt").value.trim(),
+        cardio: { tipo: $("#cardioTipo").value, min: $("#cardioMin").value.trim(), freq: $("#cardioFreq").value.trim() },
+        fecha: $("#fecha").value.trim()
+      },
+      dias
+    };
+  }
+
+  // ✅ Vista tipo socio (por día desplegable)
+  function renderSocioPreview(routine){
+    const m = routine.meta || {};
+    const htmlDays = (routine.dias||[]).map((d, idx)=>{
+      const enf = (d.enfoque && d.enfoque.length) ? d.enfoque.join(" + ") : "-";
+      const exHtml = (d.ejercicios||[]).length
+        ? d.ejercicios.map(e=>`
+            <div class="exercise-card">
+              <div class="exercise-title">
+                <div>
+                  <b>${(e.musculo||"-").toUpperCase()} — ${e.ejercicio||"-"}</b>
+                  <div style="margin-top:6px;color:rgba(255,255,255,.70);font-size:13px;">
+                    ${e.obs ? "💬 "+e.obs : ""}
+                  </div>
+                </div>
+                <span class="pill">${e.descanso || "Desc: -"}</span>
+              </div>
+              <div class="exercise-badges">
+                <span class="eb"><span>Series</span> <b>${e.series||"-"}</b></span>
+                <span class="eb"><span>Reps</span> <b>${e.reps||"-"}</b></span>
+                <span class="eb"><span>Carga</span> <b>${e.carga||"-"}</b></span>
+                <span class="eb"><span>Maq/Var</span> <b>${e.maq||"-"}</b></span>
+              </div>
+            </div>
+          `).join("")
+        : `<div style="color:rgba(255,255,255,.70);">Sin ejercicios cargados.</div>`;
+
+      return `
+        <div class="acc-item">
+          <button class="acc-head" type="button" data-acc="${idx}">
+            <div>${d.dia} <small>· Enfoque: ${enf}</small></div>
+            <div class="pill">Abrir</div>
+          </button>
+          <div class="acc-body" data-body="${idx}">
+            ${exHtml}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const html = `
+      <div style="font-size:14px;">
+        <b>${routine.socio.nombre}</b> (${routine.socio.rut})<br>
+        <span class="pill">Nivel: ${m.nivel||"-"}</span>
+        <span class="pill">Fecha: ${m.fecha||"-"}</span>
+        <span class="pill">Cardio: ${m.cardio?.tipo||"NINGUNO"} ${m.cardio?.min||""} min</span>
+        <div style="margin-top:8px;color:rgba(255,255,255,.86);">
+          <b>Objetivo:</b> ${m.objetivo||"-"} · <b>Entrenos/semana:</b> ${m.vecesSemanaTxt||"-"}
+        </div>
+      </div>
+      <div style="margin-top:12px;" class="accordion">
+        ${htmlDays || `<div style="padding:14px;color:rgba(255,255,255,.70);">Sin días cargados.</div>`}
+      </div>
+      <div class="mini" style="margin-top:10px;">(Esto es exactamente cómo lo verá el socio.)</div>
+    `;
+
+    const box = $("#previewSocio");
+    box.style.display = "block";
+    box.innerHTML = html;
+
+    box.querySelectorAll("[data-acc]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const i = btn.getAttribute("data-acc");
+        const body = box.querySelector(`[data-body="${i}"]`);
+        if(!body) return;
+        body.classList.toggle("open");
+      };
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", ()=>{
+    buildDatalists();
+
+    // ✅ aquí permitimos ADMIN o FUNCIONARIO
+    const me = requireAuth(["ADMIN","FUNCIONARIO"]);
+    if(!me) return;
+
+    $("#who").textContent = me.nombre;
+    $("#roleBadge").textContent = me.rol;
+    $("#profesor").value = me.nombre;
+
+    $("#fecha").value = new Date().toLocaleDateString("es-CL").replaceAll("/","-");
+
+    SOCIOS = getUsers().filter(u=>u.rol==="SOCIO" && u.activo);
+
+    // Si vienes desde CRM con socio seleccionado
+    const preRut = localStorage.getItem("MAHFIT_SELECTED_SOCIO");
+    if(preRut){
+      const s = SOCIOS.find(x=>x.rut===preRut);
+      if(s){
+        selectedSocio = s;
+        $("#socioSearch").value = `${s.nombre} — ${s.rut}`;
+        $("#socioSelected").textContent = `Seleccionado: ${s.nombre} (${s.rut})`;
+        showLastRoutineBox(rutinaV2DeSocio(s.rut));
+      }
+      localStorage.removeItem("MAHFIT_SELECTED_SOCIO");
+    }
+
+    const search = $("#socioSearch");
+    const results = $("#socioResults");
+
+    search.addEventListener("input", ()=> renderSocioResults(filterSocios(search.value)));
+    search.addEventListener("focus", ()=> renderSocioResults(filterSocios(search.value)));
+
+    document.addEventListener("click", (e)=>{
+      if(!e.target.closest(".socio-search")){
+        results.style.display = "none";
+      }
+    });
+
+    $("#btnAddDay").onclick = ()=>{
+      const d = Number($("#dayPicker").value);
+      if(addedDays.has(d)){
+        showMsg(`El Día ${d} ya está agregado.`, false);
+        return;
+      }
+      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
+      addedDays.add(d);
+      wireDayActions();
+      updateFocusBadges(d);
+      showMsg(`Agregado: Día ${d}`, true);
+    };
+
+    // Día 1 por defecto
+    $("#dayPicker").value = "1";
+    $("#btnAddDay").click();
+
+    $("#btnGuardar").onclick = ()=>{
+      try{
+        const routine = collectRoutine();
+        upsertRutinaV2({ rutSocio: routine.socio.rut, routine, creadoPorRut: me.rut });
+        showLastRoutineBox(rutinaV2DeSocio(routine.socio.rut));
+        showMsg("✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
+        renderSocioPreview(routine);
+      }catch(err){
+        showMsg(err.message, false);
+      }
+    };
+
+    $("#btnVista").onclick = ()=>{
+      try{
+        const routine = collectRoutine();
+        renderSocioPreview(routine);
+        showMsg("Visualización lista ✅", true);
+      }catch(err){
+        showMsg(err.message, false);
+      }
+    };
+
+    $("#btnLogout").onclick = ()=>{
+      clearSession();
+      window.location.href = "index.html";
+    };
+  });
+</script>
+</body>
+</html>

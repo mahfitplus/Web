@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Gestión de Ejercicios</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .grid2{ display:grid; grid-template-columns: 1fr 1.2fr; gap:16px; }
+    @media(max-width: 980px){ .grid2{ grid-template-columns:1fr; } }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .mini{ font-size:12px; color:rgba(255,255,255,.68); }
+
+    textarea{
+      width:100%;
+      min-height: 160px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.28);
+      color:#fff;
+      padding:12px;
+      outline:none;
+      font-size:13px;
+    }
+    .list2{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      background: rgba(0,0,0,.16);
+      overflow:hidden;
+      max-height: 420px;
+      overflow:auto;
+    }
+    .item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .item:last-child{ border-bottom:none; }
+    .item b{ font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <span>Hola, <b id="who"></b></span>
+      <span id="role" class="badge"></span>
+      <a class="btn ghost small" href="funcionario.html">Volver CRM</a>
+      <button id="logout" class="btn ghost small">Salir</button>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+      <div class="card">
+        <div class="head">
+          <strong>GESTIÓN DE EJERCICIOS</strong>
+          <span class="pill">Base editable por músculo</span>
+        </div>
+
+        <div class="body form">
+          <div class="grid2">
+            <div>
+              <label>Músculo</label>
+              <select id="muscle" class="input select"></select>
+              <div class="mini" style="margin-top:6px;">Esta base alimenta automáticamente el creador de rutinas.</div>
+
+              <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+                <span class="pill" id="count">0 ejercicios</span>
+                <span class="pill">DB: localStorage</span>
+              </div>
+
+              <div style="margin-top:12px;" class="row">
+                <button class="btn primary" id="addOne" type="button">+ Agregar ejercicio</button>
+                <button class="btn ghost" id="sort" type="button">Ordenar A-Z</button>
+                <button class="btn ghost" id="clear" type="button">Borrar todos</button>
+              </div>
+
+              <div class="hr"></div>
+
+              <label>Agregar múltiples (uno por línea)</label>
+              <textarea id="bulk" placeholder="Ej:
+Press banca
+Aperturas en máquina
+Fondos asistidos"></textarea>
+              <div class="row" style="margin-top:10px;">
+                <button class="btn ghost" id="addLines" type="button">Agregar líneas</button>
+                <button class="btn ghost" id="clean" type="button">Limpiar</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="row" style="justify-content:space-between;">
+                <div style="min-width:200px;">
+                  <label>Ejercicios</label>
+                </div>
+                <input id="search" class="input" style="width:280px;max-width:100%;" placeholder="Buscar ejercicio..." />
+              </div>
+
+              <div class="list2" id="list"></div>
+
+              <div class="hr"></div>
+
+              <div class="row" style="justify-content:space-between;">
+                <div>
+                  <label>Respaldo</label>
+                  <div class="mini">Exporta / importa para no perder tu base.</div>
+                </div>
+                <div class="row">
+                  <button class="btn ghost" id="export" type="button">Exportar JSON</button>
+                  <button class="btn ghost" id="import" type="button">Importar JSON</button>
+                  <button class="btn ghost" id="reset" type="button">Restaurar base</button>
+                </div>
+              </div>
+
+              <input id="file" type="file" accept="application/json" style="display:none;">
+              <div id="msg" class="mini" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script src="assets/app.js"></script>
+<script>
+  const me = requireAuth(["ADMIN","FUNCIONARIO"]);
+  if(!me) throw new Error("no session");
+  const $ = (s)=>document.querySelector(s);
+  $("#who").textContent = me.nombre;
+  $("#role").textContent = me.rol;
+
+  let DB = loadExerciseDB();
+  let muscle = null;
+
+  function msg(t){ $("#msg").textContent = t || ""; }
+  function uniqSorted(arr){
+    const set = new Set((arr||[]).map(x=>String(x).trim()).filter(Boolean));
+    return Array.from(set).sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"}));
+  }
+  function fillMuscles(){
+    const sel = $("#muscle");
+    const keys = Object.keys(DB).sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"}));
+    sel.innerHTML = keys.map(k=>`<option value="${k}">${k}</option>`).join("");
+    muscle = sel.value || keys[0];
+  }
+
+  function render(){
+    const q = ($("#search").value||"").toLowerCase().trim();
+    const arr = DB[muscle] || [];
+    $("#count").textContent = `${arr.length} ejercicios`;
+
+    const filtered = q ? arr.filter(x=>String(x).toLowerCase().includes(q)) : arr;
+    const list = $("#list");
+
+    if(!filtered.length){
+      list.innerHTML = `<div class="item"><b>Sin resultados</b><span class="mini">Prueba otra búsqueda</span></div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(name=>`
+      <div class="item">
+        <b>${name}</b>
+        <button class="btn ghost small" type="button" data-del="${name.replaceAll('"','&quot;')}">Quitar</button>
+      </div>
+    `).join("");
+
+    list.querySelectorAll("[data-del]").forEach(b=>{
+      b.onclick = ()=>{
+        const name = b.getAttribute("data-del");
+        DB[muscle] = (DB[muscle]||[]).filter(x=>x!==name);
+        saveExerciseDB(DB);
+        render();
+        msg(`Quitado: ${name}`);
+      };
+    });
+  }
+
+  $("#muscle").onchange = ()=>{
+    muscle = $("#muscle").value;
+    $("#search").value = "";
+    render();
+  };
+  $("#search").oninput = render;
+
+  $("#addOne").onclick = ()=>{
+    const name = prompt(`Agregar ejercicio a: ${muscle}\n\nNombre exacto:`);
+    if(!name) return;
+    DB[muscle] = uniqSorted([...(DB[muscle]||[]), name]);
+    saveExerciseDB(DB);
+    render();
+    msg(`Agregado: ${name}`);
+  };
+
+  $("#addLines").onclick = ()=>{
+    const lines = $("#bulk").value.split("\n").map(x=>x.trim()).filter(Boolean);
+    if(!lines.length) return msg("No hay líneas para agregar.");
+    DB[muscle] = uniqSorted([...(DB[muscle]||[]), ...lines]);
+    saveExerciseDB(DB);
+    render();
+    msg(`Agregadas ${lines.length} líneas ✅`);
+  };
+
+  $("#clean").onclick = ()=> $("#bulk").value = "";
+
+  $("#sort").onclick = ()=>{
+    DB[muscle] = uniqSorted(DB[muscle]||[]);
+    saveExerciseDB(DB);
+    render();
+    msg("Ordenado A-Z ✅");
+  };
+
+  $("#clear").onclick = ()=>{
+    if(!confirm(`¿Borrar TODOS los ejercicios de "${muscle}"?`)) return;
+    DB[muscle] = [];
+    saveExerciseDB(DB);
+    render();
+    msg("Se borraron todos ✅");
+  };
+
+  // Export / Import
+  $("#export").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(DB,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mahfit_ejercicios.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    msg("Exportado ✅");
+  };
+
+  $("#import").onclick = ()=> $("#file").click();
+  $("#file").onchange = (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const obj = JSON.parse(reader.result);
+        if(!obj || typeof obj !== "object") throw new Error();
+        DB = obj;
+        saveExerciseDB(DB);
+        fillMuscles();
+        render();
+        msg("Importado ✅");
+      }catch{
+        msg("JSON inválido ❌");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(f);
+  };
+
+  // Restaurar base (simple)
+  $("#reset").onclick = ()=>{
+    if(!confirm("¿Restaurar base a la inicial?")) return;
+    localStorage.removeItem(LS.EX_DB);
+    initDefaults(); // recrea base
+    DB = loadExerciseDB();
+    fillMuscles();
+    render();
+    msg("Base restaurada ✅");
+  };
+
+  $("#logout").onclick = ()=>{ clearSession(); window.location.href="index.html"; };
+
+  fillMuscles();
+  render();
+</script>
+</body>
+</html>
