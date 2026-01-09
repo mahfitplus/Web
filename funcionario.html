@@ -3,133 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAH FIT | CRM</title>
+  <title>MAH FIT | Funcionario (CRM)</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
-<body>
+
+<body data-page="funcionario">
   <header class="topbar">
     <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
     <div class="nav-right">
       <span>Hola, <b id="who"></b></span>
-      <span id="role" class="badge"></span>
-      <a class="btn ghost small" href="rutinas.html">Creador de rutinas</a>
-      <a class="btn ghost small" href="ejercicios.html">Gestión de ejercicios</a>
-      <button id="logout" class="btn ghost small">Salir</button>
+      <span id="roleBadge" class="badge"></span>
+      <a class="btn primary small" href="rutinas.html">Creador Rutinas</a>
+      <button id="btnLogout" class="btn ghost small">Salir</button>
     </div>
   </header>
 
   <main class="hero">
     <div class="container">
-      <div class="grid3">
-        <div class="kpi">
-          <div class="t">Socios activos</div>
-          <div class="v" id="kSocios">0</div>
+
+      <div class="kpi">
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Socios</div>
+          <b id="kSocios">0</b>
         </div>
-        <div class="kpi">
-          <div class="t">Rutinas creadas</div>
-          <div class="v" id="kRutinas">0</div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Funcionarios</div>
+          <b id="kFunc">0</b>
         </div>
-        <div class="kpi">
-          <div class="t">Base ejercicios</div>
-          <div class="v" id="kEj">0</div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Activos</div>
+          <b id="kActivos">0</b>
         </div>
       </div>
 
-      <div style="height:14px;"></div>
+      <div style="height:18px;"></div>
 
       <div class="card">
         <div class="head">
-          <strong>LISTA DE SOCIOS</strong>
-          <span class="pill">Buscar por RUT o nombre</span>
+          <strong>CRM Usuarios</strong>
+          <span class="pill">Crear / Activar / Desactivar</span>
         </div>
-
-        <div class="body form">
-          <div class="split">
-            <div>
-              <label>Buscar</label>
-              <input id="q" class="input" placeholder="Ej: Pamela / 20228778-6" />
-            </div>
-            <div>
-              <label>Acciones</label>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn primary" id="goRutinas" type="button">Asignar / Editar rutina</button>
-                <button class="btn ghost" id="goEj" type="button">Editar base ejercicios</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="list" id="list"></div>
-          <div id="msg" style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.7);"></div>
+        <div class="body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>RUT/Usuario</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
         </div>
       </div>
+
+      <div style="height:18px;"></div>
+
+      <div class="card">
+        <div class="head"><strong>Crear usuario</strong><span class="pill">Solo admin</span></div>
+        <div class="body">
+          <form id="createUserForm" class="form">
+            <div class="split">
+              <div>
+                <label>RUT/Usuario</label>
+                <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
+              </div>
+              <div>
+                <label>Nombre</label>
+                <input id="newNombre" class="input" placeholder="Nombre completo" />
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
+                <label>Email (opcional)</label>
+                <input id="newEmail" class="input" placeholder="correo@..." />
+              </div>
+              <div>
+                <label>Clave</label>
+                <input id="newPass" class="input" placeholder="Clave" />
+              </div>
+            </div>
+
+            <label>Rol</label>
+            <select id="newRol" class="select input">
+              <option value="SOCIO">SOCIO</option>
+              <option value="FUNCIONARIO">FUNCIONARIO</option>
+            </select>
+
+            <button class="btn primary" type="submit" style="margin-top:14px;">CREAR</button>
+            <div id="msgUser" style="margin-top:10px;font-size:13px;"></div>
+          </form>
+        </div>
+      </div>
+
     </div>
   </main>
 
-<script src="assets/app.js"></script>
-<script>
-  const $ = (s)=>document.querySelector(s);
-  const me = requireAuth(["ADMIN","FUNCIONARIO"]);
-  if(!me) throw new Error("no session");
-  $("#who").textContent = me.nombre;
-  $("#role").textContent = me.rol;
-
-  const socios = getUsers().filter(u=>u.rol==="SOCIO" && u.activo);
-  const routinesCount = getRoutinesV2().length;
-  const exdb = loadExerciseDB();
-  const exCount = Object.values(exdb).reduce((a,arr)=>a+(arr?.length||0),0);
-
-  $("#kSocios").textContent = socios.length;
-  $("#kRutinas").textContent = routinesCount;
-  $("#kEj").textContent = exCount;
-
-  function render(){
-    const query = norm($("#q").value);
-    const list = $("#list");
-    const filtered = !query ? socios : socios.filter(s=>{
-      return norm(s.rut).includes(query) || norm(s.nombre).includes(query);
-    });
-
-    if(!filtered.length){
-      list.innerHTML = `<div class="rowitem"><b>Sin resultados</b><span>Prueba otra búsqueda</span></div>`;
-      return;
-    }
-
-    list.innerHTML = filtered.map(s=>{
-      const r = rutinaV2DeSocio(s.rut);
-      const upd = r?.actualizadoEn ? new Date(r.actualizadoEn).toLocaleString() : "Sin rutina";
-      return `
-        <div class="rowitem">
-          <div>
-            <b>${s.nombre}</b><br>
-            <span>${s.rut} · Últ. rutina: ${upd}</span>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn ghost small" data-open="${s.rut}">Abrir rutina</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    list.querySelectorAll("[data-open]").forEach(b=>{
-      b.onclick = ()=>{
-        localStorage.setItem("MAHFIT_SELECTED_SOCIO", b.getAttribute("data-open"));
-        window.location.href = "rutinas.html";
-      };
-    });
-  }
-
-  $("#q").oninput = render;
-  render();
-
-  $("#goRutinas").onclick = ()=>window.location.href="rutinas.html";
-  $("#goEj").onclick = ()=>window.location.href="ejercicios.html";
-
-  $("#logout").onclick = ()=>{
-    clearSession();
-    window.location.href="index.html";
-  };
-</script>
+  <script src="assets/app.js"></script>
 </body>
 </html>
+
+
