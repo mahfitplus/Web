@@ -8,6 +8,7 @@
   <style>
     .mini{ font-size:12px; color:rgba(255,255,255,.68); }
     .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
     /* buscador socio */
     .socio-search{ position:relative; }
@@ -37,7 +38,15 @@
     .socio-item b{ font-size:13px; }
     .socio-item span{ font-size:12px; color:rgba(255,255,255,.65); }
 
-    /* table inputs */
+    /* day cards */
+    .day-card{ margin-top:14px; }
+    .day-title b{
+      font-size:14px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.85);
+    }
+
     .table input, .table select{
       width:100%;
       height:32px;
@@ -52,8 +61,21 @@
     .table td{ padding:8px 8px; }
     .table th{ padding:10px 8px; }
 
-    /* enfoque horizontal */
-    .focusWrap{ width:100%; display:flex; flex-direction:column; gap:10px; }
+    .day-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .day-pill{ display:inline-flex; align-items:center; gap:8px; }
+
+    /* ENFOQUE HORIZONTAL FULL WIDTH */
+    .focusWrap{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
     .focusGrid{
       width:100%;
       display:grid;
@@ -64,20 +86,41 @@
       background: rgba(0,0,0,.22);
       border-radius:12px;
     }
-    @media (max-width: 1100px){ .focusGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-    @media (max-width: 720px){ .focusGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 1100px){
+      .focusGrid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px){
+      .focusGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
 
-    .fItem{ display:flex; align-items:center; gap:8px; font-size:13px; color: rgba(255,255,255,.88); user-select:none; white-space:nowrap; }
-    .fItem input{ width:16px;height:16px; accent-color: var(--brand); cursor:pointer; }
+    .fItem{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      color: rgba(255,255,255,.88);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .fItem input{
+      width:16px;height:16px;
+      accent-color: var(--brand);
+      cursor:pointer;
+    }
 
-    .focusBadges{ display:flex; gap:6px; flex-wrap:wrap; }
-    .focusBadges .pill{ background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); }
-
-    .day-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .focusBadges{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .focusBadges .pill{
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+    }
   </style>
 </head>
 
-<body>
+<body data-page="rutinas">
   <header class="topbar">
     <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
     <div class="nav-right">
@@ -179,16 +222,18 @@
           <div class="day-actions">
             <button id="btnAddDay" class="btn primary" type="button">AGREGAR DÍA</button>
 
-            <span class="pill">Elegir</span>
-            <select id="dayPicker" class="input select" style="width:170px;">
-              <option value="1">Día 1</option>
-              <option value="2">Día 2</option>
-              <option value="3">Día 3</option>
-              <option value="4">Día 4</option>
-              <option value="5">Día 5</option>
-              <option value="6">Día 6</option>
-              <option value="7">Día 7</option>
-            </select>
+            <span class="day-pill">
+              <span class="pill">Elegir</span>
+              <select id="dayPicker" class="input select" style="width:170px;">
+                <option value="1">Día 1</option>
+                <option value="2">Día 2</option>
+                <option value="3">Día 3</option>
+                <option value="4">Día 4</option>
+                <option value="5">Día 5</option>
+                <option value="6">Día 6</option>
+                <option value="7">Día 7</option>
+              </select>
+            </span>
 
             <span class="mini">Agrega manualmente Día 1..7 (sin duplicar).</span>
           </div>
@@ -201,9 +246,7 @@
           </div>
 
           <div id="msg" style="margin-top:10px;font-size:13px;"></div>
-
-          <!-- Vista tipo socio -->
-          <div id="previewSocio" style="display:none;margin-top:12px;" class="notice"></div>
+          <div id="previewBox" style="display:none;margin-top:12px;" class="notice"></div>
 
         </div>
       </div>
@@ -211,550 +254,667 @@
     </div>
   </main>
 
-  <!-- datalists -->
+  <!-- Aquí se inyectan los <datalist> automáticamente -->
   <div id="datalistsMount" style="display:none;"></div>
 
-<script src="assets/app.js"></script>
-<script>
-  const $ = (s)=>document.querySelector(s);
+  <script src="assets/app.js"></script>
+  <script>
+    /* =========================================================
+       BASE DE DATOS EJERCICIOS (desde Excel hoja "EJERCICIOS")
+       Autocompletado por músculo
+       ========================================================= */
+    const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
 
-  function showMsg(msg, ok=false){
-    const el = $("#msg");
-    el.textContent = msg;
-    el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
-  }
-
-  function slugifyId(s){
-    return String(s||"")
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .replaceAll("/", "_")
-      .replaceAll(" ", "_")
-      .replace(/[^A-Za-z0-9_]/g,"");
-  }
-
-  // ✅ Cargamos base editable desde localStorage (ejercicios.html)
-  const EXERCISE_DB = loadExerciseDB();
-
-  const muscleOptions = [
-    "Pectoral","Espalda","Dorsales","Hombros","Bíceps","Tríceps",
-    "Cuádriceps","Isquiotibiales","Glúteos","Aductores/Abductores",
-    "Pantorrillas","Abdominales/Core","Cardio"
-  ];
-
-  let SOCIOS = [];
-  let selectedSocio = null;
-  const addedDays = new Set();
-
-  function datalistIdForMuscle(muscle){
-    return "dl_" + slugifyId(muscle);
-  }
-
-  function buildDatalists(){
-    const mount = $("#datalistsMount");
-    mount.innerHTML = "";
-    Object.keys(EXERCISE_DB || {}).forEach(m=>{
-      const id = datalistIdForMuscle(m);
-      const list = EXERCISE_DB[m] || [];
-      const dl = document.createElement("datalist");
-      dl.id = id;
-      dl.innerHTML = list.map(x => `<option value="${String(x).replaceAll('"','&quot;')}"></option>`).join("");
-      mount.appendChild(dl);
-    });
-  }
-
-  function setExerciseListForRow(tr){
-    const mus = tr.querySelector('[data-cell="musculo"]')?.value || "";
-    const exInput = tr.querySelector('[data-cell="ejercicio"]');
-    if(!exInput) return;
-
-    if(EXERCISE_DB[mus] && EXERCISE_DB[mus].length){
-      exInput.setAttribute("list", datalistIdForMuscle(mus));
-    } else {
-      exInput.removeAttribute("list");
+    function $(s){ return document.querySelector(s); }
+    function showMsg(el, msg, ok=false){
+      el.textContent = msg;
+      el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
     }
-  }
-
-  function wireExerciseAutocomplete(){
-    document.querySelectorAll("tbody tr").forEach(tr=>{
-      const musSel = tr.querySelector('[data-cell="musculo"]');
-      const exInput = tr.querySelector('[data-cell="ejercicio"]');
-
-      if(musSel && !musSel.dataset.wired){
-        musSel.dataset.wired = "1";
-        musSel.addEventListener("change", ()=>{
-          setExerciseListForRow(tr);
-          if(exInput) exInput.value = "";
-        });
-      }
-
-      if(exInput && !exInput.dataset.wired){
-        exInput.dataset.wired = "1";
-        exInput.addEventListener("focus", ()=> setExerciseListForRow(tr));
-      }
-
-      setExerciseListForRow(tr);
-    });
-  }
-
-  function rowTemplate(){
-    const muscSel = muscleOptions.map(m=>`<option value="${m}">${m}</option>`).join("");
-    return `
-      <tr>
-        <td><select data-cell="musculo">${muscSel}</select></td>
-        <td><input data-cell="ejercicio" placeholder="Escribe o elige del listado..." autocomplete="off" /></td>
-        <td><input data-cell="maq" placeholder="N° maq / variante" /></td>
-        <td><input data-cell="obs" placeholder="Técnica / tempo / RIR..." /></td>
-        <td><input data-cell="series" placeholder="3" /></td>
-        <td><input data-cell="reps" placeholder="8-12" /></td>
-        <td><input data-cell="carga" placeholder="kg" /></td>
-        <td><input data-cell="descanso" placeholder="Ej: 1:30" /></td>
-        <td><button class="btn ghost small" type="button" data-del-row>Quitar</button></td>
-      </tr>
-    `;
-  }
-
-  function focusGridTemplate(dayIndex){
-    return `
-      <div class="focusWrap">
-        <div class="focusBadges" data-focus-badges="${dayIndex}"></div>
-        <div class="focusGrid" data-focus-grid="${dayIndex}">
-          ${muscleOptions.map(m=>`
-            <label class="fItem">
-              <input type="checkbox" value="${m}" data-focus="${dayIndex}">
-              <span>${m}</span>
-            </label>
-          `).join("")}
-        </div>
-      </div>
-    `;
-  }
-
-  function updateFocusBadges(dayIndex){
-    const badges = document.querySelector(`[data-focus-badges="${dayIndex}"]`);
-    const checked = Array.from(document.querySelectorAll(`input[data-focus="${dayIndex}"]:checked`)).map(x=>x.value);
-    if(!badges) return;
-    badges.innerHTML = checked.length
-      ? checked.map(v=>`<span class="pill">${v}</span>`).join("")
-      : `<span class="mini">Selecciona uno o más músculos para el enfoque del día.</span>`;
-  }
-
-  function dayCardTemplate(dayIndex){
-    return `
-      <div class="card" style="margin-top:14px;" data-day="${dayIndex}">
-        <div class="head" style="display:block;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-            <strong>DÍA ${dayIndex}</strong>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-              <button class="btn ghost small" type="button" data-add-row="${dayIndex}">+ Ejercicio</button>
-              <button class="btn ghost small" type="button" data-remove-day="${dayIndex}">Quitar Día</button>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;">
-            <span class="pill">Enfocado</span>
-            ${focusGridTemplate(dayIndex)}
-          </div>
-        </div>
-
-        <div class="body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th style="width:140px;">Músculo</th>
-                <th>Ejercicio</th>
-                <th style="width:160px;">N°Maq/Var</th>
-                <th style="width:170px;">Obs.</th>
-                <th style="width:90px;">Series</th>
-                <th style="width:90px;">Reps</th>
-                <th style="width:90px;">Carga</th>
-                <th style="width:110px;">Descanso</th>
-                <th style="width:90px;">Acción</th>
-              </tr>
-            </thead>
-            <tbody data-tbody="${dayIndex}">
-              ${rowTemplate()}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
-  }
-
-  function wireDeleteButtons(){
-    document.querySelectorAll("[data-del-row]").forEach(b=>{
-      b.onclick = () => {
-        const tr = b.closest("tr");
-        const tbody = tr.parentElement;
-        if(tbody.children.length <= 1) return;
-        tr.remove();
-      };
-    });
-  }
-
-  function wireDayActions(){
-    document.querySelectorAll("[data-add-row]").forEach(btn=>{
-      btn.onclick = () => {
-        const day = btn.getAttribute("data-add-row");
-        const tbody = document.querySelector(`[data-tbody="${day}"]`);
-        tbody.insertAdjacentHTML("beforeend", rowTemplate());
-        wireDeleteButtons();
-        wireExerciseAutocomplete();
-      };
-    });
-
-    document.querySelectorAll("[data-remove-day]").forEach(btn=>{
-      btn.onclick = () => {
-        const day = Number(btn.getAttribute("data-remove-day"));
-        const card = document.querySelector(`[data-day="${day}"]`);
-        if(card) card.remove();
-        addedDays.delete(day);
-        showMsg(`Se quitó el Día ${day}.`, true);
-      };
-    });
-
-    document.querySelectorAll("input[data-focus]").forEach(chk=>{
-      chk.onchange = ()=> updateFocusBadges(chk.getAttribute("data-focus"));
-    });
-
-    wireDeleteButtons();
-    wireExerciseAutocomplete();
-  }
-
-  function filterSocios(q){
-    const query = norm(q);
-    if(!query) return SOCIOS.slice(0, 12);
-    return SOCIOS.filter(s=>{
-      return norm(s.rut).includes(query) || norm(s.nombre).includes(query);
-    }).slice(0, 20);
-  }
-
-  function renderSocioResults(list){
-    const box = $("#socioResults");
-    if(!list.length){
-      box.innerHTML = `<div class="socio-item"><span>Sin resultados</span></div>`;
-      box.style.display = "block";
-      return;
+    function norm(s){
+      return String(s||"")
+        .toUpperCase().trim()
+        .replaceAll(".", "")
+        .replaceAll(" ", "")
+        .replaceAll("–","-")
+        .replaceAll("—","-");
+    }
+    function slugifyId(s){
+      return String(s||"")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replaceAll("/", "_")
+        .replaceAll(" ", "_")
+        .replace(/[^A-Za-z0-9_]/g,"");
     }
 
-    box.innerHTML = list.map(s => `
-      <div class="socio-item" data-rut="${s.rut}">
-        <b>${s.nombre}</b>
-        <span>${s.rut}</span>
-      </div>
-    `).join("");
-    box.style.display = "block";
+    const muscleOptions = [
+      "Pectoral","Espalda","Dorsales","Hombros","Bíceps","Tríceps",
+      "Cuádriceps","Isquiotibiales","Glúteos","Aductores/Abductores",
+      "Pantorrillas","Abdominales/Core","Tren Superior","Tren Inferior","Full Body","Cardio"
+    ];
 
-    box.querySelectorAll(".socio-item").forEach(item=>{
-      item.onclick = () => {
-        const rut = item.getAttribute("data-rut");
-        selectedSocio = SOCIOS.find(x=>x.rut===rut) || null;
+    let SOCIOS = [];
+    let selectedSocio = null;
+    const addedDays = new Set();
 
-        $("#socioSearch").value = `${selectedSocio.nombre} — ${selectedSocio.rut}`;
-        $("#socioSelected").textContent = `Seleccionado: ${selectedSocio.nombre} (${selectedSocio.rut})`;
-        box.style.display = "none";
-
-        const rv2 = rutinaV2DeSocio(selectedSocio.rut);
-        showLastRoutineBox(rv2);
-      };
-    });
-  }
-
-  function setChecks(dayIndex, values){
-    const set = new Set(values || []);
-    document.querySelectorAll(`input[data-focus="${dayIndex}"]`).forEach(chk=>{
-      chk.checked = set.has(chk.value);
-    });
-    updateFocusBadges(dayIndex);
-  }
-
-  function ensureDayExists(dayNum){
-    if(addedDays.has(dayNum)) return;
-    $("#dayPicker").value = String(dayNum);
-    $("#btnAddDay").click();
-  }
-
-  function fillRoutineToUI(routine){
-    $("#nivel").value = routine.meta?.nivel || "INTERMEDIO";
-    $("#objetivo").value = routine.meta?.objetivo || "";
-    $("#vecesSemanaTxt").value = routine.meta?.vecesSemanaTxt || "";
-    $("#cardioTipo").value = routine.meta?.cardio?.tipo || "NINGUNO";
-    $("#cardioMin").value = routine.meta?.cardio?.min ?? "15";
-    $("#cardioFreq").value = routine.meta?.cardio?.freq ?? "3";
-    $("#fecha").value = routine.meta?.fecha || $("#fecha").value;
-
-    $("#daysContainer").innerHTML = "";
-    addedDays.clear();
-
-    (routine.dias || []).forEach(day=>{
-      const num = parseInt(String(day.dia||"").replaceAll(/\D/g,"")) || 0;
-      if(!num) return;
-
-      ensureDayExists(num);
-
-      const enfoques = Array.isArray(day.enfoque) ? day.enfoque : (day.enfoque ? [day.enfoque] : []);
-      setChecks(num, enfoques);
-
-      const tbody = document.querySelector(`[data-tbody="${num}"]`);
-      tbody.innerHTML = "";
-
-      const ejercicios = day.ejercicios || [];
-      if(!ejercicios.length){
-        tbody.insertAdjacentHTML("beforeend", rowTemplate());
-      }else{
-        ejercicios.forEach(ex=>{
-          tbody.insertAdjacentHTML("beforeend", rowTemplate());
-          const tr = tbody.lastElementChild;
-          tr.querySelector('[data-cell="musculo"]').value = ex.musculo || muscleOptions[0];
-          tr.querySelector('[data-cell="ejercicio"]').value = ex.ejercicio || "";
-          tr.querySelector('[data-cell="maq"]').value = ex.maq || "";
-          tr.querySelector('[data-cell="obs"]').value = ex.obs || "";
-          tr.querySelector('[data-cell="series"]').value = ex.series || "";
-          tr.querySelector('[data-cell="reps"]').value = ex.reps || "";
-          tr.querySelector('[data-cell="carga"]').value = ex.carga || "";
-          tr.querySelector('[data-cell="descanso"]').value = ex.descanso || "";
-        });
-      }
-    });
-
-    wireDayActions();
-  }
-
-  function showLastRoutineBox(rv2){
-    const box = $("#lastRoutineBox");
-    if(!rv2 || !rv2.routine){
-      box.style.display = "none";
-      box.innerHTML = "";
-      return;
+    /* ==== DATALISTS (autocompletado) ==== */
+    function datalistIdForMuscle(muscle){
+      return "dl_" + slugifyId(muscle);
     }
 
-    const updated = rv2.actualizadoEn ? new Date(rv2.actualizadoEn).toLocaleString() : "-";
-    const nivel = rv2.routine.meta?.nivel || "-";
-    const objetivo = rv2.routine.meta?.objetivo || "-";
-    const dias = (rv2.routine.dias||[]).length;
+    function buildDatalists(){
+      const mount = $("#datalistsMount");
+      mount.innerHTML = "";
 
-    box.style.display = "block";
-    box.innerHTML = `
-      <b>Última rutina encontrada</b><br>
-      <div style="margin-top:6px; font-size:13px;">
-        <span class="pill">Nivel: ${nivel}</span>
-        <span class="pill">Días: ${dias}</span>
-        <span class="pill">Últ. Modificación: ${updated}</span>
-      </div>
-      <div style="margin-top:8px; font-size:13px; color:rgba(255,255,255,.85);">
-        <b>Objetivo:</b> ${objetivo}
-      </div>
-      <div style="margin-top:10px;">
-        <button class="btn ghost" type="button" id="btnLoadLast">Cargar para editar</button>
-      </div>
-    `;
+      const uniqueMuscles = Object.keys(EXERCISE_DB || {});
+      uniqueMuscles.forEach(m=>{
+        const id = datalistIdForMuscle(m);
+        const list = EXERCISE_DB[m] || [];
+        const dl = document.createElement("datalist");
+        dl.id = id;
 
-    $("#btnLoadLast").onclick = ()=>{
-      fillRoutineToUI(rv2.routine);
-      showMsg("Rutina anterior cargada ✅ (puedes editar y guardar).", true);
-    };
-  }
-
-  function collectRoutine(){
-    if(!selectedSocio) throw new Error("Debes seleccionar un socio (buscando por nombre o RUT).");
-
-    const objetivo = $("#objetivo").value.trim();
-    if(!objetivo) throw new Error("Escribe el objetivo.");
-
-    const daysSorted = Array.from(addedDays).sort((a,b)=>a-b);
-    if(!daysSorted.length) throw new Error("Agrega al menos 1 día (Día 1..7).");
-
-    const dias = [];
-    for(const d of daysSorted){
-      const enfoque = Array.from(document.querySelectorAll(`input[data-focus="${d}"]:checked`)).map(x=>x.value);
-
-      const tbody = document.querySelector(`[data-tbody="${d}"]`);
-      const ejercicios = [];
-
-      tbody.querySelectorAll("tr").forEach(tr=>{
-        const musculo = tr.querySelector('[data-cell="musculo"]')?.value || "";
-        const ejercicio = tr.querySelector('[data-cell="ejercicio"]')?.value || "";
-        const maq = tr.querySelector('[data-cell="maq"]')?.value || "";
-        const obs = tr.querySelector('[data-cell="obs"]')?.value || "";
-        const series = tr.querySelector('[data-cell="series"]')?.value || "";
-        const reps = tr.querySelector('[data-cell="reps"]')?.value || "";
-        const carga = tr.querySelector('[data-cell="carga"]')?.value || "";
-        const descanso = tr.querySelector('[data-cell="descanso"]')?.value || "";
-
-        if(String(ejercicio).trim().length){
-          ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
-        }
+        dl.innerHTML = list.map(x => `<option value="${String(x).replaceAll('"','&quot;')}"></option>`).join("");
+        mount.appendChild(dl);
       });
-
-      dias.push({ dia:`Día ${d}`, enfoque, ejercicios });
     }
 
-    return {
-      socio: { rut:selectedSocio.rut, nombre:selectedSocio.nombre },
-      meta: {
-        nivel: $("#nivel").value,
-        objetivo,
-        vecesSemanaTxt: $("#vecesSemanaTxt").value.trim(),
-        cardio: { tipo: $("#cardioTipo").value, min: $("#cardioMin").value.trim(), freq: $("#cardioFreq").value.trim() },
-        fecha: $("#fecha").value.trim()
-      },
-      dias
-    };
-  }
+    function setExerciseListForRow(tr){
+      const mus = tr.querySelector('[data-cell="musculo"]')?.value || "";
+      const exInput = tr.querySelector('[data-cell="ejercicio"]');
+      if(!exInput) return;
 
-  // ✅ Vista tipo socio (por día desplegable)
-  function renderSocioPreview(routine){
-    const m = routine.meta || {};
-    const htmlDays = (routine.dias||[]).map((d, idx)=>{
-      const enf = (d.enfoque && d.enfoque.length) ? d.enfoque.join(" + ") : "-";
-      const exHtml = (d.ejercicios||[]).length
-        ? d.ejercicios.map(e=>`
-            <div class="exercise-card">
-              <div class="exercise-title">
-                <div>
-                  <b>${(e.musculo||"-").toUpperCase()} — ${e.ejercicio||"-"}</b>
-                  <div style="margin-top:6px;color:rgba(255,255,255,.70);font-size:13px;">
-                    ${e.obs ? "💬 "+e.obs : ""}
-                  </div>
-                </div>
-                <span class="pill">${e.descanso || "Desc: -"}</span>
-              </div>
-              <div class="exercise-badges">
-                <span class="eb"><span>Series</span> <b>${e.series||"-"}</b></span>
-                <span class="eb"><span>Reps</span> <b>${e.reps||"-"}</b></span>
-                <span class="eb"><span>Carga</span> <b>${e.carga||"-"}</b></span>
-                <span class="eb"><span>Maq/Var</span> <b>${e.maq||"-"}</b></span>
-              </div>
-            </div>
-          `).join("")
-        : `<div style="color:rgba(255,255,255,.70);">Sin ejercicios cargados.</div>`;
+      if(EXERCISE_DB[mus] && EXERCISE_DB[mus].length){
+        exInput.setAttribute("list", datalistIdForMuscle(mus));
+      } else {
+        exInput.removeAttribute("list");
+      }
+    }
 
+    function wireExerciseAutocomplete(){
+      document.querySelectorAll("tbody tr").forEach(tr=>{
+        const musSel = tr.querySelector('[data-cell="musculo"]');
+        const exInput = tr.querySelector('[data-cell="ejercicio"]');
+
+        if(musSel && !musSel.dataset.wired){
+          musSel.dataset.wired = "1";
+          musSel.addEventListener("change", ()=>{
+            setExerciseListForRow(tr);
+            if(exInput) exInput.value = "";
+          });
+        }
+
+        if(exInput && !exInput.dataset.wired){
+          exInput.dataset.wired = "1";
+          exInput.addEventListener("focus", ()=>{
+            setExerciseListForRow(tr);
+          });
+        }
+
+        setExerciseListForRow(tr);
+      });
+    }
+
+    function rowTemplate(){
+      const muscSel = muscleOptions.map(m=>`<option value="${m}">${m}</option>`).join("");
       return `
-        <div class="acc-item">
-          <button class="acc-head" type="button" data-acc="${idx}">
-            <div>${d.dia} <small>· Enfoque: ${enf}</small></div>
-            <div class="pill">Abrir</div>
-          </button>
-          <div class="acc-body" data-body="${idx}">
-            ${exHtml}
+        <tr>
+          <td><select data-cell="musculo">${muscSel}</select></td>
+          <td><input data-cell="ejercicio" placeholder="Escribe o elige del listado..." autocomplete="off" /></td>
+          <td><input data-cell="maq" placeholder="N° maq / variante" /></td>
+          <td><input data-cell="obs" placeholder="Técnica / tempo / RIR..." /></td>
+          <td><input data-cell="series" placeholder="3" /></td>
+          <td><input data-cell="reps" placeholder="8-12" /></td>
+          <td><input data-cell="carga" placeholder="kg" /></td>
+          <td><input data-cell="descanso" placeholder="Ej: 1:30" /></td>
+          <td><button class="btn ghost small" type="button" data-del-row>Quitar</button></td>
+        </tr>
+      `;
+    }
+
+    function focusGridTemplate(dayIndex){
+      return `
+        <div class="focusWrap">
+          <div class="focusBadges" data-focus-badges="${dayIndex}"></div>
+          <div class="focusGrid" data-focus-grid="${dayIndex}">
+            ${muscleOptions
+              .filter(m => m !== "Tren Superior" && m !== "Tren Inferior" && m !== "Full Body")
+              .map(m=>`
+                <label class="fItem">
+                  <input type="checkbox" value="${m}" data-focus="${dayIndex}">
+                  <span>${m}</span>
+                </label>
+              `).join("")}
           </div>
         </div>
       `;
-    }).join("");
-
-    const html = `
-      <div style="font-size:14px;">
-        <b>${routine.socio.nombre}</b> (${routine.socio.rut})<br>
-        <span class="pill">Nivel: ${m.nivel||"-"}</span>
-        <span class="pill">Fecha: ${m.fecha||"-"}</span>
-        <span class="pill">Cardio: ${m.cardio?.tipo||"NINGUNO"} ${m.cardio?.min||""} min</span>
-        <div style="margin-top:8px;color:rgba(255,255,255,.86);">
-          <b>Objetivo:</b> ${m.objetivo||"-"} · <b>Entrenos/semana:</b> ${m.vecesSemanaTxt||"-"}
-        </div>
-      </div>
-      <div style="margin-top:12px;" class="accordion">
-        ${htmlDays || `<div style="padding:14px;color:rgba(255,255,255,.70);">Sin días cargados.</div>`}
-      </div>
-      <div class="mini" style="margin-top:10px;">(Esto es exactamente cómo lo verá el socio.)</div>
-    `;
-
-    const box = $("#previewSocio");
-    box.style.display = "block";
-    box.innerHTML = html;
-
-    box.querySelectorAll("[data-acc]").forEach(btn=>{
-      btn.onclick = ()=>{
-        const i = btn.getAttribute("data-acc");
-        const body = box.querySelector(`[data-body="${i}"]`);
-        if(!body) return;
-        body.classList.toggle("open");
-      };
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", ()=>{
-    buildDatalists();
-
-    // ✅ aquí permitimos ADMIN o FUNCIONARIO
-    const me = requireAuth(["ADMIN","FUNCIONARIO"]);
-    if(!me) return;
-
-    $("#who").textContent = me.nombre;
-    $("#roleBadge").textContent = me.rol;
-    $("#profesor").value = me.nombre;
-
-    $("#fecha").value = new Date().toLocaleDateString("es-CL").replaceAll("/","-");
-
-    SOCIOS = getUsers().filter(u=>u.rol==="SOCIO" && u.activo);
-
-    // Si vienes desde CRM con socio seleccionado
-    const preRut = localStorage.getItem("MAHFIT_SELECTED_SOCIO");
-    if(preRut){
-      const s = SOCIOS.find(x=>x.rut===preRut);
-      if(s){
-        selectedSocio = s;
-        $("#socioSearch").value = `${s.nombre} — ${s.rut}`;
-        $("#socioSelected").textContent = `Seleccionado: ${s.nombre} (${s.rut})`;
-        showLastRoutineBox(rutinaV2DeSocio(s.rut));
-      }
-      localStorage.removeItem("MAHFIT_SELECTED_SOCIO");
     }
 
-    const search = $("#socioSearch");
-    const results = $("#socioResults");
+    function updateFocusBadges(dayIndex){
+      const badges = document.querySelector(`[data-focus-badges="${dayIndex}"]`);
+      const checked = Array.from(document.querySelectorAll(`input[data-focus="${dayIndex}"]:checked`))
+        .map(x=>x.value);
 
-    search.addEventListener("input", ()=> renderSocioResults(filterSocios(search.value)));
-    search.addEventListener("focus", ()=> renderSocioResults(filterSocios(search.value)));
+      if(!badges) return;
+      badges.innerHTML = checked.length
+        ? checked.map(v=>`<span class="pill">${v}</span>`).join("")
+        : `<span class="mini">Selecciona uno o más músculos para el enfoque del día.</span>`;
+    }
 
-    document.addEventListener("click", (e)=>{
-      if(!e.target.closest(".socio-search")){
-        results.style.display = "none";
-      }
-    });
+    function dayCardTemplate(dayIndex){
+      const dayName = `Día ${dayIndex}`;
+      return `
+        <div class="card day-card" data-day="${dayIndex}">
+          <div class="head day-title" style="display:block;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <b>${dayName}</b>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button class="btn ghost small" type="button" data-add-row="${dayIndex}">+ Ejercicio</button>
+                <button class="btn ghost small" type="button" data-remove-day="${dayIndex}">Quitar Día</button>
+              </div>
+            </div>
 
-    $("#btnAddDay").onclick = ()=>{
-      const d = Number($("#dayPicker").value);
-      if(addedDays.has(d)){
-        showMsg(`El Día ${d} ya está agregado.`, false);
+            <div style="margin-top:10px;">
+              <div class="pill" style="display:inline-flex;margin-bottom:8px;">Enfocado</div>
+              ${focusGridTemplate(dayIndex)}
+            </div>
+          </div>
+
+          <div class="body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:140px;">Músculo</th>
+                  <th>Ejercicio</th>
+                  <th style="width:160px;">N°Maq/Var</th>
+                  <th style="width:170px;">Obs.</th>
+                  <th style="width:90px;">Series</th>
+                  <th style="width:90px;">Reps</th>
+                  <th style="width:90px;">Carga</th>
+                  <th style="width:110px;">Descanso</th>
+                  <th style="width:90px;">Acción</th>
+                </tr>
+              </thead>
+              <tbody data-tbody="${dayIndex}">
+                ${rowTemplate()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function wireDeleteButtons(){
+      document.querySelectorAll("[data-del-row]").forEach(b=>{
+        b.onclick = () => {
+          const tr = b.closest("tr");
+          const tbody = tr.parentElement;
+          if(tbody.children.length <= 1) return;
+          tr.remove();
+        };
+      });
+    }
+
+    function firstFocusMuscle(day){
+      const checked = document.querySelector(`input[data-focus="${day}"]:checked`);
+      return checked ? checked.value : null;
+    }
+
+    function wireDayActions(){
+      document.querySelectorAll("[data-add-row]").forEach(btn=>{
+        btn.onclick = () => {
+          const day = btn.getAttribute("data-add-row");
+          const tbody = document.querySelector(`[data-tbody="${day}"]`);
+          tbody.insertAdjacentHTML("beforeend", rowTemplate());
+
+          const tr = tbody.lastElementChild;
+          const fm = firstFocusMuscle(day);
+          if(fm){
+            const sel = tr.querySelector('[data-cell="musculo"]');
+            if(sel) sel.value = fm;
+          }
+
+          wireDeleteButtons();
+          wireExerciseAutocomplete();
+        };
+      });
+
+      document.querySelectorAll("[data-remove-day]").forEach(btn=>{
+        btn.onclick = () => {
+          const day = btn.getAttribute("data-remove-day");
+          const card = document.querySelector(`[data-day="${day}"]`);
+          if(card) card.remove();
+          addedDays.delete(Number(day));
+          showMsg($("#msg"), `Se quitó el Día ${day}.`, true);
+        };
+      });
+
+      document.querySelectorAll("input[data-focus]").forEach(chk=>{
+        chk.onchange = ()=>{
+          const dayIndex = chk.getAttribute("data-focus");
+          updateFocusBadges(dayIndex);
+        };
+      });
+
+      Array.from(addedDays).forEach(d => updateFocusBadges(d));
+
+      wireDeleteButtons();
+      wireExerciseAutocomplete();
+    }
+
+    function filterSocios(q){
+      const query = norm(q);
+      if(!query) return SOCIOS.slice(0, 12);
+
+      return SOCIOS.filter(s=>{
+        const nRut = norm(s.rut);
+        const nNom = norm(s.nombre);
+        return nRut.includes(query) || nNom.includes(query);
+      }).slice(0, 20);
+    }
+
+    function renderSocioResults(list){
+      const box = $("#socioResults");
+      if(!list.length){
+        box.innerHTML = `<div class="socio-item"><span>Sin resultados</span></div>`;
+        box.style.display = "block";
         return;
       }
-      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
-      addedDays.add(d);
+
+      box.innerHTML = list.map(s => `
+        <div class="socio-item" data-rut="${s.rut}">
+          <b>${s.nombre}</b>
+          <span>${s.rut}</span>
+        </div>
+      `).join("");
+      box.style.display = "block";
+
+      box.querySelectorAll(".socio-item").forEach(item=>{
+        item.onclick = () => {
+          const rut = item.getAttribute("data-rut");
+          selectedSocio = SOCIOS.find(x=>x.rut===rut) || null;
+
+          $("#socioSearch").value = `${selectedSocio.nombre} — ${selectedSocio.rut}`;
+          $("#socioSelected").textContent = `Seleccionado: ${selectedSocio.nombre} (${selectedSocio.rut})`;
+          box.style.display = "none";
+
+          const rv2 = rutinaV2DeSocio(selectedSocio.rut);
+          showLastRoutineBox(rv2);
+        };
+      });
+    }
+
+    function setChecks(dayIndex, values){
+      const set = new Set(values || []);
+      document.querySelectorAll(`input[data-focus="${dayIndex}"]`).forEach(chk=>{
+        chk.checked = set.has(chk.value);
+      });
+      updateFocusBadges(dayIndex);
+    }
+
+    function ensureDayExists(dayNum){
+      if(addedDays.has(dayNum)) return;
+      $("#dayPicker").value = String(dayNum);
+      $("#btnAddDay").click();
+    }
+
+    function fillRoutineToUI(routine){
+      $("#nivel").value = routine.meta?.nivel || "INTERMEDIO";
+      $("#objetivo").value = routine.meta?.objetivo || "";
+      $("#vecesSemanaTxt").value = routine.meta?.vecesSemanaTxt || "";
+      $("#cardioTipo").value = routine.meta?.cardio?.tipo || "NINGUNO";
+      $("#cardioMin").value = routine.meta?.cardio?.min ?? "15";
+      $("#cardioFreq").value = routine.meta?.cardio?.freq ?? "3";
+      $("#fecha").value = routine.meta?.fecha || $("#fecha").value;
+
+      $("#daysContainer").innerHTML = "";
+      addedDays.clear();
+
+      (routine.dias || []).forEach(day=>{
+        const num = parseInt(String(day.dia||"").replaceAll(/\D/g,"")) || 0;
+        if(!num) return;
+
+        ensureDayExists(num);
+
+        const enfoques = Array.isArray(day.enfoque) ? day.enfoque : (day.enfoque ? [day.enfoque] : []);
+        setChecks(num, enfoques);
+
+        const tbody = document.querySelector(`[data-tbody="${num}"]`);
+        tbody.innerHTML = "";
+
+        const ejercicios = day.ejercicios || [];
+        if(!ejercicios.length){
+          tbody.insertAdjacentHTML("beforeend", rowTemplate());
+        }else{
+          ejercicios.forEach(ex=>{
+            tbody.insertAdjacentHTML("beforeend", rowTemplate());
+            const tr = tbody.lastElementChild;
+            tr.querySelector('[data-cell="musculo"]').value = ex.musculo || muscleOptions[0];
+            tr.querySelector('[data-cell="ejercicio"]').value = ex.ejercicio || "";
+            tr.querySelector('[data-cell="maq"]').value = ex.maq || "";
+            tr.querySelector('[data-cell="obs"]').value = ex.obs || "";
+            tr.querySelector('[data-cell="series"]').value = ex.series || "";
+            tr.querySelector('[data-cell="reps"]').value = ex.reps || "";
+            tr.querySelector('[data-cell="carga"]').value = ex.carga || "";
+            tr.querySelector('[data-cell="descanso"]').value = ex.descanso || "";
+          });
+        }
+      });
+
       wireDayActions();
-      updateFocusBadges(d);
-      showMsg(`Agregado: Día ${d}`, true);
-    };
+    }
 
-    // Día 1 por defecto
-    $("#dayPicker").value = "1";
-    $("#btnAddDay").click();
-
-    $("#btnGuardar").onclick = ()=>{
-      try{
-        const routine = collectRoutine();
-        upsertRutinaV2({ rutSocio: routine.socio.rut, routine, creadoPorRut: me.rut });
-        showLastRoutineBox(rutinaV2DeSocio(routine.socio.rut));
-        showMsg("✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
-        renderSocioPreview(routine);
-      }catch(err){
-        showMsg(err.message, false);
+    function showLastRoutineBox(rv2){
+      const box = $("#lastRoutineBox");
+      if(!rv2 || !rv2.routine){
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
       }
-    };
 
-    $("#btnVista").onclick = ()=>{
-      try{
-        const routine = collectRoutine();
-        renderSocioPreview(routine);
-        showMsg("Visualización lista ✅", true);
-      }catch(err){
-        showMsg(err.message, false);
+      const updated = rv2.actualizadoEn ? new Date(rv2.actualizadoEn).toLocaleString() : "-";
+      const nivel = rv2.routine.meta?.nivel || "-";
+      const objetivo = rv2.routine.meta?.objetivo || "-";
+      const dias = (rv2.routine.dias||[]).length;
+
+      box.style.display = "block";
+      box.innerHTML = `
+        <b>Última rutina encontrada</b><br>
+        <div style="margin-top:6px; font-size:13px;">
+          <span class="pill">Nivel: ${nivel}</span>
+          <span class="pill">Días: ${dias}</span>
+          <span class="pill">Últ. Modificación: ${updated}</span>
+        </div>
+        <div style="margin-top:8px; font-size:13px; color:rgba(255,255,255,.85);">
+          <b>Objetivo:</b> ${objetivo}
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn ghost" type="button" id="btnLoadLast">Cargar para editar</button>
+        </div>
+      `;
+
+      $("#btnLoadLast").onclick = ()=>{
+        fillRoutineToUI(rv2.routine);
+        showMsg($("#msg"), "Rutina anterior cargada ✅ (puedes editar y guardar).", true);
+      };
+    }
+
+    function collectRoutine(){
+      if(!selectedSocio) throw new Error("Debes seleccionar un socio (buscando por nombre o RUT).");
+
+      const nivel = $("#nivel").value;
+      const objetivo = $("#objetivo").value.trim();
+      if(!objetivo) throw new Error("Escribe el objetivo.");
+
+      const vecesSemanaTxt = $("#vecesSemanaTxt").value.trim();
+
+      const cardio = {
+        tipo: $("#cardioTipo").value,
+        min: $("#cardioMin").value.trim(),
+        freq: $("#cardioFreq").value.trim()
+      };
+
+      const fecha = $("#fecha").value.trim();
+
+      const daysSorted = Array.from(addedDays).sort((a,b)=>a-b);
+      if(!daysSorted.length) throw new Error("Agrega al menos 1 día (Día 1..7).");
+
+      const dias = [];
+      for(const d of daysSorted){
+        const enfoque = Array.from(document.querySelectorAll(`input[data-focus="${d}"]:checked`))
+          .map(x=>x.value);
+
+        const tbody = document.querySelector(`[data-tbody="${d}"]`);
+        const ejercicios = [];
+
+        tbody.querySelectorAll("tr").forEach(tr=>{
+          const musculo = tr.querySelector('[data-cell="musculo"]')?.value || "";
+          const ejercicio = tr.querySelector('[data-cell="ejercicio"]')?.value || "";
+          const maq = tr.querySelector('[data-cell="maq"]')?.value || "";
+          const obs = tr.querySelector('[data-cell="obs"]')?.value || "";
+          const series = tr.querySelector('[data-cell="series"]')?.value || "";
+          const reps = tr.querySelector('[data-cell="reps"]')?.value || "";
+          const carga = tr.querySelector('[data-cell="carga"]')?.value || "";
+          const descanso = tr.querySelector('[data-cell="descanso"]')?.value || "";
+
+          if(String(ejercicio).trim().length){
+            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
+          }
+        });
+
+        dias.push({ dia:`Día ${d}`, enfoque, ejercicios });
       }
-    };
 
-    $("#btnLogout").onclick = ()=>{
-      clearSession();
-      window.location.href = "index.html";
-    };
-  });
-</script>
+      return {
+        socio: { rut:selectedSocio.rut, nombre:selectedSocio.nombre },
+        meta: { nivel, objetivo, vecesSemanaTxt, cardio, fecha },
+        dias
+      };
+    }
+
+    function formatRutinaText(routine, profesorNombre){
+      const m = routine.meta;
+      let out = "";
+      out += `NOMBRE: ${routine.socio.nombre} (${routine.socio.rut})\n`;
+      out += `NIVEL: ${m.nivel}\n`;
+      out += `FECHA: ${m.fecha}\n`;
+      out += `OBJETIVO: ${m.objetivo}\n`;
+      out += `PROFESOR: ${profesorNombre}\n\n`;
+      out += `ENTRENOS/SEMANA: ${m.vecesSemanaTxt || "-"}\n`;
+      out += `CARDIO: ${m.cardio.tipo} ${m.cardio.min || "-"} min | Frec: ${m.cardio.freq || "-"} /sem\n\n`;
+
+      routine.dias.forEach((d)=>{
+        const enf = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "-");
+        out += `========================\n`;
+        out += `${d.dia} | ENFOQUE: ${enf}\n`;
+        out += `========================\n`;
+
+        if(!d.ejercicios.length){
+          out += `- (Sin ejercicios cargados)\n\n`;
+          return;
+        }
+
+        d.ejercicios.forEach((e, i)=>{
+          out += `${i+1}. [${e.musculo}] ${e.ejercicio} | Series:${e.series||"-"} | Reps:${e.reps||"-"} | Carga:${e.carga||"-"} | Desc:${e.descanso||"-"} | Obs:${e.obs||"-"}\n`;
+        });
+        out += `\n`;
+      });
+
+      return out.trim();
+    }
+
+    /* ===== PREVIEW COMO SOCIO (HTML) ===== */
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function renderSocioPreview(routine){
+      const m = routine.meta || {};
+      const dias = Array.isArray(routine.dias) ? routine.dias : [];
+
+      const header = `
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <div style="font-weight:800;font-size:14px;letter-spacing:.5px;">TU RUTINA</div>
+            <div class="mini" style="margin-top:4px;color:rgba(255,255,255,.75);">
+              ${escapeHtml(m.nivel || "-")} • ${escapeHtml(m.objetivo || "-")} • ${escapeHtml(m.fecha || "-")}
+            </div>
+          </div>
+          <div class="mini" style="text-align:right;color:rgba(255,255,255,.75);">
+            Cardio: <b style="color:#fff">${escapeHtml(m.cardio?.tipo || "NINGUNO")}</b>
+            ${m.cardio?.min ? `• ${escapeHtml(m.cardio.min)} min` : ""}
+            ${m.cardio?.freq ? `• ${escapeHtml(m.cardio.freq)}/sem` : ""}
+          </div>
+        </div>
+        <div class="hr" style="margin:12px 0;"></div>
+      `;
+
+      const daysHtml = dias.map((d, idx)=>{
+        const enfoqueArr = Array.isArray(d.enfoque) ? d.enfoque : (d.enfoque ? [d.enfoque] : []);
+        const enfoqueBadges = enfoqueArr.length
+          ? enfoqueArr.map(x=>`<span class="pill" style="margin-right:6px;">${escapeHtml(x)}</span>`).join("")
+          : `<span class="mini" style="color:rgba(255,255,255,.65);">Sin enfoque</span>`;
+
+        const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
+        const cards = ejercicios.length
+          ? ejercicios.map(e=>{
+              const titulo = `${escapeHtml(e.musculo || "")} — ${escapeHtml(e.ejercicio || "")}`.trim();
+              const series = escapeHtml(e.series || "-");
+              const reps = escapeHtml(e.reps || "-");
+              const carga = escapeHtml(e.carga || "-");
+              const descanso = escapeHtml(e.descanso || "-");
+              const obs = escapeHtml(e.obs || "");
+
+              return `
+                <div style="
+                  border:1px solid rgba(255,255,255,.10);
+                  background: rgba(0,0,0,.22);
+                  border-radius:14px;
+                  padding:12px 12px;
+                  margin-top:10px;
+                ">
+                  <div style="font-weight:800;letter-spacing:.3px;">
+                    ${titulo || "(Ejercicio)"}
+                  </div>
+
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                    <span class="pill">Series: <b>${series}</b></span>
+                    <span class="pill">Reps: <b>${reps}</b></span>
+                    <span class="pill">Carga: <b>${carga}</b></span>
+                    <span class="pill">Desc: <b>${descanso}</b></span>
+                  </div>
+
+                  ${obs ? `<div class="mini" style="margin-top:10px;color:rgba(255,255,255,.78);">
+                    <b>Nota:</b> ${obs}
+                  </div>` : ""}
+                </div>
+              `;
+            }).join("")
+          : `<div class="mini" style="color:rgba(255,255,255,.70);margin-top:10px;">No hay ejercicios cargados para este día.</div>`;
+
+        return `
+          <details ${idx===0 ? "open" : ""} style="
+            border:1px solid rgba(255,255,255,.10);
+            background: rgba(0,0,0,.18);
+            border-radius:16px;
+            padding:12px 12px;
+            margin-top:12px;
+          ">
+            <summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center;">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="font-weight:900;letter-spacing:.3px;">${escapeHtml(d.dia || `Día ${idx+1}`)}</div>
+                <div>${enfoqueBadges}</div>
+              </div>
+              <span class="mini" style="color:rgba(255,255,255,.65);">Abrir/Cerrar</span>
+            </summary>
+
+            <div style="margin-top:10px;">
+              ${cards}
+            </div>
+          </details>
+        `;
+      }).join("");
+
+      return header + daysHtml;
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      // 1) construir datalists de ejercicios
+      buildDatalists();
+
+      // ✅ Permitir ADMIN o FUNCIONARIO (esto arregla el bloqueo del admin)
+      let me = requireAuth("FUNCIONARIO");
+      if(!me) me = requireAuth("ADMIN");
+      if(!me) return;
+
+      $("#who").textContent = me.nombre;
+      $("#roleBadge").textContent = (me.rol || "FUNCIONARIO");
+      $("#profesor").value = me.nombre;
+
+      $("#fecha").value = new Date().toLocaleDateString("es-CL").replaceAll("/","-");
+
+      SOCIOS = getUsers().filter(u=>u.rol==="SOCIO" && u.activo);
+
+      const search = $("#socioSearch");
+      const results = $("#socioResults");
+
+      search.addEventListener("input", ()=>{
+        renderSocioResults(filterSocios(search.value));
+      });
+      search.addEventListener("focus", ()=>{
+        renderSocioResults(filterSocios(search.value));
+      });
+
+      document.addEventListener("click", (e)=>{
+        if(!e.target.closest(".socio-search")){
+          results.style.display = "none";
+        }
+      });
+
+      $("#btnAddDay").onclick = ()=>{
+        const d = Number($("#dayPicker").value);
+        if(addedDays.has(d)){
+          showMsg($("#msg"), `El Día ${d} ya está agregado.`, false);
+          return;
+        }
+        $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
+        addedDays.add(d);
+        wireDayActions();
+        updateFocusBadges(d);
+        showMsg($("#msg"), `Agregado: Día ${d}`, true);
+      };
+
+      // Día 1 por defecto
+      $("#dayPicker").value = "1";
+      $("#btnAddDay").click();
+
+      $("#btnGuardar").onclick = ()=>{
+        try{
+          const routine = collectRoutine();
+
+          upsertRutinaV2({
+            rutSocio: routine.socio.rut,
+            routine,
+            creadoPorRut: me.rut
+          });
+
+          const txt = formatRutinaText(routine, me.nombre);
+          upsertRutina({
+            rutSocio: routine.socio.rut,
+            titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
+            detalle: txt,
+            creadoPorRut: me.rut
+          });
+
+          showLastRoutineBox(rutinaV2DeSocio(routine.socio.rut));
+          showMsg($("#msg"), "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      // ✅ VISUALIZAR RUTINA (como lo verá el SOCIO)
+      $("#btnVista").onclick = ()=>{
+        try{
+          const routine = collectRoutine();
+          const box = $("#previewBox");
+          box.style.display = "block";
+          box.style.whiteSpace = "normal";
+          box.innerHTML = renderSocioPreview(routine);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      $("#btnLogout").onclick = ()=>{
+        clearSession();
+        window.location.href = "index.html";
+      };
+    });
+  </script>
 </body>
 </html>
+
