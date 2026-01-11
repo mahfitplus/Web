@@ -253,45 +253,7 @@
       </div>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- 🟦 INICIO CRM USUARIOS                                   -->
-    <!-- ========================================================= -->
-    <div class="card">
-      <div class="cardHead">
-        <div class="cardTitle">CRM USUARIOS</div>
-
-        <!-- ✅ Buscador + filtro -->
-        <div class="filters">
-          <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
-          <select id="roleFilter">
-            <option value="ALL">Todos</option>
-            <option value="SOCIO">Solo socios</option>
-            <option value="FUNCIONARIO">Solo funcionarios</option>
-          </select>
-        </div>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>RUT/USUARIO</th>
-            <th>ROL</th>
-            <th>ACTIVO</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <!-- 🔹 Aquí se cargan dinámicamente los usuarios -->
-        <tbody id="usersTbody"></tbody>
-      </table>
-
-      <div class="muted" style="margin-top:8px;">
-        Tip: escribe en el buscador y se filtra altiro.
-      </div>
-    </div>
-    <!-- ========================================================= -->
-    <!-- 🟥 FIN CRM USUARIOS                                      -->
-    <!-- ========================================================= -->
+   
 
     <div class="card">
       <div class="cardHead">
@@ -332,9 +294,48 @@
         <p id="msgUser" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
       </form>
     </div>
+ <!-- ========================================================= -->
+    <!-- 🟦 INICIO CRM USUARIOS                                   -->
+    <!-- ========================================================= -->
+    <div class="card">
+      <div class="cardHead">
+        <div class="cardTitle">CRM USUARIOS</div>
 
+        <!-- ✅ Buscador + filtro -->
+        <div class="filters">
+          <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+          <select id="roleFilter">
+            <option value="ALL">Todos</option>
+            <option value="SOCIO">Solo socios</option>
+            <option value="FUNCIONARIO">Solo funcionarios</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>RUT/USUARIO</th>
+            <th>ROL</th>
+            <th>ACTIVO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <!-- 🔹 Aquí se cargan dinámicamente los usuarios -->
+        <tbody id="usersTbody"></tbody>
+      </table>
+
+      <div class="muted" style="margin-top:8px;">
+        Tip: escribe en el buscador y se filtra altiro.
+      </div>
+    </div>
+    <!-- ========================================================= -->
+    <!-- 🟥 FIN CRM USUARIOS                                      -->
+    <!-- ========================================================= -->
   </div>
 
   <script src="assets/app.js"></script>
 </body>
 </html>
+
