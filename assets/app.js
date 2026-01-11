@@ -4,10 +4,10 @@
    - Agrega backend (Google Sheets Apps Script)
    - Deja funciones SINCRÓNICAS para no romper tus páginas
    - Soporta requireAuth("ROL") y requireAuth(["A","B"])
+   - + Indicador de conexión (dbDot/dbText) 🟢🔴⚪
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
-
 
 
 // -------- LocalStorage helpers --------
@@ -22,6 +22,28 @@ const LS = {
 
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
+
+
+// -------- DB STATUS (pelotita) --------
+function setDbStatus(status){
+  // status: "connecting" | "connected" | "error"
+  const dot  = document.getElementById("dbDot");
+  const text = document.getElementById("dbText");
+  if(!dot || !text) return; // si alguna página no tiene el badge, no pasa nada
+
+  dot.className = "db-dot";
+  if(status === "connected"){
+    dot.classList.add("connected");
+    text.textContent = "Conectado";
+  }else if(status === "error"){
+    dot.classList.add("error");
+    text.textContent = "Sin conexión";
+  }else{
+    dot.classList.add("connecting");
+    text.textContent = "Conectando…";
+  }
+}
+
 
 // -------- DOMContentLoaded GATE --------
 // (No modificas tus HTML. Esto evita que corran scripts antes de cargar backend)
@@ -49,6 +71,7 @@ function nowISO(){ return new Date().toISOString(); }
   };
 })();
 
+
 // -------- API --------
 async function apiGet(resource){
   const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
@@ -67,6 +90,7 @@ async function apiPost(resource, data){
   return j;
 }
 
+
 // -------- Cache local (la web lo usa) --------
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
@@ -77,12 +101,14 @@ function setRutinas(v){ LS.set("mahfit_rutinas", v); }
 function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
 function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 
+
 // -------- Session --------
 function setSession(user){
   LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
 }
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
+
 
 // -------- Sync DOWN (Sheets -> cache) --------
 async function syncDown(){
@@ -126,6 +152,7 @@ async function syncDown(){
   setRutinasV2(list);
 }
 
+
 // -------- Seed ADMIN remoto --------
 async function seedRemoteAdmin(){
   const users = getUsers();
@@ -144,6 +171,7 @@ async function seedRemoteAdmin(){
 
   await syncDown();
 }
+
 
 // -------- Auth (SINCRÓNICO, compatible con tus HTML) --------
 function requireAuth(expectedRole){
@@ -169,6 +197,7 @@ function requireAuth(expectedRole){
 
   return user;
 }
+
 
 // -------- Login/Register (manteniendo tu esencia) --------
 function registerUser({rut, nombre, email, pass, rol}){
@@ -206,6 +235,7 @@ function login({rut, pass}){
   setSession(user);
   return user;
 }
+
 
 // -------- Rutinas (sincrónico para tu socio.html) --------
 function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
@@ -273,6 +303,7 @@ function rutinaV2DeSocio(rutSocio){
   return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
+
 // -------- UI helpers --------
 function $(sel){ return document.querySelector(sel); }
 function showMsg(el, msg, ok=false){
@@ -280,6 +311,7 @@ function showMsg(el, msg, ok=false){
   el.textContent = msg;
   el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
+
 
 // -------- INIT por página (mantiene tu flujo actual) --------
 function initIndex(){
@@ -401,17 +433,28 @@ function initFuncionario(){
   refreshTable();
 }
 
+
 // -------- BOOT: baja backend -> seed -> libera DOMContentLoaded --------
 (async function boot(){
+  // Si la pelotita existe en la página, marcamos "conectando" desde el inicio
+  setDbStatus("connecting");
+
   try{
     await syncDown();
     await seedRemoteAdmin();
+
+    // ✅ Si llegó hasta acá: conectado
+    setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
+
+    // ❌ Si falla: sin conexión (igual libera la página con cache local si hay)
+    setDbStatus("error");
   }finally{
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
   }
 })();
+
 
 // -------- Ejecuta init por página (como ya lo tienes) --------
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -420,5 +463,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(page === "funcionario") initFuncionario();
   // socio.html y rutinas.html traen su propia lógica y seguirán funcionando
 });
-
-
