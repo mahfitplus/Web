@@ -1,17 +1,16 @@
 /* =========================================================
-   MAH FIT - app.js (MINIMO / SIN TOCAR HTML)
-   - Mantiene tu "esencia": mismos IDs, mismos flujos
+   MAH FIT - app.js (COMPLETO / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
-   - Funciones SINCRÓNICAS para no romper tus páginas
+   - Mantiene funciones SINCRÓNICAS para no romper tus HTML
    - requireAuth("ROL") y requireAuth(["A","B"])
+   - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
+   - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
-   - ✅ Agrega PLANTILLAS_V2 (sync + cache + helpers)
-   - ✅ FIX: soporta rol / role (tu caso actual)
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNjYUM60ia3UVi3ZQIBy8l-vnvPYfcvCfG1eVy9gk42if9oWEMFd5W95Vnve9YZ9UkDw/exec";
 
-// -------- LocalStorage helpers --------
+// ---------------- LocalStorage helpers ----------------
 const LS = {
   get(key, fallback){
     try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -24,12 +23,7 @@ const LS = {
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
 
-// 🔧 Normaliza rol aunque venga como "role"
-function getRol(u){
-  return String((u && (u.rol ?? u.role)) || "").toUpperCase().trim();
-}
-
-// -------- DB STATUS (pelotita) --------
+// ---------------- DB STATUS (pelotita) ----------------
 function setDbStatus(status){
   // status: "connecting" | "connected" | "error"
   const dot  = document.getElementById("dbDot");
@@ -49,7 +43,8 @@ function setDbStatus(status){
   }
 }
 
-// -------- DOMContentLoaded GATE --------
+// ---------------- DOMContentLoaded GATE ----------------
+// Evita que scripts de tus páginas corran antes de cargar cache desde Sheets
 (function gateDOMContentLoaded(){
   const origAdd = document.addEventListener.bind(document);
   const queued = [];
@@ -57,7 +52,7 @@ function setDbStatus(status){
 
   document.addEventListener = function(type, listener, options){
     if(type === "DOMContentLoaded"){
-      if(ready) {
+      if(ready){
         try{ listener(); }catch(e){ console.error(e); }
       } else {
         queued.push(listener);
@@ -74,13 +69,14 @@ function setDbStatus(status){
   };
 })();
 
-// -------- API (resource-based) --------
+// ---------------- API (resource-based) ----------------
 async function apiGet(resource){
   const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
   const j = await r.json();
   if(!j.ok) throw new Error(j.error || "API GET error");
   return j;
 }
+
 async function apiPost(resource, data){
   const r = await fetch(API_URL, {
     method: "POST",
@@ -92,7 +88,7 @@ async function apiPost(resource, data){
   return j;
 }
 
-// -------- Cache local --------
+// ---------------- Cache local ----------------
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
 
@@ -102,18 +98,17 @@ function setRutinas(v){ LS.set("mahfit_rutinas", v); }
 function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
 function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 
-// ✅ Plantillas V2 cache
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
-// -------- Session --------
+// ---------------- Session ----------------
 function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:getRol(user), at: nowISO() });
+  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
 }
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
 
-// -------- Sync DOWN (Sheets -> cache) --------
+// ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
   // USERS
   const u = await apiGet("USERS");
@@ -122,7 +117,6 @@ async function syncDown(){
     nombre: x.nombre ?? "",
     email: x.email ?? "",
     pass: String(x.pass ?? ""),
-    // ✅ FIX CLAVE: si viene "role" lo guardamos en "rol"
     rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false) ? false : true,
     creadoEn: x.creadoEn ?? ""
@@ -156,39 +150,36 @@ async function syncDown(){
   setRutinasV2(list);
 
   // PLANTILLAS_V2
-  try{
-    const pv2 = await apiGet("PLANTILLAS_V2");
-    const tpl = (pv2.plantillas_v2 || []).map(x => {
-      let template = null;
-      const raw = x.template_json ?? x.template_json_str ?? x.template ?? null;
+  // Tu API devuelve: { ok:true, plantillas_v2:[...] }
+  const pv2 = await apiGet("PLANTILLAS_V2");
+  const tpl = (pv2.plantillas_v2 || []).map(x => {
+    let templateObj = null;
+    const raw = x.template_json ?? x.templateJson ?? x.template ?? null;
 
-      if(typeof raw === "string"){
-        try{ template = JSON.parse(raw); }catch{ template = null; }
-      }else{
-        template = raw;
-      }
+    if(typeof raw === "string"){
+      try{ templateObj = JSON.parse(raw); }catch{ templateObj = null; }
+    }else{
+      templateObj = raw;
+    }
 
-      return {
-        templateId: x.templateId || x.id || crypto.randomUUID(),
-        nombrePlantilla: x.nombrePlantilla ?? x.nombre ?? "",
-        nivel: x.nivel ?? "",
-        objetivo: x.objetivo ?? "",
-        dias: Number(x.dias ?? 0),
-        visibility: (x.visibility ?? "PRIVADA"),
-        ownerRut: normalizeRut(x.ownerRut ?? x.creadoPorRut ?? ""),
-        ownerNombre: x.ownerNombre ?? "",
-        template_json: template,
-        creadoEn: x.creadoEn ?? "",
-        actualizadoEn: x.actualizadoEn ?? ""
-      };
-    });
-    setPlantillasV2(tpl);
-  }catch(e){
-    console.warn("No pude sync de PLANTILLAS_V2 (se usa cache local si hay).", e);
-  }
+    return {
+      templateId: x.templateId || x.templateid || x.id || crypto.randomUUID(),
+      nombrePlantilla: x.nombrePlantilla ?? x.nombreplantilla ?? x.nombre ?? "",
+      nivel: x.nivel ?? "",
+      objetivo: x.objetivo ?? "",
+      dias: Number(x.dias ?? 0),
+      visibility: (x.visibility ?? "PRIVADA"),
+      ownerRut: normalizeRut(x.ownerRut ?? x.ownerrut ?? ""),
+      ownerNombre: x.ownerNombre ?? x.ownernombre ?? "",
+      template_json: templateObj, // objeto listo para usar
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  });
+  setPlantillasV2(tpl);
 }
 
-// -------- Seed ADMIN remoto --------
+// ---------------- Seed ADMIN remoto ----------------
 async function seedRemoteAdmin(){
   const users = getUsers();
   const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
@@ -207,7 +198,7 @@ async function seedRemoteAdmin(){
   await syncDown();
 }
 
-// -------- Auth (SINCRÓNICO) --------
+// ---------------- Auth (SINCRÓNICO) ----------------
 function requireAuth(expectedRole){
   const s = getSession();
   if(!s){ window.location.href = "index.html"; return null; }
@@ -221,20 +212,15 @@ function requireAuth(expectedRole){
 
   if(expectedRole){
     const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    const userRol = getRol(user);
-    const userRut = normalizeRut(user.rut);
-    const allowedUp = allowed.map(a => String(a).toUpperCase().trim());
-
-    if(!allowedUp.includes(userRol) && !allowedUp.includes(userRut)){
-      window.location.href = (userRol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
       return null;
     }
   }
-
   return user;
 }
 
-// -------- Login/Register --------
+// ---------------- Login/Register ----------------
 function registerUser({rut, nombre, email, pass, rol}){
   rut = normalizeRut(rut);
   if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
@@ -256,20 +242,19 @@ function registerUser({rut, nombre, email, pass, rol}){
   setUsers(users);
 
   apiPost("USERS", user).catch(console.error);
-
   return user;
 }
 
 function login({rut, pass}){
   rut = normalizeRut(rut);
-  const user = getUsers().find(u => normalizeRut(u.rut) === rut && String(u.pass) === String(pass));
+  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
   if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
   if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
   setSession(user);
   return user;
 }
 
-// -------- Rutinas (sincrónico) --------
+// ---------------- Rutinas (sincrónico) ----------------
 function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
   const rutSocioN = normalizeRut(rutSocio);
   const rutinas = getRutinas();
@@ -335,7 +320,7 @@ function rutinaV2DeSocio(rutSocio){
   return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
-// Helpers Plantillas (para rutinas.html)
+// ---------------- Plantillas helpers ----------------
 function plantillasVisiblesPara(user){
   const rut = normalizeRut(user?.rut || "");
   return getPlantillasV2().filter(p=>{
@@ -346,19 +331,27 @@ function plantillasVisiblesPara(user){
 }
 
 async function savePlantillaV2(payload){
+  // payload:
+  // { templateId, nombrePlantilla, nivel, objetivo, dias, visibility, ownerRut, ownerNombre, template_json }
   const data = { ...payload };
 
-  if(typeof data.template_json !== "string"){
-    data.template_json = JSON.stringify(data.template_json ?? null);
-  }
+  if(!data.templateId) data.templateId = crypto.randomUUID();
   if(!data.creadoEn) data.creadoEn = nowISO();
   data.actualizadoEn = nowISO();
   data.ownerRut = normalizeRut(data.ownerRut || "");
 
+  // backend espera string en template_json
+  const templateObj = data.template_json ?? null;
+  if(typeof data.template_json !== "string"){
+    data.template_json = JSON.stringify(templateObj);
+  }
+
   await apiPost("PLANTILLAS_V2", data);
 
+  // Actualiza cache local
   const list = getPlantillasV2();
   const idx = list.findIndex(x => String(x.templateId) === String(data.templateId));
+
   const localObj = {
     templateId: data.templateId,
     nombrePlantilla: data.nombrePlantilla || "",
@@ -380,7 +373,7 @@ async function savePlantillaV2(payload){
   return localObj;
 }
 
-// -------- UI helpers --------
+// ---------------- UI helpers ----------------
 function $(sel){ return document.querySelector(sel); }
 function showMsg(el, msg, ok=false){
   if(!el) return;
@@ -388,7 +381,7 @@ function showMsg(el, msg, ok=false){
   el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
 
-// -------- INIT por página --------
+// ---------------- INIT por página (si lo usas) ----------------
 function initIndex(){
   const loginForm = $("#loginForm");
   const msgLogin  = $("#msgLogin");
@@ -397,17 +390,17 @@ function initIndex(){
   if(s){
     const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
     if(u){
-      window.location.href = (getRol(u) === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
       return;
     }
   }
 
-  loginForm.addEventListener("submit", (e)=>{
+  loginForm?.addEventListener("submit", (e)=>{
     e.preventDefault();
     try{
       const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
       showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
-      window.location.href = (getRol(user) === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
     }catch(err){
       showMsg(msgLogin, err.message);
     }
@@ -431,21 +424,27 @@ function initFuncionario(){
   const user = requireAuth("FUNCIONARIO");
   if(!user) return;
 
-  $("#who").textContent = user.nombre;
-  $("#roleBadge").textContent = "FUNCIONARIO";
+  const who = document.getElementById("who");
+  const roleBadge = document.getElementById("roleBadge");
+  if(who) who.textContent = user.nombre;
+  if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
 
   const msgUser = $("#msgUser");
 
   function refreshKPIs(){
     const users = getUsers();
-    $("#kSocios").textContent = users.filter(u=>getRol(u)==="SOCIO").length;
-    $("#kFunc").textContent = users.filter(u=>getRol(u)==="FUNCIONARIO").length;
-    $("#kActivos").textContent = users.filter(u=>u.activo !== false).length;
+    const kSocios = document.getElementById("kSocios");
+    const kFunc = document.getElementById("kFunc");
+    const kActivos = document.getElementById("kActivos");
+    if(kSocios) kSocios.textContent = users.filter(u=>String(u.rol).toUpperCase()==="SOCIO").length;
+    if(kFunc) kFunc.textContent = users.filter(u=>String(u.rol).toUpperCase()==="FUNCIONARIO").length;
+    if(kActivos) kActivos.textContent = users.filter(u=>u.activo !== false).length;
   }
 
   function refreshTable(){
-    const users = getUsers().slice().sort((a,b)=> (getRol(a)>getRol(b)?1:-1) || (a.nombre||"").localeCompare(b.nombre||""));
+    const users = getUsers().slice().sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
     const tbody = $("#usersTbody");
+    if(!tbody) return;
     tbody.innerHTML = "";
 
     for(const u of users){
@@ -453,7 +452,7 @@ function initFuncionario(){
       tr.innerHTML = `
         <td>${u.nombre}</td>
         <td>${u.rut}</td>
-        <td><span class="pill">${getRol(u)}</span></td>
+        <td><span class="pill">${u.rol}</span></td>
         <td>${u.activo === false ? "⛔" : "✅"}</td>
         <td style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn small ghost" data-act="${u.rut}">
@@ -481,7 +480,8 @@ function initFuncionario(){
     });
   }
 
-  $("#createUserForm").addEventListener("submit", (e)=>{
+  const createForm = document.getElementById("createUserForm");
+  createForm?.addEventListener("submit", (e)=>{
     e.preventDefault();
     try{
       const newUser = registerUser({
@@ -491,7 +491,7 @@ function initFuncionario(){
         pass: $("#newPass").value,
         rol: $("#newRol").value
       });
-      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${getRol(newUser)})`, true);
+      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
       e.target.reset();
       refreshTable();
       refreshKPIs();
@@ -500,7 +500,7 @@ function initFuncionario(){
     }
   });
 
-  $("#btnLogout").addEventListener("click", ()=>{
+  document.getElementById("btnLogout")?.addEventListener("click", ()=>{
     clearSession();
     window.location.href = "index.html";
   });
@@ -509,7 +509,7 @@ function initFuncionario(){
   refreshTable();
 }
 
-// -------- BOOT --------
+// ---------------- BOOT ----------------
 (async function boot(){
   setDbStatus("connecting");
 
@@ -519,29 +519,41 @@ function initFuncionario(){
     setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
+    // Si falla, igual libera el DOM con lo que haya en cache local
     setDbStatus("error");
   }finally{
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
   }
 })();
 
-// -------- Ejecuta init por página --------
+// ---------------- Ejecuta init por página ----------------
 document.addEventListener("DOMContentLoaded", ()=>{
   const page = document.body.getAttribute("data-page");
   if(page === "index") initIndex();
   if(page === "funcionario") initFuncionario();
-  // socio.html y rutinas.html traen su propia lógica y seguirán funcionando
+  // socio.html y rutinas.html mantienen su propia lógica
 });
 
-// -------- Exponer helpers necesarios globales --------
+// ---------------- Exponer helpers globales ----------------
+window.API_URL = API_URL;
 window.apiGet = apiGet;
 window.apiPost = apiPost;
+
 window.getUsers = getUsers;
-window.requireAuth = requireAuth;
+window.setUsers = setUsers;
+
+window.getRutinas = getRutinas;
+window.setRutinas = setRutinas;
+
+window.getRutinasV2 = getRutinasV2;
+window.setRutinasV2 = setRutinasV2;
+window.rutinaV2DeSocio = rutinaV2DeSocio;
+
 window.getPlantillasV2 = getPlantillasV2;
 window.setPlantillasV2 = setPlantillasV2;
 window.plantillasVisiblesPara = plantillasVisiblesPara;
 window.savePlantillaV2 = savePlantillaV2;
+
+window.requireAuth = requireAuth;
 window.upsertRutina = upsertRutina;
 window.upsertRutinaV2 = upsertRutinaV2;
-window.rutinaV2DeSocio = rutinaV2DeSocio;
