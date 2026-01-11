@@ -1,465 +1,268 @@
-/* =========================================================
-   MAH FIT - app.js (MINIMO / SIN TOCAR HTML)
-   - Mantiene tu "esencia": mismos IDs, mismos flujos
-   - Agrega backend (Google Sheets Apps Script)
-   - Deja funciones SINCRÓNICAS para no romper tus páginas
-   - Soporta requireAuth("ROL") y requireAuth(["A","B"])
-   - + Indicador de conexión (dbDot/dbText) 🟢🔴⚪
-   ========================================================= */
+/* ============================================================
+   MAH FIT - app.js (BASE ÚNICA)
+   - Auth + helpers
+   - Cache local (fallback)
+   - API Get/Post para Google Apps Script
+   - Rutinas V2 / Rutinas TXT
+   - Plantillas V2 (preload)
+   ============================================================ */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
+// ✅ TU URL REAL (Apps Script WebApp)
+window.MAHFIT_API_URL =
+  "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
 
+// =========================
+// DOM helpers
+// =========================
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return [...document.querySelectorAll(sel)]; }
 
-// -------- LocalStorage helpers --------
-const LS = {
-  get(key, fallback){
-    try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-    catch{ return fallback; }
-  },
-  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); },
-  del(key){ localStorage.removeItem(key); }
-};
+// =========================
+// UI msg helper
+// =========================
+function showMsg(el, msg, ok=true){
+  if(!el) return;
+  el.textContent = msg || "";
+  el.style.color = ok ? "rgba(43,213,118,.95)" : "rgba(255,90,103,.95)";
+}
 
-function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
-function nowISO(){ return new Date().toISOString(); }
-
-
-// -------- DB STATUS (pelotita) --------
-function setDbStatus(status){
-  // status: "connecting" | "connected" | "error"
-  const dot  = document.getElementById("dbDot");
-  const text = document.getElementById("dbText");
-  if(!dot || !text) return; // si alguna página no tiene el badge, no pasa nada
-
-  dot.className = "db-dot";
-  if(status === "connected"){
-    dot.classList.add("connected");
-    text.textContent = "Conectado";
-  }else if(status === "error"){
-    dot.classList.add("error");
-    text.textContent = "Sin conexión";
-  }else{
-    dot.classList.add("connecting");
-    text.textContent = "Conectando…";
+// =========================
+// Session / Auth
+// =========================
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("mahfit_session") || "null");
+  }catch{
+    return null;
   }
 }
 
-
-// -------- DOMContentLoaded GATE --------
-// (No modificas tus HTML. Esto evita que corran scripts antes de cargar backend)
-(function gateDOMContentLoaded(){
-  const origAdd = document.addEventListener.bind(document);
-  const queued = [];
-  let ready = false;
-
-  document.addEventListener = function(type, listener, options){
-    if(type === "DOMContentLoaded"){
-      if(ready) {
-        try{ listener(); }catch(e){ console.error(e); }
-      } else {
-        queued.push(listener);
-      }
-      return;
-    }
-    return origAdd(type, listener, options);
-  };
-
-  window.__mahfitReleaseDOMContentLoaded = function(){
-    ready = true;
-    queued.forEach(fn=>{ try{ fn(); }catch(e){ console.error(e); } });
-    queued.length = 0;
-  };
-})();
-
-
-// -------- API --------
-async function apiGet(resource){
-  const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API GET error");
-  return j;
-}
-async function apiPost(resource, data){
-  const r = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ resource, data })
-  });
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API POST error");
-  return j;
-}
-
-
-// -------- Cache local (la web lo usa) --------
-function getUsers(){ return LS.get("mahfit_users", []); }
-function setUsers(v){ LS.set("mahfit_users", v); }
-
-function getRutinas(){ return LS.get("mahfit_rutinas", []); }
-function setRutinas(v){ LS.set("mahfit_rutinas", v); }
-
-function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
-function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
-
-
-// -------- Session --------
-function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
-}
-function getSession(){ return LS.get("mahfit_session", null); }
-function clearSession(){ LS.del("mahfit_session"); }
-
-
-// -------- Sync DOWN (Sheets -> cache) --------
-async function syncDown(){
-  // USERS
-  const u = await apiGet("USERS");
-  const users = (u.users || []).map(x => ({
-    rut: normalizeRut(x.rut),
-    nombre: x.nombre ?? "",
-    email: x.email ?? "",
-    pass: String(x.pass ?? ""),
-    rol: x.rol ?? "SOCIO",
-    activo: (x.activo === false) ? false : true,
-    creadoEn: x.creadoEn ?? ""
-  }));
-  setUsers(users);
-
-  // RUTINAS_TXT
-  const rt = await apiGet("RUTINAS_TXT");
-  const rutinas = (rt.rutinas_txt || []).map(x => ({
-    id: x.id || crypto.randomUUID(),
-    rutSocio: normalizeRut(x.rutSocio),
-    titulo: x.titulo ?? "",
-    detalle: x.detalle ?? "",
-    creadoEn: x.creadoEn ?? "",
-    creadoPorRut: x.creadoPorRut ?? ""
-  }));
-  setRutinas(rutinas);
-
-  // RUTINAS_V2
-  const rv2 = await apiGet("RUTINAS_V2");
-  const list = (rv2.rutinas_v2 || []).map(x => {
-    let routine = null;
-    try{ routine = JSON.parse(x.routine_json || "null"); }catch{}
-    return {
-      rutSocio: normalizeRut(x.rutSocio),
-      routine,
-      creadoPorRut: x.creadoPorRut ?? "",
-      actualizadoEn: x.actualizadoEn ?? ""
-    };
-  });
-  setRutinasV2(list);
-}
-
-
-// -------- Seed ADMIN remoto --------
-async function seedRemoteAdmin(){
-  const users = getUsers();
-  const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
-  if(exists) return;
-
-  await apiPost("USERS", {
-    rut: "ADMIN",
-    nombre: "Administrador MAH FIT",
-    email: "admin@mahfit.cl",
-    pass: "1234",
-    rol: "FUNCIONARIO",
-    activo: true,
-    creadoEn: nowISO()
-  });
-
-  await syncDown();
-}
-
-
-// -------- Auth (SINCRÓNICO, compatible con tus HTML) --------
-function requireAuth(expectedRole){
+function requireAuth(requiredRole){
   const s = getSession();
-  if(!s){ window.location.href = "index.html"; return null; }
-
-  const user = getUsers().find(u => normalizeRut(u.rut) === normalizeRut(s.rut));
-  if(!user || user.activo === false){
-    clearSession();
+  if(!s || !s.rol){
     window.location.href = "index.html";
     return null;
   }
-
-  // expectedRole puede ser string o array
-  if(expectedRole){
-    const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
-      // fallback por si pasas "ADMIN" como rol
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-      return null;
-    }
+  if(requiredRole && String(s.rol).toUpperCase() !== String(requiredRole).toUpperCase()){
+    window.location.href = "index.html";
+    return null;
   }
-
-  return user;
+  return s;
 }
 
-
-// -------- Login/Register (manteniendo tu esencia) --------
-function registerUser({rut, nombre, email, pass, rol}){
-  rut = normalizeRut(rut);
-  if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
-
-  const users = getUsers();
-  if(users.some(u => u.rut === rut)) throw new Error("Ese Usuario/RUT ya existe.");
-
-  const user = {
-    rut,
-    nombre: String(nombre).trim(),
-    email: String(email||"").trim(),
-    pass: String(pass),
-    rol,
-    activo: true,
-    creadoEn: nowISO()
-  };
-
-  // local inmediato
-  users.push(user);
-  setUsers(users);
-
-  // remoto
-  apiPost("USERS", user).catch(console.error);
-
-  return user;
+// =========================
+// API Helpers (Apps Script)
+// =========================
+// Convención esperada:
+// GET  ->  {API_URL}?sheet=USUARIOS
+// POST ->  body JSON: { sheet:"USUARIOS", ...payload }
+// =========================
+async function apiGet(sheetName){
+  if(!window.MAHFIT_API_URL) throw new Error("MAHFIT_API_URL no está definido.");
+  const url = `${window.MAHFIT_API_URL}?sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url, { method:"GET" });
+  if(!res.ok) throw new Error(`apiGet(${sheetName}) falló: ${res.status}`);
+  return await res.json();
 }
 
-function login({rut, pass}){
-  rut = normalizeRut(rut);
-  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
-  if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
-  if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
-  setSession(user);
-  return user;
+async function apiPost(sheetName, payload){
+  if(!window.MAHFIT_API_URL) throw new Error("MAHFIT_API_URL no está definido.");
+  const res = await fetch(window.MAHFIT_API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ sheet: sheetName, ...payload })
+  });
+  if(!res.ok) throw new Error(`apiPost(${sheetName}) falló: ${res.status}`);
+  return await res.json();
 }
 
-
-// -------- Rutinas (sincrónico para tu socio.html) --------
-function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const rutinas = getRutinas();
-  const existing = rutinas.find(r => r.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    titulo,
-    detalle,
-    creadoPorRut: creadoPorRut || "",
-    creadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.titulo = titulo;
-    existing.detalle = detalle;
-    existing.creadoEn = payload.creadoEn;
-    existing.creadoPorRut = payload.creadoPorRut;
-  }else{
-    rutinas.push({ id: crypto.randomUUID(), ...payload });
+// =========================
+// Local cache helpers
+// =========================
+function lsGet(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  }catch{
+    return fallback;
   }
-  setRutinas(rutinas);
-
-  apiPost("RUTINAS_TXT", payload).catch(console.error);
+}
+function lsSet(key, val){
+  localStorage.setItem(key, JSON.stringify(val));
 }
 
-function rutinaDeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinas().find(r => r.rutSocio === rutSocioN) || null;
+// ============================================================
+// USERS
+// ============================================================
+function getUsers(){
+  return lsGet("mahfit_users", []);
 }
 
-function upsertRutinaV2({rutSocio, routine, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const list = getRutinasV2();
-  const existing = list.find(x => x.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    routine_json: JSON.stringify(routine),
-    creadoPorRut: creadoPorRut || "",
-    actualizadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.routine = routine;
-    existing.creadoPorRut = payload.creadoPorRut;
-    existing.actualizadoEn = payload.actualizadoEn;
-  }else{
-    list.push({
-      rutSocio: rutSocioN,
-      routine,
-      creadoPorRut: payload.creadoPorRut,
-      actualizadoEn: payload.actualizadoEn
-    });
+async function preloadUsers(){
+  try{
+    const users = await apiGet("USUARIOS");
+    if(Array.isArray(users)) lsSet("mahfit_users", users);
+  }catch(e){
+    console.warn("No pude preloadUsers desde API. Uso cache local.", e);
   }
-  setRutinasV2(list);
+}
 
-  apiPost("RUTINAS_V2", payload).catch(console.error);
+// ============================================================
+// RUTINAS V2 (una rutina por socio, editable)
+// ============================================================
+function getRutinasV2Cache(){
+  return lsGet("mahfit_rutinas_v2", []);
+}
+function setRutinasV2Cache(list){
+  lsSet("mahfit_rutinas_v2", Array.isArray(list) ? list : []);
+}
+
+async function preloadRutinasV2(){
+  try{
+    const data = await apiGet("RUTINAS_V2");
+    if(Array.isArray(data)) setRutinasV2Cache(data);
+  }catch(e){
+    console.warn("No pude preloadRutinasV2 desde API. Uso cache local.", e);
+  }
 }
 
 function rutinaV2DeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
-}
+  const rut = String(rutSocio || "");
+  const all = getRutinasV2Cache();
 
+  const matches = all.filter(r => String(r.rutSocio || r.rut || "") === rut);
+  if(matches.length === 0) return null;
 
-// -------- UI helpers --------
-function $(sel){ return document.querySelector(sel); }
-function showMsg(el, msg, ok=false){
-  if(!el) return;
-  el.textContent = msg;
-  el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
-}
-
-
-// -------- INIT por página (mantiene tu flujo actual) --------
-function initIndex(){
-  const loginForm = $("#loginForm");
-  const msgLogin  = $("#msgLogin");
-
-  const s = getSession();
-  if(s){
-    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
-    if(u){
-      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-      return;
-    }
-  }
-
-  loginForm.addEventListener("submit", (e)=>{
-    e.preventDefault();
-    try{
-      const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
-      showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-    }catch(err){
-      showMsg(msgLogin, err.message);
-    }
+  matches.sort((a,b)=>{
+    const ta = Date.parse(a.actualizadoEn || a.creadoEn || 0) || 0;
+    const tb = Date.parse(b.actualizadoEn || b.creadoEn || 0) || 0;
+    return tb - ta;
   });
 
-  const resetBtn = document.getElementById("resetBtn");
-  if(resetBtn){
-    resetBtn.addEventListener("click", ()=>{
-      localStorage.removeItem("mahfit_users");
-      localStorage.removeItem("mahfit_rutinas");
-      localStorage.removeItem("mahfit_rutinas_v2");
-      localStorage.removeItem("mahfit_session");
-      alert("Datos locales reiniciados. Recarga la página.");
-      window.location.reload();
-    });
-  }
+  return matches[0];
 }
 
-function initFuncionario(){
-  const user = requireAuth("FUNCIONARIO");
-  if(!user) return;
+async function upsertRutinaV2({ rutSocio, routine, creadoPorRut }){
+  const now = new Date().toISOString();
+  const rut = String(rutSocio || "");
+  if(!rut) throw new Error("rutSocio requerido.");
 
-  $("#who").textContent = user.nombre;
-  $("#roleBadge").textContent = "FUNCIONARIO";
+  const all = getRutinasV2Cache();
+  const idx = all.findIndex(r => String(r.rutSocio || r.rut || "") === rut);
 
-  const msgUser = $("#msgUser");
+  const row = {
+    rutSocio: rut,
+    routine,
+    creadoPorRut: creadoPorRut || "",
+    creadoEn: idx >= 0 ? (all[idx].creadoEn || now) : now,
+    actualizadoEn: now
+  };
 
-  function refreshKPIs(){
-    const users = getUsers();
-    $("#kSocios").textContent = users.filter(u=>u.rol==="SOCIO").length;
-    $("#kFunc").textContent = users.filter(u=>u.rol==="FUNCIONARIO").length;
-    $("#kActivos").textContent = users.filter(u=>u.activo !== false).length;
-  }
+  if(idx >= 0) all[idx] = row;
+  else all.push(row);
 
-  function refreshTable(){
-    const users = getUsers().slice().sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
-    const tbody = $("#usersTbody");
-    tbody.innerHTML = "";
+  setRutinasV2Cache(all);
 
-    for(const u of users){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.nombre}</td>
-        <td>${u.rut}</td>
-        <td><span class="pill">${u.rol}</span></td>
-        <td>${u.activo === false ? "⛔" : "✅"}</td>
-        <td style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn small ghost" data-act="${u.rut}">
-            ${u.activo === false ? "Activar" : "Desactivar"}
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    tbody.querySelectorAll("[data-act]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const rut = btn.getAttribute("data-act");
-        const users = getUsers();
-        const u = users.find(x=>x.rut===rut);
-        if(!u) return;
-
-        u.activo = !(u.activo === false);
-        setUsers(users);
-        apiPost("USERS", u).catch(console.error);
-
-        refreshTable();
-        refreshKPIs();
-      });
-    });
-  }
-
-  $("#createUserForm").addEventListener("submit", (e)=>{
-    e.preventDefault();
-    try{
-      const newUser = registerUser({
-        rut: $("#newRut").value,
-        nombre: $("#newNombre").value,
-        email: $("#newEmail").value,
-        pass: $("#newPass").value,
-        rol: $("#newRol").value
-      });
-      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
-      e.target.reset();
-      refreshTable();
-      refreshKPIs();
-    }catch(err){
-      showMsg(msgUser, err.message);
-    }
-  });
-
-  $("#btnLogout").addEventListener("click", ()=>{
-    clearSession();
-    window.location.href = "index.html";
-  });
-
-  refreshKPIs();
-  refreshTable();
-}
-
-
-// -------- BOOT: baja backend -> seed -> libera DOMContentLoaded --------
-(async function boot(){
-  // Si la pelotita existe en la página, marcamos "conectando" desde el inicio
-  setDbStatus("connecting");
-
+  // Guardar API
   try{
-    await syncDown();
-    await seedRemoteAdmin();
-
-    // ✅ Si llegó hasta acá: conectado
-    setDbStatus("connected");
+    await apiPost("RUTINAS_V2", row);
   }catch(e){
-    console.error("BOOT ERROR:", e);
-
-    // ❌ Si falla: sin conexión (igual libera la página con cache local si hay)
-    setDbStatus("error");
-  }finally{
-    if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
+    console.warn("No pude guardar RUTINAS_V2 en API (quedó en cache local).", e);
   }
-})();
 
+  return row;
+}
 
-// -------- Ejecuta init por página (como ya lo tienes) --------
-document.addEventListener("DOMContentLoaded", ()=>{
-  const page = document.body.getAttribute("data-page");
-  if(page === "index") initIndex();
-  if(page === "funcionario") initFuncionario();
-  // socio.html y rutinas.html traen su propia lógica y seguirán funcionando
-});
+// ============================================================
+// RUTINAS TXT (legacy)
+// ============================================================
+function getRutinasTxtCache(){
+  return lsGet("mahfit_rutinas_txt", []);
+}
+function setRutinasTxtCache(list){
+  lsSet("mahfit_rutinas_txt", Array.isArray(list) ? list : []);
+}
+
+async function preloadRutinasTxt(){
+  try{
+    const data = await apiGet("RUTINAS_TXT");
+    if(Array.isArray(data)) setRutinasTxtCache(data);
+  }catch(e){
+    console.warn("No pude preloadRutinasTxt desde API. Uso cache local.", e);
+  }
+}
+
+async function upsertRutina({ rutSocio, titulo, detalle, creadoPorRut }){
+  const now = new Date().toISOString();
+  const rut = String(rutSocio || "");
+  if(!rut) throw new Error("rutSocio requerido.");
+
+  const all = getRutinasTxtCache();
+  const idx = all.findIndex(r => String(r.rutSocio || r.rut || "") === rut);
+
+  const row = {
+    rutSocio: rut,
+    titulo: titulo || "",
+    detalle: detalle || "",
+    creadoPorRut: creadoPorRut || "",
+    creadoEn: idx >= 0 ? (all[idx].creadoEn || now) : now,
+    actualizadoEn: now
+  };
+
+  if(idx >= 0) all[idx] = row;
+  else all.push(row);
+
+  setRutinasTxtCache(all);
+
+  // Guardar API
+  try{
+    await apiPost("RUTINAS_TXT", row);
+  }catch(e){
+    console.warn("No pude guardar RUTINAS_TXT en API (quedó en cache local).", e);
+  }
+
+  return row;
+}
+
+// ============================================================
+// PLANTILLAS V2 (preload + cache)
+// ============================================================
+async function preloadPlantillasV2(){
+  try{
+    const data = await apiGet("PLANTILLAS_V2");
+    if(Array.isArray(data)) lsSet("mahfit_plantillas_v2", data);
+  }catch(e){
+    console.warn("No pude preloadPlantillasV2 desde API.", e);
+  }
+}
+
+function getPlantillasV2Cache(){
+  return lsGet("mahfit_plantillas_v2", []);
+}
+
+// ============================================================
+// Preload core data (lo llama rutinas.html)
+// ============================================================
+async function preloadCoreData(){
+  await preloadUsers();
+  await preloadRutinasV2();
+  await preloadRutinasTxt();
+  await preloadPlantillasV2();
+}
+
+// Exponer globales (rutinas.html los usa)
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+
+window.getUsers = getUsers;
+window.requireAuth = requireAuth;
+window.showMsg = showMsg;
+
+window.preloadCoreData = preloadCoreData;
+
+window.rutinaV2DeSocio = rutinaV2DeSocio;
+window.upsertRutinaV2 = upsertRutinaV2;
+
+window.upsertRutina = upsertRutina;
+
+window.getPlantillasV2Cache = getPlantillasV2Cache;
