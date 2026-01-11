@@ -2,110 +2,423 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAH FIT | Funcionario (CRM)</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAH FIT | Panel Funcionario</title>
+
+  <!-- Mantén tu css global si ya existe -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    :root{
+      --bg:#070a11;
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --panel: rgba(255,255,255,.04);
+      --panel2: rgba(0,0,0,.25);
+      --txt: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --brand:#4d7cff;
+      --ok:#a7ffb3;
+      --bad:#ffb0b0;
+      --warn:#ffe08a;
+    }
+
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--txt);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 18px;
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(0,0,0,.35);
+      position: sticky; top:0; z-index:100;
+      backdrop-filter: blur(10px);
+    }
+    .brand{ font-weight:800; letter-spacing:.4px; display:flex; align-items:center; gap:10px; }
+    .logoDot{
+      width:18px; height:18px; border-radius:6px;
+      background: linear-gradient(135deg, rgba(77,124,255,.95), rgba(77,124,255,.35));
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 12px 30px rgba(0,0,0,.45);
+    }
+    .brand .mah{ color:#fff; }
+    .brand .fit{ color: var(--brand); }
+    .badge{
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      font-size:12px; color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .nav-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .mini{ font-size:12px; color: var(--muted); }
+
+    .btn{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      border-radius:12px;
+      height:36px;
+      padding:0 12px;
+      cursor:pointer;
+      font-weight:600;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    .btn:hover{ background: rgba(255,255,255,.08); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(77,124,255,.95), rgba(77,124,255,.55));
+      border-color: rgba(77,124,255,.55);
+    }
+    .btn.ghost{ background: rgba(255,255,255,.03); }
+    .btn.danger{ border-color: rgba(255,80,80,.35); background: rgba(255,80,80,.10); }
+    .btn.small{ height:32px; border-radius:10px; font-size:13px; }
+
+    .container{ max-width: 1200px; margin: 18px auto; padding: 0 16px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      border-radius:18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:14px 16px;
+      border-bottom: 1px solid var(--stroke);
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      background: rgba(0,0,0,.25);
+    }
+    .card .body{ padding:14px 16px; }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 720px){
+      .kpis{ grid-template-columns: 1fr; }
+    }
+    .kpi{
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      background: rgba(0,0,0,.18);
+      padding:12px;
+    }
+    .kpi .t{ font-size:12px; color: var(--muted); }
+    .kpi .v{ font-size:18px; font-weight:800; margin-top:6px; }
+
+    .actions{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 720px){
+      .actions{ grid-template-columns: 1fr; }
+    }
+    .tile{
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      border-radius:18px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height: 120px;
+    }
+    .tile h3{
+      margin:0;
+      font-size:15px;
+      letter-spacing:.2px;
+    }
+    .tile p{
+      margin:0;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .tile .rowBtn{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:auto;
+    }
+
+    .notice{
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      border-radius:14px;
+      padding:12px;
+    }
+    .ok{ color: var(--ok); }
+    .bad{ color: var(--bad); }
+    .warn{ color: var(--warn); }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px;
+    }
+    .item b{ display:block; }
+    .item .meta{ margin-top:4px; font-size:12px; color: var(--muted); }
+  </style>
 </head>
 
-<body data-page="funcionario">
+<body>
   <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="brand">
+      <span class="logoDot"></span>
+      <span><span class="mah">MAH</span> <span class="fit">FIT</span></span>
+      <span class="badge">Panel Funcionario</span>
+    </div>
+
     <div class="nav-right">
-      <span>Hola, <b id="who"></b></span>
-      <span id="roleBadge" class="badge"></span>
-      <a class="btn primary small" href="/Web/rutinas.html">Crear rutina</a>
-      <button id="btnLogout" class="btn ghost small">Salir</button>
+      <span class="mini">Hola, <b id="who">-</b></span>
+      <span class="badge" id="roleBadge">-</span>
+      <a class="btn ghost small" href="index.html">Inicio</a>
+      <button class="btn danger small" id="btnLogout">Salir</button>
     </div>
   </header>
 
-  <main class="hero">
-    <div class="container">
+  <main class="container">
+    <div class="grid">
 
-      <div class="kpi">
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Socios</div>
-          <b id="kSocios">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Funcionarios</div>
-          <b id="kFunc">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Activos</div>
-          <b id="kActivos">0</b>
-        </div>
-      </div>
-
-      <div style="height:18px;"></div>
-
-      <div class="card">
+      <!-- IZQUIERDA -->
+      <section class="card">
         <div class="head">
-          <strong>CRM Usuarios</strong>
-          <span class="pill">Crear / Activar / Desactivar</span>
+          <b>Accesos rápidos</b>
+          <span class="badge" id="rutBadge">RUT: -</span>
         </div>
-        <div class="body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>RUT/Usuario</th>
-                <th>Rol</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
-        </div>
-      </div>
 
-      <div style="height:18px;"></div>
-
-      <div class="card">
-        <div class="head"><strong>Crear usuario</strong><span class="pill">Solo admin</span></div>
         <div class="body">
-          <form id="createUserForm" class="form">
-            <div class="split">
-              <div>
-                <label>RUT/Usuario</label>
-                <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
-              </div>
-              <div>
-                <label>Nombre</label>
-                <input id="newNombre" class="input" placeholder="Nombre completo" />
+          <div class="kpis">
+            <div class="kpi">
+              <div class="t">Rol</div>
+              <div class="v" id="kpiRol">-</div>
+            </div>
+            <div class="kpi">
+              <div class="t">Sesión</div>
+              <div class="v" id="kpiSesion">Activa</div>
+            </div>
+            <div class="kpi">
+              <div class="t">Último acceso</div>
+              <div class="v" id="kpiAt">-</div>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="actions">
+
+            <div class="tile">
+              <h3>🏋️ Constructor de Rutinas</h3>
+              <p>Crea rutinas por día, enfoque por músculo, series/reps/carga/descanso y guarda al socio.</p>
+              <div class="rowBtn">
+                <a class="btn primary" href="rutinas.html">Crear / Editar Rutina</a>
+                <a class="btn" href="rutinas.html#plantillas">Plantillas</a>
               </div>
             </div>
 
-            <div class="split">
-              <div>
-                <label>Email (opcional)</label>
-                <input id="newEmail" class="input" placeholder="correo@..." />
-              </div>
-              <div>
-                <label>Clave</label>
-                <input id="newPass" class="input" placeholder="Clave" />
+            <div class="tile">
+              <h3>👤 Panel Socio</h3>
+              <p>Revisa la rutina asignada, historial (si lo implementaste) y vista bonita estilo app.</p>
+              <div class="rowBtn">
+                <a class="btn primary" href="socio.html">Ver como Socio</a>
               </div>
             </div>
 
-            <label>Rol</label>
-            <select id="newRol" class="select input">
-              <option value="SOCIO">SOCIO</option>
-              <option value="FUNCIONARIO">FUNCIONARIO</option>
-            </select>
+            <div class="tile">
+              <h3>🥗 Minutas</h3>
+              <p>Generador/gestión de minutas nutricionales (si ya está creado en tu web).</p>
+              <div class="rowBtn">
+                <a class="btn primary" href="minutas.html">Ir a Minutas</a>
+              </div>
+            </div>
 
-            <button class="btn primary" type="submit" style="margin-top:14px;">CREAR</button>
-            <div id="msgUser" style="margin-top:10px;font-size:13px;"></div>
-          </form>
+            <div class="tile">
+              <h3>💳 Pagos</h3>
+              <p>Gestiona pagos, estado activo/inactivo, renovaciones y observaciones.</p>
+              <div class="rowBtn">
+                <a class="btn primary" href="pagos.html">Ir a Pagos</a>
+              </div>
+            </div>
+
+            <div class="tile" id="adminTile" style="display:none;">
+              <h3>🛠️ Administración</h3>
+              <p>Solo ADMIN: usuarios, permisos, biblioteca OFFICIAL de plantillas, etc.</p>
+              <div class="rowBtn">
+                <a class="btn primary" href="admin.html">Panel Admin</a>
+              </div>
+            </div>
+
+            <div class="tile">
+              <h3>📌 Ayuda rápida</h3>
+              <p>Si algo “no carga”, casi siempre es por sesión o caché. Te dejo botones útiles.</p>
+              <div class="rowBtn">
+                <button class="btn" id="btnDebug">Ver sesión</button>
+                <button class="btn danger" id="btnResetCache">Reiniciar datos</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="height:14px"></div>
+          <div class="notice" id="msg"></div>
         </div>
-      </div>
+      </section>
+
+      <!-- DERECHA -->
+      <aside class="card">
+        <div class="head">
+          <b>Estado del sistema</b>
+          <span class="badge">MAH FIT</span>
+        </div>
+        <div class="body">
+          <div class="list">
+
+            <div class="item">
+              <b>Sesión</b>
+              <div class="meta" id="sessMeta">-</div>
+            </div>
+
+            <div class="item">
+              <b>Tips</b>
+              <div class="meta">
+                • Si te devuelve al index: revisa <code>mahfit_session</code> en LocalStorage.<br/>
+                • Si el GAS cambia link: actualiza el <code>API_BASE</code> solo en los HTML que lo usan.<br/>
+                • Si “resource inválido”: el Apps Script no reconoce el <code>resource</code> o está mal publicado.
+              </div>
+            </div>
+
+            <div class="item">
+              <b>Acceso por roles</b>
+              <div class="meta">
+                • ADMIN: todo<br/>
+                • FUNCIONARIO: rutinas/plantillas/team<br/>
+                • SOCIO: solo panel socio (no debe entrar aquí)
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
 
     </div>
   </main>
 
-  <script src="assets/app.js"></script>
+  <script>
+    const $ = (s)=>document.querySelector(s);
+
+    function parseSession(){
+      const raw = localStorage.getItem("mahfit_session");
+      if(!raw) return null;
+      try{
+        const s = JSON.parse(raw);
+        const rol = String(s.rol || s.role || "").toUpperCase();
+        return {
+          rut: s.rut || "",
+          nombre: s.nombre || s.name || "Usuario",
+          rol,
+          at: s.at || ""
+        };
+      }catch{
+        return null;
+      }
+    }
+
+    function requireAuth(){
+      const s = parseSession();
+      if(!s || !s.rol){
+        location.href = "index.html";
+        return null;
+      }
+      if(!["ADMIN","FUNCIONARIO"].includes(s.rol)){
+        location.href = "index.html";
+        return null;
+      }
+      return s;
+    }
+
+    function fmtAt(at){
+      if(!at) return "-";
+      // at viene como ISO string normalmente
+      try{
+        const d = new Date(at);
+        if(String(d) === "Invalid Date") return at;
+        return d.toLocaleString();
+      }catch{
+        return at;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const s = requireAuth();
+      if(!s) return;
+
+      $("#who").textContent = s.nombre || "Usuario";
+      $("#roleBadge").textContent = s.rol;
+      $("#rutBadge").textContent = `RUT: ${s.rut || "-"}`;
+
+      $("#kpiRol").textContent = s.rol;
+      $("#kpiAt").textContent = fmtAt(s.at);
+
+      $("#sessMeta").innerHTML = `
+        <div><b>${s.nombre}</b> (${s.rol})</div>
+        <div>RUT: ${s.rut || "-"}</div>
+        <div>at: ${escHtml(s.at || "-")}</div>
+      `;
+
+      if(s.rol === "ADMIN"){
+        $("#adminTile").style.display = "flex";
+      }
+
+      $("#btnLogout").onclick = ()=>{
+        localStorage.removeItem("mahfit_session");
+        location.href = "index.html";
+      };
+
+      $("#btnDebug").onclick = ()=>{
+        alert("mahfit_session:\n\n" + (localStorage.getItem("mahfit_session") || "(vacío)"));
+      };
+
+      $("#btnResetCache").onclick = ()=>{
+        // Esto no borra la sesión (solo "cache" típico)
+        localStorage.removeItem("mahfit_socios_cache");
+        localStorage.removeItem("mahfit_templates_cache");
+        localStorage.removeItem("mahfit_last_socio");
+        $("#msg").innerHTML = `<span class="ok">✅ Caché reiniciada. Si algo no carga, refresca con Ctrl+F5.</span>`;
+      };
+
+      $("#msg").innerHTML = `<span class="ok">✅ Sesión válida. Puedes trabajar normal.</span>`;
+    });
+
+    function escHtml(s){
+      return String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+    }
+  </script>
 </body>
 </html>
-
-
-
-
