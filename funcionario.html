@@ -2,107 +2,332 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAH FIT v2 | Funcionario (CRM)</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAH FIT | Funcionario</title>
+  <link rel="stylesheet" href="styles.css"/>
+
+  <style>
+    :root{
+      --bg0:#06080d;
+      --bg1:#0b0f18;
+      --panel:rgba(255,255,255,.04);
+      --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(255,255,255,.14);
+      --txt:rgba(255,255,255,.90);
+      --mut:rgba(255,255,255,.65);
+      --brand:#23a6ff;
+      --brand2:#7c5cff;
+      --ok:#2bd576;
+      --bad:#ff5a67;
+      --shadow:0 12px 34px rgba(0,0,0,.45);
+      --radius:16px;
+    }
+    body{
+      margin:0;
+      background:radial-gradient(1100px 500px at 50% -10%, rgba(124,92,255,.18), transparent 60%),
+                 radial-gradient(900px 480px at 60% 10%, rgba(35,166,255,.12), transparent 60%),
+                 linear-gradient(180deg,var(--bg0),var(--bg1));
+      color:var(--txt);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;
+    }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px;
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:.4px;
+    }
+    .brand .logo{
+      width:38px; height:38px; border-radius:12px;
+      background:linear-gradient(135deg,var(--brand2),var(--brand));
+      box-shadow:0 10px 20px rgba(35,166,255,.12);
+    }
+    .rightTop{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.85);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+
+    .btn{
+      border:none; cursor:pointer;
+      border-radius:12px;
+      padding:9px 12px;
+      font-weight:700;
+      color:#fff;
+      background:linear-gradient(135deg,var(--brand2),var(--brand));
+      box-shadow:0 10px 18px rgba(35,166,255,.10);
+    }
+    .btn:active{ transform:scale(.99); }
+    .btn.ghost{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      box-shadow:none;
+      color:rgba(255,255,255,.88);
+    }
+    .btn.danger{
+      background:rgba(255,90,103,.12);
+      border:1px solid rgba(255,90,103,.35);
+      color:#ffd8dc;
+      box-shadow:none;
+    }
+    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
+
+    .kpis{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:14px;
+    }
+    @media (max-width: 900px){
+      .kpis{ grid-template-columns: 1fr; }
+    }
+    .kpi{
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .kpi .t{ color:var(--mut); font-size:12px; font-weight:700; letter-spacing:.3px; }
+    .kpi .v{ font-size:28px; font-weight:900; margin-top:4px; }
+
+    .card{
+      margin-top:16px;
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .cardHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .cardTitle{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    input, select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.20);
+      color:var(--txt);
+      outline:none;
+      min-width:240px;
+    }
+    select{ min-width:180px; }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0 8px;
+      font-size:13px;
+    }
+    th{
+      text-align:left;
+      color:rgba(255,255,255,.55);
+      font-weight:700;
+      font-size:12px;
+      padding:0 10px;
+    }
+    td{
+      padding:12px 10px;
+      background:rgba(255,255,255,.03);
+      border-top:1px solid var(--stroke);
+      border-bottom:1px solid var(--stroke);
+    }
+    td:first-child{
+      border-left:1px solid var(--stroke);
+      border-top-left-radius:14px;
+      border-bottom-left-radius:14px;
+    }
+    td:last-child{
+      border-right:1px solid var(--stroke);
+      border-top-right-radius:14px;
+      border-bottom-right-radius:14px;
+    }
+
+    .muted{ color:var(--mut); font-size:12px; }
+
+    .rowForm{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width: 900px){
+      .rowForm{ grid-template-columns: 1fr; }
+    }
+    label{ display:block; font-size:12px; color:var(--mut); margin-bottom:6px; }
+    .field input, .field select{
+      width:100%;
+      min-width:unset;
+    }
+
+    /* badge conexión */
+    .db-badge{
+      display:flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.85);
+      font-size:12px;
+    }
+    .db-dot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.40);
+    }
+    .db-dot.connecting{ background:rgba(255,255,255,.40); }
+    .db-dot.connected{ background:var(--ok); }
+    .db-dot.error{ background:var(--bad); }
+  </style>
 </head>
 
 <body data-page="funcionario">
-  <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
-    <div class="nav-right">
-      <span>Hola, <b id="who"></b></span>
-      <span id="roleBadge" class="badge"></span>
-      <a class="btn primary small" href="rutinas.html">Creador Rutinas</a>
-      <button id="btnLogout" class="btn ghost small">Salir</button>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div style="font-size:18px;">MAH FIT</div>
+          <div class="muted">Panel Funcionario</div>
+        </div>
+      </div>
+
+      <div class="rightTop">
+        <div class="db-badge">
+          <span id="dbDot" class="db-dot connecting"></span>
+          <span id="dbText">Conectando…</span>
+        </div>
+
+        <div class="pill">Hola, <b id="who">Usuario</b></div>
+        <div class="pill" id="roleBadge">FUNCIONARIO</div>
+
+        <button class="btn small" id="btnRutinas">Creador Rutinas</button>
+        <button class="btn danger small" id="btnLogout">Salir</button>
+      </div>
     </div>
-  </header>
 
-  <main class="hero">
-    <div class="container">
-
+    <div class="kpis">
       <div class="kpi">
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Socios</div>
-          <b id="kSocios">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Funcionarios</div>
-          <b id="kFunc">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Activos</div>
-          <b id="kActivos">0</b>
+        <div class="t">SOCIOS</div>
+        <div class="v" id="kSocios">0</div>
+      </div>
+      <div class="kpi">
+        <div class="t">FUNCIONARIOS</div>
+        <div class="v" id="kFunc">0</div>
+      </div>
+      <div class="kpi">
+        <div class="t">ACTIVOS</div>
+        <div class="v" id="kActivos">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardHead">
+        <div class="cardTitle">CRM USUARIOS</div>
+
+        <!-- ✅ Buscador + filtro -->
+        <div class="filters">
+          <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+          <select id="roleFilter">
+            <option value="ALL">Todos</option>
+            <option value="SOCIO">Solo socios</option>
+            <option value="FUNCIONARIO">Solo funcionarios</option>
+          </select>
         </div>
       </div>
 
-      <div style="height:18px;"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>RUT/USUARIO</th>
+            <th>ROL</th>
+            <th>ACTIVO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody"></tbody>
+      </table>
 
-      <div class="card">
-        <div class="head">
-          <strong>CRM Usuarios</strong>
-          <span class="pill">Crear / Activar / Desactivar</span>
-        </div>
-        <div class="body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>RUT/Usuario</th>
-                <th>Rol</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
-        </div>
+      <div class="muted" style="margin-top:8px;">
+        Tip: escribe en el buscador y se filtra altiro.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardHead">
+        <div class="cardTitle">CREAR USUARIO</div>
+        <div class="pill">Solo admin / funcionario</div>
       </div>
 
-      <div style="height:18px;"></div>
-
-      <div class="card">
-        <div class="head"><strong>Crear usuario</strong><span class="pill">Solo admin</span></div>
-        <div class="body">
-          <form id="createUserForm" class="form">
-            <div class="split">
-              <div>
-                <label>RUT/Usuario</label>
-                <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
-              </div>
-              <div>
-                <label>Nombre</label>
-                <input id="newNombre" class="input" placeholder="Nombre completo" />
-              </div>
-            </div>
-
-            <div class="split">
-              <div>
-                <label>Email (opcional)</label>
-                <input id="newEmail" class="input" placeholder="correo@..." />
-              </div>
-              <div>
-                <label>Clave</label>
-                <input id="newPass" class="input" placeholder="Clave" />
-              </div>
-            </div>
-
+      <form id="createUserForm">
+        <div class="rowForm">
+          <div class="field">
+            <label>RUT/Usuario</label>
+            <input id="newRut" placeholder="Ej: 20228778-6" required />
+          </div>
+          <div class="field">
+            <label>Nombre</label>
+            <input id="newNombre" placeholder="Ej: Juan Pérez" required />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input id="newEmail" placeholder="correo@..." />
+          </div>
+          <div class="field">
+            <label>Clave</label>
+            <input id="newPass" placeholder="1234" required />
+          </div>
+          <div class="field">
             <label>Rol</label>
-            <select id="newRol" class="select input">
+            <select id="newRol">
               <option value="SOCIO">SOCIO</option>
               <option value="FUNCIONARIO">FUNCIONARIO</option>
             </select>
-
-            <button class="btn primary" type="submit" style="margin-top:14px;">CREAR</button>
-            <div id="msgUser" style="margin-top:10px;font-size:13px;"></div>
-          </form>
+          </div>
+          <div class="field" style="display:flex; align-items:end;">
+            <button class="btn" type="submit" style="width:100%;">Crear</button>
+          </div>
         </div>
-      </div>
 
+        <p id="msgUser" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
+      </form>
     </div>
-  </main>
+
+  </div>
 
   <script src="assets/app.js"></script>
 </body>
 </html>
-
