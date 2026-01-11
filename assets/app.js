@@ -3,6 +3,8 @@
    - Mantiene tu "esencia": mismos IDs, mismos flujos
    - Agrega backend (Google Sheets Apps Script)
    - Deja funciones SINCRÓNICAS para no romper tus páginas
+   - Soporta requireAuth("ROL") y requireAuth(["A","B"])
+   - + Indicador de conexión (dbDot/dbText) 🟢🔴⚪
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbywHS6N9c4rZQZ5yKQ7d6P7vH2rjEw0s6xgqJv3g9g2V1E9oWb8KjZ8Q8w9A0bB1/exec";
@@ -16,6 +18,25 @@ function showMsg(el, text, ok=true){
   el.classList.remove("ok","err");
   el.classList.add(ok ? "ok" : "err");
   el.style.display = "block";
+}
+
+/* ------------------ Indicador DB (si existe en HTML) ------------------ */
+function setDbStatus(state){
+  const dot = $("#dbDot");
+  const txt = $("#dbText");
+  if(!dot || !txt) return;
+
+  dot.classList.remove("connected","error","local");
+  if(state === "connected"){
+    dot.classList.add("connected");
+    txt.textContent = "Conectado";
+  }else if(state === "local"){
+    dot.classList.add("local");
+    txt.textContent = "Modo local";
+  }else{
+    dot.classList.add("error");
+    txt.textContent = "Error";
+  }
 }
 
 /* ------------------ Storage ------------------ */
@@ -44,16 +65,19 @@ function requireAuth(minRole){
     location.href = "index.html";
     return null;
   }
-  // roles: ADMIN > FUNCIONARIO > SOCIO
+
   const order = { "SOCIO": 1, "FUNCIONARIO": 2, "ADMIN": 3 };
-  const need = order[minRole] || 1;
+  const need = Array.isArray(minRole)
+    ? Math.max(...minRole.map(r=>order[r]||0))
+    : (order[minRole] || 1);
   const have = order[s.user.rol] || 0;
+
   if(have < need){
     alert("No tienes permisos para acceder aquí.");
     location.href = "index.html";
     return null;
   }
-  // si usuario está inactivo, sacarlo
+
   if(s.user.activo === false){
     alert("Usuario desactivado. Contacta a administración.");
     clearSession();
@@ -95,12 +119,12 @@ function findUserByRutOrEmailOrAdmin(userInput){
   const users = getUsers();
   const x = normalizeRut(userInput);
   if(!x) return null;
-  // ADMIN shortcut
+
   if(x === "ADMIN") return users.find(u=>u.rut==="ADMIN") || null;
-  // rut exact
+
   let u = users.find(u=>normalizeRut(u.rut)===x);
   if(u) return u;
-  // email
+
   u = users.find(u=> (u.email||"").trim().toLowerCase() === x.toLowerCase());
   return u || null;
 }
@@ -159,13 +183,12 @@ function registerUser(payload){
   users.push(newUser);
   setUsers(users);
 
-  // persistir en backend (no bloquear UI)
   apiPost("USERS", newUser).catch(console.error);
 
   return newUser;
 }
 
-/* ------------------ SyncDown (traer desde Sheets) ------------------ */
+/* ------------------ SyncDown ------------------ */
 async function syncDownUsers(){
   const data = await apiGet("SYNC_USERS");
   if(Array.isArray(data.users)){
@@ -178,28 +201,27 @@ async function syncDownUsers(){
 function initIndex(){
   ensureDefaultAdmin();
 
-  const msg = $("#msg");
   const form = $("#loginForm");
   if(!form) return;
 
-  $("#btnSalir")?.addEventListener("click", logout);
+  const msg = $("#msgLogin");
 
   form.addEventListener("submit", async (e)=>{
     e.preventDefault();
     try{
-      // intentar sincronizar desde backend (si no hay internet, sigue local)
       try{ await syncDownUsers(); }catch(err){ console.warn("SyncDown falló:", err); }
 
-      const rut = $("#rut").value;
-      const pass = $("#pass").value;
+      const rut = $("#loginRut").value;
+      const pass = $("#loginPass").value;
+
       const res = login(rut, pass);
       if(!res.ok){
         showMsg(msg, res.msg, false);
         return;
       }
+
       showMsg(msg, `Bienvenido ${res.user.nombre}`, true);
 
-      // redirección según rol
       if(res.user.rol === "SOCIO"){
         location.href = "socio.html";
       }else{
@@ -210,6 +232,18 @@ function initIndex(){
       showMsg(msg, "Error al iniciar sesión. Revisa consola.", false);
     }
   });
+
+  const resetBtn = $("#resetBtn");
+  if(resetBtn){
+    resetBtn.addEventListener("click", ()=>{
+      localStorage.removeItem("mahfit_users");
+      localStorage.removeItem("mahfit_rutinas");
+      localStorage.removeItem("mahfit_rutinas_v2");
+      localStorage.removeItem("mahfit_session");
+      alert("Datos locales reiniciados. Recarga la página.");
+      window.location.reload();
+    });
+  }
 }
 
 /* ------------------ Página: funcionario.html ------------------ */
@@ -229,15 +263,17 @@ function initFuncionario(){
     $("#kActivos").textContent = users.filter(u=>u.activo !== false).length;
   }
 
-  // 👇 FIX: render + listener robusto (event delegation)
   function refreshTable(){
     const users = getUsers()
       .slice()
       .sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
 
     const tbody = $("#usersTbody");
-    tbody.innerHTML = users.map(u => `
-      <tr>
+    tbody.innerHTML = "";
+
+    for(const u of users){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
         <td>${u.nombre}</td>
         <td>${u.rut}</td>
         <td><span class="pill">${u.rol}</span></td>
@@ -247,36 +283,30 @@ function initFuncionario(){
             ${u.activo === false ? "Activar" : "Desactivar"}
           </button>
         </td>
-      </tr>
-    `).join("");
+      `;
+      tbody.appendChild(tr);
+    }
 
-    // Bind UNA sola vez, aunque se re-renderice la tabla
+    // ✅ FIX ROBUSTO: un solo listener aunque se re-renderice
     if(!tbody.__mahfitBound){
       tbody.__mahfitBound = true;
-
       tbody.addEventListener("click", (e)=>{
         const btn = e.target.closest("[data-act]");
         if(!btn) return;
 
-        try{
-          const rut = btn.getAttribute("data-act");
-          const usersNow = getUsers();
-          const u = usersNow.find(x => x.rut === rut);
-          if(!u) return;
+        const rut = btn.getAttribute("data-act");
+        const usersNow = getUsers();
+        const u = usersNow.find(x=>x.rut===rut);
+        if(!u) return;
 
-          // Toggle local inmediato (UI)
-          u.activo = (u.activo === false);
-          setUsers(usersNow);
+        // ✅ toggle correcto (antes estaba malo)
+        u.activo = (u.activo === false) ? true : false;
 
-          // Intentar persistir (si falla, no rompe la UI)
-          apiPost("USERS", u).catch(console.error);
+        setUsers(usersNow);
+        apiPost("USERS", u).catch(console.error);
 
-          refreshTable();
-          refreshKPIs();
-        }catch(err){
-          console.error("Error Activar/Desactivar:", err);
-          alert("Error al activar/desactivar. Revisa la consola (F12).");
-        }
+        refreshTable();
+        refreshKPIs();
       });
     }
   }
@@ -301,45 +331,36 @@ function initFuncionario(){
     }
   });
 
-  // Botones navegación
-  $("#btnSalir")?.addEventListener("click", logout);
-  $("#btnRutinas")?.addEventListener("click", ()=> location.href="rutinas.html");
+  // logout
+  $("#btnLogout")?.addEventListener("click", logout);
 
-  // SyncDown + render inicial
+  // boot
   (async ()=>{
     try{
       ensureDefaultAdmin();
+
       try{
         await syncDownUsers();
-        $("#dbStatus")?.classList.add("ok");
-        $("#dbStatus") && ($("#dbStatus").textContent = "Conectado");
+        setDbStatus("connected");
       }catch(err){
         console.warn("No se pudo sincronizar desde backend:", err);
-        $("#dbStatus")?.classList.add("warn");
-        $("#dbStatus") && ($("#dbStatus").textContent = "Modo local");
+        setDbStatus("local");
       }
+
       refreshTable();
       refreshKPIs();
-    }catch(err){
-      console.error(err);
-      $("#dbStatus")?.classList.add("err");
-      $("#dbStatus") && ($("#dbStatus").textContent = "Error");
+    }catch(e){
+      console.error("BOOT ERROR:", e);
+      setDbStatus("error");
+    }finally{
+      if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
     }
   })();
 }
 
-/* ------------------ Init general ------------------ */
-(function boot(){
-  // Prevenir que acciones se ejecuten antes de DOM listo
-  // (tu código ya usa DOMContentLoaded, esto es extra por seguridad)
-  window.__mahfitReleaseDOMContentLoaded = null;
-})();
-
-
-// -------- Ejecuta init por página (como ya lo tienes) --------
+/* ------------------ Ejecuta init por página ------------------ */
 document.addEventListener("DOMContentLoaded", ()=>{
   const page = document.body.getAttribute("data-page");
   if(page === "index") initIndex();
   if(page === "funcionario") initFuncionario();
-  // socio.html y rutinas.html traen su propia lógica y seguirán funcionando
 });
