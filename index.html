@@ -1,88 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT | Inicio</title>
-
-  <!-- CSS principal -->
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Acceso</title>
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
-<body>
-
-  <!-- =======================
-       HEADER / TOP BAR
-  ======================== -->
+<body data-page="index">
   <header class="topbar">
-    <div class="topbar-left">
-      <h1 class="logo">MAH <span>FIT</span></h1>
-    </div>
-
-    <!-- INDICADOR CONEXIÓN -->
-    <div class="db-status" id="dbStatus">
-      <span class="db-dot connecting" id="dbDot"></span>
-      <span class="db-text" id="dbText">Conectando…</span>
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <span class="badge">Acceso</span>
     </div>
   </header>
 
-  <!-- =======================
-       CONTENIDO PRINCIPAL
-  ======================== -->
-  <main class="container">
-    <h2>Panel Principal</h2>
+  <main class="hero">
+    <div class="container">
+      <div class="grid-3">
 
-    <div class="cards">
-      <a href="socio.html" class="card">Socios</a>
-      <a href="rutinas.html" class="card">Rutinas</a>
-      <a href="ejercicios.html" class="card">Ejercicios</a>
-      <a href="funcionario.html" class="card">Funcionarios</a>
+        <section>
+          <h2 class="h2">Usuario registrado</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Login</strong>
+              <span class="pill">Usuario/RUT + Clave</span>
+            </div>
+            <div class="body">
+              <form id="loginForm" class="form">
+                <label>Usuario o RUT</label>
+                <input id="loginRut" class="input" placeholder="Ej: 12345678-9 o ADMIN" />
+
+                <label>Clave</label>
+                <input id="loginPass" class="input" type="password" placeholder="Clave" />
+
+                <button class="btn primary block" type="submit" style="margin-top:14px;">INGRESAR</button>
+                <div id="msgLogin" style="margin-top:10px;font-size:13px;"></div>
+
+                <div class="hr"></div>
+                <div class="notice">
+                  <b>Registro:</b> Los usuarios se crean solo por administración (funcionario).
+                </div>
+
+                <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.70)">
+                  <b>Admin:</b> usuario <code>ADMIN</code> / clave <code>1234</code>
+                </div>
+
+                <button id="resetBtn" class="btn ghost block" type="button" style="margin-top:10px;">
+                  REINICIAR DATOS (si no carga)
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="h2">Nuevo usuario</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Solicitud de alta</strong>
+              <span class="pill">Simple</span>
+            </div>
+            <div class="body">
+              <p style="margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.5;">
+                Para crear tu cuenta, solicita al gimnasio que te registre (funcionario/admin).
+                Luego ingresas con tu RUT y clave.
+              </p>
+              <div class="hr"></div>
+              <button class="btn ghost block" type="button" onclick="alert('Luego lo conectamos a WhatsApp o formulario.');">
+                CONTACTAR ADMIN
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="h2">Ventas Planes Web</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Planes</strong>
+              <span class="pill">Link externo</span>
+            </div>
+            <div class="body">
+              <p style="margin:0 0 12px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.4;">
+                Aquí redirigimos a tu página de venta (Webpay/TiendaUp/etc.).
+              </p>
+              <button class="btn primary block" type="button"
+                onclick="alert('Luego lo conectamos a tu página de planes.');">
+                PLANES WEB
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </div>
   </main>
 
-  <!-- =======================
-       JS
-  ======================== -->
-  <script src="app.js"></script>
-
-  <script>
-    // Función visual del estado
-    function setDbStatus(status) {
-      const dot = document.getElementById("dbDot");
-      const text = document.getElementById("dbText");
-
-      dot.className = "db-dot";
-
-      if (status === "connected") {
-        dot.classList.add("connected");
-        text.textContent = "Conectado";
-      } else if (status === "error") {
-        dot.classList.add("error");
-        text.textContent = "Sin conexión";
-      } else {
-        dot.classList.add("connecting");
-        text.textContent = "Conectando…";
-      }
-    }
-
-    // Hook al sistema
-    document.addEventListener("DOMContentLoaded", async () => {
-      setDbStatus("connecting");
-
-      try {
-        if (typeof syncDown === "function") {
-          await syncDown();   // conexión a Sheets / Excel
-          setDbStatus("connected");
-        } else {
-          throw new Error("syncDown no existe");
-        }
-      } catch (e) {
-        console.error("Error conexión DB:", e);
-        setDbStatus("error");
-      }
-    });
-  </script>
-
+  <script src="assets/app.js"></script>
 </body>
 </html>
+
 
