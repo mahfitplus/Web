@@ -6,7 +6,8 @@
    - Soporta requireAuth("ROL") y requireAuth(["A","B"])
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxNVTZip8UzwOZNo0aBXY56glkVPPHtZURBpoGTRr8usebtaJvxq9Lpx0w8rSEBUESFZg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
+
 
 
 // -------- LocalStorage helpers --------
@@ -419,4 +420,5 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(page === "funcionario") initFuncionario();
   // socio.html y rutinas.html traen su propia lógica y seguirán funcionando
 });
+
 
