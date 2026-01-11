@@ -3,102 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAH FIT | Funcionario (CRM)</title>
+  <title>MAH FIT | Acceso</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
-<body data-page="funcionario">
+<body data-page="index">
   <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT v2</span></div>
     <div class="nav-right">
-      <span>Hola, <b id="who"></b></span>
-      <span id="roleBadge" class="badge"></span>
-      <a class="btn primary small" href="rutinas.html">Creador Rutinas</a>
-      <button id="btnLogout" class="btn ghost small">Salir</button>
+      <span class="badge">Acceso</span>
     </div>
   </header>
 
   <main class="hero">
     <div class="container">
+      <div class="grid-3">
 
-      <div class="kpi">
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Socios</div>
-          <b id="kSocios">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Funcionarios</div>
-          <b id="kFunc">0</b>
-        </div>
-        <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Activos</div>
-          <b id="kActivos">0</b>
-        </div>
-      </div>
-
-      <div style="height:18px;"></div>
-
-      <div class="card">
-        <div class="head">
-          <strong>CRM Usuarios</strong>
-          <span class="pill">Crear / Activar / Desactivar</span>
-        </div>
-        <div class="body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>RUT/Usuario</th>
-                <th>Rol</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div style="height:18px;"></div>
-
-      <div class="card">
-        <div class="head"><strong>Crear usuario</strong><span class="pill">Solo admin</span></div>
-        <div class="body">
-          <form id="createUserForm" class="form">
-            <div class="split">
-              <div>
-                <label>RUT/Usuario</label>
-                <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
-              </div>
-              <div>
-                <label>Nombre</label>
-                <input id="newNombre" class="input" placeholder="Nombre completo" />
-              </div>
+        <section>
+          <h2 class="h2">Usuario registrado</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Login</strong>
+              <span class="pill">Usuario/RUT + Clave</span>
             </div>
+            <div class="body">
+              <form id="loginForm" class="form">
+                <label>Usuario o RUT</label>
+                <input id="loginRut" class="input" placeholder="Ej: 12345678-9 o ADMIN" />
 
-            <div class="split">
-              <div>
-                <label>Email (opcional)</label>
-                <input id="newEmail" class="input" placeholder="correo@..." />
-              </div>
-              <div>
                 <label>Clave</label>
-                <input id="newPass" class="input" placeholder="Clave" />
-              </div>
+                <input id="loginPass" class="input" type="password" placeholder="Clave" />
+
+                <button class="btn primary block" type="submit" style="margin-top:14px;">INGRESAR</button>
+                <div id="msgLogin" style="margin-top:10px;font-size:13px;"></div>
+
+                <div class="hr"></div>
+                <div class="notice">
+                  <b>Registro:</b> Los usuarios se crean solo por administración (funcionario).
+                </div>
+
+                <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.70)">
+                  <b>Admin:</b> usuario <code>ADMIN</code> / clave <code>1234</code>
+                </div>
+
+                <button id="resetBtn" class="btn ghost block" type="button" style="margin-top:10px;">
+                  REINICIAR DATOS (si no carga)
+                </button>
+              </form>
             </div>
+          </div>
+        </section>
 
-            <label>Rol</label>
-            <select id="newRol" class="select input">
-              <option value="SOCIO">SOCIO</option>
-              <option value="FUNCIONARIO">FUNCIONARIO</option>
-            </select>
+        <section>
+          <h2 class="h2">Nuevo usuario</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Solicitud de alta</strong>
+              <span class="pill">Simple</span>
+            </div>
+            <div class="body">
+              <p style="margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.5;">
+                Para crear tu cuenta, solicita al gimnasio que te registre (funcionario/admin).
+                Luego ingresas con tu RUT y clave.
+              </p>
+              <div class="hr"></div>
+              <button class="btn ghost block" type="button" onclick="alert('Luego lo conectamos a WhatsApp o formulario.');">
+                CONTACTAR ADMIN
+              </button>
+            </div>
+          </div>
+        </section>
 
-            <button class="btn primary" type="submit" style="margin-top:14px;">CREAR</button>
-            <div id="msgUser" style="margin-top:10px;font-size:13px;"></div>
-          </form>
-        </div>
+        <section>
+          <h2 class="h2">Ventas Planes Web</h2>
+          <div class="card">
+            <div class="head">
+              <strong>Planes</strong>
+              <span class="pill">Link externo</span>
+            </div>
+            <div class="body">
+              <p style="margin:0 0 12px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.4;">
+                Aquí redirigimos a tu página de venta (Webpay/TiendaUp/etc.).
+              </p>
+              <button class="btn primary block" type="button"
+                onclick="alert('Luego lo conectamos a tu página de planes.');">
+                PLANES WEB
+              </button>
+            </div>
+          </div>
+        </section>
+
       </div>
-
     </div>
   </main>
 
