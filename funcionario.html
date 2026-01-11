@@ -8,326 +8,580 @@
 
   <style>
     :root{
-      --bg0:#06080d;
-      --bg1:#0b0f18;
-      --panel:rgba(255,255,255,.04);
-      --stroke:rgba(255,255,255,.10);
-      --stroke2:rgba(255,255,255,.14);
-      --txt:rgba(255,255,255,.90);
-      --mut:rgba(255,255,255,.65);
-      --brand:#23a6ff;
-      --brand2:#7c5cff;
+      --bg:#070a11;
+      --panel: rgba(255,255,255,.05);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --txt: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --brand: #4d7cff;
+      --brand2:#23a6ff;
       --ok:#2bd576;
       --bad:#ff5a67;
-      --shadow:0 12px 34px rgba(0,0,0,.45);
-      --radius:16px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
     }
+
     body{
       margin:0;
-      background:radial-gradient(1100px 500px at 50% -10%, rgba(124,92,255,.18), transparent 60%),
-                 radial-gradient(900px 480px at 60% 10%, rgba(35,166,255,.12), transparent 60%),
-                 linear-gradient(180deg,var(--bg0),var(--bg1));
+      background: radial-gradient(1200px 600px at 30% 10%, rgba(77,124,255,.14), transparent 60%),
+                  radial-gradient(1200px 700px at 70% 20%, rgba(35,166,255,.12), transparent 60%),
+                  linear-gradient(180deg, #05070d, #0b1220);
       color:var(--txt);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       min-height:100vh;
     }
-    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
 
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    /* TOP */
     .topbar{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
       padding:14px 16px;
-      background:var(--panel);
+      background: rgba(255,255,255,.04);
       border:1px solid var(--stroke);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+      position:sticky;
+      top:10px;
+      z-index:50;
     }
     .brand{
       display:flex; align-items:center; gap:10px;
-      font-weight:800; letter-spacing:.4px;
+      font-weight:900; letter-spacing:.8px;
+      font-size:22px;
     }
-    .brand .logo{
-      width:38px; height:38px; border-radius:12px;
-      background:linear-gradient(135deg,var(--brand2),var(--brand));
-      box-shadow:0 10px 20px rgba(35,166,255,.12);
+    .brand span{
+      color:#fff;
+    }
+    .brand b{
+      color:#6fe0ff;
     }
     .rightTop{
       display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
     }
     .pill{
-      font-size:12px;
-      padding:6px 10px;
+      padding:7px 12px;
       border-radius:999px;
-      border:1px solid var(--stroke);
       background:rgba(255,255,255,.06);
-      color:rgba(255,255,255,.85);
-      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--stroke);
+      color:rgba(255,255,255,.86);
+      font-size:12px;
     }
-
+    .pillRole{
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      color:rgba(255,255,255,.9);
+      font-size:12px;
+    }
     .btn{
-      border:none; cursor:pointer;
+      border:none;
+      cursor:pointer;
       border-radius:12px;
-      padding:9px 12px;
-      font-weight:700;
+      padding:10px 14px;
       color:#fff;
-      background:linear-gradient(135deg,var(--brand2),var(--brand));
-      box-shadow:0 10px 18px rgba(35,166,255,.10);
+      font-weight:700;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));
+      box-shadow:0 12px 22px rgba(35,166,255,.15);
+      transition:transform .06s ease;
     }
-    .btn:active{ transform:scale(.99); }
+    .btn:active{ transform:scale(.98); }
     .btn.ghost{
       background:rgba(255,255,255,.06);
       border:1px solid var(--stroke);
       box-shadow:none;
-      color:rgba(255,255,255,.88);
+      color:rgba(255,255,255,.9);
     }
     .btn.danger{
       background:rgba(255,90,103,.12);
       border:1px solid rgba(255,90,103,.35);
+      box-shadow:none;
       color:#ffd8dc;
+    }
+    .btn.small{
+      padding:8px 12px;
+      border-radius:12px;
+      font-size:12px;
+    }
+    .btnWarn{
+      background:#f6c400;
+      color:#111;
       box-shadow:none;
     }
-    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
 
-    .kpis{
-      margin-top:16px;
+    /* KPI */
+    .kpiGrid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap:14px;
+      margin-top:16px;
     }
     @media (max-width: 900px){
-      .kpis{ grid-template-columns: 1fr; }
+      .kpiGrid{ grid-template-columns: 1fr; }
     }
     .kpi{
-      background:var(--panel);
+      background:rgba(255,255,255,.04);
       border:1px solid var(--stroke);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:14px;
+      padding:14px 16px;
     }
-    .kpi .t{ color:var(--mut); font-size:12px; font-weight:700; letter-spacing:.3px; }
-    .kpi .v{ font-size:28px; font-weight:900; margin-top:4px; }
-
-    .card{
-      margin-top:16px;
-      background:var(--panel);
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
+    .kpi h4{
+      margin:0;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+      letter-spacing:.7px;
     }
-    .cardHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .cardTitle{
+    .kpi .num{
+      font-size:32px;
       font-weight:900;
-      letter-spacing:.3px;
+      margin-top:8px;
     }
 
-    .filters{
+    /* SECTIONS */
+    .section{
+      margin-top:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .sectionHead{
       display:flex;
+      justify-content:space-between;
+      align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      align-items:center;
+      margin-bottom:12px;
     }
-    input, select{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.20);
-      color:var(--txt);
-      outline:none;
-      min-width:240px;
+    .sectionTitle{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:.5px;
     }
-    select{ min-width:180px; }
-
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0 8px;
-      font-size:13px;
-    }
-    th{
-      text-align:left;
-      color:rgba(255,255,255,.55);
-      font-weight:700;
+    .hint{
       font-size:12px;
-      padding:0 10px;
-    }
-    td{
-      padding:12px 10px;
-      background:rgba(255,255,255,.03);
-      border-top:1px solid var(--stroke);
-      border-bottom:1px solid var(--stroke);
-    }
-    td:first-child{
-      border-left:1px solid var(--stroke);
-      border-top-left-radius:14px;
-      border-bottom-left-radius:14px;
-    }
-    td:last-child{
-      border-right:1px solid var(--stroke);
-      border-top-right-radius:14px;
-      border-bottom-right-radius:14px;
+      color:rgba(255,255,255,.68);
     }
 
-    .muted{ color:var(--mut); font-size:12px; }
-
-    .rowForm{
+    /* FORM */
+    .formGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:12px;
-      margin-top:12px;
     }
     @media (max-width: 900px){
-      .rowForm{ grid-template-columns: 1fr; }
+      .formGrid{ grid-template-columns: 1fr; }
     }
-    label{ display:block; font-size:12px; color:var(--mut); margin-bottom:6px; }
-    .field input, .field select{
+    label{
+      display:block;
+      font-size:12px;
+      color:rgba(255,255,255,.70);
+      margin-bottom:6px;
+    }
+    input, select{
       width:100%;
-      min-width:unset;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.20);
+      color:rgba(255,255,255,.92);
+      outline:none;
+    }
+    .fullRow{ grid-column: 1 / -1; }
+
+    .msg{
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
     }
 
-    /* badge conexión */
-    .db-badge{
-      display:flex; align-items:center; gap:8px;
+    /* CRM */
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .searchBox{
+      width:min(360px, 100%);
+    }
+    .tableWrap{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .rowCard{
+      display:grid;
+      grid-template-columns: 1.5fr 1fr .7fr .6fr .7fr;
+      gap:10px;
+      align-items:center;
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+    @media (max-width: 950px){
+      .rowCard{
+        grid-template-columns: 1fr;
+        gap:8px;
+      }
+    }
+    .hdr{
+      background:transparent;
+      border:none;
+      padding:0 2px 6px 2px;
+      color:rgba(255,255,255,.55);
+      font-size:11px;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      display:grid;
+      grid-template-columns: 1.5fr 1fr .7fr .6fr .7fr;
+      gap:10px;
+    }
+    @media (max-width: 950px){
+      .hdr{ display:none; }
+    }
+    .roleChip{
+      display:inline-flex;
+      align-items:center;
       padding:6px 10px;
       border-radius:999px;
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.06);
-      color:rgba(255,255,255,.85);
+      font-size:12px;
+      width:max-content;
+    }
+    .activeDot{
+      width:12px; height:12px; border-radius:4px;
+      display:inline-block;
+      background:var(--ok);
+      box-shadow:0 0 0 3px rgba(43,213,118,.12);
+    }
+    .inactiveDot{
+      width:12px; height:12px; border-radius:999px;
+      display:inline-block;
+      background:var(--bad);
+      box-shadow:0 0 0 3px rgba(255,90,103,.12);
+    }
+
+    /* ✅ SOLO para que la tabla NO sea eterna si crece */
+    .crmScroll{
+      max-height: 420px;
+      overflow:auto;
+      padding-right:6px;
+    }
+    .crmScroll::-webkit-scrollbar{ width:10px; }
+    .crmScroll::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.12);
+      border-radius: 999px;
+      border: 2px solid rgba(0,0,0,.2);
+    }
+
+    /* DB badge (si lo usas en otras páginas, lo dejamos listo) */
+    .db-badge{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      color:rgba(255,255,255,.82);
       font-size:12px;
     }
     .db-dot{
       width:10px;height:10px;border-radius:999px;
-      background:rgba(255,255,255,.40);
+      background:rgba(255,255,255,.25);
     }
-    .db-dot.connecting{ background:rgba(255,255,255,.40); }
-    .db-dot.connected{ background:var(--ok); }
-    .db-dot.error{ background:var(--bad); }
+    .db-dot.connecting{ background:#f6c400; }
+    .db-dot.connected{ background:#2bd576; }
+    .db-dot.error{ background:#ff5a67; }
+
   </style>
 </head>
 
 <body data-page="funcionario">
   <div class="wrap">
 
+    <!-- TOPBAR -->
     <div class="topbar">
       <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <div style="font-size:18px;">MAH FIT</div>
-          <div class="muted">Panel Funcionario</div>
-        </div>
+        <span>MAH</span> <b>FIT</b>
       </div>
 
       <div class="rightTop">
-        <div class="db-badge">
-          <span id="dbDot" class="db-dot connecting"></span>
-          <span id="dbText">Conectando…</span>
+        <div class="pill">Hola, <b id="who">-</b></div>
+        <div class="pillRole" id="roleBadge">FUNCIONARIO</div>
+
+        <a class="btn small btnWarn" href="rutinas.html" style="text-decoration:none;">Creador Rutinas</a>
+        <button class="btn small danger" id="btnLogout">Salir</button>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpiGrid">
+      <div class="kpi">
+        <h4>SOCIOS</h4>
+        <div class="num" id="kSocios">0</div>
+      </div>
+      <div class="kpi">
+        <h4>FUNCIONARIOS</h4>
+        <div class="num" id="kFunc">0</div>
+      </div>
+      <div class="kpi">
+        <h4>ACTIVOS</h4>
+        <div class="num" id="kActivos">0</div>
+      </div>
+    </div>
+
+    <!-- ✅ CREAR USUARIO ARRIBA -->
+    <div class="section" id="crearUsuarioSection">
+      <div class="sectionHead">
+        <div>
+          <div class="sectionTitle">CREAR USUARIO</div>
+          <div class="hint">Solo admin / funcionario</div>
         </div>
-
-        <div class="pill">Hola, <b id="who">Usuario</b></div>
-        <div class="pill" id="roleBadge">FUNCIONARIO</div>
-
-        <button class="btn small" id="btnRutinas">Creador Rutinas</button>
-        <button class="btn danger small" id="btnLogout">Salir</button>
-      </div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi">
-        <div class="t">SOCIOS</div>
-        <div class="v" id="kSocios">0</div>
-      </div>
-      <div class="kpi">
-        <div class="t">FUNCIONARIOS</div>
-        <div class="v" id="kFunc">0</div>
-      </div>
-      <div class="kpi">
-        <div class="t">ACTIVOS</div>
-        <div class="v" id="kActivos">0</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="cardHead">
-        <div class="cardTitle">CRM USUARIOS</div>
-
-        <!-- ✅ Buscador + filtro -->
-        <div class="filters">
-          <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
-          <select id="roleFilter">
-            <option value="ALL">Todos</option>
-            <option value="SOCIO">Solo socios</option>
-            <option value="FUNCIONARIO">Solo funcionarios</option>
-          </select>
-        </div>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>RUT/USUARIO</th>
-            <th>ROL</th>
-            <th>ACTIVO</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody id="usersTbody"></tbody>
-      </table>
-
-      <div class="muted" style="margin-top:8px;">
-        Tip: escribe en el buscador y se filtra altiro.
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="cardHead">
-        <div class="cardTitle">CREAR USUARIO</div>
-        <div class="pill">Solo admin / funcionario</div>
       </div>
 
       <form id="createUserForm">
-        <div class="rowForm">
-          <div class="field">
+        <div class="formGrid">
+          <div>
             <label>RUT/Usuario</label>
             <input id="newRut" placeholder="Ej: 20228778-6" required />
           </div>
-          <div class="field">
+
+          <div>
             <label>Nombre</label>
             <input id="newNombre" placeholder="Ej: Juan Pérez" required />
           </div>
-          <div class="field">
+
+          <div>
             <label>Email</label>
             <input id="newEmail" placeholder="correo@..." />
           </div>
-          <div class="field">
+
+          <div>
             <label>Clave</label>
             <input id="newPass" placeholder="1234" required />
           </div>
-          <div class="field">
+
+          <div class="fullRow">
             <label>Rol</label>
             <select id="newRol">
               <option value="SOCIO">SOCIO</option>
               <option value="FUNCIONARIO">FUNCIONARIO</option>
             </select>
           </div>
-          <div class="field" style="display:flex; align-items:end;">
+
+          <div class="fullRow">
             <button class="btn" type="submit" style="width:100%;">Crear</button>
+            <div class="msg" id="msgUser"></div>
           </div>
         </div>
-
-        <p id="msgUser" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
       </form>
+    </div>
+
+    <!-- CRM -->
+    <div class="section">
+      <div class="sectionHead">
+        <div>
+          <div class="sectionTitle">CRM USUARIOS</div>
+          <div class="hint">Tip: escribe en el buscador y se filtra altiro.</div>
+        </div>
+
+        <div class="toolbar">
+          <input id="userSearch" class="searchBox" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+          <select id="roleFilter" style="width:160px">
+            <option value="ALL">Todos</option>
+            <option value="SOCIO">Socios</option>
+            <option value="FUNCIONARIO">Funcionarios</option>
+            <option value="ACTIVOS">Activos</option>
+            <option value="INACTIVOS">Inactivos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hdr">
+        <div>NOMBRE</div>
+        <div>RUT/USUARIO</div>
+        <div>ROL</div>
+        <div>ACTIVO</div>
+        <div>ACCIONES</div>
+      </div>
+
+      <!-- ✅ Con scroll lateral/vertical dentro del CRM -->
+      <div class="crmScroll">
+        <div class="tableWrap" id="usersTbody"></div>
+      </div>
     </div>
 
   </div>
 
   <script src="assets/app.js"></script>
+
+  <script>
+    // Este script solo hace la UI del CRM (render con cards) + filtros.
+    // El "activar/desactivar" ya lo maneja initFuncionario() en app.js,
+    // pero aquí lo reforzamos para que también funcione con el nuevo render.
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const page = document.body.getAttribute("data-page");
+      if(page !== "funcionario") return;
+
+      const user = window.requireAuth?.("FUNCIONARIO");
+      if(!user) return;
+
+      const who = document.getElementById("who");
+      const roleBadge = document.getElementById("roleBadge");
+      if(who) who.textContent = user.nombre || "-";
+      if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
+
+      const msgUser = document.getElementById("msgUser");
+      const tbody = document.getElementById("usersTbody");
+
+      const search = document.getElementById("userSearch");
+      const roleFilter = document.getElementById("roleFilter");
+
+      function normalize(v){ return String(v||"").toLowerCase().trim(); }
+
+      function refreshKPIs(){
+        const users = window.getUsers();
+        document.getElementById("kSocios").textContent = users.filter(u => String(u.rol).toUpperCase()==="SOCIO").length;
+        document.getElementById("kFunc").textContent = users.filter(u => String(u.rol).toUpperCase()==="FUNCIONARIO").length;
+        document.getElementById("kActivos").textContent = users.filter(u => u.activo !== false).length;
+      }
+
+      function passesRoleFilter(u, f){
+        const rol = String(u.rol||"").toUpperCase().trim();
+        const activo = (u.activo === false) ? false : true;
+
+        if(f === "ALL") return true;
+        if(f === "SOCIO") return rol === "SOCIO";
+        if(f === "FUNCIONARIO") return rol === "FUNCIONARIO";
+        if(f === "ACTIVOS") return activo;
+        if(f === "INACTIVOS") return !activo;
+        return true;
+      }
+
+      function passesSearch(u, q){
+        if(!q) return true;
+        const rol = String(u.rol||"");
+        const activoTxt = (u.activo === false) ? "inactivo" : "activo";
+        const hay = [
+          u.nombre, u.rut, u.email, rol, activoTxt
+        ].map(normalize).join(" | ");
+        return hay.includes(q);
+      }
+
+      function render(){
+        const users = window.getUsers()
+          .slice()
+          .sort((a,b)=> (String(a.rol).localeCompare(String(b.rol))) || String(a.nombre).localeCompare(String(b.nombre)));
+
+        const q = normalize(search.value);
+        const f = String(roleFilter.value||"ALL");
+
+        const filtered = users.filter(u => passesRoleFilter(u,f) && passesSearch(u,q));
+
+        tbody.innerHTML = "";
+
+        filtered.forEach(u=>{
+          const active = (u.activo === false) ? false : true;
+
+          const card = document.createElement("div");
+          card.className = "rowCard";
+          card.innerHTML = `
+            <div><b>${u.nombre || "-"}</b></div>
+            <div>${u.rut || "-"}</div>
+            <div><span class="roleChip">${String(u.rol||"-").toUpperCase()}</span></div>
+            <div>${active ? `<span class="activeDot" title="Activo"></span>` : `<span class="inactiveDot" title="Inactivo"></span>`}</div>
+            <div>
+              <button class="btn small ghost" data-toggle="${u.rut}">
+                ${active ? "Desactivar" : "Activar"}
+              </button>
+            </div>
+          `;
+          tbody.appendChild(card);
+        });
+
+        // acciones
+        tbody.querySelectorAll("[data-toggle]").forEach(btn=>{
+          btn.onclick = async ()=>{
+            const rut = btn.getAttribute("data-toggle");
+            const users = window.getUsers();
+            const u = users.find(x => String(x.rut) === String(rut));
+            if(!u) return;
+
+            u.activo = !(u.activo === false);
+            window.setUsers(users);
+
+            try{
+              await window.apiPost("USERS", u);
+            }catch(e){
+              // si falla el post, revertimos
+              u.activo = !(u.activo === false);
+              window.setUsers(users);
+              alert("No pude actualizar en la hoja. Revisa la API/Deploy.");
+            }
+
+            refreshKPIs();
+            render();
+          };
+        });
+      }
+
+      // crear usuario
+      document.getElementById("createUserForm")?.addEventListener("submit", (e)=>{
+        e.preventDefault();
+        try{
+          const newUser = window.registerUser?.({
+            rut: document.getElementById("newRut").value,
+            nombre: document.getElementById("newNombre").value,
+            email: document.getElementById("newEmail").value,
+            pass: document.getElementById("newPass").value,
+            rol: document.getElementById("newRol").value
+          });
+          if(msgUser){
+            msgUser.textContent = `✅ Usuario creado: ${newUser.nombre} (${newUser.rol})`;
+            msgUser.style.color = "#a7ffb3";
+          }
+          e.target.reset();
+          refreshKPIs();
+          render();
+        }catch(err){
+          if(msgUser){
+            msgUser.textContent = `❌ ${err.message}`;
+            msgUser.style.color = "#ffb0b0";
+          }
+        }
+      });
+
+      // filtros
+      search.addEventListener("input", render);
+      roleFilter.addEventListener("change", render);
+
+      // logout
+      document.getElementById("btnLogout")?.addEventListener("click", ()=>{
+        window.clearSession?.();
+        window.location.href = "index.html";
+      });
+
+      refreshKPIs();
+      render();
+    });
+  </script>
 </body>
 </html>
