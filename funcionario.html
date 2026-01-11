@@ -2,305 +2,106 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT | Funcionario</title>
-
-  <!-- Mismo criterio que rutinas.html -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <style>
-    :root{
-      --bg:#070a11;
-      --panel: rgba(255,255,255,.05);
-      --panel2: rgba(0,0,0,.25);
-      --stroke: rgba(255,255,255,.10);
-      --stroke2: rgba(255,255,255,.14);
-      --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.65);
-      --brand:#4d7cff;
-      --ok:#a7ffb3;
-      --bad:#ffb0b0;
-      --warn:#ffe08a;
-    }
-    body{ margin:0; background:var(--bg); color:var(--txt); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px;
-      border-bottom: 1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      position: sticky; top:0; z-index:100;
-      backdrop-filter: blur(10px);
-    }
-    .brand{ font-weight:800; letter-spacing:.4px; display:flex; align-items:center; gap:10px; }
-    .brand .mah{ color:#fff; }
-    .brand .fit{ color: var(--brand); }
-    .badge{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      font-size:12px; color: var(--muted);
-      white-space:nowrap;
-    }
-    .nav-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-
-    .btn{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      border-radius:12px;
-      height:36px;
-      padding:0 12px;
-      cursor:pointer;
-      font-weight:700;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .btn:hover{ background: rgba(255,255,255,.08); }
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(77,124,255,.95), rgba(77,124,255,.55));
-      border-color: rgba(77,124,255,.55);
-    }
-    .btn.ghost{ background: rgba(255,255,255,.03); }
-    .btn.danger{ border-color: rgba(255,80,80,.35); background: rgba(255,80,80,.10); }
-    .btn.small{ height:32px; border-radius:10px; font-size:13px; padding:0 10px; }
-
-    .container{ max-width: 1200px; margin: 18px auto; padding: 0 16px; }
-    .mini{ font-size:12px; color: var(--muted); }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-    }
-
-    .card{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      border-radius:18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-      overflow:hidden;
-    }
-    .card .head{
-      padding:14px 16px;
-      border-bottom: 1px solid var(--stroke);
-      display:flex; justify-content:space-between; gap:10px; align-items:center;
-      background: rgba(0,0,0,.25);
-      flex-wrap:wrap;
-    }
-    .card .body{ padding:14px 16px; }
-
-    .kpi{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:12px;
-    }
-    @media (max-width: 880px){
-      .kpi{ grid-template-columns: 1fr; }
-    }
-    .kpiBox{
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:14px 14px;
-    }
-    .kpiBox .t{ font-size:12px; color: var(--muted); font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
-    .kpiBox b{ display:block; font-size:28px; margin-top:8px; }
-
-    label{ display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
-    .input, select{
-      width:100%;
-      height:38px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.25);
-      color:#fff;
-      padding:0 12px;
-      outline:none;
-      font-size:14px;
-    }
-    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 880px){
-      .row{ grid-template-columns: 1fr; }
-    }
-
-    table{ width:100%; border-collapse: collapse; }
-    th, td{ border-bottom: 1px solid rgba(255,255,255,.08); padding:10px 8px; vertical-align:middle; }
-    th{ text-align:left; font-size:12px; color: var(--muted); font-weight:800; letter-spacing:.2px; }
-    td{ font-size:14px; }
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      border-radius:999px;
-      padding:5px 10px;
-      font-size:12px;
-      color: rgba(255,255,255,.80);
-      white-space:nowrap;
-    }
-
-    .notice{
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.22);
-      border-radius:14px;
-      padding:12px 12px;
-    }
-    .ok{ color: var(--ok); }
-    .bad{ color: var(--bad); }
-    .warn{ color: var(--warn); }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Funcionario (CRM)</title>
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
 <body data-page="funcionario">
   <header class="topbar">
-    <div class="brand">
-      <span class="mah">MAH</span> <span class="fit">FIT</span>
-      <span class="badge">Panel Funcionario (CRM)</span>
-    </div>
-
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
     <div class="nav-right">
-      <span class="mini">Hola, <b id="who"></b></span>
+      <span>Hola, <b id="who"></b></span>
       <span id="roleBadge" class="badge"></span>
-
       <a class="btn primary small" href="rutinas.html">Creador Rutinas</a>
-      <a class="btn ghost small" href="socio.html">Vista Socio</a>
-      <button id="btnLogout" class="btn danger small">Salir</button>
+      <button id="btnLogout" class="btn ghost small">Salir</button>
     </div>
   </header>
 
-  <main class="container">
-    <div class="kpi">
-      <div class="kpiBox">
-        <div class="t">Socios</div>
-        <b id="kSocios">0</b>
-        <div class="mini">Usuarios con rol SOCIO</div>
-      </div>
-      <div class="kpiBox">
-        <div class="t">Funcionarios</div>
-        <b id="kFunc">0</b>
-        <div class="mini">ADMIN + FUNCIONARIO</div>
-      </div>
-      <div class="kpiBox">
-        <div class="t">Activos</div>
-        <b id="kActivos">0</b>
-        <div class="mini">Usuarios con estado activo</div>
-      </div>
-    </div>
+  <main class="hero">
+    <div class="container">
 
-    <div style="height:14px;"></div>
-
-    <section class="card">
-      <div class="head">
-        <b>CRM Usuarios</b>
-        <span class="pill">Crear / Activar / Desactivar</span>
-      </div>
-      <div class="body">
-        <div class="notice" style="margin-bottom:12px;">
-          <div class="mini">
-            Tip: Aquí gestionas usuarios. Si eres <b>FUNCIONARIO</b>, normalmente solo verás/editarás lo permitido por tu rol.
-          </div>
+      <div class="kpi">
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Socios</div>
+          <b id="kSocios">0</b>
         </div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Funcionarios</div>
+          <b id="kFunc">0</b>
+        </div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Activos</div>
+          <b id="kActivos">0</b>
+        </div>
+      </div>
 
-        <div style="overflow:auto;">
-          <table>
+      <div style="height:18px;"></div>
+
+      <div class="card">
+        <div class="head">
+          <strong>CRM Usuarios</strong>
+          <span class="pill">Crear / Activar / Desactivar</span>
+        </div>
+        <div class="body">
+          <table class="table">
             <thead>
               <tr>
-                <th style="min-width:220px;">Nombre</th>
-                <th style="min-width:160px;">RUT/Usuario</th>
-                <th style="min-width:140px;">Rol</th>
-                <th style="min-width:90px;">Activo</th>
-                <th style="min-width:220px;">Acciones</th>
+                <th>Nombre</th>
+                <th>RUT/Usuario</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="usersTbody"></tbody>
           </table>
         </div>
-
-        <div id="msgUserTable" class="mini" style="margin-top:10px;"></div>
       </div>
-    </section>
 
-    <div style="height:14px;"></div>
+      <div style="height:18px;"></div>
 
-    <section class="card">
-      <div class="head">
-        <b>Crear usuario</b>
-        <span class="pill">Solo ADMIN</span>
+      <div class="card">
+        <div class="head"><strong>Crear usuario</strong><span class="pill">Solo admin</span></div>
+        <div class="body">
+          <form id="createUserForm" class="form">
+            <div class="split">
+              <div>
+                <label>RUT/Usuario</label>
+                <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
+              </div>
+              <div>
+                <label>Nombre</label>
+                <input id="newNombre" class="input" placeholder="Nombre completo" />
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
+                <label>Email (opcional)</label>
+                <input id="newEmail" class="input" placeholder="correo@..." />
+              </div>
+              <div>
+                <label>Clave</label>
+                <input id="newPass" class="input" placeholder="Clave" />
+              </div>
+            </div>
+
+            <label>Rol</label>
+            <select id="newRol" class="select input">
+              <option value="SOCIO">SOCIO</option>
+              <option value="FUNCIONARIO">FUNCIONARIO</option>
+            </select>
+
+            <button class="btn primary" type="submit" style="margin-top:14px;">CREAR</button>
+            <div id="msgUser" style="margin-top:10px;font-size:13px;"></div>
+          </form>
+        </div>
       </div>
-      <div class="body">
-        <form id="createUserForm">
-          <div class="row">
-            <div>
-              <label>RUT/Usuario</label>
-              <input id="newRut" class="input" placeholder="Ej: 12345678-9" />
-            </div>
-            <div>
-              <label>Nombre</label>
-              <input id="newNombre" class="input" placeholder="Nombre completo" />
-            </div>
-          </div>
 
-          <div style="height:10px;"></div>
-
-          <div class="row">
-            <div>
-              <label>Email (opcional)</label>
-              <input id="newEmail" class="input" placeholder="correo@..." />
-            </div>
-            <div>
-              <label>Clave</label>
-              <input id="newPass" class="input" placeholder="Clave" />
-            </div>
-          </div>
-
-          <div style="height:10px;"></div>
-
-          <label>Rol</label>
-          <select id="newRol" class="input">
-            <option value="SOCIO">SOCIO</option>
-            <option value="FUNCIONARIO">FUNCIONARIO</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-
-          <div style="height:12px;"></div>
-
-          <button class="btn primary" type="submit">CREAR</button>
-          <div id="msgUser" class="mini" style="margin-top:10px;"></div>
-        </form>
-      </div>
-    </section>
+    </div>
   </main>
 
-  <!-- Importante: deja tu app.js como está en la raíz (igual que rutinas.html). -->
-  <script src="app.js"></script>
-
-  <!-- (Opcional) Si tu app.js no setea el header, esto lo hace compatible con tu sesión actual "mahfit_session". -->
-  <script>
-    (function(){
-      const sRaw = localStorage.getItem("mahfit_session");
-      if(!sRaw) return;
-      try{
-        const s = JSON.parse(sRaw);
-        const who = document.getElementById("who");
-        const roleBadge = document.getElementById("roleBadge");
-        if(who) who.textContent = s.nombre || s.rut || "Usuario";
-        if(roleBadge) roleBadge.textContent = (s.rol || s.role || "").toString();
-      }catch{}
-      const btn = document.getElementById("btnLogout");
-      if(btn){
-        btn.addEventListener("click", ()=>{
-          localStorage.removeItem("mahfit_session");
-          localStorage.removeItem("role");
-          localStorage.removeItem("ROL");
-          localStorage.removeItem("nombre");
-          localStorage.removeItem("NOMBRE");
-          localStorage.removeItem("rut");
-          localStorage.removeItem("RUT");
-          location.href="index.html";
-        });
-      }
-    })();
-  </script>
+  <script src="assets/app.js"></script>
 </body>
 </html>
