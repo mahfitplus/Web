@@ -5,12 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAH FIT | Acceso</title>
   <link rel="stylesheet" href="assets/styles.css" />
+
+  <!-- ✅ Estilos mínimos para el badge de conexión (por si tu styles.css no lo trae) -->
+  <style>
+    .db-badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.90);
+      font-size:12px;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .db-dot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.40);
+      box-shadow:0 0 0 3px rgba(255,255,255,.06) inset;
+    }
+    .db-dot.connecting{ background:rgba(255,255,255,.40); }
+    .db-dot.connected{ background:#2bd576; }
+    .db-dot.error{ background:#ff5a67; }
+  </style>
 </head>
 
 <body data-page="index">
   <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT x</span></div>
-    <div class="nav-right">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+
+    <div class="nav-right" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <!-- ✅ Badge conexión -->
+      <span class="db-badge" title="Estado de conexión">
+        <span id="dbDot" class="db-dot connecting"></span>
+        <span id="dbText">Conectando…</span>
+      </span>
+
       <span class="badge">Acceso</span>
     </div>
   </header>
@@ -41,8 +71,6 @@
                 <div class="notice">
                   <b>Registro:</b> Los usuarios se crean solo por administración (funcionario).
                 </div>
-
-               
 
                 <button id="resetBtn" class="btn ghost block" type="button" style="margin-top:10px;">
                   REINICIAR DATOS (si no carga)
@@ -98,17 +126,3 @@
   <script src="assets/app.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
