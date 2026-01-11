@@ -292,6 +292,131 @@
       gap:10px;
       flex-wrap:wrap;
     }
+
+    /* ==========================
+       NUEVO: Tarjeta "Última rutina" bonita
+       ========================== */
+    .lastCard{
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+    .lastHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .lastTitle{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .pillMini{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:rgba(255,255,255,.86);
+    }
+    .mutedLine{
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      margin-top:6px;
+      line-height:1.35;
+    }
+
+    /* ==========================
+       NUEVO: Modal "Vista Socio" bonita
+       ========================== */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.55);
+      z-index:9999;
+      padding:18px;
+    }
+    .modalBox{
+      width:min(980px, 100%);
+      max-height:85vh;
+      overflow:auto;
+      background:rgba(10,14,20,.95);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.50);
+      padding:14px;
+    }
+    .modalTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .modalTitle{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .socPreviewCard{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .socMeta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+    }
+    .socMeta b{ color:rgba(255,255,255,.92); }
+    .collapseDay{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.18);
+      margin-bottom:10px;
+      overflow:hidden;
+    }
+    .collapseHead{
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+    }
+    .collapseBody{
+      display:none;
+      padding:10px 12px 12px;
+      border-top:1px solid var(--line);
+    }
+    .exList{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:8px;
+    }
+    .exItem{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+    }
+    .exItem b{ color:#fff; }
   </style>
 </head>
 
@@ -402,8 +527,10 @@
 
         <div class="hr"></div>
 
-        <h2>Última rutina guardada</h2>
-        <div class="notice" id="lastRoutineBox">No hay rutina guardada aún.</div>
+        <h2>Última rutina encontrada</h2>
+        <div class="lastCard" id="lastRoutineBox">
+          <div class="mutedLine">Selecciona un socio para ver su última rutina.</div>
+        </div>
       </div>
 
       <!-- ===== Right: días/exercises ===== -->
@@ -413,6 +540,17 @@
           <div class="daysArea" id="daysContainer"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal Vista Socio ===== -->
+  <div class="modal" id="vistaModal">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div class="modalTitle">Vista Socio</div>
+        <button class="btn ghost small" id="btnCerrarVista">Cerrar</button>
+      </div>
+      <div id="vistaContenido"></div>
     </div>
   </div>
 
@@ -554,6 +692,7 @@
           const card = document.querySelector(`.dayCard[data-day="${d}"]`);
           if(card) card.remove();
           addedDays.delete(String(d));
+          refreshLastPreviewBadge();
         };
       });
 
@@ -562,6 +701,7 @@
         ch.onchange = ()=>{
           const d = ch.getAttribute("data-focus");
           updateFocusBadges(d);
+          refreshLastPreviewBadge();
         };
       });
     }
@@ -571,6 +711,7 @@
       document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
         btn.onclick = ()=>{
           btn.closest("tr")?.remove();
+          refreshLastPreviewBadge();
         };
       });
 
@@ -639,43 +780,234 @@
 
     function formatRutinaText(routine, profName){
       let out = "";
-      out += `RUTINA DE ENTRENAMIENTO\\n`;
-      out += `Socio: ${routine.socio.nombre} (${routine.socio.rut})\\n`;
-      out += `Nivel: ${routine.meta.nivel}\\n`;
-      out += `Objetivo: ${routine.meta.objetivo}\\n`;
-      if(routine.meta.fecha) out += `Fecha: ${routine.meta.fecha}\\n`;
-      if(routine.meta.notas) out += `Notas: ${routine.meta.notas}\\n`;
-      out += `Profesor: ${profName}\\n`;
-      out += `\\n==============================\\n\\n`;
+      out += `RUTINA DE ENTRENAMIENTO\n`;
+      out += `Socio: ${routine.socio.nombre} (${routine.socio.rut})\n`;
+      out += `Nivel: ${routine.meta.nivel}\n`;
+      out += `Objetivo: ${routine.meta.objetivo}\n`;
+      if(routine.meta.fecha) out += `Fecha: ${routine.meta.fecha}\n`;
+      if(routine.meta.notas) out += `Notas: ${routine.meta.notas}\n`;
+      out += `Profesor: ${profName}\n`;
+      out += `\n==============================\n\n`;
 
       routine.dias.forEach(day=>{
-        out += `${day.dia}\\n`;
-        if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\\n`;
-        out += `\\n`;
+        out += `${day.dia}\n`;
+        if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\n`;
+        out += `\n`;
         day.ejercicios.forEach((e, i)=>{
-          out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\\n`;
-          if(e.maq) out += `   Maq/Var: ${e.maq}\\n`;
-          if(e.obs) out += `   Obs: ${e.obs}\\n`;
+          out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\n`;
+          if(e.maq) out += `   Maq/Var: ${e.maq}\n`;
+          if(e.obs) out += `   Obs: ${e.obs}\n`;
         });
-        out += `\\n------------------------------\\n\\n`;
+        out += `\n------------------------------\n\n`;
       });
 
       return out;
     }
 
-    function showLastRoutineBox(last){
+    // ==========================================================
+    // NUEVO: Mostrar última rutina guardada (bonita) + cargar para editar
+    // ==========================================================
+    function showLastRoutineBoxPretty(lastV2){
       const box = $("#lastRoutineBox");
-      if(!last){
-        box.textContent = "No hay rutina guardada aún.";
+
+      if(!lastV2){
+        box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
         return;
       }
+
+      const r = lastV2.routine || lastV2; // por si tu estructura viene directa
+      const m = r.meta || {};
+      const dias = Array.isArray(r.dias) ? r.dias.length : 0;
+      const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
+
       box.innerHTML = `
-        <b>${last.titulo}</b><br/>
-        <span style="opacity:.75">RUT: ${last.rutSocio}</span><br/>
-        <span style="opacity:.75">Actualizado: ${new Date(last.creadoEn).toLocaleString()}</span>
+        <div class="lastHead">
+          <div class="lastTitle">Última rutina encontrada</div>
+          <div class="pills">
+            <span class="pillMini">Nivel: <b>${m.nivel || "-"}</b></span>
+            <span class="pillMini">Días: <b>${dias}</b></span>
+          </div>
+        </div>
+
+        <div class="mutedLine"><b>Últ. Modificación:</b> ${actualizado ? new Date(actualizado).toLocaleString() : "-"}</div>
+        <div class="mutedLine"><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+
+        <div style="margin-top:10px">
+          <button class="btn" id="btnCargarUltima">Cargar para editar</button>
+        </div>
       `;
+
+      // acción
+      $("#btnCargarUltima").onclick = ()=>{
+        try{
+          loadRoutineIntoBuilder(r);
+          showMsg($("#msg"), "✅ Rutina cargada. Puedes editar y volver a guardar.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
     }
 
+    function clearBuilderDays(){
+      $("#daysContainer").innerHTML = "";
+      addedDays.clear();
+    }
+
+    function extractDayNumber(dayLabel){
+      const m = String(dayLabel || "").match(/\d+/);
+      return m ? String(m[0]) : "1";
+    }
+
+    function addDayIfNotExists(dayNum){
+      if(addedDays.has(String(dayNum))) return;
+      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
+      addedDays.add(String(dayNum));
+      wireDayActions();
+      updateFocusBadges(dayNum);
+    }
+
+    function loadRoutineIntoBuilder(routine){
+      // meta
+      $("#nivel").value = routine.meta?.nivel || "Principiante";
+      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
+      $("#fecha").value = routine.meta?.fecha || "";
+      $("#notas").value = routine.meta?.notas || "";
+
+      // días
+      clearBuilderDays();
+
+      const dias = Array.isArray(routine.dias) ? routine.dias : [];
+      if(dias.length === 0){
+        // si no hay días, deja uno
+        $("#dayPicker").value = "1";
+        $("#btnAddDay").click();
+        return;
+      }
+
+      dias.forEach(day=>{
+        const dayNum = extractDayNumber(day.dia);
+        addDayIfNotExists(dayNum);
+
+        // enfoque
+        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
+        enfoqueArr.forEach(m=>{
+          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
+          if(cb) cb.checked = true;
+        });
+        updateFocusBadges(dayNum);
+
+        // ejercicios
+        const tbody = document.getElementById(`tbody-${dayNum}`);
+        tbody.innerHTML = "";
+
+        (day.ejercicios || []).forEach(ex=>{
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
+          wireRowActions(dayNum);
+
+          // último TR agregado
+          const tr = tbody.querySelector("tr:last-child");
+          if(!tr) return;
+
+          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
+          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
+          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
+          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
+          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
+
+          if(selM){
+            selM.value = ex.musculo || selM.value;
+            updateDatalist(dayNum, selM.value);
+          }
+          if(inEx) inEx.value = ex.ejercicio || "";
+          if(inMaq) inMaq.value = ex.maq || "";
+          if(inObs) inObs.value = ex.obs || "";
+          if(inSeries) inSeries.value = ex.series || "";
+          if(inReps) inReps.value = ex.reps || "";
+          if(inCarga) inCarga.value = ex.carga || "";
+          if(inDesc) inDesc.value = ex.descanso || "";
+        });
+      });
+    }
+
+    // útil para refrescar info si cambias en vivo (sin obligar)
+    function refreshLastPreviewBadge(){ /* intencionalmente vacío (placeholder) */ }
+
+    // ==========================================================
+    // NUEVO: Vista Socio bonita (modal)
+    // ==========================================================
+    function renderVistaSocio(routine, profesorNombre){
+      const cont = $("#vistaContenido");
+      const m = routine.meta || {};
+      const dias = routine.dias || [];
+
+      cont.innerHTML = `
+        <div class="socPreviewCard">
+          <div class="socMeta">
+            <div><b>Socio:</b> ${routine.socio?.nombre || "-"} (${routine.socio?.rut || "-"})</div>
+            <div><b>Nivel:</b> ${m.nivel || "-"}</div>
+            <div><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+            <div><b>Fecha:</b> ${m.fecha || "-"}</div>
+          </div>
+          ${m.notas ? `<div class="mutedLine" style="margin-top:10px"><b>Notas:</b> ${m.notas}</div>` : ``}
+          <div class="mutedLine" style="margin-top:8px"><b>Profesor:</b> ${profesorNombre || "-"}</div>
+        </div>
+
+        ${dias.map((d, idx)=>`
+          <div class="collapseDay" data-cday="${idx}">
+            <div class="collapseHead">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <b style="letter-spacing:.2px">${d.dia || `Día ${idx+1}`}</b>
+                ${(d.enfoque||[]).map(x=>`<span class="chip on">${x}</span>`).join("")}
+                ${(d.enfoque||[]).length===0 ? `<span class="chip">Sin enfoque</span>` : ``}
+              </div>
+              <span style="opacity:.8">Abrir/Cerrar</span>
+            </div>
+            <div class="collapseBody" id="cbody-${idx}">
+              ${
+                (d.ejercicios||[]).length === 0
+                ? `<div class="mutedLine">No hay ejercicios cargados para este día.</div>`
+                : `<div class="exList">
+                    ${(d.ejercicios||[]).map((e,i)=>`
+                      <div class="exItem">
+                        <b>${i+1}. ${e.ejercicio || "-"}</b> — <span style="opacity:.85">${e.musculo || "-"}</span><br/>
+                        <span style="opacity:.85">
+                          Series: <b>${e.series||"-"}</b> · Reps: <b>${e.reps||"-"}</b> · Carga: <b>${e.carga||"-"}</b> · Descanso: <b>${e.descanso||"-"}</b>
+                        </span>
+                        ${e.maq ? `<div style="opacity:.78;margin-top:6px">Maq/Var: ${e.maq}</div>` : ``}
+                        ${e.obs ? `<div style="opacity:.78;margin-top:6px">Obs: ${e.obs}</div>` : ``}
+                      </div>
+                    `).join("")}
+                  </div>`
+              }
+            </div>
+          </div>
+        `).join("")}
+      `;
+
+      // toggle
+      cont.querySelectorAll(".collapseDay").forEach(cd=>{
+        const idx = cd.getAttribute("data-cday");
+        const head = cd.querySelector(".collapseHead");
+        const body = cd.querySelector(`#cbody-${idx}`);
+        head.onclick = ()=>{
+          body.style.display = (body.style.display === "block") ? "none" : "block";
+        };
+      });
+    }
+
+    function openVistaModal(){
+      $("#vistaModal").style.display = "flex";
+    }
+    function closeVistaModal(){
+      $("#vistaModal").style.display = "none";
+    }
+
+    // ==========================================================
+    // Socios filter
+    // ==========================================================
     function filterSocios(q){
       q = String(q||"").toLowerCase().trim();
       const users = getUsers().filter(u=>u.rol==="SOCIO" && u.activo !== false);
@@ -703,11 +1035,18 @@
         window.location.href = "index.html";
       };
 
+      // Modal
+      $("#btnCerrarVista").onclick = closeVistaModal;
+      $("#vistaModal").addEventListener("click", (e)=>{
+        if(e.target.id === "vistaModal") closeVistaModal();
+      });
+
       // Poblar socios
       const socioSelect = $("#socioSelect");
       const search = $("#socioSearch");
 
       function renderSocios(list){
+        const current = socioSelect.value || "";
         socioSelect.innerHTML = "";
         list.forEach(u=>{
           const opt = document.createElement("option");
@@ -715,6 +1054,10 @@
           opt.textContent = `${u.nombre} (${u.rut})`;
           socioSelect.appendChild(opt);
         });
+        // mantener selección si existe
+        if(current && [...socioSelect.options].some(o=>o.value===current)){
+          socioSelect.value = current;
+        }
       }
 
       renderSocios(filterSocios(""));
@@ -725,6 +1068,13 @@
 
       search.addEventListener("keydown", (e)=>{
         if(e.key==="Enter") e.preventDefault();
+      });
+
+      // Cuando cambias socio: muestra última rutina bonita
+      socioSelect.addEventListener("change", ()=>{
+        const rut = socioSelect.value;
+        const last = rutinaV2DeSocio(rut); // ✅ trae lo último guardado
+        showLastRoutineBoxPretty(last);
       });
 
       // Agregar día
@@ -745,12 +1095,20 @@
       $("#dayPicker").value = "1";
       $("#btnAddDay").click();
 
+      // Inicial: si hay socio ya seleccionado, muestra su última
+      setTimeout(()=>{
+        const rut = socioSelect.value;
+        if(rut){
+          const last = rutinaV2DeSocio(rut);
+          showLastRoutineBoxPretty(last);
+        }
+      }, 150);
+
       $("#btnGuardar").onclick = ()=>{
         try{
           const routine = collectRoutine();
 
           // ✅ Guardar también como base de datos (1 fila por ejercicio)
-          //    (historial por rutina)
           const rutinaId = crypto.randomUUID();
           apiPost("RUTINAS_ITEMS", {
             rutinaId,
@@ -773,31 +1131,26 @@
             creadoPorRut: me.rut
           });
 
-          showLastRoutineBox(rutinaV2DeSocio(routine.socio.rut));
+          // refresca tarjeta de última rutina
+          const last = rutinaV2DeSocio(routine.socio.rut);
+          showLastRoutineBoxPretty(last);
+
           showMsg($("#msg"), "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
         }catch(err){
           showMsg($("#msg"), err.message, false);
         }
       };
 
-      // ✅ VISUALIZAR RUTINA (como lo verá el SOCIO)
+      // ✅ VISTA SOCIO bonita (modal)
       $("#btnVista").onclick = ()=>{
         try{
           const routine = collectRoutine();
-          const box = $("#previewBox");
-          box.style.display = "block";
-          box.textContent = formatRutinaText(routine, me.nombre);
+          renderVistaSocio(routine, me.nombre);
+          openVistaModal();
         }catch(err){
           showMsg($("#msg"), err.message, false);
         }
       };
-
-      // Mostrar última (si existe local)
-      const s = socioSelect.value;
-      if(s){
-        const last = rutinaDeSocio(s);
-        if(last) showLastRoutineBox(last);
-      }
     });
   </script>
 </body>
