@@ -3,354 +3,216 @@
    - Mantiene tu "esencia": mismos IDs, mismos flujos
    - Agrega backend (Google Sheets Apps Script)
    - Deja funciones SINCRÓNICAS para no romper tus páginas
-   - Soporta requireAuth("ROL") y requireAuth(["A","B"])
-   - + Indicador de conexión (dbDot/dbText) 🟢🔴⚪
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbywHS6N9c4rZQZ5yKQ7d6P7vH2rjEw0s6xgqJv3g9g2V1E9oWb8KjZ8Q8w9A0bB1/exec";
 
+/* ------------------ Helpers DOM ------------------ */
+const $ = (sel)=> document.querySelector(sel);
 
-// -------- LocalStorage helpers --------
-const LS = {
-  get(key, fallback){
-    try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-    catch{ return fallback; }
-  },
-  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); },
-  del(key){ localStorage.removeItem(key); }
-};
-
-function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
-function nowISO(){ return new Date().toISOString(); }
-
-
-// -------- DB STATUS (pelotita) --------
-function setDbStatus(status){
-  // status: "connecting" | "connected" | "error"
-  const dot  = document.getElementById("dbDot");
-  const text = document.getElementById("dbText");
-  if(!dot || !text) return; // si alguna página no tiene el badge, no pasa nada
-
-  dot.className = "db-dot";
-  if(status === "connected"){
-    dot.classList.add("connected");
-    text.textContent = "Conectado";
-  }else if(status === "error"){
-    dot.classList.add("error");
-    text.textContent = "Sin conexión";
-  }else{
-    dot.classList.add("connecting");
-    text.textContent = "Conectando…";
-  }
+function showMsg(el, text, ok=true){
+  if(!el) return;
+  el.textContent = text;
+  el.classList.remove("ok","err");
+  el.classList.add(ok ? "ok" : "err");
+  el.style.display = "block";
 }
 
-
-// -------- DOMContentLoaded GATE --------
-// (No modificas tus HTML. Esto evita que corran scripts antes de cargar backend)
-(function gateDOMContentLoaded(){
-  const origAdd = document.addEventListener.bind(document);
-  const queued = [];
-  let ready = false;
-
-  document.addEventListener = function(type, listener, options){
-    if(type === "DOMContentLoaded"){
-      if(ready) {
-        try{ listener(); }catch(e){ console.error(e); }
-      } else {
-        queued.push(listener);
-      }
-      return;
-    }
-    return origAdd(type, listener, options);
-  };
-
-  window.__mahfitReleaseDOMContentLoaded = function(){
-    ready = true;
-    queued.forEach(fn=>{ try{ fn(); }catch(e){ console.error(e); } });
-    queued.length = 0;
-  };
-})();
-
-
-// -------- API --------
-async function apiGet(resource){
-  const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API GET error");
-  return j;
+/* ------------------ Storage ------------------ */
+function getUsers(){
+  try{ return JSON.parse(localStorage.getItem("mahfit_users") || "[]"); }
+  catch{ return []; }
 }
-async function apiPost(resource, data){
-  const r = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ resource, data })
-  });
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API POST error");
-  return j;
+function setUsers(users){
+  localStorage.setItem("mahfit_users", JSON.stringify(users || []));
+}
+function getSession(){
+  try{ return JSON.parse(localStorage.getItem("mahfit_session") || "null"); }
+  catch{ return null; }
+}
+function setSession(session){
+  localStorage.setItem("mahfit_session", JSON.stringify(session));
+}
+function clearSession(){
+  localStorage.removeItem("mahfit_session");
 }
 
-
-// -------- Cache local (la web lo usa) --------
-function getUsers(){ return LS.get("mahfit_users", []); }
-function setUsers(v){ LS.set("mahfit_users", v); }
-
-function getRutinas(){ return LS.get("mahfit_rutinas", []); }
-function setRutinas(v){ LS.set("mahfit_rutinas", v); }
-
-function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
-function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
-
-
-// -------- Session --------
-function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
-}
-function getSession(){ return LS.get("mahfit_session", null); }
-function clearSession(){ LS.del("mahfit_session"); }
-
-
-// -------- Sync DOWN (Sheets -> cache) --------
-async function syncDown(){
-  // USERS
-  const u = await apiGet("USERS");
-  const users = (u.users || []).map(x => ({
-    rut: normalizeRut(x.rut),
-    nombre: x.nombre ?? "",
-    email: x.email ?? "",
-    pass: String(x.pass ?? ""),
-    rol: x.rol ?? "SOCIO",
-    activo: (x.activo === false) ? false : true,
-    creadoEn: x.creadoEn ?? ""
-  }));
-  setUsers(users);
-
-  // RUTINAS_TXT
-  const rt = await apiGet("RUTINAS_TXT");
-  const rutinas = (rt.rutinas_txt || []).map(x => ({
-    id: x.id || crypto.randomUUID(),
-    rutSocio: normalizeRut(x.rutSocio),
-    titulo: x.titulo ?? "",
-    detalle: x.detalle ?? "",
-    creadoEn: x.creadoEn ?? "",
-    creadoPorRut: x.creadoPorRut ?? ""
-  }));
-  setRutinas(rutinas);
-
-  // RUTINAS_V2
-  const rv2 = await apiGet("RUTINAS_V2");
-  const list = (rv2.rutinas_v2 || []).map(x => {
-    let routine = null;
-    try{ routine = JSON.parse(x.routine_json || "null"); }catch{}
-    return {
-      rutSocio: normalizeRut(x.rutSocio),
-      routine,
-      creadoPorRut: x.creadoPorRut ?? "",
-      actualizadoEn: x.actualizadoEn ?? ""
-    };
-  });
-  setRutinasV2(list);
-}
-
-
-// -------- Seed ADMIN remoto --------
-async function seedRemoteAdmin(){
-  const users = getUsers();
-  const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
-  if(exists) return;
-
-  await apiPost("USERS", {
-    rut: "ADMIN",
-    nombre: "Administrador MAH FIT",
-    email: "admin@mahfit.cl",
-    pass: "1234",
-    rol: "FUNCIONARIO",
-    activo: true,
-    creadoEn: nowISO()
-  });
-
-  await syncDown();
-}
-
-
-// -------- Auth (SINCRÓNICO, compatible con tus HTML) --------
-function requireAuth(expectedRole){
+/* ------------------ Auth ------------------ */
+function requireAuth(minRole){
   const s = getSession();
-  if(!s){ window.location.href = "index.html"; return null; }
-
-  const user = getUsers().find(u => normalizeRut(u.rut) === normalizeRut(s.rut));
-  if(!user || user.activo === false){
-    clearSession();
-    window.location.href = "index.html";
+  if(!s || !s.user){
+    location.href = "index.html";
     return null;
   }
-
-  // expectedRole puede ser string o array
-  if(expectedRole){
-    const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
-      // fallback por si pasas "ADMIN" como rol
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-      return null;
-    }
+  // roles: ADMIN > FUNCIONARIO > SOCIO
+  const order = { "SOCIO": 1, "FUNCIONARIO": 2, "ADMIN": 3 };
+  const need = order[minRole] || 1;
+  const have = order[s.user.rol] || 0;
+  if(have < need){
+    alert("No tienes permisos para acceder aquí.");
+    location.href = "index.html";
+    return null;
   }
-
-  return user;
+  // si usuario está inactivo, sacarlo
+  if(s.user.activo === false){
+    alert("Usuario desactivado. Contacta a administración.");
+    clearSession();
+    location.href = "index.html";
+    return null;
+  }
+  return s.user;
 }
 
+function logout(){
+  clearSession();
+  location.href = "index.html";
+}
 
-// -------- Login/Register (manteniendo tu esencia) --------
-function registerUser({rut, nombre, email, pass, rol}){
-  rut = normalizeRut(rut);
-  if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
+/* ------------------ Backend (Apps Script) ------------------ */
+async function apiGet(action){
+  const url = `${API_URL}?action=${encodeURIComponent(action)}`;
+  const r = await fetch(url, { method:"GET" });
+  if(!r.ok) throw new Error(`GET ${action} -> ${r.status}`);
+  return await r.json();
+}
 
+async function apiPost(action, payload){
+  const r = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ action, payload })
+  });
+  if(!r.ok) throw new Error(`POST ${action} -> ${r.status}`);
+  return await r.json();
+}
+
+/* ------------------ Login ------------------ */
+function normalizeRut(rut){
+  return (rut||"").trim().toUpperCase().replace(/\s+/g,"");
+}
+
+function findUserByRutOrEmailOrAdmin(userInput){
   const users = getUsers();
-  if(users.some(u => u.rut === rut)) throw new Error("Ese Usuario/RUT ya existe.");
+  const x = normalizeRut(userInput);
+  if(!x) return null;
+  // ADMIN shortcut
+  if(x === "ADMIN") return users.find(u=>u.rut==="ADMIN") || null;
+  // rut exact
+  let u = users.find(u=>normalizeRut(u.rut)===x);
+  if(u) return u;
+  // email
+  u = users.find(u=> (u.email||"").trim().toLowerCase() === x.toLowerCase());
+  return u || null;
+}
 
-  const user = {
-    rut,
-    nombre: String(nombre).trim(),
-    email: String(email||"").trim(),
-    pass: String(pass),
-    rol,
-    activo: true,
-    creadoEn: nowISO()
-  };
+function login(rutOrEmail, pass){
+  const u = findUserByRutOrEmailOrAdmin(rutOrEmail);
+  if(!u) return { ok:false, msg:"Usuario no encontrado" };
+  if(u.activo === false) return { ok:false, msg:"Usuario desactivado" };
+  if((u.pass||"") !== (pass||"")) return { ok:false, msg:"Contraseña incorrecta" };
 
-  // local inmediato
-  users.push(user);
+  setSession({ user: u, ts: Date.now() });
+  return { ok:true, user:u };
+}
+
+/* ------------------ Users CRUD ------------------ */
+function ensureDefaultAdmin(){
+  const users = getUsers();
+  const hasAdmin = users.some(u=>u.rol==="ADMIN");
+  if(hasAdmin) return;
+
+  users.push({
+    rut: "ADMIN",
+    nombre: "Administrador MAH FIT",
+    email: "",
+    pass: "admin",
+    rol: "ADMIN",
+    activo: true
+  });
+  setUsers(users);
+}
+
+function validateUserPayload(p){
+  const rut = normalizeRut(p.rut);
+  const nombre = (p.nombre||"").trim();
+  const email = (p.email||"").trim().toLowerCase();
+  const pass = (p.pass||"").trim();
+  const rol = (p.rol||"").trim().toUpperCase();
+
+  if(!rut) throw new Error("Debes ingresar RUT/Usuario");
+  if(!nombre) throw new Error("Debes ingresar nombre");
+  if(!pass) throw new Error("Debes ingresar contraseña");
+  if(!["SOCIO","FUNCIONARIO","ADMIN"].includes(rol)) throw new Error("Rol inválido");
+
+  return { rut, nombre, email, pass, rol };
+}
+
+function registerUser(payload){
+  const users = getUsers();
+  const p = validateUserPayload(payload);
+
+  if(users.some(u=>normalizeRut(u.rut)===p.rut)){
+    throw new Error("Ya existe un usuario con ese RUT/Usuario");
+  }
+
+  const newUser = { ...p, activo: true };
+  users.push(newUser);
   setUsers(users);
 
-  // remoto
-  apiPost("USERS", user).catch(console.error);
+  // persistir en backend (no bloquear UI)
+  apiPost("USERS", newUser).catch(console.error);
 
-  return user;
+  return newUser;
 }
 
-function login({rut, pass}){
-  rut = normalizeRut(rut);
-  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
-  if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
-  if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
-  setSession(user);
-  return user;
-}
-
-
-// -------- Rutinas (sincrónico para tu socio.html) --------
-function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const rutinas = getRutinas();
-  const existing = rutinas.find(r => r.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    titulo,
-    detalle,
-    creadoPorRut: creadoPorRut || "",
-    creadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.titulo = titulo;
-    existing.detalle = detalle;
-    existing.creadoEn = payload.creadoEn;
-    existing.creadoPorRut = payload.creadoPorRut;
-  }else{
-    rutinas.push({ id: crypto.randomUUID(), ...payload });
+/* ------------------ SyncDown (traer desde Sheets) ------------------ */
+async function syncDownUsers(){
+  const data = await apiGet("SYNC_USERS");
+  if(Array.isArray(data.users)){
+    setUsers(data.users);
   }
-  setRutinas(rutinas);
-
-  apiPost("RUTINAS_TXT", payload).catch(console.error);
+  return data;
 }
 
-function rutinaDeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinas().find(r => r.rutSocio === rutSocioN) || null;
-}
-
-function upsertRutinaV2({rutSocio, routine, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const list = getRutinasV2();
-  const existing = list.find(x => x.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    routine_json: JSON.stringify(routine),
-    creadoPorRut: creadoPorRut || "",
-    actualizadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.routine = routine;
-    existing.creadoPorRut = payload.creadoPorRut;
-    existing.actualizadoEn = payload.actualizadoEn;
-  }else{
-    list.push({
-      rutSocio: rutSocioN,
-      routine,
-      creadoPorRut: payload.creadoPorRut,
-      actualizadoEn: payload.actualizadoEn
-    });
-  }
-  setRutinasV2(list);
-
-  apiPost("RUTINAS_V2", payload).catch(console.error);
-}
-
-function rutinaV2DeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
-}
-
-
-// -------- UI helpers --------
-function $(sel){ return document.querySelector(sel); }
-function showMsg(el, msg, ok=false){
-  if(!el) return;
-  el.textContent = msg;
-  el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
-}
-
-
-// -------- INIT por página (mantiene tu flujo actual) --------
+/* ------------------ Página: index.html ------------------ */
 function initIndex(){
-  const loginForm = $("#loginForm");
-  const msgLogin  = $("#msgLogin");
+  ensureDefaultAdmin();
 
-  const s = getSession();
-  if(s){
-    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
-    if(u){
-      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-      return;
-    }
-  }
+  const msg = $("#msg");
+  const form = $("#loginForm");
+  if(!form) return;
 
-  loginForm.addEventListener("submit", (e)=>{
+  $("#btnSalir")?.addEventListener("click", logout);
+
+  form.addEventListener("submit", async (e)=>{
     e.preventDefault();
     try{
-      const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
-      showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      // intentar sincronizar desde backend (si no hay internet, sigue local)
+      try{ await syncDownUsers(); }catch(err){ console.warn("SyncDown falló:", err); }
+
+      const rut = $("#rut").value;
+      const pass = $("#pass").value;
+      const res = login(rut, pass);
+      if(!res.ok){
+        showMsg(msg, res.msg, false);
+        return;
+      }
+      showMsg(msg, `Bienvenido ${res.user.nombre}`, true);
+
+      // redirección según rol
+      if(res.user.rol === "SOCIO"){
+        location.href = "socio.html";
+      }else{
+        location.href = "funcionario.html";
+      }
     }catch(err){
-      showMsg(msgLogin, err.message);
+      console.error(err);
+      showMsg(msg, "Error al iniciar sesión. Revisa consola.", false);
     }
   });
-
-  const resetBtn = document.getElementById("resetBtn");
-  if(resetBtn){
-    resetBtn.addEventListener("click", ()=>{
-      localStorage.removeItem("mahfit_users");
-      localStorage.removeItem("mahfit_rutinas");
-      localStorage.removeItem("mahfit_rutinas_v2");
-      localStorage.removeItem("mahfit_session");
-      alert("Datos locales reiniciados. Recarga la página.");
-      window.location.reload();
-    });
-  }
 }
 
+/* ------------------ Página: funcionario.html ------------------ */
 function initFuncionario(){
   const user = requireAuth("FUNCIONARIO");
   if(!user) return;
@@ -367,42 +229,56 @@ function initFuncionario(){
     $("#kActivos").textContent = users.filter(u=>u.activo !== false).length;
   }
 
+  // 👇 FIX: render + listener robusto (event delegation)
   function refreshTable(){
-    const users = getUsers().slice().sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
-    const tbody = $("#usersTbody");
-    tbody.innerHTML = "";
+    const users = getUsers()
+      .slice()
+      .sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
 
-    for(const u of users){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
+    const tbody = $("#usersTbody");
+    tbody.innerHTML = users.map(u => `
+      <tr>
         <td>${u.nombre}</td>
         <td>${u.rut}</td>
         <td><span class="pill">${u.rol}</span></td>
         <td>${u.activo === false ? "⛔" : "✅"}</td>
         <td style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn small ghost" data-act="${u.rut}">
+          <button type="button" class="btn small ghost" data-act="${u.rut}">
             ${u.activo === false ? "Activar" : "Desactivar"}
           </button>
         </td>
-      `;
-      tbody.appendChild(tr);
-    }
+      </tr>
+    `).join("");
 
-    tbody.querySelectorAll("[data-act]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const rut = btn.getAttribute("data-act");
-        const users = getUsers();
-        const u = users.find(x=>x.rut===rut);
-        if(!u) return;
+    // Bind UNA sola vez, aunque se re-renderice la tabla
+    if(!tbody.__mahfitBound){
+      tbody.__mahfitBound = true;
 
-        u.activo = !(u.activo === false);
-        setUsers(users);
-        apiPost("USERS", u).catch(console.error);
+      tbody.addEventListener("click", (e)=>{
+        const btn = e.target.closest("[data-act]");
+        if(!btn) return;
 
-        refreshTable();
-        refreshKPIs();
+        try{
+          const rut = btn.getAttribute("data-act");
+          const usersNow = getUsers();
+          const u = usersNow.find(x => x.rut === rut);
+          if(!u) return;
+
+          // Toggle local inmediato (UI)
+          u.activo = (u.activo === false);
+          setUsers(usersNow);
+
+          // Intentar persistir (si falla, no rompe la UI)
+          apiPost("USERS", u).catch(console.error);
+
+          refreshTable();
+          refreshKPIs();
+        }catch(err){
+          console.error("Error Activar/Desactivar:", err);
+          alert("Error al activar/desactivar. Revisa la consola (F12).");
+        }
       });
-    });
+    }
   }
 
   $("#createUserForm").addEventListener("submit", (e)=>{
@@ -420,39 +296,43 @@ function initFuncionario(){
       refreshTable();
       refreshKPIs();
     }catch(err){
-      showMsg(msgUser, err.message);
+      console.error(err);
+      showMsg(msgUser, err.message || "Error creando usuario", false);
     }
   });
 
-  $("#btnLogout").addEventListener("click", ()=>{
-    clearSession();
-    window.location.href = "index.html";
-  });
+  // Botones navegación
+  $("#btnSalir")?.addEventListener("click", logout);
+  $("#btnRutinas")?.addEventListener("click", ()=> location.href="rutinas.html");
 
-  refreshKPIs();
-  refreshTable();
+  // SyncDown + render inicial
+  (async ()=>{
+    try{
+      ensureDefaultAdmin();
+      try{
+        await syncDownUsers();
+        $("#dbStatus")?.classList.add("ok");
+        $("#dbStatus") && ($("#dbStatus").textContent = "Conectado");
+      }catch(err){
+        console.warn("No se pudo sincronizar desde backend:", err);
+        $("#dbStatus")?.classList.add("warn");
+        $("#dbStatus") && ($("#dbStatus").textContent = "Modo local");
+      }
+      refreshTable();
+      refreshKPIs();
+    }catch(err){
+      console.error(err);
+      $("#dbStatus")?.classList.add("err");
+      $("#dbStatus") && ($("#dbStatus").textContent = "Error");
+    }
+  })();
 }
 
-
-// -------- BOOT: baja backend -> seed -> libera DOMContentLoaded --------
-(async function boot(){
-  // Si la pelotita existe en la página, marcamos "conectando" desde el inicio
-  setDbStatus("connecting");
-
-  try{
-    await syncDown();
-    await seedRemoteAdmin();
-
-    // ✅ Si llegó hasta acá: conectado
-    setDbStatus("connected");
-  }catch(e){
-    console.error("BOOT ERROR:", e);
-
-    // ❌ Si falla: sin conexión (igual libera la página con cache local si hay)
-    setDbStatus("error");
-  }finally{
-    if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
-  }
+/* ------------------ Init general ------------------ */
+(function boot(){
+  // Prevenir que acciones se ejecuten antes de DOM listo
+  // (tu código ya usa DOMContentLoaded, esto es extra por seguridad)
+  window.__mahfitReleaseDOMContentLoaded = null;
 })();
 
 
