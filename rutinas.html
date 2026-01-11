@@ -7,10 +7,6 @@
   <link rel="stylesheet" href="styles.css"/>
 
   <style>
-    /* ==========================
-       RUTINAS BUILDER (UI)
-       (Tu esencia original)
-       ========================== */
     :root{
       --bg0:#0a0e14;
       --bg1:#0f1623;
@@ -50,22 +46,14 @@
       box-shadow:var(--shadow);
       backdrop-filter: blur(8px);
     }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; }
     .logo{
       width:38px;height:38px;
       border-radius:12px;
       background:linear-gradient(135deg,var(--pri),var(--pri2));
       box-shadow:0 8px 18px rgba(124,92,255,.25);
     }
-    h1{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.4px;
-    }
+    h1{ margin:0; font-size:18px; letter-spacing:.4px; }
     .pill{
       padding:6px 10px;
       border-radius:999px;
@@ -119,10 +107,7 @@
       outline:none;
     }
     textarea{ min-height:90px; resize:vertical; }
-    .col{
-      flex:1;
-      min-width:160px;
-    }
+    .col{ flex:1; min-width:160px; }
     .btn{
       border:none;
       cursor:pointer;
@@ -161,11 +146,7 @@
       color:rgba(255,255,255,.75);
       font-size:12px;
     }
-    .daysArea{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+    .daysArea{ display:flex; flex-direction:column; gap:12px; }
     .dayCard{
       background:rgba(0,0,0,.18);
       border:1px solid var(--line);
@@ -187,12 +168,7 @@
       font-weight:700;
       letter-spacing:.3px;
     }
-    .dayBadges{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .dayBadges{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .chip{
       background:rgba(255,255,255,.06);
       border:1px solid var(--line);
@@ -270,11 +246,7 @@
     .tblSmall{ max-width:90px; }
     .tblMid{ max-width:130px; }
     .tblBig{ min-width:160px; }
-    .rightCol{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
+    .rightCol{ display:flex; flex-direction:column; gap:16px; }
     .preview{
       display:none;
       margin-top:12px;
@@ -287,15 +259,9 @@
       font-size:12px;
       line-height:1.45;
     }
-    .footerBtns{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+    .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    /* ==========================
-       NUEVO: Tarjeta "Última rutina" bonita
-       ========================== */
+    /* Última rutina bonita */
     .lastCard{
       background:rgba(0,0,0,.20);
       border:1px solid var(--line);
@@ -309,15 +275,8 @@
       gap:10px;
       margin-bottom:10px;
     }
-    .lastTitle{
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .pills{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .lastTitle{ font-weight:800; letter-spacing:.2px; }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
     .pillMini{
       font-size:12px;
       padding:6px 10px;
@@ -333,9 +292,7 @@
       line-height:1.35;
     }
 
-    /* ==========================
-       NUEVO: Modal "Vista Socio" bonita
-       ========================== */
+    /* Modal Vista Socio */
     .modal{
       position:fixed;
       inset:0;
@@ -437,7 +394,7 @@
     </div>
 
     <div class="grid">
-      <!-- ===== Left: datos rutina ===== -->
+      <!-- Left -->
       <div class="card">
         <h2>Datos de la Rutina</h2>
 
@@ -516,13 +473,39 @@
 
         <div class="hr"></div>
 
+        <!-- ✅ ACCIONES -->
         <h2>Acciones</h2>
+
         <div class="footerBtns">
           <button class="btn" id="btnGuardar">Guardar Rutina</button>
           <button class="btn ghost" id="btnVista">Vista Socio</button>
         </div>
-        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
 
+        <div class="hr"></div>
+
+        <!-- ✅ PLANTILLAS -->
+        <h2>Plantillas</h2>
+
+        <div class="row">
+          <div class="col">
+            <label>Buscar Plantilla</label>
+            <input id="tplSearch" placeholder="Ej: Hipertrofia 4 días..." />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Selecciona Plantilla</label>
+            <select id="tplSelect"></select>
+          </div>
+        </div>
+
+        <div class="footerBtns">
+          <button class="btn ghost" id="btnCargarPlantilla">Cargar Plantilla</button>
+          <button class="btn" id="btnGuardarPlantilla">Guardar como Plantilla</button>
+        </div>
+
+        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
         <div class="preview" id="previewBox"></div>
 
         <div class="hr"></div>
@@ -533,7 +516,7 @@
         </div>
       </div>
 
-      <!-- ===== Right: días/exercises ===== -->
+      <!-- Right -->
       <div class="rightCol">
         <div class="card">
           <h2>Días de entrenamiento</h2>
@@ -543,7 +526,7 @@
     </div>
   </div>
 
-  <!-- ===== Modal Vista Socio ===== -->
+  <!-- Modal Vista Socio -->
   <div class="modal" id="vistaModal">
     <div class="modalBox">
       <div class="modalTop">
@@ -558,14 +541,14 @@
 
   <script>
     // ==========================================================
-    // Tu base de ejercicios (tal cual la tenías)
+    // Base ejercicios
     // ==========================================================
-   const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
+    const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
 
     const MUSCLES = Object.keys(EXERCISE_DB);
 
     // ==========================================================
-    // Templates
+    // Templates UI
     // ==========================================================
     function dayCardTemplate(dayNum){
       return `
@@ -663,7 +646,6 @@
     }
 
     function wireDayActions(){
-      // botones por día
       document.querySelectorAll("[data-addex]").forEach(btn=>{
         btn.onclick = ()=>{
           const d = btn.getAttribute("data-addex");
@@ -678,41 +660,32 @@
           const card = document.querySelector(`.dayCard[data-day="${d}"]`);
           if(card) card.remove();
           addedDays.delete(String(d));
-          refreshLastPreviewBadge();
         };
       });
 
-      // enfoque badges
       document.querySelectorAll("input[data-focus]").forEach(ch=>{
         ch.onchange = ()=>{
           const d = ch.getAttribute("data-focus");
           updateFocusBadges(d);
-          refreshLastPreviewBadge();
         };
       });
     }
 
     function wireRowActions(dayNum){
-      // borrar fila
       document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
         btn.onclick = ()=>{
           btn.closest("tr")?.remove();
-          refreshLastPreviewBadge();
         };
       });
 
-      // cambio músculo => actualiza datalist
       document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
-        sel.onchange = ()=>{
-          updateDatalist(dayNum, sel.value);
-        };
-        // init datalist con el primer músculo
+        sel.onchange = ()=> updateDatalist(dayNum, sel.value);
         updateDatalist(dayNum, sel.value);
       });
     }
 
     // ==========================================================
-    // Data builder (collect routine)
+    // Data builder
     // ==========================================================
     function collectRoutine(){
       const socioVal = $("#socioSelect").value;
@@ -748,11 +721,7 @@
           }
         });
 
-        dias.push({
-          dia: `Día ${d}`,
-          enfoque,
-          ejercicios
-        });
+        dias.push({ dia:`Día ${d}`, enfoque, ejercicios });
       });
 
       if(dias.length === 0) throw new Error("Debes agregar al menos 1 día.");
@@ -791,17 +760,16 @@
     }
 
     // ==========================================================
-    // NUEVO: Mostrar última rutina guardada (bonita) + cargar para editar
+    // Última rutina bonita + cargar para editar
     // ==========================================================
     function showLastRoutineBoxPretty(lastV2){
       const box = $("#lastRoutineBox");
-
       if(!lastV2){
         box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
         return;
       }
 
-      const r = lastV2.routine || lastV2; // por si tu estructura viene directa
+      const r = lastV2.routine || lastV2;
       const m = r.meta || {};
       const dias = Array.isArray(r.dias) ? r.dias.length : 0;
       const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
@@ -823,7 +791,6 @@
         </div>
       `;
 
-      // acción
       $("#btnCargarUltima").onclick = ()=>{
         try{
           loadRoutineIntoBuilder(r);
@@ -853,18 +820,15 @@
     }
 
     function loadRoutineIntoBuilder(routine){
-      // meta
       $("#nivel").value = routine.meta?.nivel || "Principiante";
       $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
       $("#fecha").value = routine.meta?.fecha || "";
       $("#notas").value = routine.meta?.notas || "";
 
-      // días
       clearBuilderDays();
 
       const dias = Array.isArray(routine.dias) ? routine.dias : [];
       if(dias.length === 0){
-        // si no hay días, deja uno
         $("#dayPicker").value = "1";
         $("#btnAddDay").click();
         return;
@@ -874,7 +838,6 @@
         const dayNum = extractDayNumber(day.dia);
         addDayIfNotExists(dayNum);
 
-        // enfoque
         const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
         enfoqueArr.forEach(m=>{
           const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
@@ -882,7 +845,6 @@
         });
         updateFocusBadges(dayNum);
 
-        // ejercicios
         const tbody = document.getElementById(`tbody-${dayNum}`);
         tbody.innerHTML = "";
 
@@ -890,7 +852,6 @@
           tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
           wireRowActions(dayNum);
 
-          // último TR agregado
           const tr = tbody.querySelector("tr:last-child");
           if(!tr) return;
 
@@ -918,11 +879,8 @@
       });
     }
 
-    // útil para refrescar info si cambias en vivo (sin obligar)
-    function refreshLastPreviewBadge(){ /* intencionalmente vacío (placeholder) */ }
-
     // ==========================================================
-    // NUEVO: Vista Socio bonita (modal)
+    // Vista Socio (modal)
     // ==========================================================
     function renderVistaSocio(routine, profesorNombre){
       const cont = $("#vistaContenido");
@@ -973,23 +931,16 @@
         `).join("")}
       `;
 
-      // toggle
       cont.querySelectorAll(".collapseDay").forEach(cd=>{
         const idx = cd.getAttribute("data-cday");
         const head = cd.querySelector(".collapseHead");
         const body = cd.querySelector(`#cbody-${idx}`);
-        head.onclick = ()=>{
-          body.style.display = (body.style.display === "block") ? "none" : "block";
-        };
+        head.onclick = ()=> body.style.display = (body.style.display === "block") ? "none" : "block";
       });
     }
 
-    function openVistaModal(){
-      $("#vistaModal").style.display = "flex";
-    }
-    function closeVistaModal(){
-      $("#vistaModal").style.display = "none";
-    }
+    function openVistaModal(){ $("#vistaModal").style.display = "flex"; }
+    function closeVistaModal(){ $("#vistaModal").style.display = "none"; }
 
     // ==========================================================
     // Socios filter
@@ -1009,12 +960,15 @@
     // ==========================================================
     const addedDays = new Set();
 
-    document.addEventListener("DOMContentLoaded", ()=>{
+    document.addEventListener("DOMContentLoaded", async ()=>{
       // Auth (funcionario)
       let me = requireAuth("FUNCIONARIO");
       if(!me) return;
 
-      // Volver
+      // Cargar data base (users / rutinas / plantillas) desde local o API
+      await preloadCoreData();
+
+      // Volver / logout
       $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
       $("#btnLogout").onclick = ()=>{
         localStorage.removeItem("mahfit_session");
@@ -1040,7 +994,6 @@
           opt.textContent = `${u.nombre} (${u.rut})`;
           socioSelect.appendChild(opt);
         });
-        // mantener selección si existe
         if(current && [...socioSelect.options].some(o=>o.value===current)){
           socioSelect.value = current;
         }
@@ -1048,18 +1001,13 @@
 
       renderSocios(filterSocios(""));
 
-      search.addEventListener("input", ()=>{
-        renderSocios(filterSocios(search.value));
-      });
+      search.addEventListener("input", ()=> renderSocios(filterSocios(search.value)));
+      search.addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
 
-      search.addEventListener("keydown", (e)=>{
-        if(e.key==="Enter") e.preventDefault();
-      });
-
-      // Cuando cambias socio: muestra última rutina bonita
+      // Cambia socio => última rutina
       socioSelect.addEventListener("change", ()=>{
         const rut = socioSelect.value;
-        const last = rutinaV2DeSocio(rut); // ✅ trae lo último guardado
+        const last = rutinaV2DeSocio(rut);
         showLastRoutineBoxPretty(last);
       });
 
@@ -1081,7 +1029,7 @@
       $("#dayPicker").value = "1";
       $("#btnAddDay").click();
 
-      // Inicial: si hay socio ya seleccionado, muestra su última
+      // Inicial: última rutina si socio seleccionado
       setTimeout(()=>{
         const rut = socioSelect.value;
         if(rut){
@@ -1090,12 +1038,13 @@
         }
       }, 150);
 
-      $("#btnGuardar").onclick = ()=>{
+      // Guardar rutina
+      $("#btnGuardar").onclick = async ()=>{
         try{
           const routine = collectRoutine();
-
-          // ✅ Guardar también como base de datos (1 fila por ejercicio)
           const rutinaId = crypto.randomUUID();
+
+          // 1) 1 fila por ejercicio (histórico)
           apiPost("RUTINAS_ITEMS", {
             rutinaId,
             routine,
@@ -1103,21 +1052,22 @@
             profesorNombre: me.nombre
           }).catch(console.error);
 
-          upsertRutinaV2({
+          // 2) Rutina V2 (por socio)
+          await upsertRutinaV2({
             rutSocio: routine.socio.rut,
             routine,
             creadoPorRut: me.rut
           });
 
+          // 3) Texto legacy (por si lo usas)
           const txt = formatRutinaText(routine, me.nombre);
-          upsertRutina({
+          await upsertRutina({
             rutSocio: routine.socio.rut,
             titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
             detalle: txt,
             creadoPorRut: me.rut
           });
 
-          // refresca tarjeta de última rutina
           const last = rutinaV2DeSocio(routine.socio.rut);
           showLastRoutineBoxPretty(last);
 
@@ -1127,7 +1077,7 @@
         }
       };
 
-      // ✅ VISTA SOCIO bonita (modal)
+      // Vista Socio
       $("#btnVista").onclick = ()=>{
         try{
           const routine = collectRoutine();
@@ -1137,6 +1087,126 @@
           showMsg($("#msg"), err.message, false);
         }
       };
+
+      // ==========================================================
+      // ✅ PLANTILLAS (V2) - cargar/guardar
+      // ==========================================================
+      const tplSearch = $("#tplSearch");
+      const tplSelect = $("#tplSelect");
+      let plantillasCache = [];
+
+      async function cargarPlantillasDesdeSheets(){
+        try{
+          const all = await apiGet("PLANTILLAS_V2");
+          const myRut = me.rut;
+          plantillasCache = (all || []).filter(p=>{
+            const vis = String(p.visibility||"").toUpperCase();
+            const owner = String(p.ownerRut||"");
+            return vis === "PUBLICA" || owner === myRut;
+          });
+          renderPlantillas("");
+        }catch(e){
+          console.error(e);
+          showMsg($("#msg"), "⚠️ No pude cargar plantillas (revisa API / permisos).", false);
+        }
+      }
+
+      function normalizeTplJson(x){
+        if(!x) return null;
+        if(typeof x === "string"){
+          try{ return JSON.parse(x); }catch{ return null; }
+        }
+        return x;
+      }
+
+      function plantillaToOptionText(p){
+        const n = p.nombrePlantilla || "Plantilla sin nombre";
+        const niv = p.nivel || "-";
+        const obj = p.objetivo || "-";
+        const d = p.dias || "-";
+        const vis = (p.visibility || "").toUpperCase() === "PUBLICA" ? "🌍" : "🔒";
+        return `${vis} ${n} · ${obj} · ${niv} · ${d} días`;
+      }
+
+      function renderPlantillas(q){
+        q = String(q||"").toLowerCase().trim();
+        const list = !q ? plantillasCache : plantillasCache.filter(p =>
+          String(p.nombrePlantilla||"").toLowerCase().includes(q) ||
+          String(p.objetivo||"").toLowerCase().includes(q) ||
+          String(p.nivel||"").toLowerCase().includes(q)
+        );
+
+        const current = tplSelect.value || "";
+        tplSelect.innerHTML = "";
+
+        list.forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value = p.templateId;
+          opt.textContent = plantillaToOptionText(p);
+          tplSelect.appendChild(opt);
+        });
+
+        if(current && [...tplSelect.options].some(o=>o.value === current)){
+          tplSelect.value = current;
+        }
+      }
+
+      tplSearch?.addEventListener("input", ()=> renderPlantillas(tplSearch.value));
+
+      $("#btnCargarPlantilla").onclick = ()=>{
+        try{
+          const id = tplSelect.value;
+          const tpl = plantillasCache.find(p => String(p.templateId) === String(id));
+          if(!tpl) throw new Error("Selecciona una plantilla válida.");
+
+          const tplRoutine = normalizeTplJson(tpl.template_json);
+          if(!tplRoutine) throw new Error("La plantilla no tiene template_json válido.");
+
+          loadRoutineIntoBuilder({
+            meta: tplRoutine.meta || {},
+            dias: tplRoutine.dias || []
+          });
+
+          showMsg($("#msg"), "📋 Plantilla cargada. Ahora puedes editar y guardar al socio.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      $("#btnGuardarPlantilla").onclick = async ()=>{
+        try{
+          const r = collectRoutine(); // incluye socio, pero guardamos SOLO meta+dias como plantilla
+
+          const nombre = prompt("Nombre de la plantilla:", `${r.meta.objetivo} ${r.dias.length} días · ${r.meta.nivel}`) || "";
+          if(!nombre.trim()) throw new Error("Debes colocar un nombre de plantilla.");
+
+          const vis = (prompt('Visibilidad: escribe "PUBLICA" o "PRIVADA"', "PRIVADA") || "PRIVADA").trim().toUpperCase();
+          const visibility = (vis === "PUBLICA") ? "PUBLICA" : "PRIVADA";
+
+          const templateRoutine = { meta: r.meta, dias: r.dias };
+
+          await apiPost("PLANTILLAS_V2", {
+            templateId: crypto.randomUUID(),
+            nombrePlantilla: nombre.trim(),
+            nivel: r.meta.nivel,
+            objetivo: r.meta.objetivo,
+            dias: r.dias.length,
+            visibility,
+            ownerRut: me.rut,
+            ownerNombre: me.nombre,
+            template_json: templateRoutine,
+            creadoEn: new Date().toISOString(),
+            actualizadoEn: new Date().toISOString()
+          });
+
+          showMsg($("#msg"), "✅ Plantilla guardada. Recargando lista…", true);
+          await cargarPlantillasDesdeSheets();
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      await cargarPlantillasDesdeSheets();
     });
   </script>
 </body>
