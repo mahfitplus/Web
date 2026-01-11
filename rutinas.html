@@ -7,14 +7,9 @@
   <link rel="stylesheet" href="styles.css"/>
 
   <style>
-    /* ==========================
-       RUTINAS BUILDER (UI)
-       (Tu esencia original)
-       ========================== */
     :root{
       --bg0:#0a0e14;
       --bg1:#0f1623;
-      --card:#121b2a;
       --line:rgba(255,255,255,.10);
       --txt:rgba(255,255,255,.88);
       --mut:rgba(255,255,255,.65);
@@ -22,7 +17,6 @@
       --bad:#ff5a67;
       --pri:#7c5cff;
       --pri2:#23a6ff;
-      --chip:#1a2538;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
     }
@@ -33,16 +27,9 @@
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       min-height:100vh;
     }
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:18px;
-    }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
       padding:14px 16px;
       background:rgba(255,255,255,.04);
       border:1px solid var(--line);
@@ -50,39 +37,24 @@
       box-shadow:var(--shadow);
       backdrop-filter: blur(8px);
     }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; }
     .logo{
-      width:38px;height:38px;
-      border-radius:12px;
+      width:38px;height:38px; border-radius:12px;
       background:linear-gradient(135deg,var(--pri),var(--pri2));
       box-shadow:0 8px 18px rgba(124,92,255,.25);
     }
-    h1{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.4px;
-    }
+    h1{ margin:0; font-size:18px; letter-spacing:.4px; }
     .pill{
-      padding:6px 10px;
-      border-radius:999px;
+      padding:6px 10px; border-radius:999px;
       background:rgba(255,255,255,.06);
       border:1px solid var(--line);
-      color:var(--mut);
-      font-size:12px;
+      color:var(--mut); font-size:12px;
     }
     .grid{
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap:16px;
-      margin-top:16px;
+      display:grid; grid-template-columns: 420px 1fr;
+      gap:16px; margin-top:16px;
     }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
     .card{
       background:rgba(255,255,255,.04);
       border:1px solid var(--line);
@@ -90,28 +62,11 @@
       box-shadow:var(--shadow);
       padding:14px;
     }
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:14px;
-      color:rgba(255,255,255,.92);
-      letter-spacing:.4px;
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    label{
-      font-size:12px;
-      color:var(--mut);
-      display:block;
-      margin-bottom:4px;
-    }
+    .card h2{ margin:0 0 10px 0; font-size:14px; color:rgba(255,255,255,.92); letter-spacing:.4px; }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+    label{ font-size:12px; color:var(--mut); display:block; margin-bottom:4px; }
     input, select, textarea{
-      width:100%;
-      padding:10px 12px;
+      width:100%; padding:10px 12px;
       border-radius:12px;
       border:1px solid var(--line);
       background:rgba(0,0,0,.20);
@@ -119,17 +74,10 @@
       outline:none;
     }
     textarea{ min-height:90px; resize:vertical; }
-    .col{
-      flex:1;
-      min-width:160px;
-    }
+    .col{ flex:1; min-width:160px; }
     .btn{
-      border:none;
-      cursor:pointer;
-      border-radius:12px;
-      padding:10px 12px;
-      color:#fff;
-      font-weight:600;
+      border:none; cursor:pointer; border-radius:12px;
+      padding:10px 12px; color:#fff; font-weight:600;
       background:linear-gradient(135deg,var(--pri),var(--pri2));
       box-shadow:0 10px 20px rgba(35,166,255,.15);
       transition:transform .06s ease;
@@ -148,24 +96,15 @@
       box-shadow:none;
     }
     .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
-    .hr{
-      height:1px;
-      background:var(--line);
-      margin:10px 0;
-    }
+    .hr{ height:1px; background:var(--line); margin:10px 0; }
     .notice{
-      padding:10px 12px;
-      border-radius:12px;
+      padding:10px 12px; border-radius:12px;
       background:rgba(255,255,255,.05);
       border:1px dashed rgba(255,255,255,.14);
       color:rgba(255,255,255,.75);
       font-size:12px;
     }
-    .daysArea{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+    .daysArea{ display:flex; flex-direction:column; gap:12px; }
     .dayCard{
       background:rgba(0,0,0,.18);
       border:1px solid var(--line);
@@ -174,25 +113,11 @@
       position:relative;
     }
     .dayHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
       margin-bottom:10px;
     }
-    .dayTitle{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:700;
-      letter-spacing:.3px;
-    }
-    .dayBadges{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .dayTitle{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px; }
+    .dayBadges{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .chip{
       background:rgba(255,255,255,.06);
       border:1px solid var(--line);
@@ -216,31 +141,11 @@
       border:1px solid var(--line);
       margin-bottom:12px;
     }
-    @media (max-width: 980px){
-      .focusGrid{ grid-template-columns: repeat(3, 1fr); }
-    }
-    .focusItem{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:12px;
-      color:rgba(255,255,255,.78);
-      user-select:none;
-    }
+    @media (max-width: 980px){ .focusGrid{ grid-template-columns: repeat(3, 1fr); } }
+    .focusItem{ display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,.78); user-select:none; }
     .focusItem input{ width:auto; }
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0 8px;
-      font-size:12px;
-    }
-    th{
-      color:rgba(255,255,255,.55);
-      font-weight:600;
-      text-align:left;
-      padding:0 8px;
-      font-size:11px;
-    }
+    table{ width:100%; border-collapse:separate; border-spacing:0 8px; font-size:12px; }
+    th{ color:rgba(255,255,255,.55); font-weight:600; text-align:left; padding:0 8px; font-size:11px; }
     td{
       padding:10px 8px;
       background:rgba(255,255,255,.03);
@@ -270,32 +175,10 @@
     .tblSmall{ max-width:90px; }
     .tblMid{ max-width:130px; }
     .tblBig{ min-width:160px; }
-    .rightCol{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-    .preview{
-      display:none;
-      margin-top:12px;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.22);
-      white-space:pre-wrap;
-      color:rgba(255,255,255,.84);
-      font-size:12px;
-      line-height:1.45;
-    }
-    .footerBtns{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+    .rightCol{ display:flex; flex-direction:column; gap:16px; }
+    .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    /* ==========================
-       NUEVO: Tarjeta "Última rutina" bonita
-       ========================== */
+    /* ===== Última rutina encontrada ===== */
     .lastCard{
       background:rgba(0,0,0,.20);
       border:1px solid var(--line);
@@ -303,21 +186,11 @@
       padding:12px;
     }
     .lastHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
       margin-bottom:10px;
     }
-    .lastTitle{
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .pills{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .lastTitle{ font-weight:800; letter-spacing:.2px; }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
     .pillMini{
       font-size:12px;
       padding:6px 10px;
@@ -326,28 +199,18 @@
       border:1px solid var(--line);
       color:rgba(255,255,255,.86);
     }
-    .mutedLine{
-      color:rgba(255,255,255,.72);
-      font-size:12px;
-      margin-top:6px;
-      line-height:1.35;
-    }
+    .mutedLine{ color:rgba(255,255,255,.72); font-size:12px; margin-top:6px; line-height:1.35; }
 
-    /* ==========================
-       NUEVO: Modal "Vista Socio" bonita
-       ========================== */
+    /* ===== Modal general ===== */
     .modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
+      position:fixed; inset:0;
+      display:none; align-items:center; justify-content:center;
       background:rgba(0,0,0,.55);
       z-index:9999;
       padding:18px;
     }
     .modalBox{
-      width:min(980px, 100%);
+      width:min(1050px, 100%);
       max-height:85vh;
       overflow:auto;
       background:rgba(10,14,20,.95);
@@ -357,16 +220,12 @@
       padding:14px;
     }
     .modalTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
       margin-bottom:12px;
     }
-    .modalTitle{
-      font-weight:900;
-      letter-spacing:.3px;
-    }
+    .modalTitle{ font-weight:900; letter-spacing:.3px; }
+
+    /* ===== Vista Socio bonita ===== */
     .socPreviewCard{
       background:rgba(255,255,255,.03);
       border:1px solid var(--line);
@@ -375,9 +234,7 @@
       margin-bottom:12px;
     }
     .socMeta{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
+      display:flex; justify-content:space-between; gap:10px;
       flex-wrap:wrap;
       font-size:12px;
       color:rgba(255,255,255,.78);
@@ -390,24 +247,9 @@
       margin-bottom:10px;
       overflow:hidden;
     }
-    .collapseHead{
-      padding:10px 12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      cursor:pointer;
-    }
-    .collapseBody{
-      display:none;
-      padding:10px 12px 12px;
-      border-top:1px solid var(--line);
-    }
-    .exList{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-top:8px;
-    }
+    .collapseHead{ padding:10px 12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    .collapseBody{ display:none; padding:10px 12px 12px; border-top:1px solid var(--line); }
+    .exList{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
     .exItem{
       background:rgba(255,255,255,.03);
       border:1px solid var(--line);
@@ -417,6 +259,87 @@
       color:rgba(255,255,255,.84);
     }
     .exItem b{ color:#fff; }
+
+    /* ===== Plantillas PRO (panel) ===== */
+    .tplGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 980px){ .tplGrid{ grid-template-columns: 1fr; } }
+    .tplPane{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:12px;
+    }
+    .tplToolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .seg{
+      display:flex;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .seg button{
+      border:none;
+      cursor:pointer;
+      padding:8px 10px;
+      font-size:12px;
+      color:rgba(255,255,255,.80);
+      background:transparent;
+    }
+    .seg button.on{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      font-weight:800;
+    }
+    .tplList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:52vh;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .tplItem{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
+      cursor:pointer;
+      transition:transform .06s ease;
+    }
+    .tplItem:active{ transform:scale(.99); }
+    .tplItemTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .tplName{ font-weight:900; letter-spacing:.2px; }
+    .tplMeta{
+      margin-top:6px;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+      line-height:1.35;
+    }
+    .tplActions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .tplPreviewBox{ margin-top:10px; }
+    .kpiRow{ display:flex; gap:8px; flex-wrap:wrap; }
+    .kpi{ font-size:12px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line); }
+    .tagLine{
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+      margin-top:8px;
+    }
+    .hint{ font-size:12px; color:rgba(255,255,255,.65); margin-top:8px; }
   </style>
 </head>
 
@@ -430,7 +353,9 @@
           <div class="pill">MAH FIT · Guardado Online (Sheets)</div>
         </div>
       </div>
+
       <div class="row" style="margin:0">
+        <button class="btn ghost small" id="btnPlantillas">📚 Plantillas</button>
         <button class="btn ghost small" id="btnVolver">Volver</button>
         <button class="btn danger small" id="btnLogout">Salir</button>
       </div>
@@ -521,9 +446,8 @@
           <button class="btn" id="btnGuardar">Guardar Rutina</button>
           <button class="btn ghost" id="btnVista">Vista Socio</button>
         </div>
-        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
 
-        <div class="preview" id="previewBox"></div>
+        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
 
         <div class="hr"></div>
 
@@ -554,18 +478,125 @@
     </div>
   </div>
 
+  <!-- ===== Modal Plantillas PRO ===== -->
+  <div class="modal" id="tplModal">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div class="modalTitle">📚 Plantillas PRO</div>
+        <button class="btn ghost small" id="btnCerrarTpl">Cerrar</button>
+      </div>
+
+      <div class="tplGrid">
+        <!-- Left: list -->
+        <div class="tplPane">
+          <div class="tplToolbar">
+            <input id="tplSearch" placeholder="Buscar por nombre o tags (ej: fullbody, 4 dias, fuerza)..." />
+          </div>
+
+          <div class="tplToolbar">
+            <div class="seg">
+              <button id="segAll" class="on" type="button">Todo visible</button>
+              <button id="segMine" type="button">Mis PRIVATE</button>
+              <button id="segTeam" type="button">TEAM</button>
+              <button id="segOfficial" type="button">OFFICIAL</button>
+            </div>
+            <button class="btn small" id="btnRefreshTpl">Actualizar</button>
+          </div>
+
+          <div class="hint">
+            Regla PRO: <b>editar/eliminar</b> solo el <b>dueño</b> o <b>ADMIN</b>. Para adaptar una TEAM/OFFICIAL usa <b>Duplicar</b>.
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="tplList" id="tplList"></div>
+        </div>
+
+        <!-- Right: preview + actions -->
+        <div class="tplPane">
+          <div class="notice">
+            <b>Acciones rápidas</b><br/>
+            - <b>Aplicar</b>: carga la plantilla al constructor (tú puedes modificar).<br/>
+            - <b>Aplicar y guardar</b>: asigna y guarda directo al socio (sobrescribe su rutina actual).
+          </div>
+
+          <div class="hr"></div>
+
+          <div id="tplSelectedInfo" class="mutedLine">Selecciona una plantilla de la lista para ver detalles.</div>
+
+          <div class="tplPreviewBox" id="tplPreviewBox"></div>
+
+          <div class="tplActions" id="tplActions" style="display:none">
+            <button class="btn small" id="btnTplApply">Aplicar</button>
+            <button class="btn small" id="btnTplApplySave">Aplicar y guardar</button>
+            <button class="btn ghost small" id="btnTplDuplicate">Duplicar</button>
+            <button class="btn ghost small" id="btnTplEdit">Editar</button>
+            <button class="btn danger small" id="btnTplDelete">Eliminar</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <h2 style="margin-top:0">Guardar como plantilla</h2>
+          <div class="row">
+            <div class="col">
+              <label>Nombre Plantilla</label>
+              <input id="tplNewName" placeholder="Ej: Torso/Pierna 4 días (Intermedio)" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <label>Tags (coma)</label>
+              <input id="tplNewTags" placeholder="Ej: torso-pierna,4dias,hipertrofia,intermedio" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <label>Visibilidad</label>
+              <select id="tplNewVis">
+                <option value="PRIVATE">PRIVATE (solo yo + ADMIN)</option>
+                <option value="TEAM">TEAM (todo el staff)</option>
+                <option value="OFFICIAL">OFFICIAL (solo ADMIN)</option>
+              </select>
+              <div class="hint" id="tplVisHint"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-bottom:0">
+            <button class="btn" id="btnSaveAsTemplate">Guardar rutina actual como plantilla</button>
+          </div>
+
+          <p id="tplMsg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tu backend helpers -->
   <script src="assets/app.js"></script>
 
   <script>
     // ==========================================================
-    // Tu base de ejercicios (tal cual la tenías)
+    // BASE DE EJERCICIOS (puedes ampliar)
     // ==========================================================
-    const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
-
+    const EXERCISE_DB = {
+      "Pectoral": ["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado"],
+      "Espalda": ["Remo con barra","Remo con mancuerna","Remo en máquina","Remo sentado en polea","Jalón al pecho","Dominadas","Pullover en polea","Remo T","Remo en máquina hammer","Remo en multipower"],
+      "Dorsales": ["Jalón al pecho agarre ancho","Jalón al pecho agarre estrecho","Dominadas asistidas","Dominadas libres"],
+      "Hombros": ["Press militar","Press militar con mancuernas","Elevaciones laterales","Elevaciones frontales","Pájaros","Face pull","Press Arnold"],
+      "Bíceps": ["Curl bíceps barra","Curl bíceps mancuernas","Curl martillo","Curl concentrado","Curl en polea"],
+      "Tríceps": ["Fondos","Extensión en polea","Press francés","Patada tríceps","Extensión por encima de la cabeza"],
+      "Cuádriceps": ["Sentadilla","Prensa","Extensión de cuádriceps","Zancadas","Hack squat"],
+      "Isquiotibiales": ["Peso muerto rumano","Curl femoral","Buenos días","Peso muerto piernas rígidas"],
+      "Glúteos": ["Hip thrust","Patada glúteo","Abducción de cadera","Puente glúteo","Sentadilla sumo"],
+      "Aductores/Abductores": ["Aductores máquina","Abductores máquina"],
+      "Pantorrillas": ["Elevación de talones de pie","Elevación de talones sentado"],
+      "Abdominales/Core": ["Plancha","Crunch","Elevación de piernas","Russian twist"],
+      "Cardio": ["Cinta","Bicicleta","Elíptica","Remo","Escaladora"]
+    };
     const MUSCLES = Object.keys(EXERCISE_DB);
 
     // ==========================================================
-    // Templates
+    // UI templates: Day & Row
     // ==========================================================
     function dayCardTemplate(dayNum){
       return `
@@ -663,7 +694,6 @@
     }
 
     function wireDayActions(){
-      // botones por día
       document.querySelectorAll("[data-addex]").forEach(btn=>{
         btn.onclick = ()=>{
           const d = btn.getAttribute("data-addex");
@@ -678,45 +708,117 @@
           const card = document.querySelector(`.dayCard[data-day="${d}"]`);
           if(card) card.remove();
           addedDays.delete(String(d));
-          refreshLastPreviewBadge();
         };
       });
 
-      // enfoque badges
       document.querySelectorAll("input[data-focus]").forEach(ch=>{
         ch.onchange = ()=>{
           const d = ch.getAttribute("data-focus");
           updateFocusBadges(d);
-          refreshLastPreviewBadge();
         };
       });
     }
 
     function wireRowActions(dayNum){
-      // borrar fila
       document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
         btn.onclick = ()=>{
           btn.closest("tr")?.remove();
-          refreshLastPreviewBadge();
         };
       });
 
-      // cambio músculo => actualiza datalist
       document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
-        sel.onchange = ()=>{
-          updateDatalist(dayNum, sel.value);
-        };
-        // init datalist con el primer músculo
+        sel.onchange = ()=> updateDatalist(dayNum, sel.value);
         updateDatalist(dayNum, sel.value);
       });
     }
 
     // ==========================================================
-    // Data builder (collect routine)
+    // Routine builder helpers
     // ==========================================================
+    let USERS_CACHE = [];
+    function getUsersCache(){ return USERS_CACHE; }
+
+    function clearBuilderDays(){
+      $("#daysContainer").innerHTML = "";
+      addedDays.clear();
+    }
+
+    function extractDayNumber(dayLabel){
+      const m = String(dayLabel || "").match(/\d+/);
+      return m ? String(m[0]) : "1";
+    }
+
+    function addDayIfNotExists(dayNum){
+      if(addedDays.has(String(dayNum))) return;
+      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
+      addedDays.add(String(dayNum));
+      wireDayActions();
+      updateFocusBadges(dayNum);
+    }
+
+    function loadRoutineIntoBuilder(routine){
+      $("#nivel").value = routine.meta?.nivel || "Principiante";
+      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
+      $("#fecha").value = routine.meta?.fecha || "";
+      $("#notas").value = routine.meta?.notas || "";
+
+      clearBuilderDays();
+
+      const dias = Array.isArray(routine.dias) ? routine.dias : [];
+      if(dias.length === 0){
+        $("#dayPicker").value = "1";
+        $("#btnAddDay").click();
+        return;
+      }
+
+      dias.forEach(day=>{
+        const dayNum = extractDayNumber(day.dia);
+        addDayIfNotExists(dayNum);
+
+        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
+        enfoqueArr.forEach(m=>{
+          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
+          if(cb) cb.checked = true;
+        });
+        updateFocusBadges(dayNum);
+
+        const tbody = document.getElementById(`tbody-${dayNum}`);
+        tbody.innerHTML = "";
+
+        (day.ejercicios || []).forEach(ex=>{
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
+          wireRowActions(dayNum);
+
+          const tr = tbody.querySelector("tr:last-child");
+          if(!tr) return;
+
+          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
+          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
+          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
+          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
+          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
+
+          if(selM){
+            selM.value = ex.musculo || selM.value;
+            updateDatalist(dayNum, selM.value);
+          }
+          if(inEx) inEx.value = ex.ejercicio || "";
+          if(inMaq) inMaq.value = ex.maq || "";
+          if(inObs) inObs.value = ex.obs || "";
+          if(inSeries) inSeries.value = ex.series || "";
+          if(inReps) inReps.value = ex.reps || "";
+          if(inCarga) inCarga.value = ex.carga || "";
+          if(inDesc) inDesc.value = ex.descanso || "";
+        });
+      });
+    }
+
     function collectRoutine(){
       const socioVal = $("#socioSelect").value;
-      const socio = getUsers().find(u=>u.rut === socioVal);
+      const socio = getUsersCache().find(u => String(u.rut) === String(socioVal));
       if(!socio) throw new Error("Selecciona un socio válido.");
 
       const meta = {
@@ -748,11 +850,7 @@
           }
         });
 
-        dias.push({
-          dia: `Día ${d}`,
-          enfoque,
-          ejercicios
-        });
+        dias.push({ dia: `Día ${d}`, enfoque, ejercicios });
       });
 
       if(dias.length === 0) throw new Error("Debes agregar al menos 1 día.");
@@ -786,22 +884,20 @@
         });
         out += `\n------------------------------\n\n`;
       });
-
       return out;
     }
 
     // ==========================================================
-    // NUEVO: Mostrar última rutina guardada (bonita) + cargar para editar
+    // Last routine card (bonita)
     // ==========================================================
     function showLastRoutineBoxPretty(lastV2){
       const box = $("#lastRoutineBox");
-
-      if(!lastV2){
+      if(!lastV2 || !lastV2.routine){
         box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
         return;
       }
 
-      const r = lastV2.routine || lastV2; // por si tu estructura viene directa
+      const r = lastV2.routine;
       const m = r.meta || {};
       const dias = Array.isArray(r.dias) ? r.dias.length : 0;
       const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
@@ -823,7 +919,6 @@
         </div>
       `;
 
-      // acción
       $("#btnCargarUltima").onclick = ()=>{
         try{
           loadRoutineIntoBuilder(r);
@@ -834,95 +929,8 @@
       };
     }
 
-    function clearBuilderDays(){
-      $("#daysContainer").innerHTML = "";
-      addedDays.clear();
-    }
-
-    function extractDayNumber(dayLabel){
-      const m = String(dayLabel || "").match(/\d+/);
-      return m ? String(m[0]) : "1";
-    }
-
-    function addDayIfNotExists(dayNum){
-      if(addedDays.has(String(dayNum))) return;
-      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
-      addedDays.add(String(dayNum));
-      wireDayActions();
-      updateFocusBadges(dayNum);
-    }
-
-    function loadRoutineIntoBuilder(routine){
-      // meta
-      $("#nivel").value = routine.meta?.nivel || "Principiante";
-      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
-      $("#fecha").value = routine.meta?.fecha || "";
-      $("#notas").value = routine.meta?.notas || "";
-
-      // días
-      clearBuilderDays();
-
-      const dias = Array.isArray(routine.dias) ? routine.dias : [];
-      if(dias.length === 0){
-        // si no hay días, deja uno
-        $("#dayPicker").value = "1";
-        $("#btnAddDay").click();
-        return;
-      }
-
-      dias.forEach(day=>{
-        const dayNum = extractDayNumber(day.dia);
-        addDayIfNotExists(dayNum);
-
-        // enfoque
-        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
-        enfoqueArr.forEach(m=>{
-          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
-          if(cb) cb.checked = true;
-        });
-        updateFocusBadges(dayNum);
-
-        // ejercicios
-        const tbody = document.getElementById(`tbody-${dayNum}`);
-        tbody.innerHTML = "";
-
-        (day.ejercicios || []).forEach(ex=>{
-          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
-          wireRowActions(dayNum);
-
-          // último TR agregado
-          const tr = tbody.querySelector("tr:last-child");
-          if(!tr) return;
-
-          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
-          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
-          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
-          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
-          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
-          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
-          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
-          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
-
-          if(selM){
-            selM.value = ex.musculo || selM.value;
-            updateDatalist(dayNum, selM.value);
-          }
-          if(inEx) inEx.value = ex.ejercicio || "";
-          if(inMaq) inMaq.value = ex.maq || "";
-          if(inObs) inObs.value = ex.obs || "";
-          if(inSeries) inSeries.value = ex.series || "";
-          if(inReps) inReps.value = ex.reps || "";
-          if(inCarga) inCarga.value = ex.carga || "";
-          if(inDesc) inDesc.value = ex.descanso || "";
-        });
-      });
-    }
-
-    // útil para refrescar info si cambias en vivo (sin obligar)
-    function refreshLastPreviewBadge(){ /* intencionalmente vacío (placeholder) */ }
-
     // ==========================================================
-    // NUEVO: Vista Socio bonita (modal)
+    // Vista Socio bonita (modal)
     // ==========================================================
     function renderVistaSocio(routine, profesorNombre){
       const cont = $("#vistaContenido");
@@ -973,30 +981,23 @@
         `).join("")}
       `;
 
-      // toggle
       cont.querySelectorAll(".collapseDay").forEach(cd=>{
         const idx = cd.getAttribute("data-cday");
         const head = cd.querySelector(".collapseHead");
         const body = cd.querySelector(`#cbody-${idx}`);
-        head.onclick = ()=>{
-          body.style.display = (body.style.display === "block") ? "none" : "block";
-        };
+        head.onclick = ()=>{ body.style.display = (body.style.display === "block") ? "none" : "block"; };
       });
     }
 
-    function openVistaModal(){
-      $("#vistaModal").style.display = "flex";
-    }
-    function closeVistaModal(){
-      $("#vistaModal").style.display = "none";
-    }
+    function openModal(id){ $(id).style.display = "flex"; }
+    function closeModal(id){ $(id).style.display = "none"; }
 
     // ==========================================================
     // Socios filter
     // ==========================================================
     function filterSocios(q){
       q = String(q||"").toLowerCase().trim();
-      const users = getUsers().filter(u=>u.rol==="SOCIO" && u.activo !== false);
+      const users = getUsersCache().filter(u => (u.rol==="SOCIO") && (u.activo !== false));
       if(!q) return users;
       return users.filter(u =>
         (u.nombre||"").toLowerCase().includes(q) ||
@@ -1005,27 +1006,188 @@
     }
 
     // ==========================================================
+    // PLANTILLAS PRO (PRIVATE / TEAM / OFFICIAL)
+    // ==========================================================
+    let TPL_CACHE = [];
+    let TPL_SELECTED = null;
+    let TPL_SEG = "ALL"; // ALL | PRIVATE | TEAM | OFFICIAL
+
+    function tplVisBadge(vis){
+      const v = String(vis||"TEAM").toUpperCase();
+      if(v==="OFFICIAL") return `<span class="chip on">OFFICIAL</span>`;
+      if(v==="TEAM") return `<span class="chip on">TEAM</span>`;
+      return `<span class="chip">PRIVATE</span>`;
+    }
+
+    function tplCanEdit(me, tpl){
+      if(!me) return false;
+      if(me.rol === "ADMIN") return true;
+      const vis = String(tpl.visibility||"TEAM").toUpperCase();
+      if(vis==="OFFICIAL") return false;
+      return String(tpl.ownerRut||"").toUpperCase() === String(me.rut||"").toUpperCase();
+    }
+
+    function tplIsVisibleInSegment(me, tpl){
+      const v = String(tpl.visibility||"TEAM").toUpperCase();
+      if(TPL_SEG==="ALL") return true;
+      if(TPL_SEG==="TEAM") return v==="TEAM";
+      if(TPL_SEG==="OFFICIAL") return v==="OFFICIAL";
+      if(TPL_SEG==="PRIVATE") return v==="PRIVATE" && String(tpl.ownerRut||"").toUpperCase()===String(me.rut||"").toUpperCase();
+      return true;
+    }
+
+    function tplMatchQuery(tpl, q){
+      q = String(q||"").toLowerCase().trim();
+      if(!q) return true;
+      const name = String(tpl.nombrePlantilla||"").toLowerCase();
+      const tags = String(tpl.tags||"").toLowerCase();
+      const owner = String(tpl.ownerNombre||"").toLowerCase();
+      return name.includes(q) || tags.includes(q) || owner.includes(q);
+    }
+
+    function renderTplList(me){
+      const listEl = $("#tplList");
+      const q = $("#tplSearch").value || "";
+      const items = TPL_CACHE
+        .filter(t => tplIsVisibleInSegment(me, t))
+        .filter(t => tplMatchQuery(t, q))
+        .sort((a,b)=>{
+          // OFFICIAL primero, luego TEAM, luego PRIVATE
+          const rank = x => (String(x.visibility||"TEAM").toUpperCase()==="OFFICIAL")?0:(String(x.visibility||"TEAM").toUpperCase()==="TEAM")?1:2;
+          const ra=rank(a), rb=rank(b);
+          if(ra!==rb) return ra-rb;
+          return String(a.nombrePlantilla||"").localeCompare(String(b.nombrePlantilla||""));
+        });
+
+      listEl.innerHTML = items.map(t=>`
+        <div class="tplItem" data-tplid="${t.templateId}">
+          <div class="tplItemTop">
+            <div>
+              <div class="tplName">${escapeHtml(t.nombrePlantilla || "Sin nombre")}</div>
+              <div class="tplMeta">
+                ${tplVisBadge(t.visibility)}
+                <span class="chip">Nivel: ${escapeHtml(t.nivel||"-")}</span>
+                <span class="chip">Obj: ${escapeHtml(t.objetivo||"-")}</span>
+                <span class="chip">Días: ${escapeHtml(t.dias||"-")}</span>
+              </div>
+              <div class="tplMeta">Creada por: <b>${escapeHtml(t.ownerNombre||t.ownerRut||"-")}</b></div>
+              ${t.tags ? `<div class="tplMeta">Tags: ${escapeHtml(t.tags)}</div>` : ``}
+            </div>
+          </div>
+        </div>
+      `).join("") || `<div class="mutedLine">No hay plantillas para mostrar.</div>`;
+
+      listEl.querySelectorAll(".tplItem").forEach(div=>{
+        div.onclick = ()=>{
+          const id = div.getAttribute("data-tplid");
+          TPL_SELECTED = TPL_CACHE.find(x => String(x.templateId) === String(id)) || null;
+          renderTplSelected(me);
+        };
+      });
+    }
+
+    function parseTemplateRoutine(tpl){
+      try{
+        const r = JSON.parse(tpl.template_json || "{}");
+        return r;
+      }catch{ return null; }
+    }
+
+    function renderTplSelected(me){
+      const info = $("#tplSelectedInfo");
+      const box = $("#tplPreviewBox");
+      const actions = $("#tplActions");
+
+      if(!TPL_SELECTED){
+        info.textContent = "Selecciona una plantilla de la lista para ver detalles.";
+        box.innerHTML = "";
+        actions.style.display = "none";
+        return;
+      }
+
+      const tpl = TPL_SELECTED;
+      const canEdit = tplCanEdit(me, tpl);
+      const routine = parseTemplateRoutine(tpl);
+
+      info.innerHTML = `
+        <div class="kpiRow">
+          ${tplVisBadge(tpl.visibility)}
+          <span class="kpi"><b>${escapeHtml(tpl.nombrePlantilla||"-")}</b></span>
+          <span class="kpi">Por: <b>${escapeHtml(tpl.ownerNombre||tpl.ownerRut||"-")}</b></span>
+          <span class="kpi">Nivel: <b>${escapeHtml(tpl.nivel||"-")}</b></span>
+          <span class="kpi">Obj: <b>${escapeHtml(tpl.objetivo||"-")}</b></span>
+          <span class="kpi">Días: <b>${escapeHtml(tpl.dias||"-")}</b></span>
+        </div>
+        ${tpl.tags ? `<div class="tagLine"><b>Tags:</b> ${escapeHtml(tpl.tags)}</div>` : ``}
+      `;
+
+      if(!routine){
+        box.innerHTML = `<div class="mutedLine">⚠️ template_json inválido.</div>`;
+      }else{
+        // Preview simple y bonita (reuse Vista Socio renderer)
+        const fake = {
+          socio: { rut: "PLANTILLA", nombre: tpl.nombrePlantilla },
+          meta: routine.meta || { nivel: tpl.nivel||"", objetivo: tpl.objetivo||"", fecha:"", notas:"" },
+          dias: routine.dias || []
+        };
+        box.innerHTML = "";
+        // render en un contenedor temporal usando el mismo estilo
+        const temp = document.createElement("div");
+        temp.id = "tplPreviewInner";
+        box.appendChild(temp);
+        // reutilizamos renderVistaSocio pero sin abrir modal:
+        const old = $("#vistaContenido").innerHTML;
+        renderVistaSocio(fake, `Creada por: ${tpl.ownerNombre || tpl.ownerRut || "-"}`);
+        temp.innerHTML = $("#vistaContenido").innerHTML;
+        $("#vistaContenido").innerHTML = old;
+      }
+
+      actions.style.display = "flex";
+
+      // Toggle botones según permisos
+      $("#btnTplEdit").style.display = canEdit ? "inline-block" : "none";
+      $("#btnTplDelete").style.display = canEdit ? "inline-block" : "none";
+    }
+
+    function setSegmentButtons(){
+      const map = {
+        ALL: $("#segAll"),
+        PRIVATE: $("#segMine"),
+        TEAM: $("#segTeam"),
+        OFFICIAL: $("#segOfficial")
+      };
+      Object.keys(map).forEach(k=>{
+        map[k].classList.toggle("on", TPL_SEG===k);
+      });
+    }
+
+    // ==========================================================
     // Main
     // ==========================================================
     const addedDays = new Set();
+    let ME = null;
 
-    document.addEventListener("DOMContentLoaded", ()=>{
-      // Auth (funcionario)
-      let me = requireAuth("FUNCIONARIO");
-      if(!me) return;
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      // Auth
+      ME = await requireAuth("FUNCIONARIO");
+      if(!ME) return;
 
-      // Volver
+      // Header buttons
       $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
       $("#btnLogout").onclick = ()=>{
         localStorage.removeItem("mahfit_session");
         window.location.href = "index.html";
       };
 
-      // Modal
-      $("#btnCerrarVista").onclick = closeVistaModal;
-      $("#vistaModal").addEventListener("click", (e)=>{
-        if(e.target.id === "vistaModal") closeVistaModal();
-      });
+      // Modal close
+      $("#btnCerrarVista").onclick = ()=> closeModal("#vistaModal");
+      $("#vistaModal").addEventListener("click", (e)=>{ if(e.target.id==="vistaModal") closeModal("#vistaModal"); });
+
+      $("#btnCerrarTpl").onclick = ()=> closeModal("#tplModal");
+      $("#tplModal").addEventListener("click", (e)=>{ if(e.target.id==="tplModal") closeModal("#tplModal"); });
+
+      // Load users cache
+      USERS_CACHE = await getUsers();
 
       // Poblar socios
       const socioSelect = $("#socioSelect");
@@ -1040,26 +1202,19 @@
           opt.textContent = `${u.nombre} (${u.rut})`;
           socioSelect.appendChild(opt);
         });
-        // mantener selección si existe
         if(current && [...socioSelect.options].some(o=>o.value===current)){
           socioSelect.value = current;
         }
       }
-
       renderSocios(filterSocios(""));
 
-      search.addEventListener("input", ()=>{
-        renderSocios(filterSocios(search.value));
-      });
+      search.addEventListener("input", ()=> renderSocios(filterSocios(search.value)));
+      search.addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
 
-      search.addEventListener("keydown", (e)=>{
-        if(e.key==="Enter") e.preventDefault();
-      });
-
-      // Cuando cambias socio: muestra última rutina bonita
-      socioSelect.addEventListener("change", ()=>{
+      // Cambio socio -> última rutina
+      socioSelect.addEventListener("change", async ()=>{
         const rut = socioSelect.value;
-        const last = rutinaV2DeSocio(rut); // ✅ trae lo último guardado
+        const last = await rutinaV2DeSocio(rut);
         showLastRoutineBoxPretty(last);
       });
 
@@ -1081,44 +1236,46 @@
       $("#dayPicker").value = "1";
       $("#btnAddDay").click();
 
-      // Inicial: si hay socio ya seleccionado, muestra su última
-      setTimeout(()=>{
+      // Inicial last routine
+      setTimeout(async ()=>{
         const rut = socioSelect.value;
         if(rut){
-          const last = rutinaV2DeSocio(rut);
+          const last = await rutinaV2DeSocio(rut);
           showLastRoutineBoxPretty(last);
         }
       }, 150);
 
-      $("#btnGuardar").onclick = ()=>{
+      // Guardar rutina
+      $("#btnGuardar").onclick = async ()=>{
         try{
           const routine = collectRoutine();
 
-          // ✅ Guardar también como base de datos (1 fila por ejercicio)
+          // ✅ guarda DB items (sobrescribe por socio)
           const rutinaId = crypto.randomUUID();
-          apiPost("RUTINAS_ITEMS", {
+          await saveRutinaItems({
             rutinaId,
             routine,
-            profesorRut: me.rut,
-            profesorNombre: me.nombre
-          }).catch(console.error);
-
-          upsertRutinaV2({
-            rutSocio: routine.socio.rut,
-            routine,
-            creadoPorRut: me.rut
+            profesorRut: ME.rut,
+            profesorNombre: ME.nombre
           });
 
-          const txt = formatRutinaText(routine, me.nombre);
-          upsertRutina({
+          // ✅ guarda última rutina V2
+          await upsertRutinaV2({
+            rutSocio: routine.socio.rut,
+            routine,
+            creadoPorRut: ME.rut
+          });
+
+          // ✅ guarda txt resumen
+          const txt = formatRutinaText(routine, ME.nombre);
+          await upsertRutina({
             rutSocio: routine.socio.rut,
             titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
             detalle: txt,
-            creadoPorRut: me.rut
+            creadoPorRut: ME.rut
           });
 
-          // refresca tarjeta de última rutina
-          const last = rutinaV2DeSocio(routine.socio.rut);
+          const last = await rutinaV2DeSocio(routine.socio.rut);
           showLastRoutineBoxPretty(last);
 
           showMsg($("#msg"), "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
@@ -1127,18 +1284,253 @@
         }
       };
 
-      // ✅ VISTA SOCIO bonita (modal)
+      // Vista socio modal
       $("#btnVista").onclick = ()=>{
         try{
           const routine = collectRoutine();
-          renderVistaSocio(routine, me.nombre);
-          openVistaModal();
+          renderVistaSocio(routine, ME.nombre);
+          openModal("#vistaModal");
         }catch(err){
           showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      // ==========================
+      // PLANTILLAS PRO wiring
+      // ==========================
+      $("#btnPlantillas").onclick = async ()=>{
+        try{
+          // ADMIN puede crear OFFICIAL, FUNCIONARIO no (en backend).
+          if(ME.rol !== "ADMIN"){
+            // deshabilita opción OFFICIAL para staff normal (si quieres)
+            $("#tplNewVis").value = "PRIVATE";
+            $("#tplNewVisHint").innerHTML = `Como <b>${escapeHtml(ME.rol)}</b>, puedes crear <b>PRIVATE</b> o <b>TEAM</b>. OFFICIAL solo ADMIN.`;
+          }else{
+            $("#tplNewVisHint").innerHTML = `Como <b>ADMIN</b>, puedes crear PRIVATE / TEAM / OFFICIAL.`;
+          }
+          openModal("#tplModal");
+          await refreshTemplates();
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      $("#btnRefreshTpl").onclick = refreshTemplates;
+      $("#tplSearch").addEventListener("input", ()=> renderTplList(ME));
+
+      $("#segAll").onclick = ()=>{ TPL_SEG="ALL"; setSegmentButtons(); renderTplList(ME); };
+      $("#segMine").onclick = ()=>{ TPL_SEG="PRIVATE"; setSegmentButtons(); renderTplList(ME); };
+      $("#segTeam").onclick = ()=>{ TPL_SEG="TEAM"; setSegmentButtons(); renderTplList(ME); };
+      $("#segOfficial").onclick = ()=>{ TPL_SEG="OFFICIAL"; setSegmentButtons(); renderTplList(ME); };
+
+      setSegmentButtons();
+
+      async function refreshTemplates(){
+        showMsg($("#tplMsg"), "Cargando plantillas...", true);
+        TPL_SELECTED = null;
+        $("#tplActions").style.display = "none";
+        $("#tplPreviewBox").innerHTML = "";
+        $("#tplSelectedInfo").textContent = "Selecciona una plantilla de la lista para ver detalles.";
+
+        TPL_CACHE = await getTemplates(ME.rut);
+        renderTplList(ME);
+        renderTplSelected(ME);
+
+        showMsg($("#tplMsg"), `✅ Plantillas cargadas: ${TPL_CACHE.length}`, true);
+      }
+
+      // Actions: Apply / Apply&Save / Duplicate / Edit / Delete
+      $("#btnTplApply").onclick = ()=>{
+        try{
+          if(!TPL_SELECTED) return;
+          const routine = parseTemplateRoutine(TPL_SELECTED);
+          if(!routine) throw new Error("Plantilla inválida.");
+          // Carga al builder
+          loadRoutineIntoBuilder(routine);
+          // Ajusta meta según campos de la plantilla (si faltan)
+          $("#nivel").value = routine.meta?.nivel || (TPL_SELECTED.nivel || $("#nivel").value);
+          $("#objetivo").value = routine.meta?.objetivo || (TPL_SELECTED.objetivo || $("#objetivo").value);
+          // No tocamos socio, porque ya está seleccionado en el builder
+          closeModal("#tplModal");
+          showMsg($("#msg"), "✅ Plantilla aplicada. Puedes ajustar y guardar.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
+        }
+      };
+
+      $("#btnTplApplySave").onclick = async ()=>{
+        try{
+          if(!TPL_SELECTED) return;
+          const tplRoutine = parseTemplateRoutine(TPL_SELECTED);
+          if(!tplRoutine) throw new Error("Plantilla inválida.");
+
+          // toma socio actual del selector y reasigna
+          const socioVal = $("#socioSelect").value;
+          const socio = getUsersCache().find(u => String(u.rut) === String(socioVal));
+          if(!socio) throw new Error("Selecciona un socio válido para asignar.");
+
+          const applied = JSON.parse(JSON.stringify(tplRoutine));
+          applied.socio = { rut: socio.rut, nombre: socio.nombre };
+
+          // si quieres, set fecha hoy si está vacío
+          if(!applied.meta) applied.meta = {};
+          if(!applied.meta.fecha) applied.meta.fecha = new Date().toISOString().slice(0,10);
+
+          // Carga al builder (para que se vea lo asignado)
+          loadRoutineIntoBuilder(applied);
+
+          // Guarda directo
+          const rutinaId = crypto.randomUUID();
+          await saveRutinaItems({
+            rutinaId,
+            routine: applied,
+            profesorRut: ME.rut,
+            profesorNombre: ME.nombre
+          });
+
+          await upsertRutinaV2({
+            rutSocio: applied.socio.rut,
+            routine: applied,
+            creadoPorRut: ME.rut
+          });
+
+          const txt = formatRutinaText(applied, ME.nombre);
+          await upsertRutina({
+            rutSocio: applied.socio.rut,
+            titulo: `Rutina ${applied.meta.nivel || ""} (${(applied.dias||[]).length} días)`,
+            detalle: txt,
+            creadoPorRut: ME.rut
+          });
+
+          const last = await rutinaV2DeSocio(applied.socio.rut);
+          showLastRoutineBoxPretty(last);
+
+          closeModal("#tplModal");
+          showMsg($("#msg"), "✅ Plantilla aplicada y guardada al socio.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
+        }
+      };
+
+      $("#btnTplDuplicate").onclick = async ()=>{
+        try{
+          if(!TPL_SELECTED) return;
+          const newName = prompt("Nombre para la copia (PRIVATE):", `Copia de ${TPL_SELECTED.nombrePlantilla}`);
+          if(newName === null) return;
+
+          await duplicateTemplate({
+            actorRut: ME.rut,
+            templateId: TPL_SELECTED.templateId,
+            newName
+          });
+
+          await refreshTemplates();
+          showMsg($("#tplMsg"), "✅ Plantilla duplicada a PRIVATE.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
+        }
+      };
+
+      $("#btnTplEdit").onclick = async ()=>{
+        try{
+          if(!TPL_SELECTED) return;
+          if(!tplCanEdit(ME, TPL_SELECTED)) throw new Error("No tienes permiso para editar esta plantilla.");
+
+          const name = prompt("Nombre plantilla:", TPL_SELECTED.nombrePlantilla || "");
+          if(name === null) return;
+
+          const tags = prompt("Tags (coma):", TPL_SELECTED.tags || "") ?? "";
+          if(tags === null) return;
+
+          let vis = TPL_SELECTED.visibility || "TEAM";
+          // Si no es admin, no puede poner OFFICIAL
+          if(ME.rol !== "ADMIN" && String(vis).toUpperCase()==="OFFICIAL") vis="TEAM";
+
+          const visPrompt = prompt("Visibilidad (PRIVATE / TEAM / OFFICIAL):", String(vis).toUpperCase());
+          if(visPrompt === null) return;
+
+          const routine = parseTemplateRoutine(TPL_SELECTED);
+          if(!routine) throw new Error("template_json inválido. No se puede editar.");
+
+          // Sube cambios
+          await upsertTemplate({
+            actorRut: ME.rut,
+            template: {
+              templateId: TPL_SELECTED.templateId,
+              nombrePlantilla: name,
+              nivel: TPL_SELECTED.nivel || routine.meta?.nivel || "",
+              objetivo: TPL_SELECTED.objetivo || routine.meta?.objetivo || "",
+              tags,
+              visibility: visPrompt,
+              template_json: JSON.stringify(routine)
+            }
+          });
+
+          await refreshTemplates();
+          showMsg($("#tplMsg"), "✅ Plantilla actualizada.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
+        }
+      };
+
+      $("#btnTplDelete").onclick = async ()=>{
+        try{
+          if(!TPL_SELECTED) return;
+          if(!tplCanEdit(ME, TPL_SELECTED)) throw new Error("No tienes permiso para eliminar esta plantilla.");
+          const ok = confirm(`¿Eliminar plantilla "${TPL_SELECTED.nombrePlantilla}"?`);
+          if(!ok) return;
+
+          await deleteTemplate({ actorRut: ME.rut, templateId: TPL_SELECTED.templateId });
+          TPL_SELECTED = null;
+          await refreshTemplates();
+          showMsg($("#tplMsg"), "✅ Plantilla eliminada.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
+        }
+      };
+
+      // Save routine as template
+      $("#btnSaveAsTemplate").onclick = async ()=>{
+        try{
+          const routine = collectRoutine(); // toma lo que estás creando
+          const name = ($("#tplNewName").value || "").trim();
+          const tags = ($("#tplNewTags").value || "").trim();
+          const vis = ($("#tplNewVis").value || "PRIVATE").trim().toUpperCase();
+
+          if(!name) throw new Error("Falta Nombre Plantilla.");
+
+          // IMPORTANTE: Guardamos plantilla sin socio real (para reutilizar)
+          // Mantengo el JSON igual, pero con socio placeholder para que sea neutro
+          const tplRoutine = JSON.parse(JSON.stringify(routine));
+          tplRoutine.socio = { rut: "PLANTILLA", nombre: name };
+
+          // Si quieres, borra fecha para que no quede antigua
+          if(tplRoutine.meta) tplRoutine.meta.fecha = "";
+
+          await upsertTemplate({
+            actorRut: ME.rut,
+            template: {
+              // sin templateId => crea nueva
+              nombrePlantilla: name,
+              nivel: tplRoutine.meta?.nivel || $("#nivel").value,
+              objetivo: tplRoutine.meta?.objetivo || $("#objetivo").value,
+              tags,
+              visibility: vis,
+              template_json: JSON.stringify(tplRoutine)
+            }
+          });
+
+          $("#tplNewName").value = "";
+          $("#tplNewTags").value = "";
+          if(ME.rol !== "ADMIN") $("#tplNewVis").value = "PRIVATE";
+
+          await refreshTemplates();
+          showMsg($("#tplMsg"), "✅ Plantilla guardada.", true);
+        }catch(err){
+          showMsg($("#tplMsg"), err.message, false);
         }
       };
     });
   </script>
 </body>
 </html>
-
