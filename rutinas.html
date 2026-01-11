@@ -947,7 +947,11 @@
     // ==========================================================
     function filterSocios(q){
       q = String(q||"").toLowerCase().trim();
-      const users = getUsers().filter(u=>u.rol==="SOCIO" && u.activo !== false);
+     const users = getUsers().filter(u=>{
+  const rol = String(u.rol || u.role || "").toUpperCase().trim();
+  const activo = (u.activo === false) ? false : true;
+  return rol === "SOCIO" && activo;
+});
       if(!q) return users;
       return users.filter(u =>
         (u.nombre||"").toLowerCase().includes(q) ||
@@ -1211,3 +1215,4 @@
   </script>
 </body>
 </html>
+
