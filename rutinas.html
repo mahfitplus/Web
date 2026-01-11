@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MAH FIT | Rutinas</title>
 
-  <!-- Si tu proyecto usa styles.css en la raíz, déjalo así -->
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* Estilo base (si ya tienes styles.css, esto solo apoya algunos componentes nuevos) */
     :root{
       --bg: #070a11;
       --panel: rgba(255,255,255,.05);
@@ -152,7 +150,6 @@
     td .cell.small{ width:100%; }
     td .cellBtn{ height:32px; border-radius:10px; }
 
-    /* MODAL PLANTILLAS */
     .modalWrap{
       position:fixed; inset:0;
       background: rgba(0,0,0,.62);
@@ -203,7 +200,6 @@
   <main class="container">
     <div class="grid">
 
-      <!-- PANEL IZQUIERDO -->
       <section class="card">
         <div class="head">
           <b>Datos de la Rutina</b>
@@ -295,12 +291,10 @@
           <div style="height:14px"></div>
 
           <div class="notice" id="lastRoutineBox" style="display:none;">
-            <!-- inyectado -->
           </div>
         </div>
       </section>
 
-      <!-- PANEL DERECHA -->
       <section class="card">
         <div class="head">
           <b>Días de entrenamiento</b>
@@ -314,7 +308,6 @@
     </div>
   </main>
 
-  <!-- MODAL PLANTILLAS -->
   <div class="modalWrap" id="tplModalWrap">
     <div class="modal">
       <div class="head">
@@ -429,26 +422,47 @@
     }
 
     /* =========================
-       AUTH LOCAL (tu sistema actual)
+       AUTH (FIX: lee mahfit_session)
        ========================= */
     function getSession(){
-      // Ajusta si tus keys se llaman distinto:
-      const role = localStorage.getItem("role") || localStorage.getItem("ROL") || "";
-      const nombre = localStorage.getItem("nombre") || localStorage.getItem("NOMBRE") || localStorage.getItem("userName") || "";
-      const rut = localStorage.getItem("rut") || localStorage.getItem("RUT") || localStorage.getItem("userRut") || "";
-      return { role, nombre, rut };
+      const raw = localStorage.getItem("mahfit_session");
+      if(!raw) return null;
+
+      try{
+        const s = JSON.parse(raw);
+        const rol = String(s.rol || s.role || "").toUpperCase();
+
+        // Compatibilidad total: dejamos ambas keys (role y rol)
+        return {
+          rut: s.rut || "",
+          nombre: s.nombre || s.name || "Usuario",
+          rol,         // "ADMIN" / "FUNCIONARIO" / "SOCIO"
+          role: rol,   // compatibilidad con código que usa session.role
+          at: s.at || ""
+        };
+      }catch{
+        return null;
+      }
     }
-    function requireAuth(){
+
+    function requireAuth(rolesPermitidos = ["ADMIN","FUNCIONARIO"]){
       const s = getSession();
-      if(!s.role){
-        // si no hay login, redirige
+      if(!s || !s.rol){
         location.href = "index.html";
         return null;
       }
+
+      if(rolesPermitidos.length && !rolesPermitidos.includes(s.rol)){
+        location.href = "index.html";
+        return null;
+      }
+
       $("#who").textContent = s.nombre || "Usuario";
-      $("#roleBadge").textContent = s.role;
+      $("#roleBadge").textContent = s.rol;
+
       $("#profesorNombre").textContent = s.nombre || "-";
       $("#profesorRut").textContent = s.rut ? `RUT: ${s.rut}` : "-";
+
       return s;
     }
 
@@ -465,16 +479,12 @@
     let SOCIOS = [];
     let selectedSocio = null;
 
-    // rutina actual en memoria
     let routine = {
       meta: { nivel:"Intermedio", objetivo:"Hipertrofia", fecha: toYMD(), notas:"" },
       socio: { rut:"", nombre:"" },
       dias: []
     };
 
-    /* =========================
-       UI BUILD: DIAS
-       ========================= */
     function updateDaysCount(){
       $("#daysCount").textContent = `Días: ${routine.dias.length}`;
     }
@@ -585,7 +595,6 @@
       routine.socio.rut = selectedSocio?.rut || "";
       routine.socio.nombre = selectedSocio?.nombre || "";
 
-      // por cada fila, leer inputs
       routine.dias.forEach(day=>{
         const tbody = document.querySelector(`tbody[data-rows="${day.dia}"]`);
         if(!tbody) return;
@@ -619,7 +628,6 @@
     }
 
     function wireDays(){
-      // enfoque checkboxes
       document.querySelectorAll("input[data-focus]").forEach(chk=>{
         chk.addEventListener("change", ()=>{
           const dayIndex = chk.getAttribute("data-focus");
@@ -631,7 +639,6 @@
         });
       });
 
-      // pre-marcar enfoque (si ya existe)
       routine.dias.forEach(day=>{
         const dayIndex = day.dia;
         (day.enfoque||[]).forEach(m=>{
@@ -640,7 +647,6 @@
         });
       });
 
-      // agregar ejercicio
       document.querySelectorAll("[data-add-ex]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const dayIndex = btn.getAttribute("data-add-ex");
@@ -652,7 +658,6 @@
         });
       });
 
-      // quitar dia
       document.querySelectorAll("[data-remove-day]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const dayIndex = Number(btn.getAttribute("data-remove-day"));
@@ -661,7 +666,6 @@
         });
       });
 
-      // quitar ejercicio
       document.querySelectorAll("[data-del-ex]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const [dayIndex, idx] = btn.getAttribute("data-del-ex").split(":");
@@ -675,9 +679,6 @@
       });
     }
 
-    /* =========================
-       SOCIOS
-       ========================= */
     function fillSocioSelect(list){
       $("#socioSelect").innerHTML = list.map(s=>`<option value="${esc(s.rut)}">${esc(s.nombre)} (${esc(s.rut)})</option>`).join("");
       if(list.length){
@@ -695,8 +696,6 @@
     }
 
     async function loadSocios(){
-      // Recurso esperado en Apps Script: SOCIOS (hoja SOCIOS)
-      // Debe devolver { ok:true, socios:[{rut,nombre},...] }
       const data = await apiGet("SOCIOS");
       SOCIOS = data.socios || [];
       SOCIOS.sort((a,b)=> String(a.nombre||"").localeCompare(String(b.nombre||"")));
@@ -709,13 +708,10 @@
       box.style.display = "none";
       box.innerHTML = "";
 
-      // Recurso esperado: RUTINA_ULTIMA (o ajusta si tu API usa otro)
-      // Debe devolver { ok:true, found:true/false, rutina:{...} }
       let data;
       try{
         data = await apiGet("RUTINA_ULTIMA", { rutSocio: selectedSocio.rut });
       }catch(e){
-        // si tu API no tiene ese resource, no rompemos
         return;
       }
 
@@ -743,8 +739,6 @@
       `;
 
       $("#btnLoadLast").onclick = ()=>{
-        // rutina V2 guardada: idealmente viene en r.rutina_json o r.rutinaJson
-        // Si tu API ya devuelve un objeto completo, úsalo directo:
         const obj = r.rutinaObj || r.rutina_json_obj || r.rutina_json || r;
         applyRoutineObject(obj);
         setMsg("#msg", "Rutina anterior cargada ✅ (puedes editar y guardar).", "ok");
@@ -752,7 +746,6 @@
     }
 
     function applyRoutineObject(obj){
-      // normalizamos
       const meta = obj.meta || obj;
       routine.meta.nivel = obj.nivel || meta.nivel || $("#nivel").value;
       routine.meta.objetivo = obj.objetivo || meta.objetivo || $("#objetivo").value;
@@ -770,7 +763,6 @@
         ejercicios: Array.isArray(d.ejercicios) ? d.ejercicios : []
       })) : [];
 
-      // fallback si viene plano
       routine.dias.forEach(d=>{
         if(!d.ejercicios || !d.ejercicios.length) d.ejercicios = [emptyExercise()];
       });
@@ -778,9 +770,6 @@
       renderDays();
     }
 
-    /* =========================
-       GUARDADO RUTINAS (V2 + ITEMS)
-       ========================= */
     function routineToItemsRows(routineObj, rutinaId){
       const rows = [];
       const m = routineObj.meta || {};
@@ -816,11 +805,9 @@
       return rows;
     }
 
-    // ✅ función global (evita "not defined")
     window.saveRoutineItems = async function(payload){
       const { rutinaId, routineObj } = payload;
       const rows = routineToItemsRows(routineObj, rutinaId);
-      // Recurso esperado: RUTINAS_ITEMS
       return apiPost("RUTINAS_ITEMS", {
         mode: "REPLACE_BY_RUTINA",
         rutinaId,
@@ -836,12 +823,8 @@
         return;
       }
 
-      // rutinaId: por defecto 1 activa por socio (sobrescribe) => infinito usando historial en RUTINAS_TXT si quieres
-      // aquí usaremos un ID estable por socio:
       const rutinaId = `R_${selectedSocio.rut}`;
 
-      // Recurso esperado: RUTINAS_V2
-      // Debe guardar/actualizar 1 rutina activa por socio
       const payload = {
         rutinaId,
         rutSocio: selectedSocio.rut,
@@ -867,24 +850,20 @@
     }
 
     function viewSocio(){
-      // Vista simple (puedes mejorar si ya tienes tu pantalla "Vista Socio")
       syncRoutineFromUI();
       const txt = JSON.stringify(routine, null, 2);
       alert("Vista Socio (JSON)\n\n" + txt.slice(0, 4000));
     }
 
-    /* =========================
-       PLANTILLAS
-       ========================= */
     let TEMPLATES = [];
 
     function canSeeTemplate(t){
       const vis = String(t.visibility||"").toUpperCase();
       const ownerRut = String(t.ownerRut||"");
-      const role = String(session?.role||"").toUpperCase();
+      const role = String(session?.rol||session?.role||"").toUpperCase();
 
       if(role === "ADMIN") return true;
-      if(vis === "OFFICIAL") return true;          // visible pero admin controla creación/edición
+      if(vis === "OFFICIAL") return true;
       if(vis === "TEAM") return true;
       if(vis === "PRIVATE") return ownerRut === String(session?.rut||"");
       return false;
@@ -893,11 +872,11 @@
     function canEditTemplate(t){
       const vis = String(t.visibility||"").toUpperCase();
       const ownerRut = String(t.ownerRut||"");
-      const role = String(session?.role||"").toUpperCase();
+      const role = String(session?.rol||session?.role||"").toUpperCase();
       if(role === "ADMIN") return true;
       if(vis === "PRIVATE") return ownerRut === String(session?.rut||"");
       if(vis === "TEAM") return ownerRut === String(session?.rut||"");
-      return false; // OFFICIAL solo admin
+      return false;
     }
 
     function parseTemplateJson(t){
@@ -954,7 +933,6 @@
         `;
       }).join("");
 
-      // wire
       el.querySelectorAll("[data-tpl-apply]").forEach(b=>{
         b.onclick = ()=>{
           const id = b.getAttribute("data-tpl-apply");
@@ -1038,8 +1016,6 @@
     }
 
     async function loadTemplates(){
-      // Recurso esperado: PLANTILLAS_V2 (hoja PLANTILLAS_V2)
-      // Debe devolver { ok:true, plantillas:[...] }
       const data = await apiGet("PLANTILLAS_V2");
       TEMPLATES = data.plantillas || data.templates || [];
       renderTemplateList();
@@ -1055,7 +1031,7 @@
       }
 
       const visibility = $("#tplVisibility").value;
-      const role = String(session?.role||"").toUpperCase();
+      const role = String(session?.rol||session?.role||"").toUpperCase();
       if(visibility==="OFFICIAL" && role!=="ADMIN"){
         setMsg("#tplMsg","Solo ADMIN puede crear OFFICIAL.","bad");
         return;
@@ -1096,23 +1072,16 @@
       $("#tplModalWrap").style.display = "none";
     }
 
-    /* =========================
-       INIT
-       ========================= */
     document.addEventListener("DOMContentLoaded", async ()=>{
-      session = requireAuth();
+      // ✅ FIX: ahora sí te reconoce la sesión nueva
+      session = requireAuth(["ADMIN","FUNCIONARIO"]);
       if(!session) return;
 
-      // defaults
       $("#fecha").value = toYMD();
 
       $("#btnLogout").onclick = ()=>{
-        localStorage.removeItem("role");
-        localStorage.removeItem("ROL");
-        localStorage.removeItem("nombre");
-        localStorage.removeItem("NOMBRE");
-        localStorage.removeItem("rut");
-        localStorage.removeItem("RUT");
+        // ✅ FIX: borrar la sesión real
+        localStorage.removeItem("mahfit_session");
         location.href = "index.html";
       };
 
@@ -1134,7 +1103,6 @@
       $("#socioSearch").addEventListener("input", ()=>{
         const list = filterSocios($("#socioSearch").value);
         fillSocioSelect(list);
-        // mantener selección si existe
         if(list.length){
           selectedSocio = list[0];
           loadLastRoutineForSelected().catch(()=>{});
@@ -1147,7 +1115,6 @@
         loadLastRoutineForSelected().catch(()=>{});
       });
 
-      // PLANTILLAS
       $("#btnPlantillas").onclick = openTplModal;
       $("#btnTplClose").onclick = closeTplModal;
       $("#btnTplReload").onclick = ()=>loadTemplates().catch(e=>setMsg("#tplMsg","❌ "+e.message,"bad"));
@@ -1155,10 +1122,8 @@
       $("#tplSearch").addEventListener("input", renderTemplateList);
       $("#tplFilter").addEventListener("change", renderTemplateList);
 
-      // cargar socios
       try{
         await loadSocios();
-        // set selected
         const rut = $("#socioSelect").value;
         selectedSocio = SOCIOS.find(s=>String(s.rut)===String(rut)) || null;
         await loadLastRoutineForSelected();
