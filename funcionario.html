@@ -10,6 +10,7 @@
     :root{
       --bg:#070a11;
       --panel: rgba(255,255,255,.05);
+      --panel2: rgba(0,0,0,.25);
       --stroke: rgba(255,255,255,.10);
       --stroke2: rgba(255,255,255,.14);
       --txt: rgba(255,255,255,.92);
@@ -18,73 +19,69 @@
       --brand2:#23a6ff;
       --ok:#2bd576;
       --bad:#ff5a67;
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --shadow: 0 14px 50px rgba(0,0,0,.45);
       --radius: 18px;
     }
 
+    *{ box-sizing:border-box; }
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 30% 10%, rgba(77,124,255,.14), transparent 60%),
-                  radial-gradient(1200px 700px at 70% 20%, rgba(35,166,255,.12), transparent 60%),
-                  linear-gradient(180deg, #05070d, #0b1220);
+      background:
+        radial-gradient(1200px 600px at 35% 25%, rgba(77,124,255,.22), transparent 60%),
+        radial-gradient(900px 500px at 80% 35%, rgba(35,166,255,.18), transparent 60%),
+        linear-gradient(180deg, #05070b, #070a11 45%, #070a11);
       color:var(--txt);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       min-height:100vh;
     }
 
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:18px;
-    }
-
-    /* TOP */
+    /* Topbar */
     .topbar{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:12px;
-      padding:14px 16px;
-      background: rgba(255,255,255,.04);
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.25);
       backdrop-filter: blur(10px);
       position:sticky;
-      top:10px;
+      top:0;
       z-index:50;
     }
     .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.8px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 240px;
+    }
+    .brandTitle{
+      font-weight:900;
+      letter-spacing:.5px;
       font-size:22px;
     }
-    .brand span{
-      color:#fff;
-    }
-    .brand b{
-      color:#6fe0ff;
-    }
+    .brandTitle span{ color:#6fe0ff; }
+
     .rightTop{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
       justify-content:flex-end;
     }
-    .pill{
-      padding:7px 12px;
+    .hello{ color:rgba(255,255,255,.85); }
+    .hello b{ color:#fff; }
+
+    .badge{
+      padding:6px 10px;
       border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
-      color:rgba(255,255,255,.86);
+      color:rgba(255,255,255,.85);
       font-size:12px;
+      letter-spacing:.2px;
     }
-    .pillRole{
-      padding:7px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
-      color:rgba(255,255,255,.9);
-      font-size:12px;
-    }
+
     .btn{
       border:none;
       cursor:pointer;
@@ -93,197 +90,133 @@
       color:#fff;
       font-weight:700;
       background:linear-gradient(135deg,var(--brand),var(--brand2));
-      box-shadow:0 12px 22px rgba(35,166,255,.15);
-      transition:transform .06s ease;
+      box-shadow:0 10px 22px rgba(35,166,255,.18);
+      transition: transform .06s ease, filter .15s ease;
+      user-select:none;
     }
-    .btn:active{ transform:scale(.98); }
+    .btn:hover{ filter:brightness(1.05); }
+    .btn:active{ transform:scale(.985); }
     .btn.ghost{
       background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
       box-shadow:none;
       color:rgba(255,255,255,.9);
     }
     .btn.danger{
-      background:rgba(255,90,103,.12);
+      background:rgba(255,90,103,.14);
       border:1px solid rgba(255,90,103,.35);
       box-shadow:none;
       color:#ffd8dc;
     }
-    .btn.small{
-      padding:8px 12px;
-      border-radius:12px;
-      font-size:12px;
-    }
-    .btnWarn{
-      background:#f6c400;
-      color:#111;
-      box-shadow:none;
+    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
+    .btn.yellow{
+      background:linear-gradient(135deg,#f6c11a,#ffdf6f);
+      color:#0a0e14;
+      box-shadow:0 10px 22px rgba(255,223,111,.18);
     }
 
-    /* KPI */
-    .kpiGrid{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:14px;
-      margin-top:16px;
+    .wrap{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px;
     }
-    @media (max-width: 900px){
-      .kpiGrid{ grid-template-columns: 1fr; }
+
+    /* KPIs */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){
+      .kpis{ grid-template-columns:1fr; }
     }
     .kpi{
       background:rgba(255,255,255,.04);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.10);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow: var(--shadow);
       padding:14px 16px;
     }
-    .kpi h4{
-      margin:0;
+    .kpi .label{
+      color:rgba(255,255,255,.70);
       font-size:12px;
-      color:rgba(255,255,255,.75);
-      letter-spacing:.7px;
+      font-weight:800;
+      letter-spacing:.4px;
     }
-    .kpi .num{
-      font-size:32px;
-      font-weight:900;
+    .kpi .value{
       margin-top:8px;
+      font-size:28px;
+      font-weight:900;
     }
 
-    /* SECTIONS */
+    /* Sections */
     .section{
       margin-top:16px;
       background:rgba(255,255,255,.04);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.10);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
     }
     .sectionHead{
       display:flex;
+      align-items:flex-start;
       justify-content:space-between;
-      align-items:center;
-      gap:10px;
+      gap:12px;
       flex-wrap:wrap;
       margin-bottom:12px;
     }
     .sectionTitle{
-      font-size:16px;
       font-weight:900;
-      letter-spacing:.5px;
+      letter-spacing:.4px;
     }
     .hint{
+      margin-top:6px;
+      color:rgba(255,255,255,.65);
       font-size:12px;
-      color:rgba(255,255,255,.68);
     }
 
-    /* FORM */
-    .formGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width: 900px){
-      .formGrid{ grid-template-columns: 1fr; }
-    }
-    label{
-      display:block;
-      font-size:12px;
-      color:rgba(255,255,255,.70);
-      margin-bottom:6px;
-    }
-    input, select{
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.20);
-      color:rgba(255,255,255,.92);
-      outline:none;
-    }
-    .fullRow{ grid-column: 1 / -1; }
-
-    .msg{
-      margin-top:10px;
-      font-size:12px;
-      color:rgba(255,255,255,.75);
-    }
-
-    /* CRM */
     .toolbar{
       display:flex;
       gap:10px;
-      align-items:center;
       flex-wrap:wrap;
+      align-items:center;
       justify-content:flex-end;
     }
-    .searchBox{
-      width:min(360px, 100%);
-    }
-    .tableWrap{
-      margin-top:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .rowCard{
-      display:grid;
-      grid-template-columns: 1.5fr 1fr .7fr .6fr .7fr;
-      gap:10px;
-      align-items:center;
-      background:rgba(0,0,0,.20);
-      border:1px solid var(--stroke);
-      border-radius:16px;
-      padding:12px 14px;
-    }
-    @media (max-width: 950px){
-      .rowCard{
-        grid-template-columns: 1fr;
-        gap:8px;
-      }
-    }
-    .hdr{
-      background:transparent;
-      border:none;
-      padding:0 2px 6px 2px;
-      color:rgba(255,255,255,.55);
-      font-size:11px;
-      letter-spacing:.5px;
-      text-transform:uppercase;
-      display:grid;
-      grid-template-columns: 1.5fr 1fr .7fr .6fr .7fr;
-      gap:10px;
-    }
-    @media (max-width: 950px){
-      .hdr{ display:none; }
-    }
-    .roleChip{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.06);
-      font-size:12px;
-      width:max-content;
-    }
-    .activeDot{
-      width:12px; height:12px; border-radius:4px;
-      display:inline-block;
-      background:var(--ok);
-      box-shadow:0 0 0 3px rgba(43,213,118,.12);
-    }
-    .inactiveDot{
-      width:12px; height:12px; border-radius:999px;
-      display:inline-block;
-      background:var(--bad);
-      box-shadow:0 0 0 3px rgba(255,90,103,.12);
+    .searchBox, select, input{
+      width: 320px;
+      max-width: 100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+      color:rgba(255,255,255,.92);
+      outline:none;
     }
 
-    /* ✅ SOLO para que la tabla NO sea eterna si crece */
+    /* CRM header row */
+    .hdr{
+      display:grid;
+      grid-template-columns: 2fr 1.2fr .9fr .7fr 1fr;
+      gap:10px;
+      padding: 8px 10px;
+      color:rgba(255,255,255,.55);
+      font-weight:800;
+      font-size:11px;
+      letter-spacing:.35px;
+      margin-bottom:8px;
+    }
+    @media (max-width: 980px){
+      .hdr{ display:none; }
+    }
+
+    /* ✅ Scroll interno CRM */
     .crmScroll{
       max-height: 420px;
-      overflow:auto;
-      padding-right:6px;
+      overflow: auto;
+      padding-right: 6px;
+      border-radius: 16px;
     }
     .crmScroll::-webkit-scrollbar{ width:10px; }
     .crmScroll::-webkit-scrollbar-thumb{
@@ -292,63 +225,106 @@
       border: 2px solid rgba(0,0,0,.2);
     }
 
-    /* DB badge (si lo usas en otras páginas, lo dejamos listo) */
-    .db-badge{
-      display:flex; align-items:center; gap:8px;
-      padding:7px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--stroke);
-      color:rgba(255,255,255,.82);
-      font-size:12px;
+    /* Table style (para que app.js meta <tr>) */
+    table{ width:100%; }
+    #usersTbody tr td{
+      background: rgba(0,0,0,.20);
+      border-top:1px solid rgba(255,255,255,.10);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding: 12px 10px;
+      font-size:13px;
     }
-    .db-dot{
-      width:10px;height:10px;border-radius:999px;
-      background:rgba(255,255,255,.25);
+    #usersTbody tr td:first-child{
+      border-left:1px solid rgba(255,255,255,.10);
+      border-top-left-radius:14px;
+      border-bottom-left-radius:14px;
     }
-    .db-dot.connecting{ background:#f6c400; }
-    .db-dot.connected{ background:#2bd576; }
-    .db-dot.error{ background:#ff5a67; }
+    #usersTbody tr td:last-child{
+      border-right:1px solid rgba(255,255,255,.10);
+      border-top-right-radius:14px;
+      border-bottom-right-radius:14px;
+    }
 
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.88);
+      font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+
+    /* Create user grid */
+    .formGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+    @media (max-width: 980px){
+      .formGrid{ grid-template-columns: 1fr; }
+    }
+    .field label{
+      display:block;
+      margin: 0 0 6px 0;
+      font-size:12px;
+      color:rgba(255,255,255,.70);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .formActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    #msgUser{
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+    }
   </style>
 </head>
 
 <body data-page="funcionario">
-  <div class="wrap">
-
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="brand">
-        <span>MAH</span> <b>FIT</b>
-      </div>
-
-      <div class="rightTop">
-        <div class="pill">Hola, <b id="who">-</b></div>
-        <div class="pillRole" id="roleBadge">FUNCIONARIO</div>
-
-        <a class="btn small btnWarn" href="rutinas.html" style="text-decoration:none;">Creador Rutinas</a>
-        <button class="btn small danger" id="btnLogout">Salir</button>
-      </div>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTitle">MAH <span>FIT</span></div>
     </div>
 
-    <!-- KPI -->
-    <div class="kpiGrid">
+    <div class="rightTop">
+      <div class="hello">Hola, <b id="who">Funcionario</b></div>
+      <span class="badge" id="roleBadge">FUNCIONARIO</span>
+      <button class="btn yellow" id="btnRutinas">Creador Rutinas</button>
+      <button class="btn ghost" id="btnLogout">Salir</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- KPIs -->
+    <div class="kpis">
       <div class="kpi">
-        <h4>SOCIOS</h4>
-        <div class="num" id="kSocios">0</div>
+        <div class="label">SOCIOS</div>
+        <div class="value" id="kSocios">0</div>
       </div>
       <div class="kpi">
-        <h4>FUNCIONARIOS</h4>
-        <div class="num" id="kFunc">0</div>
+        <div class="label">FUNCIONARIOS</div>
+        <div class="value" id="kFunc">0</div>
       </div>
       <div class="kpi">
-        <h4>ACTIVOS</h4>
-        <div class="num" id="kActivos">0</div>
+        <div class="label">ACTIVOS</div>
+        <div class="value" id="kActivos">0</div>
       </div>
     </div>
 
     <!-- ✅ CREAR USUARIO ARRIBA -->
-    <div class="section" id="crearUsuarioSection">
+    <div class="section">
       <div class="sectionHead">
         <div>
           <div class="sectionTitle">CREAR USUARIO</div>
@@ -358,43 +334,39 @@
 
       <form id="createUserForm">
         <div class="formGrid">
-          <div>
+          <div class="field">
             <label>RUT/Usuario</label>
             <input id="newRut" placeholder="Ej: 20228778-6" required />
           </div>
-
-          <div>
+          <div class="field">
             <label>Nombre</label>
             <input id="newNombre" placeholder="Ej: Juan Pérez" required />
           </div>
-
-          <div>
+          <div class="field">
             <label>Email</label>
-            <input id="newEmail" placeholder="correo@..." />
+            <input id="newEmail" type="email" placeholder="correo@..." />
           </div>
-
-          <div>
+          <div class="field">
             <label>Clave</label>
             <input id="newPass" placeholder="1234" required />
           </div>
-
-          <div class="fullRow">
+          <div class="field">
             <label>Rol</label>
             <select id="newRol">
               <option value="SOCIO">SOCIO</option>
               <option value="FUNCIONARIO">FUNCIONARIO</option>
             </select>
           </div>
-
-          <div class="fullRow">
-            <button class="btn" type="submit" style="width:100%;">Crear</button>
-            <div class="msg" id="msgUser"></div>
+          <div class="field" style="display:flex;align-items:flex-end;justify-content:flex-end;">
+            <button class="btn" type="submit" style="width:100%">Crear</button>
           </div>
         </div>
+
+        <div id="msgUser"></div>
       </form>
     </div>
 
-    <!-- CRM -->
+    <!-- ✅ CRM con barrita -->
     <div class="section">
       <div class="sectionHead">
         <div>
@@ -422,165 +394,59 @@
         <div>ACCIONES</div>
       </div>
 
-      <!-- ✅ Con scroll lateral/vertical dentro del CRM -->
       <div class="crmScroll">
-        <div class="tableWrap" id="usersTbody"></div>
+        <table style="width:100%; border-collapse:separate; border-spacing:0 10px;">
+          <tbody id="usersTbody"></tbody>
+        </table>
       </div>
     </div>
-
   </div>
 
+  <!-- app.js -->
   <script src="assets/app.js"></script>
 
+  <!-- Extras UI (rutinas + filtros sin tocar app.js) -->
   <script>
-    // Este script solo hace la UI del CRM (render con cards) + filtros.
-    // El "activar/desactivar" ya lo maneja initFuncionario() en app.js,
-    // pero aquí lo reforzamos para que también funcione con el nuevo render.
-
     document.addEventListener("DOMContentLoaded", ()=>{
-      const page = document.body.getAttribute("data-page");
-      if(page !== "funcionario") return;
+      // ir a rutinas
+      const btnRutinas = document.getElementById("btnRutinas");
+      if(btnRutinas) btnRutinas.onclick = ()=> window.location.href = "rutinas.html";
 
-      const user = window.requireAuth?.("FUNCIONARIO");
-      if(!user) return;
-
-      const who = document.getElementById("who");
-      const roleBadge = document.getElementById("roleBadge");
-      if(who) who.textContent = user.nombre || "-";
-      if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
-
-      const msgUser = document.getElementById("msgUser");
-      const tbody = document.getElementById("usersTbody");
-
+      // filtros (ocultan filas ya renderizadas por app.js)
       const search = document.getElementById("userSearch");
       const roleFilter = document.getElementById("roleFilter");
 
-      function normalize(v){ return String(v||"").toLowerCase().trim(); }
+      function norm(v){ return String(v||"").toLowerCase().trim(); }
 
-      function refreshKPIs(){
-        const users = window.getUsers();
-        document.getElementById("kSocios").textContent = users.filter(u => String(u.rol).toUpperCase()==="SOCIO").length;
-        document.getElementById("kFunc").textContent = users.filter(u => String(u.rol).toUpperCase()==="FUNCIONARIO").length;
-        document.getElementById("kActivos").textContent = users.filter(u => u.activo !== false).length;
-      }
+      function applyFilters(){
+        const q = norm(search?.value);
+        const f = String(roleFilter?.value || "ALL");
 
-      function passesRoleFilter(u, f){
-        const rol = String(u.rol||"").toUpperCase().trim();
-        const activo = (u.activo === false) ? false : true;
+        document.querySelectorAll("#usersTbody tr").forEach(tr=>{
+          const name = norm(tr.children?.[0]?.innerText);
+          const rut  = norm(tr.children?.[1]?.innerText);
+          const rol  = norm(tr.children?.[2]?.innerText);
+          const act  = norm(tr.children?.[3]?.innerText); // ✅/⛔
 
-        if(f === "ALL") return true;
-        if(f === "SOCIO") return rol === "SOCIO";
-        if(f === "FUNCIONARIO") return rol === "FUNCIONARIO";
-        if(f === "ACTIVOS") return activo;
-        if(f === "INACTIVOS") return !activo;
-        return true;
-      }
+          const hay = `${name} ${rut} ${rol} ${act}`;
 
-      function passesSearch(u, q){
-        if(!q) return true;
-        const rol = String(u.rol||"");
-        const activoTxt = (u.activo === false) ? "inactivo" : "activo";
-        const hay = [
-          u.nombre, u.rut, u.email, rol, activoTxt
-        ].map(normalize).join(" | ");
-        return hay.includes(q);
-      }
+          let okRole = true;
+          if(f === "SOCIO") okRole = rol.includes("socio");
+          if(f === "FUNCIONARIO") okRole = rol.includes("funcionario");
+          if(f === "ACTIVOS") okRole = act.includes("✅") || act.includes("activo");
+          if(f === "INACTIVOS") okRole = act.includes("⛔") || act.includes("inactivo");
 
-      function render(){
-        const users = window.getUsers()
-          .slice()
-          .sort((a,b)=> (String(a.rol).localeCompare(String(b.rol))) || String(a.nombre).localeCompare(String(b.nombre)));
-
-        const q = normalize(search.value);
-        const f = String(roleFilter.value||"ALL");
-
-        const filtered = users.filter(u => passesRoleFilter(u,f) && passesSearch(u,q));
-
-        tbody.innerHTML = "";
-
-        filtered.forEach(u=>{
-          const active = (u.activo === false) ? false : true;
-
-          const card = document.createElement("div");
-          card.className = "rowCard";
-          card.innerHTML = `
-            <div><b>${u.nombre || "-"}</b></div>
-            <div>${u.rut || "-"}</div>
-            <div><span class="roleChip">${String(u.rol||"-").toUpperCase()}</span></div>
-            <div>${active ? `<span class="activeDot" title="Activo"></span>` : `<span class="inactiveDot" title="Inactivo"></span>`}</div>
-            <div>
-              <button class="btn small ghost" data-toggle="${u.rut}">
-                ${active ? "Desactivar" : "Activar"}
-              </button>
-            </div>
-          `;
-          tbody.appendChild(card);
-        });
-
-        // acciones
-        tbody.querySelectorAll("[data-toggle]").forEach(btn=>{
-          btn.onclick = async ()=>{
-            const rut = btn.getAttribute("data-toggle");
-            const users = window.getUsers();
-            const u = users.find(x => String(x.rut) === String(rut));
-            if(!u) return;
-
-            u.activo = !(u.activo === false);
-            window.setUsers(users);
-
-            try{
-              await window.apiPost("USERS", u);
-            }catch(e){
-              // si falla el post, revertimos
-              u.activo = !(u.activo === false);
-              window.setUsers(users);
-              alert("No pude actualizar en la hoja. Revisa la API/Deploy.");
-            }
-
-            refreshKPIs();
-            render();
-          };
+          const okSearch = !q || hay.includes(q);
+          tr.style.display = (okRole && okSearch) ? "" : "none";
         });
       }
 
-      // crear usuario
-      document.getElementById("createUserForm")?.addEventListener("submit", (e)=>{
-        e.preventDefault();
-        try{
-          const newUser = window.registerUser?.({
-            rut: document.getElementById("newRut").value,
-            nombre: document.getElementById("newNombre").value,
-            email: document.getElementById("newEmail").value,
-            pass: document.getElementById("newPass").value,
-            rol: document.getElementById("newRol").value
-          });
-          if(msgUser){
-            msgUser.textContent = `✅ Usuario creado: ${newUser.nombre} (${newUser.rol})`;
-            msgUser.style.color = "#a7ffb3";
-          }
-          e.target.reset();
-          refreshKPIs();
-          render();
-        }catch(err){
-          if(msgUser){
-            msgUser.textContent = `❌ ${err.message}`;
-            msgUser.style.color = "#ffb0b0";
-          }
-        }
-      });
+      search?.addEventListener("input", applyFilters);
+      roleFilter?.addEventListener("change", applyFilters);
 
-      // filtros
-      search.addEventListener("input", render);
-      roleFilter.addEventListener("change", render);
-
-      // logout
-      document.getElementById("btnLogout")?.addEventListener("click", ()=>{
-        window.clearSession?.();
-        window.location.href = "index.html";
-      });
-
-      refreshKPIs();
-      render();
+      // re-aplicar luego de render inicial de app.js
+      setTimeout(applyFilters, 200);
+      setTimeout(applyFilters, 600);
     });
   </script>
 </body>
