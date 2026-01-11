@@ -4,1134 +4,1139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MAH FIT | Rutinas</title>
-
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
 
   <style>
+    /* ==========================
+       RUTINAS BUILDER (UI)
+       (Tu esencia original)
+       ========================== */
     :root{
-      --bg: #070a11;
-      --panel: rgba(255,255,255,.05);
-      --panel2: rgba(0,0,0,.25);
-      --stroke: rgba(255,255,255,.10);
-      --stroke2: rgba(255,255,255,.14);
-      --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.65);
-      --brand: #4d7cff;
-      --ok: #a7ffb3;
-      --bad: #ffb0b0;
-      --warn: #ffe08a;
+      --bg0:#0a0e14;
+      --bg1:#0f1623;
+      --card:#121b2a;
+      --line:rgba(255,255,255,.10);
+      --txt:rgba(255,255,255,.88);
+      --mut:rgba(255,255,255,.65);
+      --ok:#2bd576;
+      --bad:#ff5a67;
+      --pri:#7c5cff;
+      --pri2:#23a6ff;
+      --chip:#1a2538;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
     }
-    body{ background: var(--bg); color: var(--txt); }
-
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg0),var(--bg1));
+      color:var(--txt);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:18px;
+    }
     .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px;
-      border-bottom: 1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      position: sticky; top:0; z-index:100;
-      backdrop-filter: blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
     }
-    .brand{ font-weight:800; letter-spacing:.4px; }
-    .brand .mah{ color:#fff; }
-    .brand .fit{ color: var(--brand); }
-    .nav-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .badge{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      font-size:12px; color: var(--muted);
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
-
-    .btn{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      color:#fff;
+    .logo{
+      width:38px;height:38px;
       border-radius:12px;
-      height:36px;
-      padding:0 12px;
-      cursor:pointer;
-      font-weight:600;
+      background:linear-gradient(135deg,var(--pri),var(--pri2));
+      box-shadow:0 8px 18px rgba(124,92,255,.25);
     }
-    .btn:hover{ background: rgba(255,255,255,.08); }
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(77,124,255,.95), rgba(77,124,255,.55));
-      border-color: rgba(77,124,255,.55);
+    h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.4px;
     }
-    .btn.ghost{ background: rgba(255,255,255,.03); }
-    .btn.danger{ border-color: rgba(255,80,80,.35); background: rgba(255,80,80,.10); }
-    .btn.small{ height:32px; border-radius:10px; font-size:13px; }
-
-    .container{ max-width: 1200px; margin: 18px auto; padding: 0 16px; }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:var(--mut);
+      font-size:12px;
+    }
     .grid{
       display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:14px;
-      align-items:start;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+      margin-top:16px;
     }
     @media (max-width: 980px){
       .grid{ grid-template-columns: 1fr; }
     }
-
     .card{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      border-radius:18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-      overflow:hidden;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
     }
-    .card .head{
-      padding:14px 16px;
-      border-bottom: 1px solid var(--stroke);
-      display:flex; justify-content:space-between; gap:10px; align-items:center;
-      background: rgba(0,0,0,.25);
-    }
-    .card .body{ padding:14px 16px; }
-
-    label{ display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
-    .input, select, textarea{
-      width:100%;
-      height:38px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.25);
-      color:#fff;
-      padding:0 12px;
-      outline:none;
+    .card h2{
+      margin:0 0 10px 0;
       font-size:14px;
+      color:rgba(255,255,255,.92);
+      letter-spacing:.4px;
     }
-    textarea{ min-height: 90px; padding:10px 12px; height:auto; }
-    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-    .mini{ font-size:12px; color: var(--muted); }
-
-    .notice{
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.22);
-      border-radius:14px;
-      padding:12px 12px;
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:10px;
     }
-    .ok{ color: var(--ok); }
-    .bad{ color: var(--bad); }
-    .warn{ color: var(--warn); }
-
-    .dayCard{ margin-top:14px; border:1px solid var(--stroke); border-radius:16px; overflow:hidden; background: rgba(0,0,0,.18); }
-    .dayHead{
-      padding:12px 12px;
-      border-bottom: 1px solid var(--stroke);
-      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-      background: rgba(0,0,0,.18);
-    }
-    .dayHead .title{ font-weight:800; letter-spacing:.4px; }
-    .pillWrap{ display:flex; gap:6px; flex-wrap:wrap; }
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      border-radius:999px;
-      padding:5px 10px;
+    label{
       font-size:12px;
-      color: rgba(255,255,255,.80);
+      color:var(--mut);
+      display:block;
+      margin-bottom:4px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{ min-height:90px; resize:vertical; }
+    .col{
+      flex:1;
+      min-width:160px;
+    }
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      color:#fff;
+      font-weight:600;
+      background:linear-gradient(135deg,var(--pri),var(--pri2));
+      box-shadow:0 10px 20px rgba(35,166,255,.15);
+      transition:transform .06s ease;
+    }
+    .btn:active{ transform:scale(.98); }
+    .btn.ghost{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:none;
+      color:rgba(255,255,255,.85);
+    }
+    .btn.danger{
+      background:rgba(255,90,103,.12);
+      border:1px solid rgba(255,90,103,.35);
+      color:#ffd8dc;
+      box-shadow:none;
+    }
+    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin:10px 0;
+    }
+    .notice{
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px dashed rgba(255,255,255,.14);
+      color:rgba(255,255,255,.75);
+      font-size:12px;
+    }
+    .daysArea{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .dayCard{
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:12px;
+      position:relative;
+    }
+    .dayHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .dayTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:.3px;
+    }
+    .dayBadges{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:rgba(255,255,255,.78);
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+    }
+    .chip.on{
+      background:rgba(43,213,118,.14);
+      border-color:rgba(43,213,118,.35);
+      color:#d9ffe9;
     }
     .focusGrid{
-      width:100%;
       display:grid;
-      grid-template-columns: repeat(6, minmax(0,1fr));
-      gap:10px 14px;
-      padding:12px 12px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap:10px;
+      padding:10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      margin-bottom:12px;
     }
-    @media (max-width: 1100px){ .focusGrid{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
-    @media (max-width: 720px){ .focusGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    .fItem{ display:flex; gap:8px; align-items:center; font-size:13px; color: rgba(255,255,255,.85); }
-    .fItem input{ width:16px; height:16px; accent-color: var(--brand); }
-
-    table{ width:100%; border-collapse: collapse; }
-    th, td{ border-bottom: 1px solid rgba(255,255,255,.08); padding:10px 8px; vertical-align:middle; }
-    th{ text-align:left; font-size:12px; color: var(--muted); font-weight:700; }
-    td .cell{ height:34px; border-radius:11px; border:1px solid var(--stroke); background: rgba(0,0,0,.25); color:#fff; padding:0 10px; width:100%; }
-    td .cell.small{ width:100%; }
-    td .cellBtn{ height:32px; border-radius:10px; }
-
-    .modalWrap{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.62);
+    @media (max-width: 980px){
+      .focusGrid{ grid-template-columns: repeat(3, 1fr); }
+    }
+    .focusItem{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      user-select:none;
+    }
+    .focusItem input{ width:auto; }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0 8px;
+      font-size:12px;
+    }
+    th{
+      color:rgba(255,255,255,.55);
+      font-weight:600;
+      text-align:left;
+      padding:0 8px;
+      font-size:11px;
+    }
+    td{
+      padding:10px 8px;
+      background:rgba(255,255,255,.03);
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+    }
+    td:first-child{
+      border-left:1px solid var(--line);
+      border-top-left-radius:14px;
+      border-bottom-left-radius:14px;
+    }
+    td:last-child{
+      border-right:1px solid var(--line);
+      border-top-right-radius:14px;
+      border-bottom-right-radius:14px;
+    }
+    .tblInput{
+      width:100%;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.15);
+      color:rgba(255,255,255,.88);
+      outline:none;
+      font-size:12px;
+    }
+    .tblSmall{ max-width:90px; }
+    .tblMid{ max-width:130px; }
+    .tblBig{ min-width:160px; }
+    .rightCol{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .preview{
       display:none;
-      align-items:center; justify-content:center;
-      z-index:1000;
+      margin-top:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      white-space:pre-wrap;
+      color:rgba(255,255,255,.84);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .footerBtns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    /* ==========================
+       NUEVO: Tarjeta "Última rutina" bonita
+       ========================== */
+    .lastCard{
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+    .lastHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .lastTitle{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .pillMini{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:rgba(255,255,255,.86);
+    }
+    .mutedLine{
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      margin-top:6px;
+      line-height:1.35;
+    }
+
+    /* ==========================
+       NUEVO: Modal "Vista Socio" bonita
+       ========================== */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.55);
+      z-index:9999;
       padding:18px;
     }
-    .modal{
+    .modalBox{
       width:min(980px, 100%);
-      border:1px solid var(--stroke);
+      max-height:85vh;
+      overflow:auto;
+      background:rgba(10,14,20,.95);
+      border:1px solid var(--line);
       border-radius:18px;
-      background: rgba(15,18,28,.95);
-      box-shadow: 0 25px 80px rgba(0,0,0,.6);
+      box-shadow:0 20px 60px rgba(0,0,0,.50);
+      padding:14px;
+    }
+    .modalTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .modalTitle{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .socPreviewCard{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .socMeta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+    }
+    .socMeta b{ color:rgba(255,255,255,.92); }
+    .collapseDay{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.18);
+      margin-bottom:10px;
       overflow:hidden;
     }
-    .modal .head{ padding:14px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--stroke); }
-    .modal .body{ padding:14px 16px; }
-    .modalGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    @media (max-width: 980px){ .modalGrid{ grid-template-columns: 1fr; } }
-
-    .tplList{ display:flex; flex-direction:column; gap:10px; max-height: 420px; overflow:auto; padding-right:6px; }
-    .tplItem{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.03);
-      border-radius:14px;
-      padding:10px 10px;
-      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    .collapseHead{
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
     }
-    .tplItem b{ display:block; font-size:13px; }
-    .tplItem .meta{ font-size:12px; color: var(--muted); margin-top:4px; }
-    .tplItem .actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .collapseBody{
+      display:none;
+      padding:10px 12px 12px;
+      border-top:1px solid var(--line);
+    }
+    .exList{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:8px;
+    }
+    .exItem{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+    }
+    .exItem b{ color:#fff; }
   </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span> <span class="badge">Constructor de Rutinas</span></div>
-    <div class="nav-right">
-      <span class="mini">Hola, <b id="who"></b></span>
-      <span class="badge" id="roleBadge"></span>
-      <button class="btn small" id="btnPlantillas">📚 Plantillas</button>
-      <a class="btn ghost small" href="funcionario.html">Volver</a>
-      <button class="btn danger small" id="btnLogout">Salir</button>
-    </div>
-  </header>
-
-  <main class="container">
-    <div class="grid">
-
-      <section class="card">
-        <div class="head">
-          <b>Datos de la Rutina</b>
-          <span class="badge">MAH FIT - Guardado Online (Sheets)</span>
-        </div>
-
-        <div class="body">
-          <label>Socio (buscar)</label>
-          <input id="socioSearch" class="input" placeholder="Buscar socio por nombre o RUT..." autocomplete="off"/>
-
-          <div style="height:10px"></div>
-
-          <label>Selecciona Socio</label>
-          <select id="socioSelect" class="input"></select>
-
-          <div style="height:10px"></div>
-
-          <div class="row">
-            <div>
-              <label>Nivel</label>
-              <select id="nivel" class="input">
-                <option>Principiante</option>
-                <option selected>Intermedio</option>
-                <option>Avanzado</option>
-              </select>
-            </div>
-            <div>
-              <label>Objetivo</label>
-              <select id="objetivo" class="input">
-                <option>Perder % graso</option>
-                <option selected>Hipertrofia</option>
-                <option>Fuerza</option>
-                <option>Salud</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="height:10px"></div>
-
-          <label>Fecha (opcional)</label>
-          <input id="fecha" class="input" placeholder="YYYY-MM-DD"/>
-
-          <div style="height:10px"></div>
-
-          <label>Notas (opcional)</label>
-          <textarea id="notas" placeholder="Ej: Cardio, indicaciones, técnica, etc..."></textarea>
-
-          <div style="height:10px"></div>
-
-          <div class="notice">
-            <div class="mini">Profesor</div>
-            <b id="profesorNombre">-</b>
-            <div class="mini" id="profesorRut" style="margin-top:4px;">-</div>
-          </div>
-
-          <div style="height:14px"></div>
-
-          <div class="notice">
-            <b>Agregar Días</b>
-            <div class="row" style="margin-top:10px;">
-              <select id="dayPicker" class="input">
-                <option value="1">Día 1</option>
-                <option value="2">Día 2</option>
-                <option value="3">Día 3</option>
-                <option value="4">Día 4</option>
-                <option value="5">Día 5</option>
-                <option value="6">Día 6</option>
-                <option value="7">Día 7</option>
-              </select>
-              <button class="btn primary" id="btnAddDay">Agregar día</button>
-            </div>
-            <div class="mini" style="margin-top:8px;">
-              Tip: define el <b>Enfoque</b> por día y agrega ejercicios con series/reps/carga/descanso.
-            </div>
-          </div>
-
-          <div style="height:14px"></div>
-
-          <div class="notice">
-            <b>Acciones</b>
-            <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-              <button class="btn primary" id="btnGuardar">Guardar Rutina</button>
-              <button class="btn ghost" id="btnVista">Vista Socio</button>
-            </div>
-
-            <div id="msg" class="mini" style="margin-top:10px;"></div>
-          </div>
-
-          <div style="height:14px"></div>
-
-          <div class="notice" id="lastRoutineBox" style="display:none;">
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="head">
-          <b>Días de entrenamiento</b>
-          <span class="badge" id="daysCount">Días: 0</span>
-        </div>
-        <div class="body" id="daysContainer">
-          <div class="mini">Agrega un día para comenzar.</div>
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <div class="modalWrap" id="tplModalWrap">
-    <div class="modal">
-      <div class="head">
-        <b>📚 Plantillas de Rutina</b>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button class="btn ghost small" id="btnTplReload">Recargar</button>
-          <button class="btn danger small" id="btnTplClose">Cerrar</button>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Constructor de Rutinas</h1>
+          <div class="pill">MAH FIT · Guardado Online (Sheets)</div>
         </div>
       </div>
-      <div class="body">
-        <div class="modalGrid">
-          <div class="notice">
-            <b>Guardar rutina actual como plantilla</b>
-            <div style="height:10px"></div>
+      <div class="row" style="margin:0">
+        <button class="btn ghost small" id="btnVolver">Volver</button>
+        <button class="btn danger small" id="btnLogout">Salir</button>
+      </div>
+    </div>
 
-            <label>Nombre plantilla</label>
-            <input id="tplNombre" class="input" placeholder="Ej: Hipertrofia Glúteos (Básico)"/>
+    <div class="grid">
+      <!-- ===== Left: datos rutina ===== -->
+      <div class="card">
+        <h2>Datos de la Rutina</h2>
 
-            <div style="height:10px"></div>
-
-            <div class="row">
-              <div>
-                <label>Visibilidad</label>
-                <select id="tplVisibility" class="input">
-                  <option value="PRIVATE">PRIVATE (solo yo + admin)</option>
-                  <option value="TEAM">TEAM (todos los coaches)</option>
-                  <option value="OFFICIAL">OFFICIAL (biblioteca admin)</option>
-                </select>
-              </div>
-              <div>
-                <label>Tags (opcional)</label>
-                <input id="tplTags" class="input" placeholder="Ej: glúteos, hipertrofia, 3 días"/>
-              </div>
-            </div>
-
-            <div style="height:12px"></div>
-
-            <button class="btn primary" id="btnTplSave">Guardar como plantilla</button>
-            <div id="tplMsg" class="mini" style="margin-top:10px;"></div>
-
-            <div class="mini" style="margin-top:12px;">
-              <b>Reglas:</b><br/>
-              • PRIVATE: solo el creador + ADMIN<br/>
-              • TEAM: visible para todos, solo el creador/admin puede editar; otros duplican<br/>
-              • OFFICIAL: solo ADMIN crea/edita (recomendado)
-            </div>
+        <div class="row">
+          <div class="col">
+            <label>Socio</label>
+            <input id="socioSearch" placeholder="Buscar socio por nombre o RUT..." />
           </div>
+        </div>
 
-          <div class="notice">
-            <b>Plantillas disponibles</b>
-            <div class="mini" style="margin-top:6px;">Se muestran según tu rol y permisos.</div>
-            <div style="height:10px"></div>
-
-            <div class="row">
-              <input id="tplSearch" class="input" placeholder="Buscar plantilla..."/>
-              <select id="tplFilter" class="input">
-                <option value="ALL">Todas</option>
-                <option value="PRIVATE">PRIVATE</option>
-                <option value="TEAM">TEAM</option>
-                <option value="OFFICIAL">OFFICIAL</option>
-              </select>
-            </div>
-
-            <div style="height:12px"></div>
-
-            <div class="tplList" id="tplList"></div>
+        <div class="row">
+          <div class="col">
+            <label>Selecciona Socio</label>
+            <select id="socioSelect"></select>
           </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Nivel</label>
+            <select id="nivel">
+              <option value="Principiante">Principiante</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Objetivo</label>
+            <select id="objetivo">
+              <option value="Hipertrofia">Hipertrofia</option>
+              <option value="Fuerza">Fuerza</option>
+              <option value="Pérdida de grasa">Pérdida de grasa</option>
+              <option value="Rendimiento">Rendimiento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Fecha (opcional)</label>
+            <input id="fecha" placeholder="Ej: 2026-01-10" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Notas (opcional)</label>
+            <textarea id="notas" placeholder="Indicaciones generales, técnica, RIR, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Agregar Días</h2>
+        <div class="row">
+          <div class="col" style="max-width:120px">
+            <label>Día</label>
+            <select id="dayPicker">
+              <option value="1">Día 1</option>
+              <option value="2">Día 2</option>
+              <option value="3">Día 3</option>
+              <option value="4">Día 4</option>
+              <option value="5">Día 5</option>
+              <option value="6">Día 6</option>
+              <option value="7">Día 7</option>
+            </select>
+          </div>
+          <div class="col" style="max-width:180px; align-self:flex-end;">
+            <button class="btn" id="btnAddDay">Agregar día</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <b>Tip:</b> define el <b>Enfoque</b> por día (músculos principales) y agrega ejercicios con series/reps/carga/descanso.
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Acciones</h2>
+        <div class="footerBtns">
+          <button class="btn" id="btnGuardar">Guardar Rutina</button>
+          <button class="btn ghost" id="btnVista">Vista Socio</button>
+        </div>
+        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
+
+        <div class="preview" id="previewBox"></div>
+
+        <div class="hr"></div>
+
+        <h2>Última rutina encontrada</h2>
+        <div class="lastCard" id="lastRoutineBox">
+          <div class="mutedLine">Selecciona un socio para ver su última rutina.</div>
+        </div>
+      </div>
+
+      <!-- ===== Right: días/exercises ===== -->
+      <div class="rightCol">
+        <div class="card">
+          <h2>Días de entrenamiento</h2>
+          <div class="daysArea" id="daysContainer"></div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ===== Modal Vista Socio ===== -->
+  <div class="modal" id="vistaModal">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div class="modalTitle">Vista Socio</div>
+        <button class="btn ghost small" id="btnCerrarVista">Cerrar</button>
+      </div>
+      <div id="vistaContenido"></div>
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+
   <script>
-    /* =========================
-       CONFIG: TU API
-       ========================= */
-    const API_BASE = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
+    // ==========================================================
+    // Tu base de ejercicios (tal cual la tenías)
+    // ==========================================================
+   const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
 
-    /* =========================
-       UTIL
-       ========================= */
-    const $ = (s)=>document.querySelector(s);
-    const esc = (s)=>String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-    const nowISO = ()=> new Date().toISOString();
-    const toYMD = (d=new Date())=>{
-      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
-      return `${y}-${m}-${day}`;
-    };
-    function setMsg(id, text, type=""){
-      const el = $(id);
-      if(!el) return;
-      el.className = "mini " + (type||"");
-      el.textContent = text;
-    }
+    const MUSCLES = Object.keys(EXERCISE_DB);
 
-    async function apiGet(resource, params={}){
-      const usp = new URLSearchParams({ resource, ...params });
-      const res = await fetch(`${API_BASE}?${usp.toString()}`);
-      const data = await res.json().catch(()=>null);
-      if(!data || data.ok !== true) throw new Error((data && data.error) ? data.error : "Error API");
-      return data;
-    }
-    async function apiPost(resource, body){
-      const res = await fetch(`${API_BASE}?resource=${encodeURIComponent(resource)}`, {
-        method:"POST",
-        headers: { "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json().catch(()=>null);
-      if(!data || data.ok !== true) throw new Error((data && data.error) ? data.error : "Error API");
-      return data;
-    }
-
-    /* =========================
-       AUTH (FIX: lee mahfit_session)
-       ========================= */
-    function getSession(){
-      const raw = localStorage.getItem("mahfit_session");
-      if(!raw) return null;
-
-      try{
-        const s = JSON.parse(raw);
-        const rol = String(s.rol || s.role || "").toUpperCase();
-
-        // Compatibilidad total: dejamos ambas keys (role y rol)
-        return {
-          rut: s.rut || "",
-          nombre: s.nombre || s.name || "Usuario",
-          rol,         // "ADMIN" / "FUNCIONARIO" / "SOCIO"
-          role: rol,   // compatibilidad con código que usa session.role
-          at: s.at || ""
-        };
-      }catch{
-        return null;
-      }
-    }
-
-    function requireAuth(rolesPermitidos = ["ADMIN","FUNCIONARIO"]){
-      const s = getSession();
-      if(!s || !s.rol){
-        location.href = "index.html";
-        return null;
-      }
-
-      if(rolesPermitidos.length && !rolesPermitidos.includes(s.rol)){
-        location.href = "index.html";
-        return null;
-      }
-
-      $("#who").textContent = s.nombre || "Usuario";
-      $("#roleBadge").textContent = s.rol;
-
-      $("#profesorNombre").textContent = s.nombre || "-";
-      $("#profesorRut").textContent = s.rut ? `RUT: ${s.rut}` : "-";
-
-      return s;
-    }
-
-    /* =========================
-       DATOS / ESTADO
-       ========================= */
-    const MUSCLES = [
-      "Pectoral","Espalda","Dorsales","Hombros","Trapecio","Lumbares",
-      "Bíceps","Tríceps","Antebrazos","Abdominales/Core",
-      "Cuádriceps","Isquiotibiales","Glúteos","Aductores/Abductores","Pantorrillas","Cardio"
-    ];
-
-    let session = null;
-    let SOCIOS = [];
-    let selectedSocio = null;
-
-    let routine = {
-      meta: { nivel:"Intermedio", objetivo:"Hipertrofia", fecha: toYMD(), notas:"" },
-      socio: { rut:"", nombre:"" },
-      dias: []
-    };
-
-    function updateDaysCount(){
-      $("#daysCount").textContent = `Días: ${routine.dias.length}`;
-    }
-
-    function focusGridHTML(dayIndex){
+    // ==========================================================
+    // Templates
+    // ==========================================================
+    function dayCardTemplate(dayNum){
       return `
-        <div class="focusGrid" data-focus-grid="${dayIndex}">
-          ${MUSCLES.map(m=>`
-            <label class="fItem">
-              <input type="checkbox" value="${esc(m)}" data-focus="${dayIndex}">
-              <span>${esc(m)}</span>
-            </label>
-          `).join("")}
-        </div>
-      `;
-    }
-
-    function buildDayCard(day){
-      const dayIndex = day.dia;
-      const enfoquePills = (day.enfoque||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join("");
-      return `
-        <div class="dayCard" data-day="${dayIndex}">
+        <div class="dayCard" data-day="${dayNum}">
           <div class="dayHead">
-            <div>
-              <div class="title">DÍA ${dayIndex}</div>
-              <div class="pillWrap" data-enfoque-pills="${dayIndex}">
-                ${enfoquePills || `<span class="pill">Sin enfoque</span>`}
+            <div class="dayTitle">
+              <span>DÍA ${dayNum}</span>
+              <div class="dayBadges" id="badges-${dayNum}">
+                <span class="chip">Enfocado</span>
               </div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn ghost small" data-add-ex="${dayIndex}">+ Ejercicio</button>
-              <button class="btn danger small" data-remove-day="${dayIndex}">Quitar Día</button>
+            <div class="row" style="margin:0">
+              <button class="btn ghost small" data-addex="${dayNum}">+ Ejercicio</button>
+              <button class="btn danger small" data-removeday="${dayNum}">Quitar Día</button>
             </div>
           </div>
 
-          <div style="padding:12px 12px;">
-            <div class="notice" style="margin-bottom:12px;">
-              <b>Enfocado</b>
-              <div class="mini">Selecciona uno o más músculos para el enfoque del día.</div>
-              ${focusGridHTML(dayIndex)}
-            </div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:160px;">MÚSCULO</th>
-                  <th>EJERCICIO</th>
-                  <th style="width:150px;">N° MAQ/VAR</th>
-                  <th style="width:150px;">OBS.</th>
-                  <th style="width:80px;">SERIES</th>
-                  <th style="width:90px;">REPS</th>
-                  <th style="width:90px;">CARGA</th>
-                  <th style="width:110px;">DESCANSO</th>
-                  <th style="width:90px;">ACCIÓN</th>
-                </tr>
-              </thead>
-              <tbody data-rows="${dayIndex}">
-                ${day.ejercicios.map((ex, idx)=>rowHTML(dayIndex, idx, ex)).join("") || rowHTML(dayIndex, 0, emptyExercise())}
-              </tbody>
-            </table>
+          <div class="notice" style="margin-bottom:10px">
+            <b>Enfocado</b><br/>
+            Selecciona uno o más músculos para el enfoque del día.
           </div>
+
+          <div class="focusGrid" id="focus-${dayNum}">
+            ${MUSCLES.map(m => `
+              <label class="focusItem">
+                <input type="checkbox" data-focus="${dayNum}" value="${m}"/>
+                <span>${m}</span>
+              </label>
+            `).join("")}
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>MÚSCULO</th>
+                <th>EJERCICIO</th>
+                <th>N° MAQ/VAR</th>
+                <th>OBS.</th>
+                <th>SERIES</th>
+                <th>REPS</th>
+                <th>CARGA</th>
+                <th>DESCANSO</th>
+                <th>ACCIÓN</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-${dayNum}"></tbody>
+          </table>
         </div>
       `;
     }
 
-    function emptyExercise(){
-      return { musculo:"Pectoral", ejercicio:"", maq:"", obs:"", series:"3", reps:"8-12", carga:"", descanso:"Ej: 1:30" };
-    }
-
-    function rowHTML(dayIndex, idx, ex){
+    function rowTemplate(dayNum){
+      const muscleOptions = MUSCLES.map(m => `<option value="${m}">${m}</option>`).join("");
       return `
-        <tr data-row="${dayIndex}:${idx}">
+        <tr>
           <td>
-            <select class="cell" data-k="musculo">
-              ${MUSCLES.map(m=>`<option ${ex.musculo===m?"selected":""}>${esc(m)}</option>`).join("")}
+            <select class="tblInput tblBig" data-muscle="${dayNum}">
+              ${muscleOptions}
             </select>
           </td>
-          <td><input class="cell" data-k="ejercicio" value="${esc(ex.ejercicio)}" placeholder="Escribe o elige..."></td>
-          <td><input class="cell" data-k="maq" value="${esc(ex.maq)}" placeholder="N° maq / variante"></td>
-          <td><input class="cell" data-k="obs" value="${esc(ex.obs)}" placeholder="Técnica / tempo / RIR..."></td>
-          <td><input class="cell" data-k="series" value="${esc(ex.series)}" placeholder="3"></td>
-          <td><input class="cell" data-k="reps" value="${esc(ex.reps)}" placeholder="8-12"></td>
-          <td><input class="cell" data-k="carga" value="${esc(ex.carga)}" placeholder="kg"></td>
-          <td><input class="cell" data-k="descanso" value="${esc(ex.descanso)}" placeholder="Ej: 1:30"></td>
-          <td><button class="btn ghost small cellBtn" data-del-ex="${dayIndex}:${idx}">Quitar</button></td>
+          <td>
+            <input class="tblInput tblBig" list="dl-${dayNum}" placeholder="Escribe o elige" data-ex="${dayNum}"/>
+            <datalist id="dl-${dayNum}"></datalist>
+          </td>
+          <td><input class="tblInput tblSmall" placeholder="N° maq / variante" data-maq="${dayNum}"/></td>
+          <td><input class="tblInput tblMid" placeholder="Técnica / tempo / RIR.." data-obs="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="3" data-series="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="8-12" data-reps="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="kg" data-carga="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="Ej: 1:30" data-desc="${dayNum}"/></td>
+          <td><button class="btn ghost small" data-delrow="${dayNum}">Quitar</button></td>
         </tr>
       `;
     }
 
-    function renderDays(){
-      const cont = $("#daysContainer");
-      if(!routine.dias.length){
-        cont.innerHTML = `<div class="mini">Agrega un día para comenzar.</div>`;
-        updateDaysCount();
+    // ==========================================================
+    // Helpers UI
+    // ==========================================================
+    function updateDatalist(dayNum, muscle){
+      const dl = document.getElementById(`dl-${dayNum}`);
+      if(!dl) return;
+      dl.innerHTML = (EXERCISE_DB[muscle] || []).map(ex => `<option value="${ex}"></option>`).join("");
+    }
+
+    function updateFocusBadges(dayNum){
+      const box = document.getElementById(`badges-${dayNum}`);
+      const checked = [...document.querySelectorAll(`input[data-focus="${dayNum}"]:checked`)].map(x=>x.value);
+      if(!box) return;
+
+      if(checked.length === 0){
+        box.innerHTML = `<span class="chip">Enfocado</span>`;
         return;
       }
-      cont.innerHTML = routine.dias.map(buildDayCard).join("");
-      updateDaysCount();
-      wireDays();
+      box.innerHTML = checked.map(m=>`<span class="chip on">${m}</span>`).join("");
     }
 
-    function syncRoutineFromUI(){
-      routine.meta.nivel = $("#nivel").value;
-      routine.meta.objetivo = $("#objetivo").value;
-      routine.meta.fecha = $("#fecha").value || "";
-      routine.meta.notas = $("#notas").value || "";
+    function wireDayActions(){
+      // botones por día
+      document.querySelectorAll("[data-addex]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const d = btn.getAttribute("data-addex");
+          document.querySelector(`#tbody-${d}`).insertAdjacentHTML("beforeend", rowTemplate(d));
+          wireRowActions(d);
+        };
+      });
 
-      routine.socio.rut = selectedSocio?.rut || "";
-      routine.socio.nombre = selectedSocio?.nombre || "";
+      document.querySelectorAll("[data-removeday]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const d = btn.getAttribute("data-removeday");
+          const card = document.querySelector(`.dayCard[data-day="${d}"]`);
+          if(card) card.remove();
+          addedDays.delete(String(d));
+          refreshLastPreviewBadge();
+        };
+      });
+
+      // enfoque badges
+      document.querySelectorAll("input[data-focus]").forEach(ch=>{
+        ch.onchange = ()=>{
+          const d = ch.getAttribute("data-focus");
+          updateFocusBadges(d);
+          refreshLastPreviewBadge();
+        };
+      });
+    }
+
+    function wireRowActions(dayNum){
+      // borrar fila
+      document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
+        btn.onclick = ()=>{
+          btn.closest("tr")?.remove();
+          refreshLastPreviewBadge();
+        };
+      });
+
+      // cambio músculo => actualiza datalist
+      document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
+        sel.onchange = ()=>{
+          updateDatalist(dayNum, sel.value);
+        };
+        // init datalist con el primer músculo
+        updateDatalist(dayNum, sel.value);
+      });
+    }
+
+    // ==========================================================
+    // Data builder (collect routine)
+    // ==========================================================
+    function collectRoutine(){
+      const socioVal = $("#socioSelect").value;
+      const socio = getUsers().find(u=>u.rut === socioVal);
+      if(!socio) throw new Error("Selecciona un socio válido.");
+
+      const meta = {
+        nivel: $("#nivel").value,
+        objetivo: $("#objetivo").value,
+        fecha: $("#fecha").value || "",
+        notas: $("#notas").value || ""
+      };
+
+      const dias = [];
+      document.querySelectorAll(".dayCard").forEach(card=>{
+        const d = card.getAttribute("data-day");
+        const enfoque = [...document.querySelectorAll(`input[data-focus="${d}"]:checked`)].map(x=>x.value);
+
+        const ejercicios = [];
+        const tbody = document.getElementById(`tbody-${d}`);
+        [...tbody.querySelectorAll("tr")].forEach(tr=>{
+          const musculo = tr.querySelector(`select[data-muscle="${d}"]`)?.value || "";
+          const ejercicio = tr.querySelector(`input[data-ex="${d}"]`)?.value || "";
+          const maq = tr.querySelector(`input[data-maq="${d}"]`)?.value || "";
+          const obs = tr.querySelector(`input[data-obs="${d}"]`)?.value || "";
+          const series = tr.querySelector(`input[data-series="${d}"]`)?.value || "";
+          const reps = tr.querySelector(`input[data-reps="${d}"]`)?.value || "";
+          const carga = tr.querySelector(`input[data-carga="${d}"]`)?.value || "";
+          const descanso = tr.querySelector(`input[data-desc="${d}"]`)?.value || "";
+
+          if(musculo && ejercicio){
+            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
+          }
+        });
+
+        dias.push({
+          dia: `Día ${d}`,
+          enfoque,
+          ejercicios
+        });
+      });
+
+      if(dias.length === 0) throw new Error("Debes agregar al menos 1 día.");
+
+      return {
+        socio: { rut: socio.rut, nombre: socio.nombre },
+        meta,
+        dias
+      };
+    }
+
+    function formatRutinaText(routine, profName){
+      let out = "";
+      out += `RUTINA DE ENTRENAMIENTO\n`;
+      out += `Socio: ${routine.socio.nombre} (${routine.socio.rut})\n`;
+      out += `Nivel: ${routine.meta.nivel}\n`;
+      out += `Objetivo: ${routine.meta.objetivo}\n`;
+      if(routine.meta.fecha) out += `Fecha: ${routine.meta.fecha}\n`;
+      if(routine.meta.notas) out += `Notas: ${routine.meta.notas}\n`;
+      out += `Profesor: ${profName}\n`;
+      out += `\n==============================\n\n`;
 
       routine.dias.forEach(day=>{
-        const tbody = document.querySelector(`tbody[data-rows="${day.dia}"]`);
-        if(!tbody) return;
-
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-        day.ejercicios = rows.map(tr=>{
-          const get = (k)=> tr.querySelector(`[data-k="${k}"]`)?.value || "";
-          return {
-            musculo: get("musculo"),
-            ejercicio: get("ejercicio"),
-            maq: get("maq"),
-            obs: get("obs"),
-            series: get("series"),
-            reps: get("reps"),
-            carga: get("carga"),
-            descanso: get("descanso"),
-          };
+        out += `${day.dia}\n`;
+        if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\n`;
+        out += `\n`;
+        day.ejercicios.forEach((e, i)=>{
+          out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\n`;
+          if(e.maq) out += `   Maq/Var: ${e.maq}\n`;
+          if(e.obs) out += `   Obs: ${e.obs}\n`;
         });
+        out += `\n------------------------------\n\n`;
       });
+
+      return out;
     }
 
-    function updateEnfoquePills(dayIndex){
-      const day = routine.dias.find(d=>String(d.dia)===String(dayIndex));
-      const wrap = document.querySelector(`[data-enfoque-pills="${dayIndex}"]`);
-      if(!wrap) return;
-      if(!day || !day.enfoque?.length){
-        wrap.innerHTML = `<span class="pill">Sin enfoque</span>`;
-        return;
-      }
-      wrap.innerHTML = day.enfoque.map(x=>`<span class="pill">${esc(x)}</span>`).join("");
-    }
-
-    function wireDays(){
-      document.querySelectorAll("input[data-focus]").forEach(chk=>{
-        chk.addEventListener("change", ()=>{
-          const dayIndex = chk.getAttribute("data-focus");
-          const day = routine.dias.find(d=>String(d.dia)===String(dayIndex));
-          if(!day) return;
-          const selected = Array.from(document.querySelectorAll(`input[data-focus="${dayIndex}"]:checked`)).map(x=>x.value);
-          day.enfoque = selected;
-          updateEnfoquePills(dayIndex);
-        });
-      });
-
-      routine.dias.forEach(day=>{
-        const dayIndex = day.dia;
-        (day.enfoque||[]).forEach(m=>{
-          const cb = document.querySelector(`input[data-focus="${dayIndex}"][value="${CSS.escape(m)}"]`);
-          if(cb) cb.checked = true;
-        });
-      });
-
-      document.querySelectorAll("[data-add-ex]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const dayIndex = btn.getAttribute("data-add-ex");
-          const day = routine.dias.find(d=>String(d.dia)===String(dayIndex));
-          if(!day) return;
-          syncRoutineFromUI();
-          day.ejercicios.push(emptyExercise());
-          renderDays();
-        });
-      });
-
-      document.querySelectorAll("[data-remove-day]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const dayIndex = Number(btn.getAttribute("data-remove-day"));
-          routine.dias = routine.dias.filter(d=>d.dia !== dayIndex);
-          renderDays();
-        });
-      });
-
-      document.querySelectorAll("[data-del-ex]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const [dayIndex, idx] = btn.getAttribute("data-del-ex").split(":");
-          syncRoutineFromUI();
-          const day = routine.dias.find(d=>String(d.dia)===String(dayIndex));
-          if(!day) return;
-          day.ejercicios.splice(Number(idx), 1);
-          if(day.ejercicios.length===0) day.ejercicios.push(emptyExercise());
-          renderDays();
-        });
-      });
-    }
-
-    function fillSocioSelect(list){
-      $("#socioSelect").innerHTML = list.map(s=>`<option value="${esc(s.rut)}">${esc(s.nombre)} (${esc(s.rut)})</option>`).join("");
-      if(list.length){
-        $("#socioSelect").value = list[0].rut;
-        selectedSocio = list[0];
-      }
-    }
-
-    function filterSocios(q){
-      const t = String(q||"").toLowerCase().trim();
-      if(!t) return SOCIOS;
-      return SOCIOS.filter(s=>{
-        return String(s.nombre||"").toLowerCase().includes(t) || String(s.rut||"").toLowerCase().includes(t);
-      });
-    }
-
-    async function loadSocios(){
-      const data = await apiGet("SOCIOS");
-      SOCIOS = data.socios || [];
-      SOCIOS.sort((a,b)=> String(a.nombre||"").localeCompare(String(b.nombre||"")));
-      fillSocioSelect(SOCIOS);
-    }
-
-    async function loadLastRoutineForSelected(){
-      if(!selectedSocio?.rut) return;
+    // ==========================================================
+    // NUEVO: Mostrar última rutina guardada (bonita) + cargar para editar
+    // ==========================================================
+    function showLastRoutineBoxPretty(lastV2){
       const box = $("#lastRoutineBox");
-      box.style.display = "none";
-      box.innerHTML = "";
 
-      let data;
-      try{
-        data = await apiGet("RUTINA_ULTIMA", { rutSocio: selectedSocio.rut });
-      }catch(e){
+      if(!lastV2){
+        box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
         return;
       }
 
-      if(!data.found || !data.rutina) return;
+      const r = lastV2.routine || lastV2; // por si tu estructura viene directa
+      const m = r.meta || {};
+      const dias = Array.isArray(r.dias) ? r.dias.length : 0;
+      const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
 
-      const r = data.rutina;
-      const nivel = r.nivel || r.meta?.nivel || "-";
-      const objetivo = r.objetivo || r.meta?.objetivo || "-";
-      const dias = r.diasCount || r.dias?.length || 0;
-      const mod = r.actualizadoEn || r.modificadoEn || r.creadoEn || "-";
-
-      box.style.display = "block";
       box.innerHTML = `
-        <b>Última rutina encontrada</b>
-        <div style="height:10px"></div>
-        <div class="pillWrap">
-          <span class="pill">Nivel: ${esc(nivel)}</span>
-          <span class="pill">Días: ${esc(dias)}</span>
-          <span class="pill">Últ. Modificación: ${esc(mod)}</span>
+        <div class="lastHead">
+          <div class="lastTitle">Última rutina encontrada</div>
+          <div class="pills">
+            <span class="pillMini">Nivel: <b>${m.nivel || "-"}</b></span>
+            <span class="pillMini">Días: <b>${dias}</b></span>
+          </div>
         </div>
-        <div style="height:10px"></div>
-        <div class="mini"><b>Objetivo:</b> ${esc(objetivo)}</div>
-        <div style="height:12px"></div>
-        <button class="btn primary" id="btnLoadLast">Cargar para editar</button>
+
+        <div class="mutedLine"><b>Últ. Modificación:</b> ${actualizado ? new Date(actualizado).toLocaleString() : "-"}</div>
+        <div class="mutedLine"><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+
+        <div style="margin-top:10px">
+          <button class="btn" id="btnCargarUltima">Cargar para editar</button>
+        </div>
       `;
 
-      $("#btnLoadLast").onclick = ()=>{
-        const obj = r.rutinaObj || r.rutina_json_obj || r.rutina_json || r;
-        applyRoutineObject(obj);
-        setMsg("#msg", "Rutina anterior cargada ✅ (puedes editar y guardar).", "ok");
+      // acción
+      $("#btnCargarUltima").onclick = ()=>{
+        try{
+          loadRoutineIntoBuilder(r);
+          showMsg($("#msg"), "✅ Rutina cargada. Puedes editar y volver a guardar.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
       };
     }
 
-    function applyRoutineObject(obj){
-      const meta = obj.meta || obj;
-      routine.meta.nivel = obj.nivel || meta.nivel || $("#nivel").value;
-      routine.meta.objetivo = obj.objetivo || meta.objetivo || $("#objetivo").value;
-      routine.meta.fecha = obj.fecha || meta.fecha || $("#fecha").value;
-      routine.meta.notas = obj.notas || meta.notas || $("#notas").value || "";
-
-      $("#nivel").value = routine.meta.nivel;
-      $("#objetivo").value = routine.meta.objetivo;
-      $("#fecha").value = routine.meta.fecha || "";
-      $("#notas").value = routine.meta.notas || "";
-
-      routine.dias = Array.isArray(obj.dias) ? obj.dias.map(d=>({
-        dia: Number(d.dia || d.day || 1),
-        enfoque: Array.isArray(d.enfoque) ? d.enfoque : (typeof d.enfoque==="string" ? d.enfoque.split(",").map(x=>x.trim()).filter(Boolean) : []),
-        ejercicios: Array.isArray(d.ejercicios) ? d.ejercicios : []
-      })) : [];
-
-      routine.dias.forEach(d=>{
-        if(!d.ejercicios || !d.ejercicios.length) d.ejercicios = [emptyExercise()];
-      });
-
-      renderDays();
+    function clearBuilderDays(){
+      $("#daysContainer").innerHTML = "";
+      addedDays.clear();
     }
 
-    function routineToItemsRows(routineObj, rutinaId){
-      const rows = [];
-      const m = routineObj.meta || {};
-      const socio = routineObj.socio || {};
-      const dias = Array.isArray(routineObj.dias) ? routineObj.dias : [];
-
-      dias.forEach(d=>{
-        const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
-        ejercicios.forEach((e, idx)=>{
-          rows.push({
-            rutinaId,
-            rutSocio: socio.rut || "",
-            socioNombre: socio.nombre || "",
-            nivel: m.nivel || "",
-            objetivo: m.objetivo || "",
-            fecha: m.fecha || "",
-            profesorRut: session?.rut || "",
-            profesorNombre: session?.nombre || "",
-            dia: d.dia || "",
-            enfoque: Array.isArray(d.enfoque) ? d.enfoque.join(", ") : (d.enfoque || ""),
-            orden: idx + 1,
-            musculo: e.musculo || "",
-            ejercicio: e.ejercicio || "",
-            maq: e.maq || "",
-            obs: e.obs || "",
-            series: e.series || "",
-            reps: e.reps || "",
-            carga: e.carga || "",
-            descanso: e.descanso || ""
-          });
-        });
-      });
-      return rows;
+    function extractDayNumber(dayLabel){
+      const m = String(dayLabel || "").match(/\d+/);
+      return m ? String(m[0]) : "1";
     }
 
-    window.saveRoutineItems = async function(payload){
-      const { rutinaId, routineObj } = payload;
-      const rows = routineToItemsRows(routineObj, rutinaId);
-      return apiPost("RUTINAS_ITEMS", {
-        mode: "REPLACE_BY_RUTINA",
-        rutinaId,
-        rows
-      });
-    };
+    function addDayIfNotExists(dayNum){
+      if(addedDays.has(String(dayNum))) return;
+      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
+      addedDays.add(String(dayNum));
+      wireDayActions();
+      updateFocusBadges(dayNum);
+    }
 
-    async function saveRoutine(){
-      syncRoutineFromUI();
+    function loadRoutineIntoBuilder(routine){
+      // meta
+      $("#nivel").value = routine.meta?.nivel || "Principiante";
+      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
+      $("#fecha").value = routine.meta?.fecha || "";
+      $("#notas").value = routine.meta?.notas || "";
 
-      if(!selectedSocio?.rut){
-        setMsg("#msg", "Selecciona un socio antes de guardar.", "bad");
+      // días
+      clearBuilderDays();
+
+      const dias = Array.isArray(routine.dias) ? routine.dias : [];
+      if(dias.length === 0){
+        // si no hay días, deja uno
+        $("#dayPicker").value = "1";
+        $("#btnAddDay").click();
         return;
       }
 
-      const rutinaId = `R_${selectedSocio.rut}`;
+      dias.forEach(day=>{
+        const dayNum = extractDayNumber(day.dia);
+        addDayIfNotExists(dayNum);
 
-      const payload = {
-        rutinaId,
-        rutSocio: selectedSocio.rut,
-        socioNombre: selectedSocio.nombre,
-        nivel: routine.meta.nivel,
-        objetivo: routine.meta.objetivo,
-        fecha: routine.meta.fecha,
-        profesorRut: session?.rut || "",
-        profesorNombre: session?.nombre || "",
-        dias: routine.dias.length,
-        rutina_json: JSON.stringify(routine),
-        actualizadoEn: nowISO()
-      };
-
-      try{
-        await apiPost("RUTINAS_V2", payload);
-        await window.saveRoutineItems({ rutinaId, routineObj: routine });
-        setMsg("#msg", "✅ Rutina guardada. El socio ya la puede ver en su panel.", "ok");
-        await loadLastRoutineForSelected();
-      }catch(e){
-        setMsg("#msg", "❌ Error al guardar: " + e.message, "bad");
-      }
-    }
-
-    function viewSocio(){
-      syncRoutineFromUI();
-      const txt = JSON.stringify(routine, null, 2);
-      alert("Vista Socio (JSON)\n\n" + txt.slice(0, 4000));
-    }
-
-    let TEMPLATES = [];
-
-    function canSeeTemplate(t){
-      const vis = String(t.visibility||"").toUpperCase();
-      const ownerRut = String(t.ownerRut||"");
-      const role = String(session?.rol||session?.role||"").toUpperCase();
-
-      if(role === "ADMIN") return true;
-      if(vis === "OFFICIAL") return true;
-      if(vis === "TEAM") return true;
-      if(vis === "PRIVATE") return ownerRut === String(session?.rut||"");
-      return false;
-    }
-
-    function canEditTemplate(t){
-      const vis = String(t.visibility||"").toUpperCase();
-      const ownerRut = String(t.ownerRut||"");
-      const role = String(session?.rol||session?.role||"").toUpperCase();
-      if(role === "ADMIN") return true;
-      if(vis === "PRIVATE") return ownerRut === String(session?.rut||"");
-      if(vis === "TEAM") return ownerRut === String(session?.rut||"");
-      return false;
-    }
-
-    function parseTemplateJson(t){
-      try{
-        return JSON.parse(t.template_json || "{}");
-      }catch{
-        return null;
-      }
-    }
-
-    function renderTemplateList(){
-      const q = ($("#tplSearch").value||"").toLowerCase().trim();
-      const f = $("#tplFilter").value;
-
-      const list = TEMPLATES
-        .filter(canSeeTemplate)
-        .filter(t=>{
-          if(f==="ALL") return true;
-          return String(t.visibility||"").toUpperCase() === f;
-        })
-        .filter(t=>{
-          if(!q) return true;
-          return (
-            String(t.nombrePlantilla||"").toLowerCase().includes(q) ||
-            String(t.nivel||"").toLowerCase().includes(q) ||
-            String(t.objetivo||"").toLowerCase().includes(q) ||
-            String(t.ownerNombre||"").toLowerCase().includes(q)
-          );
+        // enfoque
+        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
+        enfoqueArr.forEach(m=>{
+          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
+          if(cb) cb.checked = true;
         });
+        updateFocusBadges(dayNum);
 
-      const el = $("#tplList");
-      if(!list.length){
-        el.innerHTML = `<div class="mini">Sin plantillas para mostrar.</div>`;
-        return;
-      }
+        // ejercicios
+        const tbody = document.getElementById(`tbody-${dayNum}`);
+        tbody.innerHTML = "";
 
-      el.innerHTML = list.map(t=>{
-        const vis = String(t.visibility||"").toUpperCase();
-        const meta = `Nivel: ${esc(t.nivel||"-")} • Objetivo: ${esc(t.objetivo||"-")} • Días: ${esc(t.dias||"-")} • ${esc(vis)} • Por: ${esc(t.ownerNombre||t.ownerRut||"-")}`;
-        const editable = canEditTemplate(t);
+        (day.ejercicios || []).forEach(ex=>{
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
+          wireRowActions(dayNum);
 
-        return `
-          <div class="tplItem">
-            <div>
-              <b>${esc(t.nombrePlantilla||"(sin nombre)")}</b>
-              <div class="meta">${meta}</div>
+          // último TR agregado
+          const tr = tbody.querySelector("tr:last-child");
+          if(!tr) return;
+
+          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
+          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
+          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
+          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
+          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
+
+          if(selM){
+            selM.value = ex.musculo || selM.value;
+            updateDatalist(dayNum, selM.value);
+          }
+          if(inEx) inEx.value = ex.ejercicio || "";
+          if(inMaq) inMaq.value = ex.maq || "";
+          if(inObs) inObs.value = ex.obs || "";
+          if(inSeries) inSeries.value = ex.series || "";
+          if(inReps) inReps.value = ex.reps || "";
+          if(inCarga) inCarga.value = ex.carga || "";
+          if(inDesc) inDesc.value = ex.descanso || "";
+        });
+      });
+    }
+
+    // útil para refrescar info si cambias en vivo (sin obligar)
+    function refreshLastPreviewBadge(){ /* intencionalmente vacío (placeholder) */ }
+
+    // ==========================================================
+    // NUEVO: Vista Socio bonita (modal)
+    // ==========================================================
+    function renderVistaSocio(routine, profesorNombre){
+      const cont = $("#vistaContenido");
+      const m = routine.meta || {};
+      const dias = routine.dias || [];
+
+      cont.innerHTML = `
+        <div class="socPreviewCard">
+          <div class="socMeta">
+            <div><b>Socio:</b> ${routine.socio?.nombre || "-"} (${routine.socio?.rut || "-"})</div>
+            <div><b>Nivel:</b> ${m.nivel || "-"}</div>
+            <div><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+            <div><b>Fecha:</b> ${m.fecha || "-"}</div>
+          </div>
+          ${m.notas ? `<div class="mutedLine" style="margin-top:10px"><b>Notas:</b> ${m.notas}</div>` : ``}
+          <div class="mutedLine" style="margin-top:8px"><b>Profesor:</b> ${profesorNombre || "-"}</div>
+        </div>
+
+        ${dias.map((d, idx)=>`
+          <div class="collapseDay" data-cday="${idx}">
+            <div class="collapseHead">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <b style="letter-spacing:.2px">${d.dia || `Día ${idx+1}`}</b>
+                ${(d.enfoque||[]).map(x=>`<span class="chip on">${x}</span>`).join("")}
+                ${(d.enfoque||[]).length===0 ? `<span class="chip">Sin enfoque</span>` : ``}
+              </div>
+              <span style="opacity:.8">Abrir/Cerrar</span>
             </div>
-            <div class="actions">
-              <button class="btn small" data-tpl-apply="${esc(t.templateId)}">Aplicar</button>
-              <button class="btn small" data-tpl-applysave="${esc(t.templateId)}">Aplicar y guardar</button>
-              ${editable ? `<button class="btn small" data-tpl-overwrite="${esc(t.templateId)}">Sobrescribir</button>` : `<button class="btn small" data-tpl-dup="${esc(t.templateId)}">Duplicar</button>`}
+            <div class="collapseBody" id="cbody-${idx}">
+              ${
+                (d.ejercicios||[]).length === 0
+                ? `<div class="mutedLine">No hay ejercicios cargados para este día.</div>`
+                : `<div class="exList">
+                    ${(d.ejercicios||[]).map((e,i)=>`
+                      <div class="exItem">
+                        <b>${i+1}. ${e.ejercicio || "-"}</b> — <span style="opacity:.85">${e.musculo || "-"}</span><br/>
+                        <span style="opacity:.85">
+                          Series: <b>${e.series||"-"}</b> · Reps: <b>${e.reps||"-"}</b> · Carga: <b>${e.carga||"-"}</b> · Descanso: <b>${e.descanso||"-"}</b>
+                        </span>
+                        ${e.maq ? `<div style="opacity:.78;margin-top:6px">Maq/Var: ${e.maq}</div>` : ``}
+                        ${e.obs ? `<div style="opacity:.78;margin-top:6px">Obs: ${e.obs}</div>` : ``}
+                      </div>
+                    `).join("")}
+                  </div>`
+              }
             </div>
           </div>
-        `;
-      }).join("");
+        `).join("")}
+      `;
 
-      el.querySelectorAll("[data-tpl-apply]").forEach(b=>{
-        b.onclick = ()=>{
-          const id = b.getAttribute("data-tpl-apply");
-          const t = TEMPLATES.find(x=>String(x.templateId)===String(id));
-          const obj = parseTemplateJson(t);
-          if(!obj){ setMsg("#tplMsg","No se pudo leer template_json","bad"); return; }
-          applyRoutineObject(obj);
-          setMsg("#tplMsg","✅ Plantilla aplicada al constructor (puedes editar).","ok");
-        };
-      });
-
-      el.querySelectorAll("[data-tpl-applysave]").forEach(b=>{
-        b.onclick = async ()=>{
-          const id = b.getAttribute("data-tpl-applysave");
-          const t = TEMPLATES.find(x=>String(x.templateId)===String(id));
-          const obj = parseTemplateJson(t);
-          if(!obj){ setMsg("#tplMsg","No se pudo leer template_json","bad"); return; }
-          applyRoutineObject(obj);
-          await saveRoutine();
-          setMsg("#tplMsg","✅ Plantilla aplicada y guardada al socio.","ok");
-        };
-      });
-
-      el.querySelectorAll("[data-tpl-overwrite]").forEach(b=>{
-        b.onclick = async ()=>{
-          const id = b.getAttribute("data-tpl-overwrite");
-          const t = TEMPLATES.find(x=>String(x.templateId)===String(id));
-          if(!t) return;
-          syncRoutineFromUI();
-          const upd = {
-            templateId: t.templateId,
-            nombrePlantilla: t.nombrePlantilla,
-            nivel: routine.meta.nivel,
-            objetivo: routine.meta.objetivo,
-            dias: routine.dias.length,
-            visibility: t.visibility,
-            ownerRut: t.ownerRut,
-            ownerNombre: t.ownerNombre,
-            template_json: JSON.stringify(routine),
-            actualizadoEn: nowISO()
-          };
-          try{
-            await apiPost("PLANTILLAS_V2", { mode:"UPSERT", ...upd });
-            setMsg("#tplMsg","✅ Plantilla sobrescrita.","ok");
-            await loadTemplates();
-          }catch(e){
-            setMsg("#tplMsg","❌ Error: "+e.message,"bad");
-          }
-        };
-      });
-
-      el.querySelectorAll("[data-tpl-dup]").forEach(b=>{
-        b.onclick = async ()=>{
-          const id = b.getAttribute("data-tpl-dup");
-          const t = TEMPLATES.find(x=>String(x.templateId)===String(id));
-          if(!t) return;
-          try{
-            const newId = "TPL_" + Math.random().toString(36).slice(2,10).toUpperCase();
-            const obj = parseTemplateJson(t);
-            const row = {
-              templateId: newId,
-              nombrePlantilla: (t.nombrePlantilla||"Plantilla") + " (Copia)",
-              nivel: t.nivel || "",
-              objetivo: t.objetivo || "",
-              dias: t.dias || (obj?.dias?.length||0),
-              visibility: "PRIVATE",
-              ownerRut: session?.rut || "",
-              ownerNombre: session?.nombre || "",
-              template_json: t.template_json || JSON.stringify(obj||{}),
-              creadoEn: nowISO(),
-              actualizadoEn: nowISO()
-            };
-            await apiPost("PLANTILLAS_V2", { mode:"UPSERT", ...row });
-            setMsg("#tplMsg","✅ Duplicada a tu biblioteca PRIVATE.","ok");
-            await loadTemplates();
-          }catch(e){
-            setMsg("#tplMsg","❌ Error: "+e.message,"bad");
-          }
+      // toggle
+      cont.querySelectorAll(".collapseDay").forEach(cd=>{
+        const idx = cd.getAttribute("data-cday");
+        const head = cd.querySelector(".collapseHead");
+        const body = cd.querySelector(`#cbody-${idx}`);
+        head.onclick = ()=>{
+          body.style.display = (body.style.display === "block") ? "none" : "block";
         };
       });
     }
 
-    async function loadTemplates(){
-      const data = await apiGet("PLANTILLAS_V2");
-      TEMPLATES = data.plantillas || data.templates || [];
-      renderTemplateList();
+    function openVistaModal(){
+      $("#vistaModal").style.display = "flex";
+    }
+    function closeVistaModal(){
+      $("#vistaModal").style.display = "none";
     }
 
-    async function saveTemplateFromCurrent(){
-      syncRoutineFromUI();
-
-      const nombre = $("#tplNombre").value.trim();
-      if(!nombre){
-        setMsg("#tplMsg","Escribe un nombre de plantilla.","bad");
-        return;
-      }
-
-      const visibility = $("#tplVisibility").value;
-      const role = String(session?.rol||session?.role||"").toUpperCase();
-      if(visibility==="OFFICIAL" && role!=="ADMIN"){
-        setMsg("#tplMsg","Solo ADMIN puede crear OFFICIAL.","bad");
-        return;
-      }
-
-      const templateId = "TPL_" + Math.random().toString(36).slice(2,10).toUpperCase();
-
-      const row = {
-        templateId,
-        nombrePlantilla: nombre,
-        nivel: routine.meta.nivel,
-        objetivo: routine.meta.objetivo,
-        dias: routine.dias.length,
-        visibility,
-        ownerRut: session?.rut || "",
-        ownerNombre: session?.nombre || "",
-        template_json: JSON.stringify(routine),
-        creadoEn: nowISO(),
-        actualizadoEn: nowISO()
-      };
-
-      try{
-        await apiPost("PLANTILLAS_V2", { mode:"UPSERT", ...row, tags: ($("#tplTags").value||"") });
-        setMsg("#tplMsg","✅ Plantilla guardada.","ok");
-        $("#tplNombre").value = "";
-        await loadTemplates();
-      }catch(e){
-        setMsg("#tplMsg","❌ Error: " + e.message,"bad");
-      }
+    // ==========================================================
+    // Socios filter
+    // ==========================================================
+    function filterSocios(q){
+      q = String(q||"").toLowerCase().trim();
+      const users = getUsers().filter(u=>u.rol==="SOCIO" && u.activo !== false);
+      if(!q) return users;
+      return users.filter(u =>
+        (u.nombre||"").toLowerCase().includes(q) ||
+        (u.rut||"").toLowerCase().includes(q)
+      );
     }
 
-    function openTplModal(){
-      $("#tplModalWrap").style.display = "flex";
-      setMsg("#tplMsg","", "");
-      loadTemplates().catch(e=>setMsg("#tplMsg","❌ "+e.message,"bad"));
-    }
-    function closeTplModal(){
-      $("#tplModalWrap").style.display = "none";
-    }
+    // ==========================================================
+    // Main
+    // ==========================================================
+    const addedDays = new Set();
 
-    document.addEventListener("DOMContentLoaded", async ()=>{
-      // ✅ FIX: ahora sí te reconoce la sesión nueva
-      session = requireAuth(["ADMIN","FUNCIONARIO"]);
-      if(!session) return;
+    document.addEventListener("DOMContentLoaded", ()=>{
+      // Auth (funcionario)
+      let me = requireAuth("FUNCIONARIO");
+      if(!me) return;
 
-      $("#fecha").value = toYMD();
-
+      // Volver
+      $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
       $("#btnLogout").onclick = ()=>{
-        // ✅ FIX: borrar la sesión real
         localStorage.removeItem("mahfit_session");
-        location.href = "index.html";
+        window.location.href = "index.html";
       };
 
-      $("#btnGuardar").onclick = saveRoutine;
-      $("#btnVista").onclick = viewSocio;
+      // Modal
+      $("#btnCerrarVista").onclick = closeVistaModal;
+      $("#vistaModal").addEventListener("click", (e)=>{
+        if(e.target.id === "vistaModal") closeVistaModal();
+      });
 
+      // Poblar socios
+      const socioSelect = $("#socioSelect");
+      const search = $("#socioSearch");
+
+      function renderSocios(list){
+        const current = socioSelect.value || "";
+        socioSelect.innerHTML = "";
+        list.forEach(u=>{
+          const opt = document.createElement("option");
+          opt.value = u.rut;
+          opt.textContent = `${u.nombre} (${u.rut})`;
+          socioSelect.appendChild(opt);
+        });
+        // mantener selección si existe
+        if(current && [...socioSelect.options].some(o=>o.value===current)){
+          socioSelect.value = current;
+        }
+      }
+
+      renderSocios(filterSocios(""));
+
+      search.addEventListener("input", ()=>{
+        renderSocios(filterSocios(search.value));
+      });
+
+      search.addEventListener("keydown", (e)=>{
+        if(e.key==="Enter") e.preventDefault();
+      });
+
+      // Cuando cambias socio: muestra última rutina bonita
+      socioSelect.addEventListener("change", ()=>{
+        const rut = socioSelect.value;
+        const last = rutinaV2DeSocio(rut); // ✅ trae lo último guardado
+        showLastRoutineBoxPretty(last);
+      });
+
+      // Agregar día
       $("#btnAddDay").onclick = ()=>{
-        const day = Number($("#dayPicker").value);
-        if(routine.dias.some(d=>d.dia===day)){
-          setMsg("#msg", "Ese día ya existe.", "warn");
+        const d = String($("#dayPicker").value);
+        if(addedDays.has(d)){
+          showMsg($("#msg"), `⚠️ Día ${d} ya está agregado.`, false);
           return;
         }
-        routine.dias.push({ dia: day, enfoque: [], ejercicios: [ emptyExercise() ] });
-        routine.dias.sort((a,b)=>a.dia-b.dia);
-        renderDays();
-        setMsg("#msg", "Día agregado ✅", "ok");
+        $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
+        addedDays.add(d);
+        wireDayActions();
+        updateFocusBadges(d);
+        showMsg($("#msg"), `Agregado: Día ${d}`, true);
       };
 
-      $("#socioSearch").addEventListener("input", ()=>{
-        const list = filterSocios($("#socioSearch").value);
-        fillSocioSelect(list);
-        if(list.length){
-          selectedSocio = list[0];
-          loadLastRoutineForSelected().catch(()=>{});
+      // Día 1 por defecto
+      $("#dayPicker").value = "1";
+      $("#btnAddDay").click();
+
+      // Inicial: si hay socio ya seleccionado, muestra su última
+      setTimeout(()=>{
+        const rut = socioSelect.value;
+        if(rut){
+          const last = rutinaV2DeSocio(rut);
+          showLastRoutineBoxPretty(last);
         }
-      });
+      }, 150);
 
-      $("#socioSelect").addEventListener("change", ()=>{
-        const rut = $("#socioSelect").value;
-        selectedSocio = SOCIOS.find(s=>String(s.rut)===String(rut)) || null;
-        loadLastRoutineForSelected().catch(()=>{});
-      });
+      $("#btnGuardar").onclick = ()=>{
+        try{
+          const routine = collectRoutine();
 
-      $("#btnPlantillas").onclick = openTplModal;
-      $("#btnTplClose").onclick = closeTplModal;
-      $("#btnTplReload").onclick = ()=>loadTemplates().catch(e=>setMsg("#tplMsg","❌ "+e.message,"bad"));
-      $("#btnTplSave").onclick = saveTemplateFromCurrent;
-      $("#tplSearch").addEventListener("input", renderTemplateList);
-      $("#tplFilter").addEventListener("change", renderTemplateList);
+          // ✅ Guardar también como base de datos (1 fila por ejercicio)
+          const rutinaId = crypto.randomUUID();
+          apiPost("RUTINAS_ITEMS", {
+            rutinaId,
+            routine,
+            profesorRut: me.rut,
+            profesorNombre: me.nombre
+          }).catch(console.error);
 
-      try{
-        await loadSocios();
-        const rut = $("#socioSelect").value;
-        selectedSocio = SOCIOS.find(s=>String(s.rut)===String(rut)) || null;
-        await loadLastRoutineForSelected();
-      }catch(e){
-        setMsg("#msg", "❌ No se pudieron cargar socios: " + e.message, "bad");
-      }
+          upsertRutinaV2({
+            rutSocio: routine.socio.rut,
+            routine,
+            creadoPorRut: me.rut
+          });
 
-      renderDays();
+          const txt = formatRutinaText(routine, me.nombre);
+          upsertRutina({
+            rutSocio: routine.socio.rut,
+            titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
+            detalle: txt,
+            creadoPorRut: me.rut
+          });
+
+          // refresca tarjeta de última rutina
+          const last = rutinaV2DeSocio(routine.socio.rut);
+          showLastRoutineBoxPretty(last);
+
+          showMsg($("#msg"), "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+
+      // ✅ VISTA SOCIO bonita (modal)
+      $("#btnVista").onclick = ()=>{
+        try{
+          const routine = collectRoutine();
+          renderVistaSocio(routine, me.nombre);
+          openVistaModal();
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
     });
   </script>
 </body>
