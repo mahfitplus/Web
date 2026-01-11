@@ -6,6 +6,7 @@
    - requireAuth("ROL") y requireAuth(["A","B"])
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
    - ✅ Agrega PLANTILLAS_V2 (sync + cache + helpers)
+   - ✅ FIX: soporta rol / role (tu caso actual)
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbywHSxOOwsunALacLErhqB2PMZLsqktUgRSYd6jO-pOZOo0-GaWAvrWbDO3BNZiTgnE/exec";
@@ -22,6 +23,11 @@ const LS = {
 
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
+
+// 🔧 Normaliza rol aunque venga como "role"
+function getRol(u){
+  return String((u && (u.rol ?? u.role)) || "").toUpperCase().trim();
+}
 
 // -------- DB STATUS (pelotita) --------
 function setDbStatus(status){
@@ -96,13 +102,13 @@ function setRutinas(v){ LS.set("mahfit_rutinas", v); }
 function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
 function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 
-// ✅ NUEVO: Plantillas V2 cache
+// ✅ Plantillas V2 cache
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
 // -------- Session --------
 function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
+  LS.set("mahfit_session", { rut:user.rut, rol:getRol(user), at: nowISO() });
 }
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
@@ -116,7 +122,8 @@ async function syncDown(){
     nombre: x.nombre ?? "",
     email: x.email ?? "",
     pass: String(x.pass ?? ""),
-    rol: x.rol ?? "SOCIO",
+    // ✅ FIX CLAVE: si viene "role" lo guardamos en "rol"
+    rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false) ? false : true,
     creadoEn: x.creadoEn ?? ""
   }));
@@ -148,14 +155,11 @@ async function syncDown(){
   });
   setRutinasV2(list);
 
-  // ✅ PLANTILLAS_V2 (NUEVO)
-  // Espera que tu Apps Script devuelva: { ok:true, plantillas_v2:[...] }
-  // y que cada item tenga template_json (string) o template_json ya objeto.
+  // PLANTILLAS_V2
   try{
     const pv2 = await apiGet("PLANTILLAS_V2");
     const tpl = (pv2.plantillas_v2 || []).map(x => {
       let template = null;
-      // soporta varios nombres por si tu hoja usa template_json / template_json_str etc.
       const raw = x.template_json ?? x.template_json_str ?? x.template ?? null;
 
       if(typeof raw === "string"){
@@ -173,7 +177,7 @@ async function syncDown(){
         visibility: (x.visibility ?? "PRIVADA"),
         ownerRut: normalizeRut(x.ownerRut ?? x.creadoPorRut ?? ""),
         ownerNombre: x.ownerNombre ?? "",
-        template_json: template, // <- objeto listo
+        template_json: template,
         creadoEn: x.creadoEn ?? "",
         actualizadoEn: x.actualizadoEn ?? ""
       };
@@ -217,8 +221,12 @@ function requireAuth(expectedRole){
 
   if(expectedRole){
     const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    const userRol = getRol(user);
+    const userRut = normalizeRut(user.rut);
+    const allowedUp = allowed.map(a => String(a).toUpperCase().trim());
+
+    if(!allowedUp.includes(userRol) && !allowedUp.includes(userRut)){
+      window.location.href = (userRol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
       return null;
     }
   }
@@ -254,7 +262,7 @@ function registerUser({rut, nombre, email, pass, rol}){
 
 function login({rut, pass}){
   rut = normalizeRut(rut);
-  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
+  const user = getUsers().find(u => normalizeRut(u.rut) === rut && String(u.pass) === String(pass));
   if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
   if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
   setSession(user);
@@ -327,7 +335,7 @@ function rutinaV2DeSocio(rutSocio){
   return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
-// ✅ NUEVO: Helpers Plantillas (para rutinas.html)
+// Helpers Plantillas (para rutinas.html)
 function plantillasVisiblesPara(user){
   const rut = normalizeRut(user?.rut || "");
   return getPlantillasV2().filter(p=>{
@@ -338,11 +346,8 @@ function plantillasVisiblesPara(user){
 }
 
 async function savePlantillaV2(payload){
-  // payload debe venir listo:
-  // { templateId, nombrePlantilla, nivel, objetivo, dias, visibility, ownerRut, ownerNombre, template_json, creadoEn, actualizadoEn }
   const data = { ...payload };
 
-  // Asegura template_json string para backend (como rutinas_v2)
   if(typeof data.template_json !== "string"){
     data.template_json = JSON.stringify(data.template_json ?? null);
   }
@@ -350,10 +355,8 @@ async function savePlantillaV2(payload){
   data.actualizadoEn = nowISO();
   data.ownerRut = normalizeRut(data.ownerRut || "");
 
-  // Guarda remoto
   await apiPost("PLANTILLAS_V2", data);
 
-  // Actualiza cache local (optimista)
   const list = getPlantillasV2();
   const idx = list.findIndex(x => String(x.templateId) === String(data.templateId));
   const localObj = {
@@ -377,7 +380,7 @@ async function savePlantillaV2(payload){
   return localObj;
 }
 
-// -------- UI helpers (mantiene tu estilo) --------
+// -------- UI helpers --------
 function $(sel){ return document.querySelector(sel); }
 function showMsg(el, msg, ok=false){
   if(!el) return;
@@ -394,7 +397,7 @@ function initIndex(){
   if(s){
     const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
     if(u){
-      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      window.location.href = (getRol(u) === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
       return;
     }
   }
@@ -404,7 +407,7 @@ function initIndex(){
     try{
       const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
       showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      window.location.href = (getRol(user) === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
     }catch(err){
       showMsg(msgLogin, err.message);
     }
@@ -435,13 +438,13 @@ function initFuncionario(){
 
   function refreshKPIs(){
     const users = getUsers();
-    $("#kSocios").textContent = users.filter(u=>u.rol==="SOCIO").length;
-    $("#kFunc").textContent = users.filter(u=>u.rol==="FUNCIONARIO").length;
+    $("#kSocios").textContent = users.filter(u=>getRol(u)==="SOCIO").length;
+    $("#kFunc").textContent = users.filter(u=>getRol(u)==="FUNCIONARIO").length;
     $("#kActivos").textContent = users.filter(u=>u.activo !== false).length;
   }
 
   function refreshTable(){
-    const users = getUsers().slice().sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
+    const users = getUsers().slice().sort((a,b)=> (getRol(a)>getRol(b)?1:-1) || (a.nombre||"").localeCompare(b.nombre||""));
     const tbody = $("#usersTbody");
     tbody.innerHTML = "";
 
@@ -450,7 +453,7 @@ function initFuncionario(){
       tr.innerHTML = `
         <td>${u.nombre}</td>
         <td>${u.rut}</td>
-        <td><span class="pill">${u.rol}</span></td>
+        <td><span class="pill">${getRol(u)}</span></td>
         <td>${u.activo === false ? "⛔" : "✅"}</td>
         <td style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn small ghost" data-act="${u.rut}">
@@ -488,7 +491,7 @@ function initFuncionario(){
         pass: $("#newPass").value,
         rol: $("#newRol").value
       });
-      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
+      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${getRol(newUser)})`, true);
       e.target.reset();
       refreshTable();
       refreshKPIs();
