@@ -232,3 +232,26 @@ a:hover{ text-decoration:underline; }
   color: rgba(255,255,255,.88);
   font-size:13px;
 }
+
+.db-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.9);
+  font-size:12px;
+}
+
+.db-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.4);
+}
+
+.db-dot.connecting{ background:rgba(255,255,255,.4); }
+.db-dot.connected{ background:#2bd576; }
+.db-dot.error{ background:#ff5a67; }
