@@ -6,6 +6,8 @@
    - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
    - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
+   - ✅ FIX: Activar/Desactivar ahora SÍ alterna y escribe TRUE/FALSE en Sheets
+   - ✅ Funcionario: buscador y filtro en vivo (sin tocar tu backend)
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbxNjYUM60ia3UVi3ZQIBy8l-vnvPYfcvCfG1eVy9gk42if9oWEMFd5W95Vnve9YZ9UkDw/exec";
@@ -44,7 +46,7 @@ function setDbStatus(status){
 }
 
 // ---------------- DOMContentLoaded GATE ----------------
-// Evita que scripts de tus páginas corran antes de cargar cache desde Sheets
+// Evita que scripts corran antes de syncDown/seed
 (function gateDOMContentLoaded(){
   const origAdd = document.addEventListener.bind(document);
   const queued = [];
@@ -150,7 +152,6 @@ async function syncDown(){
   setRutinasV2(list);
 
   // PLANTILLAS_V2
-  // Tu API devuelve: { ok:true, plantillas_v2:[...] }
   const pv2 = await apiGet("PLANTILLAS_V2");
   const tpl = (pv2.plantillas_v2 || []).map(x => {
     let templateObj = null;
@@ -171,7 +172,7 @@ async function syncDown(){
       visibility: (x.visibility ?? "PRIVADA"),
       ownerRut: normalizeRut(x.ownerRut ?? x.ownerrut ?? ""),
       ownerNombre: x.ownerNombre ?? x.ownernombre ?? "",
-      template_json: templateObj, // objeto listo para usar
+      template_json: templateObj,
       creadoEn: x.creadoEn ?? "",
       actualizadoEn: x.actualizadoEn ?? ""
     };
@@ -254,7 +255,7 @@ function login({rut, pass}){
   return user;
 }
 
-// ---------------- Rutinas (sincrónico) ----------------
+// ---------------- Rutinas ----------------
 function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
   const rutSocioN = normalizeRut(rutSocio);
   const rutinas = getRutinas();
@@ -331,8 +332,6 @@ function plantillasVisiblesPara(user){
 }
 
 async function savePlantillaV2(payload){
-  // payload:
-  // { templateId, nombrePlantilla, nivel, objetivo, dias, visibility, ownerRut, ownerNombre, template_json }
   const data = { ...payload };
 
   if(!data.templateId) data.templateId = crypto.randomUUID();
@@ -340,7 +339,6 @@ async function savePlantillaV2(payload){
   data.actualizadoEn = nowISO();
   data.ownerRut = normalizeRut(data.ownerRut || "");
 
-  // backend espera string en template_json
   const templateObj = data.template_json ?? null;
   if(typeof data.template_json !== "string"){
     data.template_json = JSON.stringify(templateObj);
@@ -348,7 +346,6 @@ async function savePlantillaV2(payload){
 
   await apiPost("PLANTILLAS_V2", data);
 
-  // Actualiza cache local
   const list = getPlantillasV2();
   const idx = list.findIndex(x => String(x.templateId) === String(data.templateId));
 
@@ -381,7 +378,7 @@ function showMsg(el, msg, ok=false){
   el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
 
-// ---------------- INIT por página (si lo usas) ----------------
+// ---------------- INIT por página ----------------
 function initIndex(){
   const loginForm = $("#loginForm");
   const msgLogin  = $("#msgLogin");
@@ -421,15 +418,19 @@ function initIndex(){
 }
 
 function initFuncionario(){
-  const user = requireAuth("FUNCIONARIO");
-  if(!user) return;
+  const me = requireAuth("FUNCIONARIO");
+  if(!me) return;
 
   const who = document.getElementById("who");
   const roleBadge = document.getElementById("roleBadge");
-  if(who) who.textContent = user.nombre;
+  if(who) who.textContent = me.nombre;
   if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
 
   const msgUser = $("#msgUser");
+  const tbody = $("#usersTbody");
+
+  const searchInput = document.getElementById("userSearch");
+  const roleFilter  = document.getElementById("roleFilter");
 
   function refreshKPIs(){
     const users = getUsers();
@@ -441,47 +442,95 @@ function initFuncionario(){
     if(kActivos) kActivos.textContent = users.filter(u=>u.activo !== false).length;
   }
 
+  function getFilteredUsers(){
+    const users = getUsers().slice();
+
+    const q = String(searchInput?.value || "").toLowerCase().trim();
+    const rf = String(roleFilter?.value || "ALL").toUpperCase();
+
+    return users.filter(u=>{
+      const rol = String(u.rol || "").toUpperCase();
+      const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
+
+      const roleOk = (rf === "ALL") ? true : (rol === rf);
+      if(!roleOk) return false;
+
+      if(!q) return true;
+
+      const hay = [
+        u.nombre || "",
+        u.rut || "",
+        u.email || "",
+        rol,
+        activoTxt
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    }).sort((a,b)=> (a.rol>b.rol?1:-1) || String(a.nombre||"").localeCompare(String(b.nombre||"")));
+  }
+
   function refreshTable(){
-    const users = getUsers().slice().sort((a,b)=> (a.rol>b.rol?1:-1) || a.nombre.localeCompare(b.nombre));
-    const tbody = $("#usersTbody");
     if(!tbody) return;
+
+    const list = getFilteredUsers();
     tbody.innerHTML = "";
 
-    for(const u of users){
+    for(const u of list){
+      const rol = String(u.rol || "").toUpperCase();
+      const activo = (u.activo !== false);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${u.nombre}</td>
-        <td>${u.rut}</td>
-        <td><span class="pill">${u.rol}</span></td>
-        <td>${u.activo === false ? "⛔" : "✅"}</td>
+        <td>${u.nombre || ""}</td>
+        <td>${u.rut || ""}</td>
+        <td><span class="pill">${rol}</span></td>
+        <td>${activo ? "✅" : "⛔"}</td>
         <td style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn small ghost" data-act="${u.rut}">
-            ${u.activo === false ? "Activar" : "Desactivar"}
+            ${activo ? "Desactivar" : "Activar"}
           </button>
         </td>
       `;
       tbody.appendChild(tr);
     }
 
+    // ✅ FIX REAL: toggle + guarda en Sheets + resync
     tbody.querySelectorAll("[data-act]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
+      btn.addEventListener("click", async ()=>{
         const rut = btn.getAttribute("data-act");
         const users = getUsers();
         const u = users.find(x=>x.rut===rut);
         if(!u) return;
 
-        u.activo = !(u.activo === false);
-        setUsers(users);
-        apiPost("USERS", u).catch(console.error);
+        const activoActual = (u.activo !== false);
+        u.activo = !activoActual; // ✅ ahora sí alterna
 
-        refreshTable();
+        // optimista local
+        setUsers(users);
         refreshKPIs();
+        refreshTable();
+
+        try{
+          await apiPost("USERS", u);     // ✅ escribe en Sheets
+          await syncDown();             // ✅ trae lo real
+          refreshKPIs();
+          refreshTable();
+          showMsg(msgUser, "✅ Estado actualizado en Sheets.", true);
+        }catch(e){
+          console.error(e);
+          showMsg(msgUser, "❌ No se pudo guardar en Sheets. Revisa API/permisos.", false);
+          // rollback (para que no quede mentira en pantalla)
+          await syncDown().catch(()=>{});
+          refreshKPIs();
+          refreshTable();
+        }
       });
     });
   }
 
+  // crear usuario
   const createForm = document.getElementById("createUserForm");
-  createForm?.addEventListener("submit", (e)=>{
+  createForm?.addEventListener("submit", async (e)=>{
     e.preventDefault();
     try{
       const newUser = registerUser({
@@ -491,18 +540,31 @@ function initFuncionario(){
         pass: $("#newPass").value,
         rol: $("#newRol").value
       });
-      showMsg(msgUser, `Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
+      showMsg(msgUser, `✅ Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
       e.target.reset();
-      refreshTable();
+
+      // trae lo real desde Sheets
+      await syncDown();
       refreshKPIs();
+      refreshTable();
     }catch(err){
-      showMsg(msgUser, err.message);
+      showMsg(msgUser, err.message, false);
     }
   });
 
+  // buscador
+  searchInput?.addEventListener("input", refreshTable);
+  roleFilter?.addEventListener("change", refreshTable);
+
+  // botones top
   document.getElementById("btnLogout")?.addEventListener("click", ()=>{
     clearSession();
     window.location.href = "index.html";
+  });
+
+  // si existe botón “Creador Rutinas”
+  document.getElementById("btnRutinas")?.addEventListener("click", ()=>{
+    window.location.href = "rutinas.html";
   });
 
   refreshKPIs();
@@ -519,7 +581,6 @@ function initFuncionario(){
     setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
-    // Si falla, igual libera el DOM con lo que haya en cache local
     setDbStatus("error");
   }finally{
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
@@ -531,7 +592,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const page = document.body.getAttribute("data-page");
   if(page === "index") initIndex();
   if(page === "funcionario") initFuncionario();
-  // socio.html y rutinas.html mantienen su propia lógica
 });
 
 // ---------------- Exponer helpers globales ----------------
@@ -557,3 +617,4 @@ window.savePlantillaV2 = savePlantillaV2;
 window.requireAuth = requireAuth;
 window.upsertRutina = upsertRutina;
 window.upsertRutinaV2 = upsertRutinaV2;
+window.syncDown = syncDown;
