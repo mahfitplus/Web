@@ -12,7 +12,7 @@
    ========================================================= */
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwvVYMWWSMdX31lO8fOUfsETb6yVDwq6g27uEsUNdkhTkEFH3M592pENr57FvBh6KxY/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwouCS-t64DLBWAf62c-iKX53ZiSyxG2Rly6eXYMdUH1IU98dLM7UGC7xiv46r8ysa3eg/exec";
 
 // ---------------- LocalStorage helpers ----------------
 const LS = {
@@ -702,3 +702,4 @@ window.syncDown = syncDown;
 
 // ✅ nuevo
 window.renovarPlan = renovarPlan;
+
