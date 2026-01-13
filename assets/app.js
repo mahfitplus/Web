@@ -5,11 +5,13 @@
    - requireAuth("ROL") y requireAuth(["A","B"])
    - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
    - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
-   - Indicador conexión (dbDot/dbText) 🟢🔴⚪ (PING REAL)
-   - ✅ FIX: Activar/Desactivar alterna y escribe TRUE/FALSE en Sheets
+   - Indicador conexión (dbDot/dbText) 🟢🔴⚪
+   - ✅ FIX: Activar/Desactivar ahora SÍ alterna y escribe TRUE/FALSE en Sheets
+   - ✅ Funcionario: buscador y filtro en vivo (sin tocar tu backend)
+   - ✅ NUEVO: Plan/Membresía (PlanFin) + columna TIEMPO PLAN + botón Renovar
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxNjYUM60ia3UVi3ZQIBy8l-vnvPYfcvCfG1eVy9gk42if9oWEMFd5W95Vnve9YZ9UkDw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwvVYMWWSMdX31lO8fOUfsETb6yVDwq6g27uEsUNdkhTkEFH3M592pENr57FvBh6KxY/exec";
 
 // ---------------- LocalStorage helpers ----------------
 const LS = {
@@ -25,7 +27,7 @@ function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
 
 // ---------------- DB STATUS (pelotita) ----------------
-function setDbStatus(status, msg){
+function setDbStatus(status){
   // status: "connecting" | "connected" | "error"
   const dot  = document.getElementById("dbDot");
   const text = document.getElementById("dbText");
@@ -34,57 +36,17 @@ function setDbStatus(status, msg){
   dot.className = "db-dot";
   if(status === "connected"){
     dot.classList.add("connected");
-    text.textContent = msg || "Conectado";
+    text.textContent = "Conectado";
   }else if(status === "error"){
     dot.classList.add("error");
-    text.textContent = msg || "Sin conexión";
+    text.textContent = "Sin conexión";
   }else{
     dot.classList.add("connecting");
-    text.textContent = msg || "Conectando…";
+    text.textContent = "Conectando…";
   }
-}
-
-// ✅ Ping REAL (GET) para GitHub Pages
-async function pingApi_(){
-  try{
-    const url = `${API_URL}?resource=USERS&_=${Date.now()}`;
-    const r = await fetch(url, { method:"GET", cache:"no-store" });
-    if(!r.ok) return false;
-
-    // Intentamos JSON, pero si no se puede, igual es “conectado” (respondió 200)
-    const t = await r.text();
-    try{
-      const j = JSON.parse(t);
-      // si trae ok true, perfecto
-      if(j && (j.ok === true || j.ok === undefined)) return true;
-      // si trae ok false, igual respondió pero el backend tuvo error
-      return false;
-    }catch(_){
-      // no JSON pero 200 → conectado
-      return true;
-    }
-  }catch(_){
-    return false;
-  }
-}
-
-function startDbIndicator_(){
-  // Primera actualización inmediata
-  setDbStatus("connecting", "Conectando…");
-  (async ()=>{
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
-  })();
-
-  // Luego refresca cada 15s
-  setInterval(async ()=>{
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
-  }, 15000);
 }
 
 // ---------------- DOMContentLoaded GATE ----------------
-// Evita que scripts corran antes de syncDown/seed
 (function gateDOMContentLoaded(){
   const origAdd = document.addEventListener.bind(document);
   const queued = [];
@@ -110,31 +72,22 @@ function startDbIndicator_(){
 })();
 
 // ---------------- API (resource-based) ----------------
-// ✅ Robust JSON parse (si Apps Script responde HTML o texto raro, no revienta todo)
-async function fetchJsonSafe_(url, options){
-  const r = await fetch(url, options);
-  const t = await r.text();
-  let j = null;
-  try{ j = JSON.parse(t); }catch(_){
-    // Si no es JSON, devolvemos error controlado
-    throw new Error("Respuesta no JSON del Apps Script (¿deploy incorrecto o error?).");
-  }
-  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  if(j && j.ok === false) throw new Error(j.error || "API error");
+async function apiGet(resource){
+  const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || "API GET error");
   return j;
 }
 
-async function apiGet(resource){
-  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
-  return fetchJsonSafe_(url, { method:"GET", cache:"no-store" });
-}
-
 async function apiPost(resource, data){
-  return fetchJsonSafe_(API_URL, {
+  const r = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ resource, data })
   });
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || "API POST error");
+  return j;
 }
 
 // ---------------- Cache local ----------------
@@ -157,6 +110,44 @@ function setSession(user){
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
 
+// ---------------- Fechas Plan helpers ----------------
+function parseDateSafe(v){
+  if(!v) return null;
+  if(v instanceof Date) return v;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function toDateOnly(d){
+  const x = new Date(d);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function diffDays(a, b){
+  // a y b Date (date-only)
+  const ms = b.getTime() - a.getTime();
+  return Math.ceil(ms / (1000*60*60*24));
+}
+function planStatusObj(planFin){
+  const end = parseDateSafe(planFin);
+  if(!end) return { kind:"none", text:"Sin plan", html:`<span class="muted">Sin plan</span>` };
+
+  const today = toDateOnly(new Date());
+  const e = toDateOnly(end);
+  const d = diffDays(today, e);
+  const endTxt = e.toLocaleDateString("es-CL");
+
+  if(d < 0){
+    return { kind:"expired", days:d, text:`Vencido (vence ${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vencido</span> <span class="muted">(vence ${endTxt})</span>` };
+  }
+  if(d === 0){
+    return { kind:"today", days:d, text:`Vence hoy (${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vence hoy</span> <span class="muted">(${endTxt})</span>` };
+  }
+  if(d <= 5){
+    return { kind:"soon", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:#ffd36e;font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
+  }
+  return { kind:"ok", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:var(--ok);font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
+}
+
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
   // USERS
@@ -170,10 +161,10 @@ async function syncDown(){
     activo: (x.activo === false) ? false : true,
     creadoEn: x.creadoEn ?? "",
 
-    // ✅ Plan (si existe en sheet)
-    planTipo: x.planTipo ?? x.plan_tipo ?? "",
-    planInicio: x.planInicio ?? x.plan_inicio ?? "",
-    planFin: x.planFin ?? x.plan_fin ?? ""
+    // ✅ NUEVO: Plan/Membresía
+    planTipo: x.planTipo ?? x.PlanTipo ?? "",
+    planInicio: x.planInicio ?? x.PlanInicio ?? "",
+    planFin: x.planFin ?? x.PlanFin ?? ""
   }));
   setUsers(users);
 
@@ -289,6 +280,8 @@ function registerUser({rut, nombre, email, pass, rol}){
     rol,
     activo: true,
     creadoEn: nowISO(),
+
+    // ✅ NUEVO: plan por defecto vacío
     planTipo: "",
     planInicio: "",
     planFin: ""
@@ -433,6 +426,22 @@ function showMsg(el, msg, ok=false){
   el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
 
+// ---------------- Plan: Renovar (backend) ----------------
+async function renovarPlan(rut){
+  rut = normalizeRut(rut);
+  const dias = parseInt(prompt("¿Cuántos días quieres agregar al plan? Ej: 30 / 90 / 365"), 10);
+  if(!dias || dias <= 0) return;
+
+  try{
+    await apiPost("users_plan_update", { rut, dias });
+    await syncDown();
+    alert("Plan renovado ✅");
+  }catch(e){
+    console.error(e);
+    alert("No se pudo renovar el plan. Revisa Apps Script (users_plan_update).");
+  }
+}
+
 // ---------------- INIT por página ----------------
 function initIndex(){
   const loginForm = $("#loginForm");
@@ -517,7 +526,9 @@ function initFuncionario(){
         u.rut || "",
         u.email || "",
         rol,
-        activoTxt
+        activoTxt,
+        u.planFin || "",
+        u.planTipo || ""
       ].join(" ").toLowerCase();
 
       return hay.includes(q);
@@ -534,16 +545,23 @@ function initFuncionario(){
       const rol = String(u.rol || "").toUpperCase();
       const activo = (u.activo !== false);
 
+      const plan = planStatusObj(u.planFin);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${u.nombre || ""}</td>
         <td>${u.rut || ""}</td>
         <td><span class="pill">${rol}</span></td>
         <td>${activo ? "✅" : "⛔"}</td>
+        <td>${plan.html}</td>
         <td style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn small ghost" data-act="${u.rut}">
             ${activo ? "Desactivar" : "Activar"}
           </button>
+
+          ${rol === "SOCIO" ? `
+            <button class="btn small" data-ren="${u.rut}">Renovar</button>
+          ` : ``}
         </td>
       `;
       tbody.appendChild(tr);
@@ -578,6 +596,16 @@ function initFuncionario(){
           refreshKPIs();
           refreshTable();
         }
+      });
+    });
+
+    // ✅ Renovar plan
+    tbody.querySelectorAll("[data-ren]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const rut = btn.getAttribute("data-ren");
+        await renovarPlan(rut);
+        refreshKPIs();
+        refreshTable();
       });
     });
   }
@@ -625,16 +653,15 @@ function initFuncionario(){
 
 // ---------------- BOOT ----------------
 (async function boot(){
-  // ✅ indicador real
-  startDbIndicator_();
+  setDbStatus("connecting");
 
   try{
-    // Si falla sync, igual dejamos usar el cache (si existe)
     await syncDown();
     await seedRemoteAdmin();
+    setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
-    // Si hay cache, deja entrar igual. Si no hay, el login mostrará error.
+    setDbStatus("error");
   }finally{
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
   }
@@ -671,4 +698,6 @@ window.requireAuth = requireAuth;
 window.upsertRutina = upsertRutina;
 window.upsertRutinaV2 = upsertRutinaV2;
 window.syncDown = syncDown;
-window.clearSession = clearSession;
+
+// ✅ nuevo
+window.renovarPlan = renovarPlan;
