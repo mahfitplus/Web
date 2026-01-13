@@ -122,11 +122,19 @@
 
     .grid2{
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.15fr .85fr; /* izquierda más ancha */
       gap: 16px;
+      align-items:start;
     }
     @media (max-width: 980px){
       .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .col{
+      display:flex;
+      flex-direction:column;
+      gap: 16px;
+      min-width: 0;
     }
 
     .card{
@@ -194,9 +202,7 @@
       border-color: rgba(35,166,255,.35);
       background: rgba(35,166,255,.14);
     }
-    .btn.ghost{
-      background: transparent;
-    }
+    .btn.ghost{ background: transparent; }
     .btn.small{
       padding: 8px 10px;
       border-radius: 10px;
@@ -345,83 +351,105 @@
   <div class="wrap">
     <div class="grid2">
 
-      <!-- ========================================================= -->
-      <!-- 🟦 CREAR USUARIO                                          -->
-      <!-- ========================================================= -->
-      <div class="card">
-        <div class="cardHead">
-          <div>
-            <div class="cardTitle">Crear Usuario</div>
-            <div class="muted">Socios y funcionarios</div>
+      <!-- ✅ COLUMNA IZQUIERDA (apilada) -->
+      <div class="col">
+
+        <!-- ========================================================= -->
+        <!-- 🟦 CREAR USUARIO                                          -->
+        <!-- ========================================================= -->
+        <div class="card">
+          <div class="cardHead">
+            <div>
+              <div class="cardTitle">Crear Usuario</div>
+              <div class="muted">Socios y funcionarios</div>
+            </div>
+            <span class="pill">Alta rápida</span>
           </div>
-          <span class="pill">Alta rápida</span>
+
+          <div class="cardBody">
+            <form id="createUserForm">
+              <div class="row">
+                <input id="newNombre" placeholder="Nombre" required />
+                <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
+              </div>
+
+              <div class="row">
+                <input id="newEmail" placeholder="Email (opcional)" />
+                <input id="newPass" placeholder="Clave" required />
+              </div>
+
+              <div class="row">
+                <select id="newRol">
+                  <option value="SOCIO">SOCIO</option>
+                  <option value="FUNCIONARIO">FUNCIONARIO</option>
+                </select>
+                <button class="btn primary" type="submit">Crear</button>
+              </div>
+            </form>
+
+            <div id="msgUser" class="msg"></div>
+          </div>
         </div>
 
-        <div class="cardBody">
-          <form id="createUserForm">
-            <div class="row">
-              <input id="newNombre" placeholder="Nombre" required />
-              <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
+        <!-- ✅ CRM AHORA VA DEBAJO DE CREAR USUARIO -->
+        <div class="card">
+          <div class="cardHead">
+            <div>
+              <div class="cardTitle">CRM Usuarios</div>
+              <div class="muted">Activa/desactiva y renueva membresías</div>
+
+              <div class="filters">
+                <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+                <select id="roleFilter">
+                  <option value="ALL">Todos</option>
+                  <option value="SOCIO">Solo socios</option>
+                  <option value="FUNCIONARIO">Solo funcionarios</option>
+                </select>
+              </div>
             </div>
 
-            <div class="row">
-              <input id="newEmail" placeholder="Email (opcional)" />
-              <input id="newPass" placeholder="Clave" required />
-            </div>
+            <span class="pill">Lista</span>
+          </div>
 
-            <div class="row">
-              <select id="newRol">
-                <option value="SOCIO">SOCIO</option>
-                <option value="FUNCIONARIO">FUNCIONARIO</option>
-              </select>
-              <button class="btn primary" type="submit">Crear</button>
-            </div>
-          </form>
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>NOMBRE</th>
+                  <th>RUT/USUARIO</th>
+                  <th>ROL</th>
+                  <th>ACTIVO</th>
+                  <th>PLAN</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
 
-          <div id="msgUser" class="msg"></div>
+          <div class="cardBody">
+            <div class="muted">Tip: escribe en el buscador y se filtra altiro.</div>
+          </div>
         </div>
+
       </div>
 
-      <!-- ========================================================= -->
-      <!-- 🟥 CRM USUARIOS                                           -->
-      <!-- ========================================================= -->
-      <div class="card">
-        <div class="cardHead">
-          <div>
-            <div class="cardTitle">CRM Usuarios</div>
-            <div class="muted">Activa/desactiva y renueva membresías</div>
-
-            <div class="filters">
-              <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
-              <select id="roleFilter">
-                <option value="ALL">Todos</option>
-                <option value="SOCIO">Solo socios</option>
-                <option value="FUNCIONARIO">Solo funcionarios</option>
-              </select>
+      <!-- ✅ COLUMNA DERECHA (panel opcional para que no quede vacío) -->
+      <div class="col">
+        <div class="card">
+          <div class="cardHead">
+            <div>
+              <div class="cardTitle">Panel rápido</div>
+              <div class="muted">Accesos y recordatorios</div>
+            </div>
+            <span class="pill">Opcional</span>
+          </div>
+          <div class="cardBody">
+            <div class="muted" style="line-height:1.5;">
+              • Puedes usar este espacio para: ventas de planes (Webpay/TiendaUp), reportes, métricas, etc.<br><br>
+              • Si no lo quieres, dime y lo removemos (queda solo 1 columna).
             </div>
           </div>
-
-          <span class="pill">Lista</span>
-        </div>
-
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th>NOMBRE</th>
-                <th>RUT/USUARIO</th>
-                <th>ROL</th>
-                <th>ACTIVO</th>
-                <th>PLAN</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
-        </div>
-
-        <div class="cardBody">
-          <div class="muted">Tip: escribe en el buscador y se filtra altiro.</div>
         </div>
       </div>
 
@@ -551,7 +579,7 @@
         mInicio.value = ymdFromAny(user.planInicio);
         mFin.value = ymdFromAny(user.planFin);
 
-        mActivar.value = (user.activo === false) ? "1" : "1"; // por defecto activar
+        mActivar.value = "1";
         mMsg.textContent = "";
         mMsg.className = "msg";
 
@@ -570,11 +598,7 @@
       });
 
       async function refreshFromServer(){
-        try{
-          await syncDown();
-        }catch(e){
-          console.error(e);
-        }
+        try{ await syncDown(); }catch(e){ console.error(e); }
       }
 
       function getFilteredUsers(){
@@ -588,7 +612,6 @@
           const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
 
           if(rf !== "ALL" && rol !== rf) return false;
-
           if(!q) return true;
 
           const hay = [
@@ -639,7 +662,6 @@
             const u = users.find(x=>x.rut===rut);
             if(!u) return;
 
-            // toggle local optimista
             const cur = (u.activo !== false);
             u.activo = !cur;
             setUsers(users);
@@ -695,13 +717,10 @@
         render();
 
         try{
-          // ✅ endpoint dedicado (evita errores)
           await apiPost("users_plan_update", payload);
-
           await refreshFromServer();
           render();
           msg(mMsg, "✅ Renovación guardada", true);
-
           setTimeout(()=> closeModal(), 450);
         }catch(e){
           console.error(e);
@@ -745,7 +764,6 @@
         location.href = "rutinas.html";
       });
 
-      // primer render (usa cache y luego refresca)
       render();
       await refreshFromServer();
       render();
