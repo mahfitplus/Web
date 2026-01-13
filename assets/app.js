@@ -6,14 +6,86 @@
    - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
    - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪ (PING REAL)
+   - ✅ FIX: Activar/Desactivar alterna y escribe TRUE/FALSE en Sheets
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwIx78f0IsuQTRdnEcHT0zuktGdDfuO1P2yjpdPsdxv6iedNTtYQdVzKMtmk2Kv8QttRg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNjYUM60ia3UVi3ZQIBy8l-vnvPYfcvCfG1eVy9gk42if9oWEMFd5W95Vnve9YZ9UkDw/exec";
 
-// ===============================
-// Helpers DOMContentLoaded (para esperar BOOT sin romper HTML)
-// ===============================
-(function(){
+// ---------------- LocalStorage helpers ----------------
+const LS = {
+  get(key, fallback){
+    try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch{ return fallback; }
+  },
+  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); },
+  del(key){ localStorage.removeItem(key); }
+};
+
+function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
+function nowISO(){ return new Date().toISOString(); }
+
+// ---------------- DB STATUS (pelotita) ----------------
+function setDbStatus(status, msg){
+  // status: "connecting" | "connected" | "error"
+  const dot  = document.getElementById("dbDot");
+  const text = document.getElementById("dbText");
+  if(!dot || !text) return;
+
+  dot.className = "db-dot";
+  if(status === "connected"){
+    dot.classList.add("connected");
+    text.textContent = msg || "Conectado";
+  }else if(status === "error"){
+    dot.classList.add("error");
+    text.textContent = msg || "Sin conexión";
+  }else{
+    dot.classList.add("connecting");
+    text.textContent = msg || "Conectando…";
+  }
+}
+
+// ✅ Ping REAL (GET) para GitHub Pages
+async function pingApi_(){
+  try{
+    const url = `${API_URL}?resource=USERS&_=${Date.now()}`;
+    const r = await fetch(url, { method:"GET", cache:"no-store" });
+    if(!r.ok) return false;
+
+    // Intentamos JSON, pero si no se puede, igual es “conectado” (respondió 200)
+    const t = await r.text();
+    try{
+      const j = JSON.parse(t);
+      // si trae ok true, perfecto
+      if(j && (j.ok === true || j.ok === undefined)) return true;
+      // si trae ok false, igual respondió pero el backend tuvo error
+      return false;
+    }catch(_){
+      // no JSON pero 200 → conectado
+      return true;
+    }
+  }catch(_){
+    return false;
+  }
+}
+
+function startDbIndicator_(){
+  // Primera actualización inmediata
+  setDbStatus("connecting", "Conectando…");
+  (async ()=>{
+    const ok = await pingApi_();
+    setDbStatus(ok ? "connected" : "error");
+  })();
+
+  // Luego refresca cada 15s
+  setInterval(async ()=>{
+    const ok = await pingApi_();
+    setDbStatus(ok ? "connected" : "error");
+  }, 15000);
+}
+
+// ---------------- DOMContentLoaded GATE ----------------
+// Evita que scripts corran antes de syncDown/seed
+(function gateDOMContentLoaded(){
   const origAdd = document.addEventListener.bind(document);
   const queued = [];
   let ready = false;
@@ -37,75 +109,35 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwIx78f0IsuQTRdnEcHT0zu
   };
 })();
 
-// ===============================
-// LocalStorage helpers
-// ===============================
-const LS = {
-  get(key, fallback){
-    try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-    catch{ return fallback; }
-  },
-  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); },
-  del(key){ localStorage.removeItem(key); }
-};
-
-function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
-function nowISO(){ return new Date().toISOString(); }
-
-// ---------------- DB STATUS (pelotita) ----------------
-function setDbStatus(status, msg){
-  // status: "connecting" | "connected" | "error"
-  const dot  = document.getElementById("dbDot");
-  const text = document.getElementById("dbText");
-  if(!dot || !text) return;
-
-  dot.className = "db-dot";
-
-  if(status === "connected"){
-    dot.classList.add("connected");
-    text.textContent = msg || "Conectado";
-  }else if(status === "error"){
-    dot.classList.add("error");
-    text.textContent = msg || "Sin conexión";
-  }else{
-    dot.classList.add("connecting");
-    text.textContent = msg || "Conectando…";
+// ---------------- API (resource-based) ----------------
+// ✅ Robust JSON parse (si Apps Script responde HTML o texto raro, no revienta todo)
+async function fetchJsonSafe_(url, options){
+  const r = await fetch(url, options);
+  const t = await r.text();
+  let j = null;
+  try{ j = JSON.parse(t); }catch(_){
+    // Si no es JSON, devolvemos error controlado
+    throw new Error("Respuesta no JSON del Apps Script (¿deploy incorrecto o error?).");
   }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  if(j && j.ok === false) throw new Error(j.error || "API error");
+  return j;
 }
 
-// ✅ Ping real al API (GET, estable para GitHub Pages)
-async function pingApi_(){
-  try{
-    const url = `${API_URL}?resource=USERS&_=${Date.now()}`;
-    const r = await fetch(url, { method:"GET", cache:"no-store" });
-    const t = await r.text();
-    let j = null;
-    try{ j = JSON.parse(t); }catch(_){}
-    // Si responde 200, lo consideramos conexión OK (aunque no parseara)
-    return r.ok && (!j || j.ok === true || j.ok === undefined);
-  }catch(_){
-    return false;
-  }
+async function apiGet(resource){
+  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
+  return fetchJsonSafe_(url, { method:"GET", cache:"no-store" });
 }
 
-function startDbIndicator_(){
-  // primera pasada rápida
-  setDbStatus("connecting", "Conectando…");
-  (async ()=>{
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
-  })();
-
-  // refresco periódico
-  setInterval(async ()=>{
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
-  }, 15000);
+async function apiPost(resource, data){
+  return fetchJsonSafe_(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ resource, data })
+  });
 }
 
-// ===============================
-// Storage wrappers
-// ===============================
+// ---------------- Cache local ----------------
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
 
@@ -118,314 +150,525 @@ function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
-// ===============================
-// Session
-// ===============================
+// ---------------- Session ----------------
 function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, nombre:user.nombre, email:user.email });
+  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
 }
-function getSession(){
-  return LS.get("mahfit_session", null);
-}
-function clearSession(){
-  LS.del("mahfit_session");
-}
-function currentUser(){
-  const s = getSession();
-  if(!s || !s.rut) return null;
-  const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
-  return u || null;
-}
+function getSession(){ return LS.get("mahfit_session", null); }
+function clearSession(){ LS.del("mahfit_session"); }
 
-// requireAuth("SOCIO") o requireAuth(["ADMIN","FUNCIONARIO"])
-function requireAuth(roles){
-  const u = currentUser();
-  if(!u){
-    if(location.pathname.toLowerCase().includes("index.html")) return null;
-    location.href = "index.html";
-    return null;
-  }
-  const arr = Array.isArray(roles) ? roles : [roles];
-  if(arr.length && !arr.includes(String(u.rol || "").toUpperCase())){
-    location.href = "index.html";
-    return null;
-  }
-  if(u.activo === false || String(u.activo).toLowerCase() === "false"){
-    alert("Tu acceso está desactivado. Contacta administración.");
-    clearSession();
-    location.href = "index.html";
-    return null;
-  }
-  return u;
-}
-
-// ===============================
-// API helpers
-// ===============================
-async function apiGet(resource){
-  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
-  const r = await fetch(url, { method:"GET", cache:"no-store" });
-  const t = await r.text();
-  let j = null;
-  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
-  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  if(j && j.ok === false) throw new Error(j.error || "API error");
-  return j;
-}
-
-async function apiPost(resource, data){
-  const payload = { resource, data };
-  const r = await fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify(payload),
-  });
-  const t = await r.text();
-  let j = null;
-  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
-  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  if(j && j.ok === false) throw new Error(j.error || "API error");
-  return j;
-}
-
-// ===============================
-// Sync DOWN (descarga) + seed admin
-// ===============================
+// ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
-  // Baja USERS
+  // USERS
   const u = await apiGet("USERS");
-  if(u && u.users) setUsers(u.users);
+  const users = (u.users || []).map(x => ({
+    rut: normalizeRut(x.rut),
+    nombre: x.nombre ?? "",
+    email: x.email ?? "",
+    pass: String(x.pass ?? ""),
+    rol: (x.rol ?? x.role ?? "SOCIO"),
+    activo: (x.activo === false) ? false : true,
+    creadoEn: x.creadoEn ?? "",
 
-  // Rutinas TXT
-  try{
-    const rt = await apiGet("RUTINAS_TXT");
-    if(rt && rt.rutinas_txt) setRutinas(rt.rutinas_txt);
-  }catch(e){
-    console.warn("syncDown RUTINAS_TXT:", e.message);
-  }
+    // ✅ Plan (si existe en sheet)
+    planTipo: x.planTipo ?? x.plan_tipo ?? "",
+    planInicio: x.planInicio ?? x.plan_inicio ?? "",
+    planFin: x.planFin ?? x.plan_fin ?? ""
+  }));
+  setUsers(users);
 
-  // Rutinas V2
-  try{
-    const rv2 = await apiGet("RUTINAS_V2");
-    if(rv2 && rv2.rutinas_v2) setRutinasV2(rv2.rutinas_v2);
-  }catch(e){
-    console.warn("syncDown RUTINAS_V2:", e.message);
-  }
+  // RUTINAS_TXT
+  const rt = await apiGet("RUTINAS_TXT");
+  const rutinas = (rt.rutinas_txt || []).map(x => ({
+    id: x.id || crypto.randomUUID(),
+    rutSocio: normalizeRut(x.rutSocio),
+    titulo: x.titulo ?? "",
+    detalle: x.detalle ?? "",
+    creadoEn: x.creadoEn ?? "",
+    creadoPorRut: x.creadoPorRut ?? ""
+  }));
+  setRutinas(rutinas);
 
-  // Plantillas V2
-  try{
-    const pv2 = await apiGet("PLANTILLAS_V2");
-    if(pv2 && pv2.plantillas_v2) setPlantillasV2(pv2.plantillas_v2);
-  }catch(e){
-    console.warn("syncDown PLANTILLAS_V2:", e.message);
-  }
+  // RUTINAS_V2
+  const rv2 = await apiGet("RUTINAS_V2");
+  const list = (rv2.rutinas_v2 || []).map(x => {
+    let routine = null;
+    try{ routine = JSON.parse(x.routine_json || "null"); }catch{}
+    return {
+      rutSocio: normalizeRut(x.rutSocio),
+      routine,
+      creadoPorRut: x.creadoPorRut ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  });
+  setRutinasV2(list);
+
+  // PLANTILLAS_V2
+  const pv2 = await apiGet("PLANTILLAS_V2");
+  const tpl = (pv2.plantillas_v2 || []).map(x => {
+    let templateObj = null;
+    const raw = x.template_json ?? x.templateJson ?? x.template ?? null;
+
+    if(typeof raw === "string"){
+      try{ templateObj = JSON.parse(raw); }catch{ templateObj = null; }
+    }else{
+      templateObj = raw;
+    }
+
+    return {
+      templateId: x.templateId || x.templateid || x.id || crypto.randomUUID(),
+      nombrePlantilla: x.nombrePlantilla ?? x.nombreplantilla ?? x.nombre ?? "",
+      nivel: x.nivel ?? "",
+      objetivo: x.objetivo ?? "",
+      dias: Number(x.dias ?? 0),
+      visibility: (x.visibility ?? "PRIVADA"),
+      ownerRut: normalizeRut(x.ownerRut ?? x.ownerrut ?? ""),
+      ownerNombre: x.ownerNombre ?? x.ownernombre ?? "",
+      template_json: templateObj,
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  });
+  setPlantillasV2(tpl);
 }
 
+// ---------------- Seed ADMIN remoto ----------------
 async function seedRemoteAdmin(){
-  // Si no existe ADMIN, lo crea (para evitar quedar sin acceso)
   const users = getUsers();
-  const admin = users.find(u => String(u.rol||"").toUpperCase() === "ADMIN");
-  if(admin) return;
+  const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
+  if(exists) return;
+
+  await apiPost("USERS", {
+    rut: "ADMIN",
+    nombre: "Administrador MAH FIT",
+    email: "admin@mahfit.cl",
+    pass: "1234",
+    rol: "FUNCIONARIO",
+    activo: true,
+    creadoEn: nowISO()
+  });
+
+  await syncDown();
+}
+
+// ---------------- Auth (SINCRÓNICO) ----------------
+function requireAuth(expectedRole){
+  const s = getSession();
+  if(!s){ window.location.href = "index.html"; return null; }
+
+  const user = getUsers().find(u => normalizeRut(u.rut) === normalizeRut(s.rut));
+  if(!user || user.activo === false){
+    clearSession();
+    window.location.href = "index.html";
+    return null;
+  }
+
+  if(expectedRole){
+    const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
+    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      return null;
+    }
+  }
+  return user;
+}
+
+// ---------------- Login/Register ----------------
+function registerUser({rut, nombre, email, pass, rol}){
+  rut = normalizeRut(rut);
+  if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
+
+  const users = getUsers();
+  if(users.some(u => u.rut === rut)) throw new Error("Ese Usuario/RUT ya existe.");
+
+  const user = {
+    rut,
+    nombre: String(nombre).trim(),
+    email: String(email||"").trim(),
+    pass: String(pass),
+    rol,
+    activo: true,
+    creadoEn: nowISO(),
+    planTipo: "",
+    planInicio: "",
+    planFin: ""
+  };
+
+  users.push(user);
+  setUsers(users);
+
+  apiPost("USERS", user).catch(console.error);
+  return user;
+}
+
+function login({rut, pass}){
+  rut = normalizeRut(rut);
+  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
+  if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
+  if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
+  setSession(user);
+  return user;
+}
+
+// ---------------- Rutinas ----------------
+function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
+  const rutSocioN = normalizeRut(rutSocio);
+  const rutinas = getRutinas();
+  const existing = rutinas.find(r => r.rutSocio === rutSocioN);
 
   const payload = {
-    rut:"ADMIN",
-    nombre:"Administrador MAH FIT",
-    email:"",
-    pass:"admin",
-    rol:"ADMIN",
-    activo:true,
+    rutSocio: rutSocioN,
+    titulo,
+    detalle,
+    creadoPorRut: creadoPorRut || "",
     creadoEn: nowISO()
   };
 
-  try{
-    await apiPost("USERS", payload);
-    const u = await apiGet("USERS");
-    if(u && u.users) setUsers(u.users);
-  }catch(e){
-    console.warn("seedRemoteAdmin:", e.message);
+  if(existing){
+    existing.titulo = titulo;
+    existing.detalle = detalle;
+    existing.creadoEn = payload.creadoEn;
+    existing.creadoPorRut = payload.creadoPorRut;
+  }else{
+    rutinas.push({ id: crypto.randomUUID(), ...payload });
   }
+  setRutinas(rutinas);
+
+  apiPost("RUTINAS_TXT", payload).catch(console.error);
 }
 
-// ===============================
-// Auth: login
-// ===============================
-function loginByRutAndPass(rut, pass){
-  rut = normalizeRut(rut);
-  pass = String(pass || "").trim();
-
-  const u = getUsers().find(x => normalizeRut(x.rut) === rut);
-  if(!u) return { ok:false, error:"Usuario no encontrado" };
-
-  const realPass = String(u.pass || "").trim();
-  if(realPass !== pass) return { ok:false, error:"Clave incorrecta" };
-
-  if(u.activo === false || String(u.activo).toLowerCase() === "false"){
-    return { ok:false, error:"Tu acceso está desactivado" };
-  }
-
-  setSession(u);
-  return { ok:true, user:u };
+function rutinaDeSocio(rutSocio){
+  const rutSocioN = normalizeRut(rutSocio);
+  return getRutinas().find(r => r.rutSocio === rutSocioN) || null;
 }
 
-// ===============================
-// Helpers Rutina V2 (para socio)
-// ===============================
-function parseJsonSafe(s){
-  try{
-    if(typeof s === "object") return s;
-    if(!s) return null;
-    return JSON.parse(s);
-  }catch(e){
-    return null;
+function upsertRutinaV2({rutSocio, routine, creadoPorRut}){
+  const rutSocioN = normalizeRut(rutSocio);
+  const list = getRutinasV2();
+  const existing = list.find(x => x.rutSocio === rutSocioN);
+
+  const payload = {
+    rutSocio: rutSocioN,
+    routine_json: JSON.stringify(routine),
+    creadoPorRut: creadoPorRut || "",
+    actualizadoEn: nowISO()
+  };
+
+  if(existing){
+    existing.routine = routine;
+    existing.creadoPorRut = payload.creadoPorRut;
+    existing.actualizadoEn = payload.actualizadoEn;
+  }else{
+    list.push({
+      rutSocio: rutSocioN,
+      routine,
+      creadoPorRut: payload.creadoPorRut,
+      actualizadoEn: payload.actualizadoEn
+    });
   }
+  setRutinasV2(list);
+
+  apiPost("RUTINAS_V2", payload).catch(console.error);
 }
 
 function rutinaV2DeSocio(rutSocio){
-  const rut = normalizeRut(rutSocio);
-  const all = getRutinasV2();
-  const row = all.find(x => normalizeRut(x.rutSocio) === rut);
-  if(!row) return null;
-  return { ...row, routine: parseJsonSafe(row.routine_json) };
+  const rutSocioN = normalizeRut(rutSocio);
+  return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
-// ===============================
-// Helpers Plantillas V2
-// ===============================
+// ---------------- Plantillas helpers ----------------
 function plantillasVisiblesPara(user){
-  const rol = String(user.rol||"").toUpperCase();
-  const rut = normalizeRut(user.rut);
-  const all = getPlantillasV2();
-
-  return all.filter(p=>{
-    const vis = String(p.visibility||"PRIVADA").toUpperCase();
-    const owner = normalizeRut(p.ownerRut);
-    if(rol === "ADMIN") return true;
-    if(vis === "PUBLICA") return true;
-    if(vis === "GYM") return true;
-    return owner === rut;
-  }).map(p=>({ ...p, template: parseJsonSafe(p.template_json) }));
+  const rut = normalizeRut(user?.rut || "");
+  return getPlantillasV2().filter(p=>{
+    const vis = String(p.visibility || "").toUpperCase();
+    const owner = normalizeRut(p.ownerRut || "");
+    return vis === "PUBLICA" || owner === rut;
+  });
 }
 
-async function savePlantillaV2(data){
-  const payload = {
-    templateId: data.templateId || "",
+async function savePlantillaV2(payload){
+  const data = { ...payload };
+
+  if(!data.templateId) data.templateId = crypto.randomUUID();
+  if(!data.creadoEn) data.creadoEn = nowISO();
+  data.actualizadoEn = nowISO();
+  data.ownerRut = normalizeRut(data.ownerRut || "");
+
+  const templateObj = data.template_json ?? null;
+  if(typeof data.template_json !== "string"){
+    data.template_json = JSON.stringify(templateObj);
+  }
+
+  await apiPost("PLANTILLAS_V2", data);
+
+  const list = getPlantillasV2();
+  const idx = list.findIndex(x => String(x.templateId) === String(data.templateId));
+
+  const localObj = {
+    templateId: data.templateId,
     nombrePlantilla: data.nombrePlantilla || "",
     nivel: data.nivel || "",
     objetivo: data.objetivo || "",
     dias: Number(data.dias || 0),
     visibility: data.visibility || "PRIVADA",
-    ownerRut: data.ownerRut || "",
+    ownerRut: normalizeRut(data.ownerRut || ""),
     ownerNombre: data.ownerNombre || "",
-    template_json: typeof data.template_json === "string" ? data.template_json : JSON.stringify(data.template_json || null),
-    creadoEn: data.creadoEn || nowISO(),
-    actualizadoEn: nowISO(),
+    template_json: (()=>{ try{ return JSON.parse(data.template_json); }catch{ return null; } })(),
+    creadoEn: data.creadoEn || "",
+    actualizadoEn: data.actualizadoEn || ""
   };
-  const r = await apiPost("PLANTILLAS_V2", payload);
-  // refresca cache
-  const pv2 = await apiGet("PLANTILLAS_V2");
-  if(pv2 && pv2.plantillas_v2) setPlantillasV2(pv2.plantillas_v2);
-  return r;
+
+  if(idx >= 0) list[idx] = localObj;
+  else list.push(localObj);
+  setPlantillasV2(list);
+
+  return localObj;
 }
 
-// ===============================
-// FUNCIONARIO: render + acciones
-// (si tu funcionario.html usa estas)
-// ===============================
-function boolVal(v){
-  if(typeof v === "boolean") return v;
-  const s = String(v||"").toLowerCase().trim();
-  if(s === "true" || s === "1" || s === "si" || s === "sí") return true;
-  if(s === "false" || s === "0" || s === "no") return false;
-  return !!v;
+// ---------------- UI helpers ----------------
+function $(sel){ return document.querySelector(sel); }
+function showMsg(el, msg, ok=false){
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
 
-function formatPlanRemaining(user){
-  const fin = user.planFin ? new Date(user.planFin) : null;
-  if(!fin || isNaN(fin.getTime())) return { label:"Sin plan", status:"none", days:null };
+// ---------------- INIT por página ----------------
+function initIndex(){
+  const loginForm = $("#loginForm");
+  const msgLogin  = $("#msgLogin");
 
-  fin.setHours(0,0,0,0);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const days = Math.ceil((fin.getTime() - today.getTime()) / (1000*60*60*24));
+  const s = getSession();
+  if(s){
+    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
+    if(u){
+      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      return;
+    }
+  }
 
-  if(days < 0) return { label:`Vencido`, status:"expired", days };
-  if(days === 0) return { label:`Vence hoy`, status:"today", days:0 };
-  return { label:`${days} días`, status: days <= 5 ? "soon" : "active", days };
+  loginForm?.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    try{
+      const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
+      showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    }catch(err){
+      showMsg(msgLogin, err.message);
+    }
+  });
+
+  const resetBtn = document.getElementById("resetBtn");
+  if(resetBtn){
+    resetBtn.addEventListener("click", ()=>{
+      localStorage.removeItem("mahfit_users");
+      localStorage.removeItem("mahfit_rutinas");
+      localStorage.removeItem("mahfit_rutinas_v2");
+      localStorage.removeItem("mahfit_plantillas_v2");
+      localStorage.removeItem("mahfit_session");
+      alert("Datos locales reiniciados. Recarga la página.");
+      window.location.reload();
+    });
+  }
 }
 
-// ===============================
-// BOOT
-// ===============================
+function initFuncionario(){
+  const me = requireAuth("FUNCIONARIO");
+  if(!me) return;
+
+  const who = document.getElementById("who");
+  const roleBadge = document.getElementById("roleBadge");
+  if(who) who.textContent = me.nombre;
+  if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
+
+  const msgUser = $("#msgUser");
+  const tbody = $("#usersTbody");
+
+  const searchInput = document.getElementById("userSearch");
+  const roleFilter  = document.getElementById("roleFilter");
+
+  function refreshKPIs(){
+    const users = getUsers();
+    const kSocios = document.getElementById("kSocios");
+    const kFunc = document.getElementById("kFunc");
+    const kActivos = document.getElementById("kActivos");
+    if(kSocios) kSocios.textContent = users.filter(u=>String(u.rol).toUpperCase()==="SOCIO").length;
+    if(kFunc) kFunc.textContent = users.filter(u=>String(u.rol).toUpperCase()==="FUNCIONARIO").length;
+    if(kActivos) kActivos.textContent = users.filter(u=>u.activo !== false).length;
+  }
+
+  function getFilteredUsers(){
+    const users = getUsers().slice();
+
+    const q = String(searchInput?.value || "").toLowerCase().trim();
+    const rf = String(roleFilter?.value || "ALL").toUpperCase();
+
+    return users.filter(u=>{
+      const rol = String(u.rol || "").toUpperCase();
+      const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
+
+      const roleOk = (rf === "ALL") ? true : (rol === rf);
+      if(!roleOk) return false;
+
+      if(!q) return true;
+
+      const hay = [
+        u.nombre || "",
+        u.rut || "",
+        u.email || "",
+        rol,
+        activoTxt
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    }).sort((a,b)=> (a.rol>b.rol?1:-1) || String(a.nombre||"").localeCompare(String(b.nombre||"")));
+  }
+
+  function refreshTable(){
+    if(!tbody) return;
+
+    const list = getFilteredUsers();
+    tbody.innerHTML = "";
+
+    for(const u of list){
+      const rol = String(u.rol || "").toUpperCase();
+      const activo = (u.activo !== false);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.nombre || ""}</td>
+        <td>${u.rut || ""}</td>
+        <td><span class="pill">${rol}</span></td>
+        <td>${activo ? "✅" : "⛔"}</td>
+        <td style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn small ghost" data-act="${u.rut}">
+            ${activo ? "Desactivar" : "Activar"}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // ✅ FIX REAL: toggle + guarda en Sheets + resync
+    tbody.querySelectorAll("[data-act]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const rut = btn.getAttribute("data-act");
+        const users = getUsers();
+        const u = users.find(x=>x.rut===rut);
+        if(!u) return;
+
+        const activoActual = (u.activo !== false);
+        u.activo = !activoActual;
+
+        // optimista local
+        setUsers(users);
+        refreshKPIs();
+        refreshTable();
+
+        try{
+          await apiPost("USERS", u);
+          await syncDown();
+          refreshKPIs();
+          refreshTable();
+          showMsg(msgUser, "✅ Estado actualizado en Sheets.", true);
+        }catch(e){
+          console.error(e);
+          showMsg(msgUser, "❌ No se pudo guardar en Sheets. Revisa API/permisos.", false);
+          await syncDown().catch(()=>{});
+          refreshKPIs();
+          refreshTable();
+        }
+      });
+    });
+  }
+
+  // crear usuario
+  const createForm = document.getElementById("createUserForm");
+  createForm?.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    try{
+      const newUser = registerUser({
+        rut: $("#newRut").value,
+        nombre: $("#newNombre").value,
+        email: $("#newEmail").value,
+        pass: $("#newPass").value,
+        rol: $("#newRol").value
+      });
+      showMsg(msgUser, `✅ Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
+      e.target.reset();
+
+      await syncDown();
+      refreshKPIs();
+      refreshTable();
+    }catch(err){
+      showMsg(msgUser, err.message, false);
+    }
+  });
+
+  // buscador
+  searchInput?.addEventListener("input", refreshTable);
+  roleFilter?.addEventListener("change", refreshTable);
+
+  // botones top
+  document.getElementById("btnLogout")?.addEventListener("click", ()=>{
+    clearSession();
+    window.location.href = "index.html";
+  });
+
+  document.getElementById("btnRutinas")?.addEventListener("click", ()=>{
+    window.location.href = "rutinas.html";
+  });
+
+  refreshKPIs();
+  refreshTable();
+}
+
+// ---------------- BOOT ----------------
 (async function boot(){
-  // ✅ indicador real (se actualiza solo)
+  // ✅ indicador real
   startDbIndicator_();
 
   try{
+    // Si falla sync, igual dejamos usar el cache (si existe)
     await syncDown();
     await seedRemoteAdmin();
-    // Si syncDown falló por algo puntual pero el API responde, no muestres "Sin conexión"
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
   }catch(e){
     console.error("BOOT ERROR:", e);
-    const ok = await pingApi_();
-    setDbStatus(ok ? "connected" : "error");
+    // Si hay cache, deja entrar igual. Si no hay, el login mostrará error.
   }finally{
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
   }
 })();
 
-// ===============================
-// Ejecuta init por página
-// (tu HTML llama estas funciones)
-// ===============================
-function pageId(){
-  return document.body && document.body.getAttribute("data-page");
-}
-
-// INDEX
-function initIndex(){
-  const rutEl = document.getElementById("loginRut");
-  const passEl = document.getElementById("loginPass");
-  const btn = document.getElementById("btnLogin");
-  const btnReset = document.getElementById("btnResetData");
-
-  if(btn){
-    btn.addEventListener("click", ()=>{
-      const rut = rutEl ? rutEl.value : "";
-      const pass = passEl ? passEl.value : "";
-      const res = loginByRutAndPass(rut, pass);
-      if(!res.ok){
-        alert(res.error || "No se pudo iniciar sesión");
-        return;
-      }
-      const u = res.user;
-      const rol = String(u.rol||"").toUpperCase();
-      if(rol === "ADMIN" || rol === "FUNCIONARIO") location.href = "funcionario.html";
-      else location.href = "socio.html";
-    });
-  }
-
-  if(btnReset){
-    btnReset.addEventListener("click", async ()=>{
-      try{
-        // limpia cache
-        LS.del("mahfit_users");
-        LS.del("mahfit_rutinas");
-        LS.del("mahfit_rutinas_v2");
-        LS.del("mahfit_plantillas_v2");
-        clearSession();
-        await syncDown();
-        alert("Datos reiniciados ✅");
-        location.reload();
-      }catch(e){
-        alert("No se pudo reiniciar. Revisa conexión/API.");
-      }
-    });
-  }
-}
-
-// Si necesitas agregar init específico para otras páginas, déjalo aquí
+// ---------------- Ejecuta init por página ----------------
 document.addEventListener("DOMContentLoaded", ()=>{
-  const p = pageId();
-  if(p === "index") initIndex();
+  const page = document.body.getAttribute("data-page");
+  if(page === "index") initIndex();
+  if(page === "funcionario") initFuncionario();
 });
+
+// ---------------- Exponer helpers globales ----------------
+window.API_URL = API_URL;
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+
+window.getUsers = getUsers;
+window.setUsers = setUsers;
+
+window.getRutinas = getRutinas;
+window.setRutinas = setRutinas;
+
+window.getRutinasV2 = getRutinasV2;
+window.setRutinasV2 = setRutinasV2;
+window.rutinaV2DeSocio = rutinaV2DeSocio;
+
+window.getPlantillasV2 = getPlantillasV2;
+window.setPlantillasV2 = setPlantillasV2;
+window.plantillasVisiblesPara = plantillasVisiblesPara;
+window.savePlantillaV2 = savePlantillaV2;
+
+window.requireAuth = requireAuth;
+window.upsertRutina = upsertRutina;
+window.upsertRutinaV2 = upsertRutinaV2;
+window.syncDown = syncDown;
+window.clearSession = clearSession;
