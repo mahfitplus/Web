@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MAH FIT | Funcionario</title>
-  <link rel="stylesheet" href="styles.css"/>
+
+  <!-- Unificado: todos los HTML cargan estilos desde /assets -->
+  <link rel="stylesheet" href="assets/styles.css"/>
 
   <style>
     :root{
@@ -219,55 +221,55 @@
       <div class="brand">
         <div class="logo"></div>
         <div>
-          <div style="font-size:18px;">MAH FIT</div>
-          <div class="muted">Panel Funcionario</div>
+          <div style="font-size:14px;font-weight:900;">MAH FIT</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);">Panel Funcionario</div>
         </div>
       </div>
 
       <div class="rightTop">
-        <div class="db-badge">
+        <span class="pill">Hola, <b id="who"></b></span>
+        <span class="pill" id="roleBadge"></span>
+
+        <span class="db-badge">
           <span id="dbDot" class="db-dot connecting"></span>
           <span id="dbText">Conectando…</span>
-        </div>
+        </span>
 
-        <div class="pill">Hola, <b id="who">Usuario</b></div>
-        <div class="pill" id="roleBadge">FUNCIONARIO</div>
-
-        <button class="btn small" id="btnRutinas">Creador Rutinas</button>
-        <button class="btn danger small" id="btnLogout">Salir</button>
+        <button class="btn ghost" id="btnRutinas">Rutinas</button>
+        <button class="btn danger" id="btnLogout">Salir</button>
       </div>
     </div>
 
     <div class="kpis">
       <div class="kpi">
-        <div class="t">SOCIOS</div>
+        <div class="t">Socios</div>
         <div class="v" id="kSocios">0</div>
       </div>
       <div class="kpi">
-        <div class="t">FUNCIONARIOS</div>
+        <div class="t">Funcionarios</div>
         <div class="v" id="kFunc">0</div>
       </div>
       <div class="kpi">
-        <div class="t">ACTIVOS</div>
+        <div class="t">Activos</div>
         <div class="v" id="kActivos">0</div>
       </div>
     </div>
 
     <div class="card">
       <div class="cardHead">
-        <div class="cardTitle">CREAR USUARIO</div>
-        <div class="pill">Solo admin / funcionario</div>
+        <div class="cardTitle">Crear usuario</div>
+        <span class="muted">Se guarda en Sheets</span>
       </div>
 
       <form id="createUserForm">
         <div class="rowForm">
           <div class="field">
             <label>RUT/Usuario</label>
-            <input id="newRut" placeholder="Ej: 20228778-6" required />
+            <input id="newRut" placeholder="Ej: 20228778-6 / ADMIN" />
           </div>
           <div class="field">
             <label>Nombre</label>
-            <input id="newNombre" placeholder="Ej: Juan Pérez" required />
+            <input id="newNombre" placeholder="Ej: Juan Perez" />
           </div>
           <div class="field">
             <label>Email</label>
@@ -275,7 +277,7 @@
           </div>
           <div class="field">
             <label>Clave</label>
-            <input id="newPass" placeholder="1234" required />
+            <input id="newPass" placeholder="1234" />
           </div>
           <div class="field">
             <label>Rol</label>
@@ -293,14 +295,10 @@
       </form>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- 🟦 INICIO CRM USUARIOS                                   -->
-    <!-- ========================================================= -->
     <div class="card">
       <div class="cardHead">
         <div class="cardTitle">CRM USUARIOS</div>
 
-        <!-- ✅ Buscador + filtro -->
         <div class="filters">
           <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
           <select id="roleFilter">
@@ -329,9 +327,7 @@
         Tip: escribe en el buscador y se filtra altiro.
       </div>
     </div>
-    <!-- ========================================================= -->
-    <!-- 🟥 FIN CRM USUARIOS                                      -->
-    <!-- ========================================================= -->
+
   </div>
 
   <script src="assets/app.js"></script>
