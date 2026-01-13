@@ -2,1293 +2,988 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT | Rutinas</title>
-  <link rel="stylesheet" href="styles.css"/>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Socio</title>
+  <link rel="stylesheet" href="assets/styles.css" />
   <style>
+    /* =========================
+       SOCIO UI UPGRADE (MAH FIT)
+       ========================= */
+
     :root{
-      --bg0:#0a0e14;
-      --bg1:#0f1623;
-      --card:#121b2a;
-      --line:rgba(255,255,255,.10);
-      --txt:rgba(255,255,255,.88);
-      --mut:rgba(255,255,255,.65);
-      --ok:#2bd576;
-      --bad:#ff5a67;
-      --pri:#7c5cff;
-      --pri2:#23a6ff;
-      --chip:#1a2538;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:16px;
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(0,0,0,.26);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --txt: rgba(255,255,255,.92);
+      --mut: rgba(255,255,255,.68);
+      --mut2: rgba(255,255,255,.78);
+
+      /* fallback por si no existen en styles.css */
+      --ok: rgba(43,213,118,1);
+      --warn: rgba(255,211,110,1);
+      --bad: rgba(255,90,103,1);
     }
-    body{
-      margin:0;
-      background:linear-gradient(180deg,var(--bg0),var(--bg1));
-      color:var(--txt);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      min-height:100vh;
+
+    /* ---------- Top spacing helper ---------- */
+    .sp12{ height:12px; }
+    .sp16{ height:16px; }
+    .sp18{ height:18px; }
+    .sp22{ height:22px; }
+
+    /* ---------- Banner Plan ---------- */
+    .planBanner{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
+      border-radius:18px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      overflow:hidden;
+      position:relative;
     }
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:18px;
+    .planBanner::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(800px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),
+                  radial-gradient(800px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
     }
-    .topbar{
+    .planBanner > *{ position:relative; }
+
+    .planLeft{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+    .planTitleRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .planTitle{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size:12px;
+      color: var(--mut);
+    }
+    .planBig{
+      font-weight:1000;
+      font-size:18px;
+      color:#fff;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .planSmall{
+      color: var(--mut2);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .planCTA{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      min-width: 210px;
+    }
+    .ctaBtn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .ctaBtn:hover{ background: rgba(255,255,255,.09); }
+    .ctaBtn:active{ transform: translateY(1px); }
+
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.30);
+      font-weight:900;
+      font-size:12px;
+      color: rgba(255,255,255,.90);
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: rgba(255,255,255,.35);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+    .stOk{ border-color: rgba(43,213,118,.30); background: rgba(43,213,118,.10); }
+    .stOk .dot{ background: rgba(43,213,118,1); box-shadow: 0 0 0 3px rgba(43,213,118,.16); }
+    .stWarn{ border-color: rgba(255,211,110,.30); background: rgba(255,211,110,.10); }
+    .stWarn .dot{ background: rgba(255,211,110,1); box-shadow: 0 0 0 3px rgba(255,211,110,.16); }
+    .stBad{ border-color: rgba(255,90,103,.30); background: rgba(255,90,103,.10); }
+    .stBad .dot{ background: rgba(255,90,103,1); box-shadow: 0 0 0 3px rgba(255,90,103,.16); }
+
+    /* ---------- KPI improvements ---------- */
+    .kpi .box b{
+      display:block;
+      font-size:18px;
+      margin-top:4px;
+    }
+    .kpiSub{
+      color: var(--mut);
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:4px;
+    }
+    .kpiSub .kIco{
+      width:22px;height:22px;
+      border-radius:9px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.10);
+      border:1px solid rgba(0,200,255,.20);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+      flex: 0 0 auto;
+    }
+
+    /* ---------- Today Card ---------- */
+    .todayCard{
+      border:1px solid rgba(0,200,255,.22);
+      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.18), transparent 60%),
+                  rgba(0,0,0,.20);
+      border-radius:18px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      overflow:hidden;
+    }
+    .todayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .todayTitle{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      font-weight:1000;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.92);
+    }
+    .todayTitle .flame{
+      width:26px;height:26px;border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(255,120,0,.14);
+      border:1px solid rgba(255,120,0,.22);
+    }
+    .todayMain{
+      font-weight:1000;
+      font-size:16px;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .todayMeta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color: var(--mut2);
+      font-size:13px;
+    }
+    .miniPill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      font-weight:900;
+      font-size:12px;
+      color: rgba(255,255,255,.90);
+    }
+    .miniPill .mIco{
+      width:20px;height:20px;border-radius:999px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.10);
+      border:1px solid rgba(0,200,255,.18);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+    }
+
+    /* ---------- Day accordion (improved) ---------- */
+    details.day{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.28);
+      border-radius: 16px;
+      overflow:hidden;
+      margin-top:12px;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    details.day[open]{
+      border-color: rgba(0,200,255,.22);
+      background: rgba(0,0,0,.32);
+    }
+    summary.daySum{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding:14px 16px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-    .brand{ display:flex; align-items:center; gap:10px; }
-    .logo{
-      width:38px;height:38px;
-      border-radius:12px;
-      background:linear-gradient(135deg,var(--pri),var(--pri2));
-      box-shadow:0 8px 18px rgba(124,92,255,.25);
-    }
-    h1{ margin:0; font-size:18px; letter-spacing:.4px; }
-    .pill{
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:var(--mut);
-      font-size:12px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap:16px;
-      margin-top:16px;
-    }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
-    .card{
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
-    }
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:14px;
-      color:rgba(255,255,255,.92);
-      letter-spacing:.4px;
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    label{
-      font-size:12px;
-      color:var(--mut);
-      display:block;
-      margin-bottom:4px;
-    }
-    input, select, textarea{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.20);
-      color:var(--txt);
-      outline:none;
-    }
-    textarea{ min-height:90px; resize:vertical; }
-    .col{ flex:1; min-width:160px; }
-    .btn{
-      border:none;
-      cursor:pointer;
-      border-radius:12px;
-      padding:10px 12px;
-      color:#fff;
-      font-weight:600;
-      background:linear-gradient(135deg,var(--pri),var(--pri2));
-      box-shadow:0 10px 20px rgba(35,166,255,.15);
-      transition:transform .06s ease;
-    }
-    .btn:active{ transform:scale(.98); }
-    .btn.ghost{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      box-shadow:none;
-      color:rgba(255,255,255,.85);
-    }
-    .btn.danger{
-      background:rgba(255,90,103,.12);
-      border:1px solid rgba(255,90,103,.35);
-      color:#ffd8dc;
-      box-shadow:none;
-    }
-    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
-    .hr{
-      height:1px;
-      background:var(--line);
-      margin:10px 0;
-    }
-    .notice{
-      padding:10px 12px;
-      border-radius:12px;
-      background:rgba(255,255,255,.05);
-      border:1px dashed rgba(255,255,255,.14);
-      color:rgba(255,255,255,.75);
-      font-size:12px;
-    }
-    .daysArea{ display:flex; flex-direction:column; gap:12px; }
-    .dayCard{
-      background:rgba(0,0,0,.18);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:12px;
-      position:relative;
-    }
-    .dayHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .dayTitle{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:700;
-      letter-spacing:.3px;
-    }
-    .dayBadges{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .chip{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:rgba(255,255,255,.78);
-      padding:4px 8px;
-      border-radius:999px;
-      font-size:11px;
-    }
-    .chip.on{
-      background:rgba(43,213,118,.14);
-      border-color:rgba(43,213,118,.35);
-      color:#d9ffe9;
-    }
-    .focusGrid{
-      display:grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap:10px;
-      padding:10px;
-      border-radius:14px;
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      margin-bottom:12px;
-    }
-    @media (max-width: 980px){
-      .focusGrid{ grid-template-columns: repeat(3, 1fr); }
-    }
-    .focusItem{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:12px;
-      color:rgba(255,255,255,.78);
       user-select:none;
     }
-    .focusItem input{ width:auto; }
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0 8px;
+    summary.daySum::-webkit-details-marker{ display:none; }
+    .dayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .dayLeft b{
+      font-size:13px;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .dayLeft .sub{
       font-size:12px;
-    }
-    th{
-      color:rgba(255,255,255,.55);
-      font-weight:600;
-      text-align:left;
-      padding:0 8px;
-      font-size:11px;
-    }
-    td{
-      padding:10px 8px;
-      background:rgba(255,255,255,.03);
-      border-top:1px solid var(--line);
-      border-bottom:1px solid var(--line);
-    }
-    td:first-child{
-      border-left:1px solid var(--line);
-      border-top-left-radius:14px;
-      border-bottom-left-radius:14px;
-    }
-    td:last-child{
-      border-right:1px solid var(--line);
-      border-top-right-radius:14px;
-      border-bottom-right-radius:14px;
-    }
-    .tblInput{
-      width:100%;
-      padding:8px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.15);
-      color:rgba(255,255,255,.88);
-      outline:none;
-      font-size:12px;
-    }
-    .tblSmall{ max-width:90px; }
-    .tblMid{ max-width:130px; }
-    .tblBig{ min-width:160px; }
-    .rightCol{ display:flex; flex-direction:column; gap:16px; }
-    .preview{
-      display:none;
-      margin-top:12px;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.22);
-      white-space:pre-wrap;
-      color:rgba(255,255,255,.84);
-      font-size:12px;
-      line-height:1.45;
-    }
-    .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
-
-    .lastCard{
-      background:rgba(0,0,0,.20);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-    }
-    .lastHead{
+      color: rgba(255,255,255,.68);
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .lastTitle{ font-weight:800; letter-spacing:.2px; }
-    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
-    .pillMini{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:rgba(255,255,255,.86);
-    }
-    .mutedLine{
-      color:rgba(255,255,255,.72);
-      font-size:12px;
-      margin-top:6px;
-      line-height:1.35;
-    }
-
-    .modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      background:rgba(0,0,0,.55);
-      z-index:9999;
-      padding:18px;
-    }
-    .modalBox{
-      width:min(980px, 100%);
-      max-height:85vh;
-      overflow:auto;
-      background:rgba(10,14,20,.95);
-      border:1px solid var(--line);
-      border-radius:18px;
-      box-shadow:0 20px 60px rgba(0,0,0,.50);
-      padding:14px;
-    }
-    .modalTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:12px;
-    }
-    .modalTitle{
-      font-weight:900;
-      letter-spacing:.3px;
-    }
-    .socPreviewCard{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      margin-bottom:12px;
-    }
-    .socMeta{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
-      font-size:12px;
-      color:rgba(255,255,255,.78);
     }
-    .socMeta b{ color:rgba(255,255,255,.92); }
-    .collapseDay{
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:rgba(0,0,0,.18);
-      margin-bottom:10px;
+    .chev{
+      width:36px;height:36px;
+      border-radius:12px;
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.85);
+      font-weight:900;
+      transition: transform .25s ease;
+      flex: 0 0 auto;
+    }
+    details[open] .chev{ transform: rotate(180deg); }
+
+    .dayBody{ padding:14px 14px 16px; border-top:1px solid rgba(255,255,255,.08); }
+
+    /* ---------- Progress bar per day ---------- */
+    .progressRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+      color: rgba(255,255,255,.82);
+      font-size:12px;
+    }
+    .bar{
+      flex:1;
+      height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
       overflow:hidden;
     }
-    .collapseHead{
-      padding:10px 12px;
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: rgba(0,200,255,.55);
+      border-right:1px solid rgba(0,200,255,.18);
+      transition: width .25s ease;
+    }
+    .progressTxt{
+      min-width: 120px;
+      text-align:right;
+      color: rgba(255,255,255,.78);
+      font-weight:900;
+    }
+
+    /* ---------- Exercise card ---------- */
+    .exCard{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      margin-top:12px;
       display:flex;
-      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+      transition: border-color .2s ease, background .2s ease, transform .08s ease;
+    }
+    .exCard:active{ transform: translateY(1px); }
+    .exMain{ flex:1; min-width:0; }
+    .exTitle{
+      display:flex;
       align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .muscleTag{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      color: rgba(255,255,255,.92);
+    }
+    .muscleTag .icon{
+      width:22px;height:22px;
+      border-radius:8px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.14);
+      border:1px solid rgba(0,200,255,.25);
+      color:#aeefff;
+      font-weight:1000;
+    }
+    .exerciseName{
+      font-weight:1000;
+      font-size:15px;
+      color:#fff;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 100%;
+    }
+
+    .chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color: rgba(255,255,255,.88);
+      font-weight:900;
+      font-size:13px;
+    }
+    .chip .cIcon{
+      width:22px;height:22px;
+      border-radius:999px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.12);
+      border:1px solid rgba(0,200,255,.22);
+      color:#baf2ff;
+      font-size:12px;
+      font-weight:1000;
+    }
+
+    .note{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color: rgba(255,255,255,.78);
+      font-size:13px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
+    .note .bubble{
+      width:28px;height:28px;
+      border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(242,196,0,.10);
+      border:1px solid rgba(242,196,0,.22);
+      color:#ffe7a1;
+      font-weight:1000;
+    }
+
+    .exDone{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:54px;
+      padding-top:6px;
+    }
+    .exDone input{
+      width:24px;height:24px;
+      accent-color: var(--brand);
       cursor:pointer;
     }
-    .collapseBody{
-      display:none;
-      padding:10px 12px 12px;
-      border-top:1px solid var(--line);
+
+    /* Completed state */
+    .exCard.done{
+      border-color: rgba(43,213,118,.30);
+      background: rgba(43,213,118,.07);
     }
-    .exList{
-      display:flex;
-      flex-direction:column;
+    .exCard.done .exerciseName,
+    .exCard.done .muscleTag{ opacity:.92; }
+    .exCard.done .chips,
+    .exCard.done .note{ opacity:.72; }
+
+    .doneBadge{
+      display:inline-flex;
+      align-items:center;
       gap:8px;
-      margin-top:8px;
-    }
-    .exItem{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(43,213,118,.28);
+      background: rgba(43,213,118,.10);
+      color: rgba(220,255,235,.95);
+      font-weight:1000;
       font-size:12px;
-      color:rgba(255,255,255,.84);
+      margin-left:auto;
     }
-    .exItem b{ color:#fff; }
+
+    /* ---------- Meta line (plan pill) ---------- */
+    .metaLine{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color: rgba(255,255,255,.72);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+
+    /* ---------- Paywall ---------- */
+    .paywall{
+      border:1px solid rgba(255,90,103,.35);
+      background: rgba(255,90,103,.10);
+      border-radius:16px;
+      padding:16px;
+      margin-top:14px;
+      color: rgba(255,255,255,.92);
+    }
+    .paywall b{ font-size:16px; }
+    .paywall .sub{
+      margin-top:6px;
+      color: rgba(255,255,255,.78);
+      line-height:1.4;
+    }
+
+    /* Plan pill coloring (kept from your original) */
+    .planPill{ font-weight: 1000 !important; border-width: 1px !important; }
+    .planOk{
+      background: rgba(43,213,118,.12) !important;
+      border-color: rgba(43,213,118,.35) !important;
+      color: rgba(220,255,235,.95) !important;
+    }
+    .planWarn{
+      background: rgba(255,211,110,.12) !important;
+      border-color: rgba(255,211,110,.35) !important;
+      color: rgba(255,244,210,.95) !important;
+    }
+    .planBad{
+      background: rgba(255,90,103,.12) !important;
+      border-color: rgba(255,90,103,.35) !important;
+      color: rgba(255,230,233,.95) !important;
+    }
+
+    /* ---------- Mobile tweaks ---------- */
+    @media (max-width: 700px){
+      .planCTA{ min-width: 0; justify-content:flex-start; }
+      .planBanner{ flex-direction:column; align-items:stretch; }
+      .todayCard{ flex-direction:column; align-items:stretch; }
+      .progressTxt{ min-width: 0; text-align:left; }
+      .exDone{ width:48px; }
+      .exCard{ padding:12px; }
+      .exerciseName{ white-space:normal; }
+      .chips .chip{ font-size:12px; }
+    }
   </style>
 </head>
 
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <h1>Constructor de Rutinas</h1>
-          <div class="pill">MAH FIT · Guardado Online (Sheets)</div>
+<body data-page="socio">
+  <header class="topbar">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <span>Hola, <b id="who"></b></span>
+      <span id="roleBadge" class="badge"></span>
+      <button id="btnLogout" class="btn ghost small">Salir</button>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+
+      <!-- ✅ Banner Plan (nuevo) -->
+      <div id="planBanner" class="planBanner" style="display:none;">
+        <div class="planLeft">
+          <div class="planTitleRow">
+            <div class="planTitle">Estado de tu plan</div>
+            <span id="planStatusPill" class="statusPill"><span class="dot"></span><span>-</span></span>
+          </div>
+          <div id="planBig" class="planBig">-</div>
+          <div id="planSmall" class="planSmall">-</div>
+        </div>
+        <div class="planCTA">
+          <a id="btnWhats" class="ctaBtn" href="#" target="_blank" rel="noopener">
+            <span>💬</span><span>Hablar por WhatsApp</span>
+          </a>
+          <button id="btnGoToday" class="ctaBtn" type="button" style="display:none;">
+            <span>🔥</span><span>Ir a hoy</span>
+          </button>
         </div>
       </div>
-      <div class="row" style="margin:0">
-        <div class="row" style="margin:0; align-items:center;">
-          <div class="db-badge" title="Estado de conexión" style="margin-right:8px;">
-            <span id="dbDot" class="db-dot connecting"></span>
-            <span id="dbText">Conectando…</span>
+
+      <div class="sp16"></div>
+
+      <div class="kpi">
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Plan</div>
+          <b id="kPlan">-</b>
+          <div class="kpiSub" id="kNivelRow">
+            <span class="kIco">🏷</span><span id="kNivel">(sin rutina)</span>
           </div>
         </div>
 
-        <button class="btn ghost small" id="btnVolver">Volver</button>
-        <button class="btn danger small" id="btnLogout">Salir</button>
-      </div>
-    </div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio semanal</div>
+          <b id="kCardio">-</b>
+          <div class="kpiSub">
+            <span class="kIco">🫀</span><span id="kCardio2">-</span>
+          </div>
+        </div>
 
-    <div class="grid">
-      <!-- Left -->
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Rutina semanal</div>
+          <b id="kDias">0</b>
+          <div class="kpiSub">
+            <span class="kIco">🗓</span><span>día(s) de entrenamiento</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp18"></div>
+
+      <!-- ✅ Entrenamiento de hoy (nuevo) -->
+      <div id="todayCard" class="todayCard" style="display:none;">
+        <div class="todayLeft">
+          <div class="todayTitle"><span class="flame">🔥</span> Entrenamiento de hoy</div>
+          <div id="todayMain" class="todayMain">-</div>
+          <div class="todayMeta">
+            <span id="todayMuscle" class="miniPill"><span class="mIco">🏋️</span><span>-</span></span>
+            <span id="todayCount" class="miniPill"><span class="mIco">#</span><span>-</span></span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <button id="btnOpenToday" class="ctaBtn" type="button"><span>✅</span><span>Ver rutina</span></button>
+        </div>
+      </div>
+
+      <div class="sp18"></div>
+
       <div class="card">
-        <h2>Datos de la Rutina</h2>
-
-        <div class="row">
-          <div class="col">
-            <label>Socio</label>
-            <input id="socioSearch" placeholder="Buscar socio por nombre o RUT..." />
-          </div>
+        <div class="head">
+          <strong>Tu plan de entrenamiento</strong>
+          <span class="pill">Por día (desplegable)</span>
         </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Selecciona Socio</label>
-            <select id="socioSelect"></select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Nivel</label>
-            <select id="nivel">
-              <option value="Principiante">Principiante</option>
-              <option value="Intermedio">Intermedio</option>
-              <option value="Avanzado">Avanzado</option>
-            </select>
-          </div>
-          <div class="col">
-            <label>Objetivo</label>
-            <select id="objetivo">
-              <option value="Hipertrofia">Hipertrofia</option>
-              <option value="Fuerza">Fuerza</option>
-              <option value="Pérdida de grasa">Pérdida de grasa</option>
-              <option value="Rendimiento">Rendimiento</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Fecha (opcional)</label>
-            <input id="fecha" placeholder="Ej: 2026-01-10" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Notas (opcional)</label>
-            <textarea id="notas" placeholder="Indicaciones generales, técnica, RIR, etc."></textarea>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <h2>Agregar Días</h2>
-        <div class="row">
-          <div class="col" style="max-width:120px">
-            <label>Día</label>
-            <select id="dayPicker">
-              <option value="1">Día 1</option>
-              <option value="2">Día 2</option>
-              <option value="3">Día 3</option>
-              <option value="4">Día 4</option>
-              <option value="5">Día 5</option>
-              <option value="6">Día 6</option>
-              <option value="7">Día 7</option>
-            </select>
-          </div>
-          <div class="col" style="max-width:180px; align-self:flex-end;">
-            <button class="btn" id="btnAddDay">Agregar día</button>
-          </div>
-        </div>
-
-        <div class="notice">
-          <b>Tip:</b> define el <b>Enfoque</b> por día (músculos principales) y agrega ejercicios con series/reps/carga/descanso.
-        </div>
-
-        <div class="hr"></div>
-
-        <h2>Acciones</h2>
-
-        <div class="footerBtns">
-          <button class="btn" id="btnGuardar">Guardar Rutina</button>
-          <button class="btn ghost" id="btnVista">Vista Socio</button>
-        </div>
-
-        <div class="hr"></div>
-
-        <h2>Plantillas</h2>
-
-        <div class="row">
-          <div class="col">
-            <label>Buscar Plantilla</label>
-            <input id="tplSearch" placeholder="Ej: Hipertrofia 4 días..." />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Selecciona Plantilla</label>
-            <select id="tplSelect"></select>
-          </div>
-        </div>
-
-        <div class="footerBtns">
-          <button class="btn ghost" id="btnCargarPlantilla">Cargar Plantilla</button>
-          <button class="btn" id="btnGuardarPlantilla">Guardar como Plantilla</button>
-        </div>
-
-        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
-        <div class="preview" id="previewBox"></div>
-
-        <div class="hr"></div>
-
-        <h2>Última rutina encontrada</h2>
-        <div class="lastCard" id="lastRoutineBox">
-          <div class="mutedLine">Selecciona un socio para ver su última rutina.</div>
-        </div>
+        <div class="body" id="rutinaBox"></div>
       </div>
 
-      <!-- Right -->
-      <div class="rightCol">
-        <div class="card">
-          <h2>Días de entrenamiento</h2>
-          <div class="daysArea" id="daysContainer"></div>
-        </div>
-      </div>
     </div>
-  </div>
-
-  <!-- Modal Vista Socio -->
-  <div class="modal" id="vistaModal">
-    <div class="modalBox">
-      <div class="modalTop">
-        <div class="modalTitle">Vista Socio</div>
-        <button class="btn ghost small" id="btnCerrarVista">Cerrar</button>
-      </div>
-      <div id="vistaContenido"></div>
-    </div>
-  </div>
+  </main>
 
   <script src="assets/app.js"></script>
-
   <script>
-    function $(sel){ return document.querySelector(sel); }
-    function showMsg(el, msg, ok=false){
+    function safe(v, fallback="-"){
+      return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
+    }
+
+    // ✅ calcula días restantes del plan (usa user.planFin)
+    function planInfo(planFin){
+      if(!planFin) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      const end = new Date(planFin);
+      if(isNaN(end.getTime())) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      end.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const diff = Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24));
+      const endTxt = end.toLocaleDateString("es-CL");
+
+      if(diff < 0) return { status:"expired", days:diff, endTxt, label:`Vencido (vence ${endTxt})` };
+      if(diff === 0) return { status:"today", days:0, endTxt, label:`Vence hoy (${endTxt})` };
+      return { status:"active", days:diff, endTxt, label:`Quedan ${diff} días (vence ${endTxt})` };
+    }
+
+    function planClass(status, days){
+      if(status === "active"){
+        if(typeof days === "number" && days <= 5) return "planWarn";
+        return "planOk";
+      }
+      if(status === "today") return "planWarn";
+      return "planBad";
+    }
+
+    function statusPillClass(status, days){
+      if(status === "active"){
+        if(typeof days === "number" && days <= 5) return "stWarn";
+        return "stOk";
+      }
+      if(status === "today") return "stWarn";
+      return "stBad";
+    }
+
+    function getDoneKey(rut, day, idx){
+      return `mahfit_done_${rut}_${day}_${idx}`;
+    }
+
+    function getDayProgress(rutSocio, day){
+      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
+      const total = ejercicios.length;
+      let done = 0;
+      ejercicios.forEach((e, i)=>{
+        const k = getDoneKey(rutSocio, day.dia, i);
+        if(localStorage.getItem(k) === "1") done++;
+      });
+      const pct = total ? Math.round((done/total)*100) : 0;
+      return { total, done, pct };
+    }
+
+    function renderDay(day, rutSocio){
+      const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
+      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
+      const total = ejercicios.length;
+
+      const prog = getDayProgress(rutSocio, day);
+
+      const cards = ejercicios.map((e, i)=>{
+        const doneKey = getDoneKey(rutSocio, day.dia, i);
+        const checked = localStorage.getItem(doneKey) === "1" ? "checked" : "";
+
+        const chipSeries = safe(e.series, "-");
+        const chipReps   = safe(e.reps, "-");
+        const chipCarga  = safe(e.carga, "-");
+        const chipDesc   = safe(e.descanso, "-");
+        const noteText = safe(e.obs, "");
+
+        return `
+          <div class="exCard ${checked ? "done" : ""}" data-excard="${doneKey}">
+            <div class="exMain">
+              <div class="exTitle">
+                <span class="muscleTag"><span class="icon">🏋️</span>${safe(e.musculo,"Músculo")}</span>
+                <span class="exerciseName">${safe(e.ejercicio,"Ejercicio")}</span>
+                ${checked ? `<span class="doneBadge">✓ Hecho</span>` : ``}
+              </div>
+
+              <div class="chips">
+                <span class="chip"><span class="cIcon">≡</span>${chipSeries} series</span>
+                <span class="chip"><span class="cIcon">↻</span>${chipReps}</span>
+                <span class="chip"><span class="cIcon">⚖</span>${chipCarga}</span>
+                <span class="chip"><span class="cIcon">⏱</span>${chipDesc}</span>
+              </div>
+
+              ${noteText && noteText !== "-" ? `
+                <div class="note">
+                  <div class="bubble">💬</div>
+                  <div>${noteText}</div>
+                </div>
+              ` : ``}
+            </div>
+
+            <div class="exDone">
+              <input type="checkbox" ${checked} data-done="${doneKey}" data-day="${safe(day.dia)}" data-idx="${i}">
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <details class="day" data-day="${safe(day.dia)}">
+          <summary class="daySum">
+            <div class="dayLeft">
+              <b>${safe(day.dia)}</b>
+              <div class="sub">
+                Enfocado: <span class="pill">${enfoque}</span>
+                · Ejercicios: <span class="pill">${total}</span>
+                ${total ? `· <span class="pill">${prog.pct}%</span>` : ``}
+              </div>
+            </div>
+            <div class="chev">⌄</div>
+          </summary>
+          <div class="dayBody">
+            ${total ? `
+              <div class="progressRow">
+                <div class="bar" aria-label="Progreso"><i style="width:${prog.pct}%"></i></div>
+                <div class="progressTxt"><span data-prog="${safe(day.dia)}">${prog.done} de ${prog.total} ✓</span></div>
+              </div>
+              ${cards}
+            ` : `<div class="notice"><b>Aún no hay ejercicios</b><br>Este día todavía no tiene ejercicios cargados 💪</div>`}
+          </div>
+        </details>
+      `;
+    }
+
+    // elige "día de hoy" simple: rota según día de semana sobre cantidad de días
+    function pickTodayIndex(nDias){
+      if(!nDias || nDias <= 0) return 0;
+      const dow = new Date().getDay(); // 0 dom ... 6 sáb
+      // Lunes=1 .. Domingo=0; usamos lunes como base
+      const map = (dow === 0) ? 6 : (dow - 1); // 0=lun ... 6=dom
+      return map % nDias;
+    }
+
+    function openOnly(detailsEl){
+      document.querySelectorAll("details.day[open]").forEach(d=>{
+        if(d !== detailsEl) d.removeAttribute("open");
+      });
+    }
+
+    function scrollToEl(el){
       if(!el) return;
-      el.textContent = msg;
-      el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
-    }
-    function nowISO(){ return new Date().toISOString(); }
-
-    // ✅ UUID seguro (evita el error rojo si no existe crypto.randomUUID)
-    function uid(){
-      try{
-        if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
-      }catch{}
-      return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+      el.scrollIntoView({ behavior:"smooth", block:"start" });
     }
 
-    // ==========================================================
-    // Base ejercicios
-    // ==========================================================
-    const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
-    const MUSCLES = Object.keys(EXERCISE_DB);
-
-    function dayCardTemplate(dayNum){
-      return `
-        <div class="dayCard" data-day="${dayNum}">
-          <div class="dayHead">
-            <div class="dayTitle">
-              <span>DÍA ${dayNum}</span>
-              <div class="dayBadges" id="badges-${dayNum}">
-                <span class="chip">Enfocado</span>
-              </div>
-            </div>
-            <div class="row" style="margin:0">
-              <button class="btn ghost small" data-addex="${dayNum}">+ Ejercicio</button>
-              <button class="btn danger small" data-removeday="${dayNum}">Quitar Día</button>
-            </div>
-          </div>
-
-          <div class="notice" style="margin-bottom:10px">
-            <b>Enfocado</b><br/>
-            Selecciona uno o más músculos para el enfoque del día.
-          </div>
-
-          <div class="focusGrid" id="focus-${dayNum}">
-            ${MUSCLES.map(m => `
-              <label class="focusItem">
-                <input type="checkbox" data-focus="${dayNum}" value="${m}"/>
-                <span>${m}</span>
-              </label>
-            `).join("")}
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>MÚSCULO</th>
-                <th>EJERCICIO</th>
-                <th>N° MAQ/VAR</th>
-                <th>OBS.</th>
-                <th>SERIES</th>
-                <th>REPS</th>
-                <th>CARGA</th>
-                <th>DESCANSO</th>
-                <th>ACCIÓN</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-${dayNum}"></tbody>
-          </table>
-        </div>
-      `;
+    // WhatsApp link (ajústalo a tu número si quieres)
+    function buildWhatsLink(user){
+      // ⚠️ Cambia este número por el de tu admin (con código país, sin +)
+      const phone = "56900000000";
+      const msg = `Hola! Soy ${safe(user.nombre,"")} (RUT: ${safe(user.rut,"")}). Quiero revisar mi plan en MAH FIT.`;
+      return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
-    function rowTemplate(dayNum){
-      const muscleOptions = MUSCLES.map(m => `<option value="${m}">${m}</option>`).join("");
-      return `
-        <tr>
-          <td>
-            <select class="tblInput tblBig" data-muscle="${dayNum}">
-              ${muscleOptions}
-            </select>
-          </td>
-          <td>
-            <input class="tblInput tblBig" list="dl-${dayNum}" placeholder="Escribe o elige" data-ex="${dayNum}"/>
-            <datalist id="dl-${dayNum}"></datalist>
-          </td>
-          <td><input class="tblInput tblSmall" placeholder="N° maq / variante" data-maq="${dayNum}"/></td>
-          <td><input class="tblInput tblMid" placeholder="Técnica / tempo / RIR.." data-obs="${dayNum}"/></td>
-          <td><input class="tblInput tblSmall" placeholder="3" data-series="${dayNum}"/></td>
-          <td><input class="tblInput tblSmall" placeholder="8-12" data-reps="${dayNum}"/></td>
-          <td><input class="tblInput tblSmall" placeholder="kg" data-carga="${dayNum}"/></td>
-          <td><input class="tblInput tblSmall" placeholder="Ej: 1:30" data-desc="${dayNum}"/></td>
-          <td><button class="btn ghost small" data-delrow="${dayNum}">Quitar</button></td>
-        </tr>
-      `;
-    }
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const user = requireAuth("SOCIO");
+      if(!user) return;
 
-    function updateDatalist(dayNum, muscle){
-      const dl = document.getElementById(`dl-${dayNum}`);
-      if(!dl) return;
-      dl.innerHTML = (EXERCISE_DB[muscle] || []).map(ex => `<option value="${ex}"></option>`).join("");
-    }
+      document.querySelector("#who").textContent = user.nombre;
+      document.querySelector("#roleBadge").textContent = "SOCIO";
 
-    function updateFocusBadges(dayNum){
-      const box = document.getElementById(`badges-${dayNum}`);
-      const checked = [...document.querySelectorAll(`input[data-focus="${dayNum}"]:checked`)].map(x=>x.value);
-      if(!box) return;
+      // WhatsApp CTA
+      const btnWhats = document.querySelector("#btnWhats");
+      btnWhats.href = buildWhatsLink(user);
 
-      if(checked.length === 0){
-        box.innerHTML = `<span class="chip">Enfocado</span>`;
-        return;
+      const box = document.querySelector("#rutinaBox");
+
+      // ✅ PLAN: mostrar días restantes y bloquear si está vencido/inactivo
+      const p = planInfo(user.planFin);
+
+      // Banner plan
+      const planBanner = document.querySelector("#planBanner");
+      const planStatusPill = document.querySelector("#planStatusPill");
+      const planBig = document.querySelector("#planBig");
+      const planSmall = document.querySelector("#planSmall");
+      const btnGoToday = document.querySelector("#btnGoToday");
+
+      planBanner.style.display = "flex";
+      planStatusPill.className = "statusPill " + statusPillClass(p.status, p.days);
+
+      // KPI Plan
+      const kPlan = document.querySelector("#kPlan");
+
+      if(p.status === "active"){
+        kPlan.textContent = `Activo · ${p.days} día(s)`;
+        kPlan.style.color = (p.days <= 5) ? "var(--warn)" : "var(--ok)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "ACTIVO";
+        planBig.textContent = `Te quedan ${p.days} día(s)`;
+        planSmall.textContent = `Vence el ${p.endTxt}. Mantén constancia y a darle 🔥`;
+      }else if(p.status === "today"){
+        kPlan.textContent = "Vence hoy";
+        kPlan.style.color = "var(--warn)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "ÚLTIMO DÍA";
+        planBig.textContent = "Tu plan vence hoy";
+        planSmall.textContent = `Vence el ${p.endTxt}. Si quieres seguir entrenando, solicita renovación ✅`;
+      }else{
+        kPlan.textContent = "Inactivo";
+        kPlan.style.color = "var(--bad)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "INACTIVO";
+        planBig.textContent = "Tu plan está inactivo 😕";
+        planSmall.textContent = "Renueva tu plan para disfrutar tus entrenamientos y asesorías.";
       }
-      box.innerHTML = checked.map(m=>`<span class="chip on">${m}</span>`).join("");
-    }
 
-    function wireDayActions(){
-      document.querySelectorAll("[data-addex]").forEach(btn=>{
-        btn.onclick = ()=>{
-          const d = btn.getAttribute("data-addex");
-          document.querySelector(`#tbody-${d}`).insertAdjacentHTML("beforeend", rowTemplate(d));
-          wireRowActions(d);
-        };
-      });
+      // Si NO está activo ni hoy → paywall
+      if(p.status !== "active" && p.status !== "today"){
+        document.querySelector("#kNivel").textContent = "Renueva tu plan";
+        document.querySelector("#kDias").textContent = "0";
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "—";
 
-      document.querySelectorAll("[data-removeday]").forEach(btn=>{
-        btn.onclick = ()=>{
-          const d = btn.getAttribute("data-removeday");
-          const card = document.querySelector(`.dayCard[data-day="${d}"]`);
-          if(card) card.remove();
-          addedDays.delete(String(d));
-        };
-      });
+        document.querySelector("#todayCard").style.display = "none";
 
-      document.querySelectorAll("input[data-focus]").forEach(ch=>{
-        ch.onchange = ()=>{
-          const d = ch.getAttribute("data-focus");
-          updateFocusBadges(d);
-        };
-      });
-    }
-
-    function wireRowActions(dayNum){
-      document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
-        btn.onclick = ()=>{
-          btn.closest("tr")?.remove();
-        };
-      });
-
-      document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
-        sel.onchange = ()=> updateDatalist(dayNum, sel.value);
-        updateDatalist(dayNum, sel.value);
-      });
-    }
-
-    function collectRoutine(){
-      const socioVal = $("#socioSelect").value;
-      const socio = getUsers().find(u=>String(u.rut) === String(socioVal));
-      if(!socio) throw new Error("Selecciona un socio válido.");
-
-      const meta = {
-        nivel: $("#nivel").value,
-        objetivo: $("#objetivo").value,
-        fecha: $("#fecha").value || "",
-        notas: $("#notas").value || ""
-      };
-
-      const dias = [];
-      document.querySelectorAll(".dayCard").forEach(card=>{
-        const d = card.getAttribute("data-day");
-        const enfoque = [...document.querySelectorAll(`input[data-focus="${d}"]:checked`)].map(x=>x.value);
-
-        const ejercicios = [];
-        const tbody = document.getElementById(`tbody-${d}`);
-        [...tbody.querySelectorAll("tr")].forEach(tr=>{
-          const musculo = tr.querySelector(`select[data-muscle="${d}"]`)?.value || "";
-          const ejercicio = tr.querySelector(`input[data-ex="${d}"]`)?.value || "";
-          const maq = tr.querySelector(`input[data-maq="${d}"]`)?.value || "";
-          const obs = tr.querySelector(`input[data-obs="${d}"]`)?.value || "";
-          const series = tr.querySelector(`input[data-series="${d}"]`)?.value || "";
-          const reps = tr.querySelector(`input[data-reps="${d}"]`)?.value || "";
-          const carga = tr.querySelector(`input[data-carga="${d}"]`)?.value || "";
-          const descanso = tr.querySelector(`input[data-desc="${d}"]`)?.value || "";
-
-          if(musculo && ejercicio){
-            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
-          }
-        });
-
-        dias.push({ dia:`Día ${d}`, enfoque, ejercicios });
-      });
-
-      if(dias.length === 0) throw new Error("Debes agregar al menos 1 día.");
-
-      return {
-        socio: { rut: socio.rut, nombre: socio.nombre },
-        meta,
-        dias
-      };
-    }
-
-    function formatRutinaText(routine, profName){
-      let out = "";
-      out += `RUTINA DE ENTRENAMIENTO\n`;
-      out += `Socio: ${routine.socio.nombre} (${routine.socio.rut})\n`;
-      out += `Nivel: ${routine.meta.nivel}\n`;
-      out += `Objetivo: ${routine.meta.objetivo}\n`;
-      if(routine.meta.fecha) out += `Fecha: ${routine.meta.fecha}\n`;
-      if(routine.meta.notas) out += `Notas: ${routine.meta.notas}\n`;
-      out += `Profesor: ${profName}\n`;
-      out += `\n==============================\n\n`;
-
-      routine.dias.forEach(day=>{
-        out += `${day.dia}\n`;
-        if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\n`;
-        out += `\n`;
-        day.ejercicios.forEach((e, i)=>{
-          out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\n`;
-          if(e.maq) out += `   Maq/Var: ${e.maq}\n`;
-          if(e.obs) out += `   Obs: ${e.obs}\n`;
-        });
-        out += `\n------------------------------\n\n`;
-      });
-
-      return out;
-    }
-
-    function showLastRoutineBoxPretty(lastV2){
-      const box = $("#lastRoutineBox");
-      if(!lastV2){
-        box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
+        box.innerHTML = `
+          <div class="paywall">
+            <b>Renueva tu plan para disfrutar tus entrenamientos y asesorías</b>
+            <div class="sub">
+              Tu membresía está <b>inactiva</b>. Para reactivar tu acceso, solicita la renovación con administración.
+            </div>
+          </div>
+        `;
         return;
       }
 
-      const r = lastV2.routine || lastV2;
-      const m = r.meta || {};
-      const dias = Array.isArray(r.dias) ? r.dias.length : 0;
-      const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
+      // Rutina
+      const rv2 = rutinaV2DeSocio(user.rut);
+      if(!rv2 || !rv2.routine){
+        document.querySelector("#kNivel").textContent = "(sin rutina)";
+        document.querySelector("#kDias").textContent = "0";
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "—";
+        document.querySelector("#todayCard").style.display = "none";
 
-      box.innerHTML = `
-        <div class="lastHead">
-          <div class="lastTitle">Última rutina encontrada</div>
-          <div class="pills">
-            <span class="pillMini">Nivel: <b>${m.nivel || "-"}</b></span>
-            <span class="pillMini">Días: <b>${dias}</b></span>
+        box.innerHTML = `
+          <div class="notice">
+            <b>Aún no tienes rutina asignada</b><br>
+            Tu plan está activo, pero todavía no se te asigna una rutina específica. Escríbenos y la dejamos lista 💪
           </div>
-        </div>
+        `;
+      }else{
+        const routine = rv2.routine;
+        const meta = routine.meta || {};
+        const cardio = meta.cardio || {};
 
-        <div class="mutedLine"><b>Últ. Modificación:</b> ${actualizado ? new Date(actualizado).toLocaleString() : "-"}</div>
-        <div class="mutedLine"><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+        // KPI
+        document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
 
-        <div style="margin-top:10px">
-          <button class="btn" id="btnCargarUltima">Cargar para editar</button>
-        </div>
-      `;
+        const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
+        dias.sort((a,b)=>{
+          const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
+          const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
+          return na-nb;
+        });
 
-      $("#btnCargarUltima").onclick = ()=>{
-        try{
-          loadRoutineIntoBuilder(r);
-          showMsg($("#msg"), "✅ Rutina cargada. Puedes editar y volver a guardar.", true);
-        }catch(err){
-          showMsg($("#msg"), err.message, false);
+        const nDias = (dias||[]).length || 0;
+        document.querySelector("#kDias").textContent = String(nDias);
+
+        // Cardio human
+        const cTipo = safe(cardio.tipo, "-");
+        const cMin  = safe(cardio.min, "-");
+        const cFreq = safe(cardio.freq, "-");
+        document.querySelector("#kCardio").textContent = (cTipo === "-" ? "-" : cTipo);
+        document.querySelector("#kCardio2").textContent =
+          (cMin === "-" && cFreq === "-") ? "—" : `${cMin} min · ${cFreq} veces`;
+
+        // Today card
+        const todayCard = document.querySelector("#todayCard");
+        const idxToday = pickTodayIndex(nDias);
+        const dayToday = dias[idxToday] || dias[0];
+
+        if(dayToday){
+          const enfoque = Array.isArray(dayToday.enfoque) ? dayToday.enfoque.join(" + ") : safe(dayToday.enfoque, "Full Body");
+          const ejercicios = Array.isArray(dayToday.ejercicios) ? dayToday.ejercicios : [];
+
+          document.querySelector("#todayMain").textContent = `${safe(dayToday.dia)} · ${enfoque}`;
+          document.querySelector("#todayMuscle").querySelector("span:last-child").textContent = enfoque;
+          document.querySelector("#todayCount").querySelector("span:last-child").textContent = `${ejercicios.length} ejercicio(s)`;
+
+          todayCard.style.display = "flex";
+          btnGoToday.style.display = "inline-flex";
+
+          // acciones hoy
+          const go = ()=>{
+            const det = document.querySelector(`details.day[data-day="${CSS.escape(safe(dayToday.dia))}"]`);
+            if(det){
+              det.setAttribute("open", "");
+              openOnly(det);
+              scrollToEl(det);
+            }
+          };
+          document.querySelector("#btnOpenToday").addEventListener("click", go);
+          btnGoToday.addEventListener("click", go);
+        }else{
+          todayCard.style.display = "none";
+          btnGoToday.style.display = "none";
         }
-      };
-    }
 
-    function clearBuilderDays(){
-      $("#daysContainer").innerHTML = "";
-      addedDays.clear();
-    }
-
-    function extractDayNumber(dayLabel){
-      const m = String(dayLabel || "").match(/\d+/);
-      return m ? String(m[0]) : "1";
-    }
-
-    function addDayIfNotExists(dayNum){
-      if(addedDays.has(String(dayNum))) return;
-      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
-      addedDays.add(String(dayNum));
-      wireDayActions();
-      updateFocusBadges(dayNum);
-    }
-
-    function loadRoutineIntoBuilder(routine){
-      $("#nivel").value = routine.meta?.nivel || "Principiante";
-      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
-      $("#fecha").value = routine.meta?.fecha || "";
-      $("#notas").value = routine.meta?.notas || "";
-
-      clearBuilderDays();
-
-      const dias = Array.isArray(routine.dias) ? routine.dias : [];
-      if(dias.length === 0){
-        $("#dayPicker").value = "1";
-        $("#btnAddDay").click();
-        return;
-      }
-
-      dias.forEach(day=>{
-        const dayNum = extractDayNumber(day.dia);
-        addDayIfNotExists(dayNum);
-
-        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
-        enfoqueArr.forEach(m=>{
-          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
-          if(cb) cb.checked = true;
-        });
-        updateFocusBadges(dayNum);
-
-        const tbody = document.getElementById(`tbody-${dayNum}`);
-        tbody.innerHTML = "";
-
-        (day.ejercicios || []).forEach(ex=>{
-          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
-          wireRowActions(dayNum);
-
-          const tr = tbody.querySelector("tr:last-child");
-          if(!tr) return;
-
-          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
-          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
-          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
-          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
-          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
-          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
-          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
-          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
-
-          if(selM){
-            selM.value = ex.musculo || selM.value;
-            updateDatalist(dayNum, selM.value);
-          }
-          if(inEx) inEx.value = ex.ejercicio || "";
-          if(inMaq) inMaq.value = ex.maq || "";
-          if(inObs) inObs.value = ex.obs || "";
-          if(inSeries) inSeries.value = ex.series || "";
-          if(inReps) inReps.value = ex.reps || "";
-          if(inCarga) inCarga.value = ex.carga || "";
-          if(inDesc) inDesc.value = ex.descanso || "";
-        });
-      });
-    }
-
-    function renderVistaSocio(routine, profesorNombre){
-      const cont = $("#vistaContenido");
-      const m = routine.meta || {};
-      const dias = routine.dias || [];
-
-      cont.innerHTML = `
-        <div class="socPreviewCard">
-          <div class="socMeta">
-            <div><b>Socio:</b> ${routine.socio?.nombre || "-"} (${routine.socio?.rut || "-"})</div>
-            <div><b>Nivel:</b> ${m.nivel || "-"}</div>
-            <div><b>Objetivo:</b> ${m.objetivo || "-"}</div>
-            <div><b>Fecha:</b> ${m.fecha || "-"}</div>
+        // Render rutina
+        box.innerHTML = `
+          <div class="metaLine">
+            <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
+            <span class="pill">Tu objetivo: ${safe(meta.objetivo,"-")}</span>
+            <span class="pill">Actualizado: ${safe(meta.fecha,"-")}</span>
           </div>
-          ${m.notas ? `<div class="mutedLine" style="margin-top:10px"><b>Notas:</b> ${m.notas}</div>` : ``}
-          <div class="mutedLine" style="margin-top:8px"><b>Profesor:</b> ${profesorNombre || "-"}</div>
-        </div>
+          ${dias.map(d=>renderDay(d, user.rut)).join("")}
+        `;
 
-        ${dias.map((d, idx)=>`
-          <div class="collapseDay" data-cday="${idx}">
-            <div class="collapseHead">
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <b style="letter-spacing:.2px">${d.dia || `Día ${idx+1}`}</b>
-                ${(d.enfoque||[]).map(x=>`<span class="chip on">${x}</span>`).join("")}
-                ${(d.enfoque||[]).length===0 ? `<span class="chip">Sin enfoque</span>` : ``}
-              </div>
-              <span style="opacity:.8">Abrir/Cerrar</span>
-            </div>
-            <div class="collapseBody" id="cbody-${idx}">
-              ${
-                (d.ejercicios||[]).length === 0
-                ? `<div class="mutedLine">No hay ejercicios cargados para este día.</div>`
-                : `<div class="exList">
-                    ${(d.ejercicios||[]).map((e,i)=>`
-                      <div class="exItem">
-                        <b>${i+1}. ${e.ejercicio || "-"}</b> — <span style="opacity:.85">${e.musculo || "-"}</span><br/>
-                        <span style="opacity:.85">
-                          Series: <b>${e.series||"-"}</b> · Reps: <b>${e.reps||"-"}</b> · Carga: <b>${e.carga||"-"}</b> · Descanso: <b>${e.descanso||"-"}</b>
-                        </span>
-                        ${e.maq ? `<div style="opacity:.78;margin-top:6px">Maq/Var: ${e.maq}</div>` : ``}
-                        ${e.obs ? `<div style="opacity:.78;margin-top:6px">Obs: ${e.obs}</div>` : ``}
-                      </div>
-                    `).join("")}
-                  </div>`
+        // Solo un día abierto a la vez
+        box.querySelectorAll("details.day").forEach(det=>{
+          det.addEventListener("toggle", ()=>{
+            if(det.open) openOnly(det);
+          });
+        });
+
+        // Done checkbox interactions + update progress bar
+        box.querySelectorAll('[data-done]').forEach(chk=>{
+          chk.addEventListener("change", ()=>{
+            const key = chk.getAttribute("data-done");
+            const dayName = chk.getAttribute("data-day");
+            localStorage.setItem(key, chk.checked ? "1" : "0");
+
+            // toggle card style
+            const card = box.querySelector(`[data-excard="${CSS.escape(key)}"]`);
+            if(card){
+              card.classList.toggle("done", chk.checked);
+              // badge
+              const titleRow = card.querySelector(".exTitle");
+              const existing = card.querySelector(".doneBadge");
+              if(chk.checked && !existing){
+                const b = document.createElement("span");
+                b.className = "doneBadge";
+                b.textContent = "✓ Hecho";
+                titleRow.appendChild(b);
               }
-            </div>
-          </div>
-        `).join("")}
-      `;
+              if(!chk.checked && existing) existing.remove();
+            }
 
-      cont.querySelectorAll(".collapseDay").forEach(cd=>{
-        const idx = cd.getAttribute("data-cday");
-        const head = cd.querySelector(".collapseHead");
-        const body = cd.querySelector(`#cbody-${idx}`);
-        head.onclick = ()=> body.style.display = (body.style.display === "block") ? "none" : "block";
-      });
-    }
+            // update progress bar + text for that day
+            const det = box.querySelector(`details.day[data-day="${CSS.escape(dayName)}"]`);
+            if(det){
+              const dayObj = dias.find(x => safe(x.dia) === safe(dayName));
+              if(dayObj){
+                const prog = getDayProgress(user.rut, dayObj);
+                const barI = det.querySelector(".bar > i");
+                if(barI) barI.style.width = prog.pct + "%";
+                const txt = det.querySelector(`[data-prog="${CSS.escape(dayName)}"]`);
+                if(txt) txt.textContent = `${prog.done} de ${prog.total} ✓`;
 
-    function openVistaModal(){ $("#vistaModal").style.display = "flex"; }
-    function closeVistaModal(){ $("#vistaModal").style.display = "none"; }
-
-    function filterSocios(q){
-      q = String(q||"").toLowerCase().trim();
-      const users = getUsers().filter(u=>{
-        const rol = String(u.rol || u.role || "").toUpperCase().trim();
-        const activo = (u.activo === false) ? false : true;
-        return rol === "SOCIO" && activo;
-      });
-      if(!q) return users;
-      return users.filter(u =>
-        (u.nombre||"").toLowerCase().includes(q) ||
-        (u.rut||"").toLowerCase().includes(q)
-      );
-    }
-
-    async function preloadCoreData(){
-      if(typeof window.preloadCoreData === "function"){
-        try{ await window.preloadCoreData(); return; }catch(e){ console.warn(e); }
+                // update sub pill pct (en summary)
+                const sub = det.querySelector(".dayLeft .sub");
+                if(sub){
+                  // reemplaza el último pill de % si existe
+                  const pills = sub.querySelectorAll(".pill");
+                  const last = pills[pills.length - 1];
+                  if(last && last.textContent.includes("%")){
+                    last.textContent = `${prog.pct}%`;
+                  }else if(prog.total){
+                    const pEl = document.createElement("span");
+                    pEl.className = "pill";
+                    pEl.textContent = `${prog.pct}%`;
+                    sub.appendChild(document.createTextNode(" · "));
+                    sub.appendChild(pEl);
+                  }
+                }
+              }
+            }
+          });
+        });
       }
-      if(typeof window.syncDown === "function"){
-        try{ await window.syncDown(); return; }catch(e){ console.warn(e); }
-      }
-      try{
-        if(typeof window.apiGet === "function" && typeof window.setUsers === "function"){
-          const u = await apiGet("USERS");
-          const list = (u.users || []).map(x=>({
-            rut: String(x.rut||"").trim().toUpperCase(),
-            nombre: x.nombre || "",
-            email: x.email || "",
-            pass: String(x.pass || ""),
-            rol: x.rol ?? x.role ?? "SOCIO",
-            activo: (x.activo === false) ? false : true,
-            creadoEn: x.creadoEn || ""
-          }));
-          setUsers(list);
-        }
-      }catch(e){
-        console.warn("No pude precargar USERS.", e);
-      }
-    }
 
-    // ✅ Guardado REAL (await) para evitar "error rojo" silencioso
-    async function saveRutinaV2Online({rutSocio, routine, creadoPorRut}){
-      const payload = {
-        rutSocio: String(rutSocio||"").trim().toUpperCase(),
-        routine_json: JSON.stringify(routine),
-        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
-        actualizadoEn: nowISO()
-      };
-      await apiPost("RUTINAS_V2", payload);
-
-      // cache local
-      const list = getRutinasV2();
-      const idx = list.findIndex(x => String(x.rutSocio||"").toUpperCase() === payload.rutSocio);
-      const localObj = {
-        rutSocio: payload.rutSocio,
-        routine,
-        creadoPorRut: payload.creadoPorRut,
-        actualizadoEn: payload.actualizadoEn
-      };
-      if(idx >= 0) list[idx] = localObj; else list.push(localObj);
-      setRutinasV2(list);
-    }
-
-    async function saveRutinaTxtOnline({rutSocio, titulo, detalle, creadoPorRut}){
-      const payload = {
-        rutSocio: String(rutSocio||"").trim().toUpperCase(),
-        titulo: titulo || "",
-        detalle: detalle || "",
-        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
-        creadoEn: nowISO()
-      };
-      await apiPost("RUTINAS_TXT", payload);
-
-      // cache local (1 por socio)
-      const rutinas = getRutinas();
-      const idx = rutinas.findIndex(r => String(r.rutSocio||"").toUpperCase() === payload.rutSocio);
-      const localObj = { id: (idx>=0 ? rutinas[idx].id : uid()), ...payload };
-      if(idx >= 0) rutinas[idx] = localObj; else rutinas.push(localObj);
-      setRutinas(rutinas);
-    }
-
-    const addedDays = new Set();
-
-    document.addEventListener("DOMContentLoaded", async ()=>{
-      let me = requireAuth("FUNCIONARIO");
-      if(!me) return;
-
-      await preloadCoreData();
-
-      $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
-      $("#btnLogout").onclick = ()=>{
-        localStorage.removeItem("mahfit_session");
+      document.querySelector("#btnLogout").addEventListener("click", ()=>{
+        clearSession();
         window.location.href = "index.html";
-      };
-
-      $("#btnCerrarVista").onclick = closeVistaModal;
-      $("#vistaModal").addEventListener("click", (e)=>{
-        if(e.target.id === "vistaModal") closeVistaModal();
       });
-
-      const socioSelect = $("#socioSelect");
-      const search = $("#socioSearch");
-
-      function renderSocios(list){
-        const current = socioSelect.value || "";
-        socioSelect.innerHTML = "";
-        list.forEach(u=>{
-          const opt = document.createElement("option");
-          opt.value = u.rut;
-          opt.textContent = `${u.nombre} (${u.rut})`;
-          socioSelect.appendChild(opt);
-        });
-        if(current && [...socioSelect.options].some(o=>o.value===current)){
-          socioSelect.value = current;
-        }
-      }
-
-      renderSocios(filterSocios(""));
-
-      search.addEventListener("input", ()=> renderSocios(filterSocios(search.value)));
-      search.addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
-
-      socioSelect.addEventListener("change", ()=>{
-        const rut = socioSelect.value;
-        const last = rutinaV2DeSocio(rut);
-        showLastRoutineBoxPretty(last);
-      });
-
-      $("#btnAddDay").onclick = ()=>{
-        const d = String($("#dayPicker").value);
-        if(addedDays.has(d)){
-          showMsg($("#msg"), `⚠️ Día ${d} ya está agregado.`, false);
-          return;
-        }
-        $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
-        addedDays.add(d);
-        wireDayActions();
-        updateFocusBadges(d);
-        showMsg($("#msg"), `Agregado: Día ${d}`, true);
-      };
-
-      $("#dayPicker").value = "1";
-      $("#btnAddDay").click();
-
-      setTimeout(()=>{
-        const rut = socioSelect.value;
-        if(rut){
-          const last = rutinaV2DeSocio(rut);
-          showLastRoutineBoxPretty(last);
-        }
-      }, 150);
-
-      // ✅ GUARDAR RUTINA (FIX REAL)
-      $("#btnGuardar").onclick = async ()=>{
-        const msgEl = $("#msg");
-        try{
-          showMsg(msgEl, "Guardando rutina…", true);
-
-          const routine = collectRoutine();
-          const rutinaId = uid();
-
-          // 1) ITEMS (histórico) -> ahora SÍ esperamos
-          await apiPost("RUTINAS_ITEMS", {
-            rutinaId,
-            routine,
-            profesorRut: me.rut,
-            profesorNombre: me.nombre
-          });
-
-          // 2) V2 (por socio) -> await real
-          await saveRutinaV2Online({
-            rutSocio: routine.socio.rut,
-            routine,
-            creadoPorRut: me.rut
-          });
-
-          // 3) TXT legacy -> await real
-          const txt = formatRutinaText(routine, me.nombre);
-          await saveRutinaTxtOnline({
-            rutSocio: routine.socio.rut,
-            titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
-            detalle: txt,
-            creadoPorRut: me.rut
-          });
-
-          // (Opcional) refrescar desde Sheets para asegurar
-          if(typeof syncDown === "function"){
-            try{ await syncDown(); }catch(e){ console.warn("syncDown falló:", e); }
-          }
-
-          const last = rutinaV2DeSocio(routine.socio.rut);
-          showLastRoutineBoxPretty(last);
-
-          showMsg(msgEl, "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
-        }catch(err){
-          console.error(err);
-          const msg = (err && err.message) ? err.message : String(err);
-          showMsg(msgEl, "⛔ Error al guardar: " + msg, false);
-        }
-      };
-
-      $("#btnVista").onclick = ()=>{
-        try{
-          const routine = collectRoutine();
-          renderVistaSocio(routine, me.nombre);
-          openVistaModal();
-        }catch(err){
-          showMsg($("#msg"), err.message, false);
-        }
-      };
-
-      // Plantillas (igual que antes)
-      const tplSearch = $("#tplSearch");
-      const tplSelect = $("#tplSelect");
-      let plantillasCache = [];
-
-      function normalizeTplJson(x){
-        if(!x) return null;
-        if(typeof x === "string"){
-          try{ return JSON.parse(x); }catch{ return null; }
-        }
-        return x;
-      }
-
-      function plantillaToOptionText(p){
-        const n = p.nombrePlantilla || "Plantilla sin nombre";
-        const niv = p.nivel || "-";
-        const obj = p.objetivo || "-";
-        const d = p.dias || "-";
-        const vis = (String(p.visibility || "").toUpperCase() === "PUBLICA") ? "🌍" : "🔒";
-        return `${vis} ${n} · ${obj} · ${niv} · ${d} días`;
-      }
-
-      function renderPlantillas(q){
-        q = String(q||"").toLowerCase().trim();
-        const list = !q ? plantillasCache : plantillasCache.filter(p =>
-          String(p.nombrePlantilla||"").toLowerCase().includes(q) ||
-          String(p.objetivo||"").toLowerCase().includes(q) ||
-          String(p.nivel||"").toLowerCase().includes(q)
-        );
-
-        const current = tplSelect.value || "";
-        tplSelect.innerHTML = "";
-
-        list.forEach(p=>{
-          const opt = document.createElement("option");
-          opt.value = p.templateId;
-          opt.textContent = plantillaToOptionText(p);
-          tplSelect.appendChild(opt);
-        });
-
-        if(current && [...tplSelect.options].some(o=>o.value === current)){
-          tplSelect.value = current;
-        }
-      }
-
-      async function cargarPlantillasDesdeSheets(){
-        try{
-          const resp = await apiGet("PLANTILLAS_V2");
-          const rows = (resp && resp.plantillas_v2) ? resp.plantillas_v2 : [];
-
-          const myRut = String(me.rut || "").trim().toUpperCase();
-          plantillasCache = rows.filter(p=>{
-            const vis = String(p.visibility||"").toUpperCase();
-            const owner = String(p.ownerRut||"").trim().toUpperCase();
-            return vis === "PUBLICA" || owner === myRut;
-          }).map(p=>{
-            return {
-              templateId: p.templateId || p.id || uid(),
-              nombrePlantilla: p.nombrePlantilla || p.nombre || "",
-              nivel: p.nivel || "",
-              objetivo: p.objetivo || "",
-              dias: Number(p.dias || 0),
-              visibility: p.visibility || "PRIVADA",
-              ownerRut: p.ownerRut || "",
-              ownerNombre: p.ownerNombre || "",
-              template_json: p.template_json ?? p.template ?? null,
-              creadoEn: p.creadoEn || "",
-              actualizadoEn: p.actualizadoEn || ""
-            };
-          });
-
-          renderPlantillas("");
-        }catch(e){
-          console.error(e);
-          showMsg($("#msg"), "⚠️ No pude cargar plantillas (revisa API / permisos).", false);
-        }
-      }
-
-      tplSearch?.addEventListener("input", ()=> renderPlantillas(tplSearch.value));
-
-      $("#btnCargarPlantilla").onclick = ()=>{
-        try{
-          const id = tplSelect.value;
-          const tpl = plantillasCache.find(p => String(p.templateId) === String(id));
-          if(!tpl) throw new Error("Selecciona una plantilla válida.");
-
-          const tplRoutine = normalizeTplJson(tpl.template_json);
-          if(!tplRoutine) throw new Error("La plantilla no tiene template_json válido.");
-
-          loadRoutineIntoBuilder({
-            meta: tplRoutine.meta || {},
-            dias: tplRoutine.dias || []
-          });
-
-          showMsg($("#msg"), "📋 Plantilla cargada. Ahora puedes editar y guardar al socio.", true);
-        }catch(err){
-          showMsg($("#msg"), err.message, false);
-        }
-      };
-
-      $("#btnGuardarPlantilla").onclick = async ()=>{
-        try{
-          const r = collectRoutine();
-          const nombre = prompt("Nombre de la plantilla:", `${r.meta.objetivo} ${r.dias.length} días · ${r.meta.nivel}`) || "";
-          if(!nombre.trim()) throw new Error("Debes colocar un nombre de plantilla.");
-
-          const vis = (prompt('Visibilidad: escribe "PUBLICA" o "PRIVADA"', "PRIVADA") || "PRIVADA").trim().toUpperCase();
-          const visibility = (vis === "PUBLICA") ? "PUBLICA" : "PRIVADA";
-
-          const templateRoutine = { meta: r.meta, dias: r.dias };
-
-          await apiPost("PLANTILLAS_V2", {
-            templateId: uid(),
-            nombrePlantilla: nombre.trim(),
-            nivel: r.meta.nivel,
-            objetivo: r.meta.objetivo,
-            dias: r.dias.length,
-            visibility,
-            ownerRut: String(me.rut||"").trim().toUpperCase(),
-            ownerNombre: me.nombre || "",
-            template_json: JSON.stringify(templateRoutine),
-            creadoEn: nowISO(),
-            actualizadoEn: nowISO()
-          });
-
-          showMsg($("#msg"), "✅ Plantilla guardada. Recargando lista…", true);
-          await cargarPlantillasDesdeSheets();
-        }catch(err){
-          showMsg($("#msg"), err.message, false);
-        }
-      };
-
-      await cargarPlantillasDesdeSheets();
     });
   </script>
 </body>
