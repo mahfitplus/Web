@@ -19,7 +19,6 @@
       --bad:#ff5a67;
       --pri:#7c5cff;
       --pri2:#23a6ff;
-      --chip:#1a2538;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
     }
@@ -120,16 +119,7 @@
       padding: 0 18px;
     }
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr; /* izquierda más ancha */
-      gap: 16px;
-      align-items:start;
-    }
-    @media (max-width: 980px){
-      .grid2{ grid-template-columns: 1fr; }
-    }
-
+    /* ✅ 1 sola columna */
     .col{
       display:flex;
       flex-direction:column;
@@ -160,7 +150,6 @@
       color: rgba(255,255,255,.90);
     }
     .muted{ color: var(--mut); font-size: 13px; font-weight:700; }
-
     .cardBody{ padding: 14px; }
 
     /* inputs */
@@ -299,7 +288,7 @@
       z-index: 20;
     }
     .modal{
-      width: min(520px, 100%);
+      width: min(560px, 100%);
       background: rgba(18,27,42,.92);
       border:1px solid rgba(255,255,255,.12);
       border-radius: 18px;
@@ -331,443 +320,497 @@
 
 <body data-page="funcionario">
 
-  <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+<header class="topbar">
+  <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
 
-    <div class="nav-right">
-      <div class="db-indicator">
-        <span id="dbDot" class="db-dot connecting"></span>
-        <span id="dbText" class="db-text">Conectando…</span>
-      </div>
-
-      <span>Hola, <b id="who"></b></span>
-      <span id="roleBadge" class="badge"></span>
-
-      <button id="btnRutinas" class="btn ghost small">Rutinas</button>
-      <button id="btnLogout" class="btn ghost small">Salir</button>
+  <div class="nav-right">
+    <div class="db-indicator">
+      <span id="dbDot" class="db-dot connecting"></span>
+      <span id="dbText" class="db-text">Conectando…</span>
     </div>
-  </header>
 
-  <div class="wrap">
-    <div class="grid2">
+    <span>Hola, <b id="who"></b></span>
+    <span id="roleBadge" class="badge"></span>
 
-      <!-- ✅ COLUMNA IZQUIERDA (apilada) -->
-      <div class="col">
-
-        <!-- ========================================================= -->
-        <!-- 🟦 CREAR USUARIO                                          -->
-        <!-- ========================================================= -->
-        <div class="card">
-          <div class="cardHead">
-            <div>
-              <div class="cardTitle">Crear Usuario</div>
-              <div class="muted">Socios y funcionarios</div>
-            </div>
-            <span class="pill">Alta rápida</span>
-          </div>
-
-          <div class="cardBody">
-            <form id="createUserForm">
-              <div class="row">
-                <input id="newNombre" placeholder="Nombre" required />
-                <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
-              </div>
-
-              <div class="row">
-                <input id="newEmail" placeholder="Email (opcional)" />
-                <input id="newPass" placeholder="Clave" required />
-              </div>
-
-              <div class="row">
-                <select id="newRol">
-                  <option value="SOCIO">SOCIO</option>
-                  <option value="FUNCIONARIO">FUNCIONARIO</option>
-                </select>
-                <button class="btn primary" type="submit">Crear</button>
-              </div>
-            </form>
-
-            <div id="msgUser" class="msg"></div>
-          </div>
-        </div>
-
-        <!-- ✅ CRM AHORA VA DEBAJO DE CREAR USUARIO -->
-        <div class="card">
-          <div class="cardHead">
-            <div>
-              <div class="cardTitle">CRM Usuarios</div>
-              <div class="muted">Activa/desactiva y renueva membresías</div>
-
-              <div class="filters">
-                <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
-                <select id="roleFilter">
-                  <option value="ALL">Todos</option>
-                  <option value="SOCIO">Solo socios</option>
-                  <option value="FUNCIONARIO">Solo funcionarios</option>
-                </select>
-              </div>
-            </div>
-
-            <span class="pill">Lista</span>
-          </div>
-
-          <div class="tableWrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>NOMBRE</th>
-                  <th>RUT/USUARIO</th>
-                  <th>ROL</th>
-                  <th>ACTIVO</th>
-                  <th>PLAN</th>
-                  <th>ACCIONES</th>
-                </tr>
-              </thead>
-              <tbody id="usersTbody"></tbody>
-            </table>
-          </div>
-
-          <div class="cardBody">
-            <div class="muted">Tip: escribe en el buscador y se filtra altiro.</div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ✅ COLUMNA DERECHA (panel opcional para que no quede vacío) -->
-      <div class="col">
-        <div class="card">
-          <div class="cardHead">
-            <div>
-              <div class="cardTitle">Panel rápido</div>
-              <div class="muted">Accesos y recordatorios</div>
-            </div>
-            <span class="pill">Opcional</span>
-          </div>
-          <div class="cardBody">
-            <div class="muted" style="line-height:1.5;">
-              • Puedes usar este espacio para: ventas de planes (Webpay/TiendaUp), reportes, métricas, etc.<br><br>
-              • Si no lo quieres, dime y lo removemos (queda solo 1 columna).
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <button id="btnRutinas" class="btn ghost small">Rutinas</button>
+    <button id="btnLogout" class="btn ghost small">Salir</button>
   </div>
+</header>
 
-  <!-- MODAL RENOVAR -->
-  <div id="modalBack" class="modalBack">
-    <div class="modal">
-      <div class="modalHead">
+<div class="wrap">
+  <div class="col">
+
+    <!-- CREAR -->
+    <div class="card">
+      <div class="cardHead">
         <div>
-          <strong id="mTitle">Renovar plan</strong>
-          <div class="muted" id="mSub">—</div>
+          <div class="cardTitle">Crear Usuario</div>
+          <div class="muted">Socios y funcionarios</div>
         </div>
-        <button id="mClose" class="btn small ghost">✕</button>
+        <span class="pill">Alta rápida</span>
       </div>
 
-      <div class="modalBody">
-        <div class="row">
-          <select id="mPlanTipo">
-            <option value="">(sin tipo)</option>
-            <option value="MENSUAL">MENSUAL</option>
-            <option value="TRIMESTRAL">TRIMESTRAL</option>
-            <option value="SEMESTRAL">SEMESTRAL</option>
-            <option value="ANUAL">ANUAL</option>
-          </select>
+      <div class="cardBody">
+        <form id="createUserForm">
+          <div class="row">
+            <input id="newNombre" placeholder="Nombre" required />
+            <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
+          </div>
 
-          <select id="mActivar">
-            <option value="1">Activar</option>
-            <option value="0">No activar</option>
-          </select>
-        </div>
+          <div class="row">
+            <input id="newEmail" placeholder="Email (opcional)" />
+            <input id="newPass" placeholder="Clave" required />
+          </div>
 
-        <div class="row">
-          <input id="mInicio" type="date" />
-          <input id="mFin" type="date" />
-        </div>
+          <div class="row">
+            <select id="newRol">
+              <option value="SOCIO">SOCIO</option>
+              <option value="FUNCIONARIO">FUNCIONARIO</option>
+            </select>
+            <button class="btn primary" type="submit">Crear</button>
+          </div>
+        </form>
 
-        <div class="muted" style="margin-top:10px;">
-          Consejo: define inicio y fin. El socio verá los días restantes en su pantalla.
-        </div>
-
-        <div id="mMsg" class="msg"></div>
-      </div>
-
-      <div class="modalFoot">
-        <button id="mCancel" class="btn">Cancelar</button>
-        <button id="mSave" class="btn primary">Guardar renovación</button>
+        <div id="msgUser" class="msg"></div>
       </div>
     </div>
+
+    <!-- CRM -->
+    <div class="card">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">CRM Usuarios</div>
+          <div class="muted">Activa/desactiva y renueva membresías</div>
+
+          <div class="filters">
+            <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+            <select id="roleFilter">
+              <option value="ALL">Todos</option>
+              <option value="SOCIO">Solo socios</option>
+              <option value="FUNCIONARIO">Solo funcionarios</option>
+            </select>
+          </div>
+        </div>
+
+        <span class="pill">Lista</span>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>RUT/USUARIO</th>
+              <th>ROL</th>
+              <th>ACTIVO</th>
+              <th>PLAN</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="cardBody">
+        <div class="muted">Tip: escribe en el buscador y se filtra altiro.</div>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <script src="assets/app.js"></script>
+<!-- MODAL RENOVAR (MEJORADO: SUMAR DÍAS + FIN AUTOMÁTICO) -->
+<div id="modalBack" class="modalBack">
+  <div class="modal">
+    <div class="modalHead">
+      <div>
+        <strong id="mTitle">Renovar plan</strong>
+        <div class="muted" id="mSub">—</div>
+      </div>
+      <button id="mClose" class="btn small ghost">✕</button>
+    </div>
 
-  <script>
-    // ---------- helpers ----------
-    function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
+    <div class="modalBody">
+      <div class="row">
+        <select id="mPlanTipo">
+          <option value="">(sin tipo)</option>
+          <option value="MENSUAL">MENSUAL</option>
+          <option value="TRIMESTRAL">TRIMESTRAL</option>
+          <option value="SEMESTRAL">SEMESTRAL</option>
+          <option value="ANUAL">ANUAL</option>
+        </select>
 
-    function ymdFromAny(d){
-      if(!d) return "";
-      const dt = new Date(d);
-      if(isNaN(dt.getTime())) return "";
-      const y = dt.getFullYear();
-      const m = String(dt.getMonth()+1).padStart(2,"0");
-      const da = String(dt.getDate()).padStart(2,"0");
-      return `${y}-${m}-${da}`;
+        <select id="mActivar">
+          <option value="1">Activar</option>
+          <option value="0">No activar</option>
+        </select>
+      </div>
+
+      <!-- ✅ INICIO + DURACIÓN -->
+      <div class="row">
+        <input id="mInicio" type="date" />
+        <select id="mDias">
+          <option value="1">+ 1 día</option>
+          <option value="7">+ 7 días</option>
+          <option value="30">+ 30 días (Mensual)</option>
+          <option value="90">+ 90 días (Trimestral)</option>
+          <option value="180">+ 180 días (Semestral)</option>
+          <option value="365">+ 365 días (Anual)</option>
+          <option value="0">Personalizado…</option>
+        </select>
+      </div>
+
+      <!-- ✅ FIN + PREVIEW -->
+      <div class="row">
+        <input id="mFin" type="date" />
+        <div class="pill" id="mPreview" style="justify-content:center;">—</div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Consejo: elige inicio + duración y el fin se calcula solo. (Si usas “Personalizado…”, ajusta el fin manual).
+      </div>
+
+      <div id="mMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="mCancel" class="btn">Cancelar</button>
+      <button id="mSave" class="btn primary">Guardar renovación</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+
+<script>
+  function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
+
+  function ymdFromAny(d){
+    if(!d) return "";
+    const dt = new Date(d);
+    if(isNaN(dt.getTime())) return "";
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,"0");
+    const da = String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+
+  function addDaysToYMD(ymd, days){
+    if(!ymd) return "";
+    const dt = new Date(ymd + "T00:00:00");
+    if(isNaN(dt.getTime())) return "";
+    dt.setDate(dt.getDate() + Number(days||0));
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,"0");
+    const d = String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function diffDays(fromYMD, toYMD){
+    if(!fromYMD || !toYMD) return null;
+    const a = new Date(fromYMD + "T00:00:00");
+    const b = new Date(toYMD + "T00:00:00");
+    if(isNaN(a.getTime()) || isNaN(b.getTime())) return null;
+    return Math.ceil((b.getTime()-a.getTime())/(1000*60*60*24));
+  }
+
+  function planInfo(planFin){
+    if(!planFin) return {status:"none", label:"Sin plan"};
+    const end = new Date(planFin);
+    if(isNaN(end.getTime())) return {status:"none", label:"Sin plan"};
+    end.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.ceil((end.getTime()-today.getTime())/(1000*60*60*24));
+    const endTxt = end.toLocaleDateString("es-CL");
+
+    if(diff < 0) return {status:"expired", label:`Vencido (${endTxt})`};
+    if(diff === 0) return {status:"today", label:`Vence hoy (${endTxt})`};
+    if(diff <= 5) return {status:"soon", label:`Quedan ${diff} días (${endTxt})`};
+    return {status:"active", label:`Quedan ${diff} días (${endTxt})`};
+  }
+
+  function planPill(p){
+    if(p.status==="active") return `<span class="pill ok">${p.label}</span>`;
+    if(p.status==="soon" || p.status==="today") return `<span class="pill warn">${p.label}</span>`;
+    return `<span class="pill bad">${p.label}</span>`;
+  }
+
+  function msg(el, text, ok){
+    if(!el) return;
+    el.className = "msg " + (ok ? "ok" : "bad");
+    el.textContent = text;
+  }
+
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    const me = requireAuth("FUNCIONARIO");
+    if(!me) return;
+
+    document.getElementById("who").textContent = me.nombre || "Funcionario";
+    document.getElementById("roleBadge").textContent = "FUNCIONARIO";
+
+    const tbody = document.getElementById("usersTbody");
+    const searchInput = document.getElementById("userSearch");
+    const roleFilter = document.getElementById("roleFilter");
+    const msgUser = document.getElementById("msgUser");
+
+    const modalBack = document.getElementById("modalBack");
+    const mTitle = document.getElementById("mTitle");
+    const mSub = document.getElementById("mSub");
+    const mPlanTipo = document.getElementById("mPlanTipo");
+    const mActivar = document.getElementById("mActivar");
+    const mInicio = document.getElementById("mInicio");
+    const mDias = document.getElementById("mDias");
+    const mFin = document.getElementById("mFin");
+    const mPreview = document.getElementById("mPreview");
+    const mMsg = document.getElementById("mMsg");
+
+    let currentRut = "";
+
+    function suggestedDaysByTipo(tipo){
+      const t = (tipo || "").toUpperCase();
+      if(t === "TRIMESTRAL") return 90;
+      if(t === "SEMESTRAL") return 180;
+      if(t === "ANUAL") return 365;
+      return 30;
     }
 
-    function planInfo(planFin){
-      if(!planFin) return {status:"none", days:null, label:"Sin plan"};
-      const end = new Date(planFin);
-      if(isNaN(end.getTime())) return {status:"none", days:null, label:"Sin plan"};
-      end.setHours(0,0,0,0);
-      const today = new Date(); today.setHours(0,0,0,0);
-      const diff = Math.ceil((end.getTime()-today.getTime())/(1000*60*60*24));
-      const endTxt = end.toLocaleDateString("es-CL");
-
-      if(diff < 0) return {status:"expired", days:diff, label:`Vencido (${endTxt})`};
-      if(diff === 0) return {status:"today", days:0, label:`Vence hoy (${endTxt})`};
-      if(diff <= 5) return {status:"soon", days:diff, label:`Quedan ${diff} días (${endTxt})`};
-      return {status:"active", days:diff, label:`Quedan ${diff} días (${endTxt})`};
+    function updatePreview(){
+      const d = diffDays(mInicio.value, mFin.value);
+      if(d === null){
+        mPreview.className = "pill";
+        mPreview.textContent = "—";
+        return;
+      }
+      mPreview.textContent = `Quedan ${d} días`;
+      mPreview.className = "pill " + (d <= 5 ? "warn" : "ok");
     }
 
-    function planPill(p){
-      if(p.status==="active") return `<span class="pill ok">${p.label}</span>`;
-      if(p.status==="soon" || p.status==="today") return `<span class="pill warn">${p.label}</span>`;
-      return `<span class="pill bad">${p.label}</span>`;
+    function openModal(user){
+      currentRut = user.rut;
+      mTitle.textContent = `Renovar plan`;
+      mSub.textContent = `${user.nombre} · ${user.rut}`;
+
+      mPlanTipo.value = safe(user.planTipo,"");
+      mActivar.value = "1";
+
+      mInicio.value = ymdFromAny(user.planInicio) || ymdFromAny(new Date());
+
+      const userFin = ymdFromAny(user.planFin);
+      if(userFin){
+        mFin.value = userFin;
+        const d = diffDays(mInicio.value, mFin.value);
+        if([1,7,30,90,180,365].includes(d)) mDias.value = String(d);
+        else mDias.value = "0";
+      }else{
+        const sug = suggestedDaysByTipo(mPlanTipo.value);
+        mDias.value = String(sug);
+        mFin.value = addDaysToYMD(mInicio.value, sug);
+      }
+
+      mMsg.textContent = "";
+      mMsg.className = "msg";
+      updatePreview();
+      modalBack.style.display = "flex";
     }
 
-    function msg(el, text, ok){
-      if(!el) return;
-      el.className = "msg " + (ok ? "ok" : "bad");
-      el.textContent = text;
+    function closeModal(){
+      modalBack.style.display = "none";
+      currentRut = "";
     }
 
-    // ---------- main ----------
-    document.addEventListener("DOMContentLoaded", async ()=>{
-      const me = requireAuth("FUNCIONARIO");
-      if(!me) return;
-
-      document.getElementById("who").textContent = me.nombre || "Funcionario";
-      document.getElementById("roleBadge").textContent = "FUNCIONARIO";
-
-      const tbody = document.getElementById("usersTbody");
-      const searchInput = document.getElementById("userSearch");
-      const roleFilter = document.getElementById("roleFilter");
-      const msgUser = document.getElementById("msgUser");
-
-      // modal
-      const modalBack = document.getElementById("modalBack");
-      const mTitle = document.getElementById("mTitle");
-      const mSub = document.getElementById("mSub");
-      const mPlanTipo = document.getElementById("mPlanTipo");
-      const mActivar = document.getElementById("mActivar");
-      const mInicio = document.getElementById("mInicio");
-      const mFin = document.getElementById("mFin");
-      const mMsg = document.getElementById("mMsg");
-
-      let currentRut = "";
-
-      function openModal(user){
-        currentRut = user.rut;
-        mTitle.textContent = `Renovar plan`;
-        mSub.textContent = `${user.nombre} · ${user.rut}`;
-
-        mPlanTipo.value = safe(user.planTipo,"");
-        mInicio.value = ymdFromAny(user.planInicio);
-        mFin.value = ymdFromAny(user.planFin);
-
-        mActivar.value = "1";
-        mMsg.textContent = "";
-        mMsg.className = "msg";
-
-        modalBack.style.display = "flex";
-      }
-
-      function closeModal(){
-        modalBack.style.display = "none";
-        currentRut = "";
-      }
-
-      document.getElementById("mClose").addEventListener("click", closeModal);
-      document.getElementById("mCancel").addEventListener("click", closeModal);
-      modalBack.addEventListener("click", (e)=>{
-        if(e.target === modalBack) closeModal();
-      });
-
-      async function refreshFromServer(){
-        try{ await syncDown(); }catch(e){ console.error(e); }
-      }
-
-      function getFilteredUsers(){
-        const users = getUsers().slice();
-
-        const q = safe(searchInput.value,"").toLowerCase().trim();
-        const rf = safe(roleFilter.value,"ALL").toUpperCase();
-
-        return users.filter(u=>{
-          const rol = safe(u.rol,"SOCIO").toUpperCase();
-          const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
-
-          if(rf !== "ALL" && rol !== rf) return false;
-          if(!q) return true;
-
-          const hay = [
-            safe(u.nombre,""),
-            safe(u.rut,""),
-            safe(u.email,""),
-            rol,
-            activoTxt
-          ].join(" ").toLowerCase();
-
-          return hay.includes(q);
-        }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
-      }
-
-      function render(){
-        const list = getFilteredUsers();
-        tbody.innerHTML = "";
-
-        list.forEach(u=>{
-          const rol = safe(u.rol,"SOCIO").toUpperCase();
-          const activo = (u.activo !== false);
-          const p = planInfo(u.planFin);
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${safe(u.nombre,"")}</td>
-            <td>${safe(u.rut,"")}</td>
-            <td><span class="pill">${rol}</span></td>
-            <td>${activo ? `<span class="pill ok">ACTIVO</span>` : `<span class="pill bad">INACTIVO</span>`}</td>
-            <td>${planPill(p)}</td>
-            <td>
-              <div class="actions">
-                <button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}">
-                  ${activo ? "Desactivar" : "Activar"}
-                </button>
-                <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        // toggle activo
-        tbody.querySelectorAll("[data-toggle]").forEach(btn=>{
-          btn.addEventListener("click", async ()=>{
-            const rut = btn.getAttribute("data-toggle");
-            const users = getUsers();
-            const u = users.find(x=>x.rut===rut);
-            if(!u) return;
-
-            const cur = (u.activo !== false);
-            u.activo = !cur;
-            setUsers(users);
-            render();
-
-            try{
-              await apiPost("USERS", u);
-              await refreshFromServer();
-              render();
-              msg(msgUser, "✅ Estado actualizado", true);
-            }catch(e){
-              console.error(e);
-              await refreshFromServer();
-              render();
-              msg(msgUser, "❌ No se pudo actualizar (revisa deploy/permisos)", false);
-            }
-          });
-        });
-
-        // renovar
-        tbody.querySelectorAll("[data-renew]").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const rut = btn.getAttribute("data-renew");
-            const u = getUsers().find(x=>x.rut===rut);
-            if(!u) return;
-            openModal(u);
-          });
-        });
-      }
-
-      // guardar renovación
-      document.getElementById("mSave").addEventListener("click", async ()=>{
-        if(!currentRut) return;
-
-        const users = getUsers();
-        const u = users.find(x=>x.rut===currentRut);
-        if(!u) return;
-
-        const payload = {
-          rut: currentRut,
-          planTipo: safe(mPlanTipo.value,""),
-          planInicio: safe(mInicio.value,""),
-          planFin: safe(mFin.value,""),
-          activo: (mActivar.value === "1")
-        };
-
-        // update local optimista
-        u.planTipo = payload.planTipo;
-        u.planInicio = payload.planInicio;
-        u.planFin = payload.planFin;
-        if(payload.activo) u.activo = true;
-        setUsers(users);
-        render();
-
-        try{
-          await apiPost("users_plan_update", payload);
-          await refreshFromServer();
-          render();
-          msg(mMsg, "✅ Renovación guardada", true);
-          setTimeout(()=> closeModal(), 450);
-        }catch(e){
-          console.error(e);
-          await refreshFromServer();
-          render();
-          msg(mMsg, "❌ No se pudo guardar (revisa Apps Script)", false);
-        }
-      });
-
-      // crear usuario
-      document.getElementById("createUserForm").addEventListener("submit", async (e)=>{
-        e.preventDefault();
-        try{
-          registerUser({
-            rut: document.getElementById("newRut").value,
-            nombre: document.getElementById("newNombre").value,
-            email: document.getElementById("newEmail").value,
-            pass: document.getElementById("newPass").value,
-            rol: document.getElementById("newRol").value
-          });
-
-          e.target.reset();
-          await refreshFromServer();
-          render();
-          msg(msgUser, "✅ Usuario creado", true);
-        }catch(err){
-          msg(msgUser, "❌ " + err.message, false);
-        }
-      });
-
-      // filtros
-      searchInput.addEventListener("input", render);
-      roleFilter.addEventListener("change", render);
-
-      // nav
-      document.getElementById("btnLogout").addEventListener("click", ()=>{
-        clearSession();
-        location.href = "index.html";
-      });
-      document.getElementById("btnRutinas").addEventListener("click", ()=>{
-        location.href = "rutinas.html";
-      });
-
-      render();
-      await refreshFromServer();
-      render();
+    document.getElementById("mClose").addEventListener("click", closeModal);
+    document.getElementById("mCancel").addEventListener("click", closeModal);
+    modalBack.addEventListener("click", (e)=>{
+      if(e.target === modalBack) closeModal();
     });
-  </script>
+
+    async function refreshFromServer(){
+      try{ await syncDown(); }catch(e){ console.error(e); }
+    }
+
+    function getFilteredUsers(){
+      const users = getUsers().slice();
+      const q = safe(searchInput.value,"").toLowerCase().trim();
+      const rf = safe(roleFilter.value,"ALL").toUpperCase();
+
+      return users.filter(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
+        if(rf !== "ALL" && rol !== rf) return false;
+        if(!q) return true;
+
+        const hay = [
+          safe(u.nombre,""),
+          safe(u.rut,""),
+          safe(u.email,""),
+          rol,
+          activoTxt
+        ].join(" ").toLowerCase();
+
+        return hay.includes(q);
+      }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
+    }
+
+    function render(){
+      const list = getFilteredUsers();
+      tbody.innerHTML = "";
+
+      list.forEach(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const activo = (u.activo !== false);
+        const p = planInfo(u.planFin);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${safe(u.nombre,"")}</td>
+          <td>${safe(u.rut,"")}</td>
+          <td><span class="pill">${rol}</span></td>
+          <td>${activo ? `<span class="pill ok">ACTIVO</span>` : `<span class="pill bad">INACTIVO</span>`}</td>
+          <td>${planPill(p)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}">
+                ${activo ? "Desactivar" : "Activar"}
+              </button>
+              <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("[data-toggle]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const rut = btn.getAttribute("data-toggle");
+          const users = getUsers();
+          const u = users.find(x=>x.rut===rut);
+          if(!u) return;
+
+          const cur = (u.activo !== false);
+          u.activo = !cur;
+          setUsers(users);
+          render();
+
+          try{
+            await apiPost("USERS", u);
+            await refreshFromServer();
+            render();
+            msg(msgUser, "✅ Estado actualizado", true);
+          }catch(e){
+            console.error(e);
+            await refreshFromServer();
+            render();
+            msg(msgUser, "❌ No se pudo actualizar", false);
+          }
+        });
+      });
+
+      tbody.querySelectorAll("[data-renew]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const rut = btn.getAttribute("data-renew");
+          const u = getUsers().find(x=>x.rut===rut);
+          if(!u) return;
+          openModal(u);
+        });
+      });
+    }
+
+    mPlanTipo.addEventListener("change", ()=>{
+      if(mDias.value === "0") { updatePreview(); return; }
+      const sug = suggestedDaysByTipo(mPlanTipo.value);
+      // no forzamos si el user eligió 1 o 7
+      if(!["1","7"].includes(mDias.value)) mDias.value = String(sug);
+      mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
+      updatePreview();
+    });
+
+    mDias.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mInicio.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mFin.addEventListener("change", updatePreview);
+
+    document.getElementById("mSave").addEventListener("click", async ()=>{
+      if(!currentRut) return;
+
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentRut);
+      if(!u) return;
+
+      const payload = {
+        rut: currentRut,
+        planTipo: safe(mPlanTipo.value,""),
+        planInicio: safe(mInicio.value,""),
+        planFin: safe(mFin.value,""),
+        activo: (mActivar.value === "1")
+      };
+
+      u.planTipo = payload.planTipo;
+      u.planInicio = payload.planInicio;
+      u.planFin = payload.planFin;
+      if(payload.activo) u.activo = true;
+      setUsers(users);
+      render();
+
+      try{
+        await apiPost("users_plan_update", payload);
+        await refreshFromServer();
+        render();
+        msg(mMsg, "✅ Renovación guardada", true);
+        setTimeout(closeModal, 450);
+      }catch(e){
+        console.error(e);
+        await refreshFromServer();
+        render();
+        msg(mMsg, "❌ No se pudo guardar (Apps Script)", false);
+      }
+    });
+
+    document.getElementById("createUserForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      try{
+        registerUser({
+          rut: document.getElementById("newRut").value,
+          nombre: document.getElementById("newNombre").value,
+          email: document.getElementById("newEmail").value,
+          pass: document.getElementById("newPass").value,
+          rol: document.getElementById("newRol").value
+        });
+        e.target.reset();
+        await refreshFromServer();
+        render();
+        msg(msgUser, "✅ Usuario creado", true);
+      }catch(err){
+        msg(msgUser, "❌ " + err.message, false);
+      }
+    });
+
+    searchInput.addEventListener("input", render);
+    roleFilter.addEventListener("change", render);
+
+    document.getElementById("btnLogout").addEventListener("click", ()=>{
+      clearSession();
+      location.href = "index.html";
+    });
+    document.getElementById("btnRutinas").addEventListener("click", ()=>{
+      location.href = "rutinas.html";
+    });
+
+    render();
+    await refreshFromServer();
+    render();
+  });
+</script>
+
 </body>
 </html>
