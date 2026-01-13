@@ -45,7 +45,6 @@
       transition: transform .15s ease;
     }
     details[open] .chev{ transform: rotate(180deg); }
-
     .dayBody{ padding:14px 14px 16px; border-top:1px solid rgba(255,255,255,.08); }
 
     .exCard{
@@ -165,6 +164,27 @@
       margin-bottom:10px;
     }
     .metaLine .pill{ background: rgba(255,255,255,.04); }
+
+    /* ✅ aviso plan vencido */
+    .paywall{
+      border:1px solid rgba(255,90,103,.35);
+      background: rgba(255,90,103,.10);
+      border-radius:16px;
+      padding:16px;
+      margin-top:14px;
+      color: rgba(255,255,255,.92);
+    }
+    .paywall b{ font-size:16px; }
+    .paywall .sub{
+      margin-top:6px;
+      color: rgba(255,255,255,.78);
+      line-height:1.4;
+    }
+    .paywall .hint{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+    }
   </style>
 </head>
 
@@ -184,7 +204,7 @@
       <div class="kpi">
         <div class="box">
           <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Plan</div>
-          <b id="kPlan">Activo</b>
+          <b id="kPlan">-</b>
           <div style="color:var(--muted);font-size:13px;" id="kNivel">(sin rutina)</div>
         </div>
         <div class="box">
@@ -216,6 +236,25 @@
   <script>
     function safe(v, fallback="-"){
       return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
+    }
+
+    // ✅ calcula días restantes en el socio (sin depender de funciones del CRM)
+    function planInfo(planFin){
+      if(!planFin) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      const end = new Date(planFin);
+      if(isNaN(end.getTime())) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      end.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const diff = Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24));
+      const endTxt = end.toLocaleDateString("es-CL");
+
+      if(diff < 0) return { status:"expired", days:diff, endTxt, label:`Vencido (vence ${endTxt})` };
+      if(diff === 0) return { status:"today", days:0, endTxt, label:`Vence hoy (${endTxt})` };
+      return { status:"active", days:diff, endTxt, label:`Quedan ${diff} días (vence ${endTxt})` };
     }
 
     function getDoneKey(rut, day, idx){
@@ -296,45 +335,82 @@
 
       const box = document.querySelector("#rutinaBox");
 
-      const rv2 = rutinaV2DeSocio(user.rut);
-      if(!rv2 || !rv2.routine){
-        box.innerHTML = `
-          <div class="notice">
-            <b>Plan de entrenamiento no asignado</b><br>
-            Tienes un plan activo, pero aún no se te asigna una rutina específica.
-          </div>
-        `;
-      }else{
-        const routine = rv2.routine;
-        const meta = routine.meta || {};
-        const cardio = meta.cardio || {};
+      // ✅ PLAN EN SOCIO
+      const p = planInfo(user.planFin);
 
-        document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
-        document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
-        document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
-        document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
+      if(p.status === "active"){
+        document.querySelector("#kPlan").textContent = `Activo · ${p.days} días`;
+        document.querySelector("#kPlan").style.color = "var(--ok)";
+      } else if(p.status === "today"){
+        document.querySelector("#kPlan").textContent = `Vence hoy`;
+        document.querySelector("#kPlan").style.color = "var(--bad)";
+      } else {
+        // none / expired
+        document.querySelector("#kPlan").textContent = "Inactivo";
+        document.querySelector("#kPlan").style.color = "var(--bad)";
+      }
 
-        const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
-        dias.sort((a,b)=>{
-          const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
-          const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
-          return na-nb;
-        });
+      // ✅ Si plan NO está activo → mensaje de renovación y no mostrar rutina
+      if(p.status !== "active" && p.status !== "today"){
+        document.querySelector("#kNivel").textContent = "Renueva tu plan";
+        document.querySelector("#kDias").textContent = "0";
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "-";
 
         box.innerHTML = `
-          <div class="metaLine">
-            <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
-            <span class="pill">Fecha: ${safe(meta.fecha,"-")}</span>
+          <div class="paywall">
+            <b>Renueva tu plan para disfrutar tus entrenamientos y asesorías</b>
+            <div class="sub">
+              Tu membresía está <b>inactiva</b>. Para reactivar tu acceso, solicita la renovación con administración.
+            </div>
+            <div class="hint">
+              Tip: cuando renueven tu plan desde el CRM, aquí se actualizará automáticamente.
+            </div>
           </div>
-          ${dias.map(d=>renderDay(d, user.rut)).join("")}
         `;
+      } else {
+        // ✅ Plan activo → rutina normal
+        const rv2 = rutinaV2DeSocio(user.rut);
+        if(!rv2 || !rv2.routine){
+          box.innerHTML = `
+            <div class="notice">
+              <b>Plan de entrenamiento no asignado</b><br>
+              Tienes un plan activo, pero aún no se te asigna una rutina específica.
+            </div>
+          `;
+        }else{
+          const routine = rv2.routine;
+          const meta = routine.meta || {};
+          const cardio = meta.cardio || {};
 
-        box.querySelectorAll('[data-done]').forEach(chk=>{
-          chk.addEventListener("change", ()=>{
-            const key = chk.getAttribute("data-done");
-            localStorage.setItem(key, chk.checked ? "1" : "0");
+          document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
+          document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
+          document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
+          document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
+
+          const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
+          dias.sort((a,b)=>{
+            const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
+            const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
+            return na-nb;
           });
-        });
+
+          box.innerHTML = `
+            <div class="metaLine">
+              <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
+              <span class="pill">Fecha: ${safe(meta.fecha,"-")}</span>
+              <span class="pill">Plan: ${p.label}</span>
+            </div>
+            ${dias.map(d=>renderDay(d, user.rut)).join("")}
+          `;
+
+          box.querySelectorAll('[data-done]').forEach(chk=>{
+            chk.addEventListener("change", ()=>{
+              const key = chk.getAttribute("data-done");
+              localStorage.setItem(key, chk.checked ? "1" : "0");
+            });
+          });
+        }
       }
 
       document.querySelector("#btnLogout").addEventListener("click", ()=>{
@@ -345,5 +421,3 @@
   </script>
 </body>
 </html>
-
-
