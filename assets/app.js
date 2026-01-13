@@ -1,16 +1,14 @@
 /* =========================================================
-   MAH FIT - app.js (COMPLETO / LISTO PARA REEMPLAZAR)
+   MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
-   - Mantiene funciones SINCRÓNICAS para no romper tus HTML
-   - requireAuth("ROL") y requireAuth(["A","B"])
    - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
-   - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
+   - Login funcional en index.html (engancha submit)
+   - requireAuth("ROL") y requireAuth(["A","B"])
+   - ✅ USERS incluye planTipo, planInicio, planFin
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
-   - ✅ FIX: Activar/Desactivar ahora SÍ alterna y escribe TRUE/FALSE en Sheets
-   - ✅ Funcionario: buscador y filtro en vivo (sin tocar tu backend)
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbx0XfhanWYg40EwVbPbJ4uuUK31BF3BzAMPM_NzO9pJ90kenvxbbFacLn2bRnFPfAa9Mw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxOjrnGx1cj0jg_AmcF3miXVqfql5eIaA2y8J0pDStDXz9ZYTYfITUY0KGBlXVVrTEtTQ/exec";
 
 // ---------------- DOMContentLoaded GATE ----------------
 (function(){
@@ -52,7 +50,6 @@ function nowISO(){ return new Date().toISOString(); }
 
 // ---------------- DB STATUS (pelotita) ----------------
 function setDbStatus(status){
-  // status: "connecting" | "connected" | "error"
   const dot  = document.getElementById("dbDot");
   const text = document.getElementById("dbText");
   if(!dot || !text) return;
@@ -128,7 +125,7 @@ async function syncDown(){
     pass: String(x.pass ?? ""),
     rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false) ? false : true,
-    // ✅ Plan (si existe en la hoja)
+    // ✅ plan
     planTipo: x.planTipo ?? x.plan_tipo ?? "",
     planInicio: x.planInicio ?? x.plan_inicio ?? "",
     planFin: x.planFin ?? x.plan_fin ?? "",
@@ -138,19 +135,18 @@ async function syncDown(){
 
   // Rutinas TXT
   const rt = await apiGet("RUTINAS_TXT");
-  const rutinas = (rt.rutinas_txt || []).map(x => ({
+  setRutinas((rt.rutinas_txt || []).map(x => ({
     id: x.id || crypto.randomUUID(),
     rutSocio: normalizeRut(x.rutSocio),
     titulo: x.titulo ?? "",
     detalle: x.detalle ?? "",
     creadoEn: x.creadoEn ?? "",
     creadoPorRut: x.creadoPorRut ?? ""
-  }));
-  setRutinas(rutinas);
+  })));
 
   // Rutinas V2
   const rv2 = await apiGet("RUTINAS_V2");
-  const list = (rv2.rutinas_v2 || []).map(x => {
+  setRutinasV2((rv2.rutinas_v2 || []).map(x => {
     let routine = null;
     try{ routine = JSON.parse(x.routine_json || "null"); }catch{}
     return {
@@ -159,36 +155,30 @@ async function syncDown(){
       creadoPorRut: x.creadoPorRut ?? "",
       actualizadoEn: x.actualizadoEn ?? ""
     };
-  });
-  setRutinasV2(list);
+  }));
 
   // Plantillas V2
   const pv2 = await apiGet("PLANTILLAS_V2");
-  const tpl = (pv2.plantillas_v2 || []).map(x => {
+  setPlantillasV2((pv2.plantillas_v2 || []).map(x => {
     let templateObj = null;
-    const raw = x.template_json ?? x.templateJson ?? x.template ?? null;
-
-    if(typeof raw === "string"){
-      try{ templateObj = JSON.parse(raw); }catch{ templateObj = null; }
-    }else{
-      templateObj = raw;
-    }
+    const raw = x.template_json ?? null;
+    if(typeof raw === "string"){ try{ templateObj = JSON.parse(raw); }catch{} }
+    else templateObj = raw;
 
     return {
-      templateId: x.templateId || x.templateid || x.id || crypto.randomUUID(),
-      nombrePlantilla: x.nombrePlantilla ?? x.nombreplantilla ?? x.nombre ?? "",
+      templateId: x.templateId || crypto.randomUUID(),
+      nombrePlantilla: x.nombrePlantilla ?? "",
       nivel: x.nivel ?? "",
       objetivo: x.objetivo ?? "",
       dias: Number(x.dias ?? 0),
       visibility: (x.visibility ?? "PRIVADA"),
-      ownerRut: normalizeRut(x.ownerRut ?? x.ownerrut ?? ""),
-      ownerNombre: x.ownerNombre ?? x.ownernombre ?? "",
+      ownerRut: normalizeRut(x.ownerRut ?? ""),
+      ownerNombre: x.ownerNombre ?? "",
       template_json: templateObj,
       creadoEn: x.creadoEn ?? "",
       actualizadoEn: x.actualizadoEn ?? ""
     };
-  });
-  setPlantillasV2(tpl);
+  }));
 }
 
 // ---------------- Seed ADMIN remoto ----------------
@@ -272,120 +262,63 @@ function login({rut, pass}){
   return user;
 }
 
-// ---------------- Rutinas ----------------
-function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const rutinas = getRutinas();
-  const existing = rutinas.find(r => r.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    titulo,
-    detalle,
-    creadoPorRut: creadoPorRut || "",
-    creadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.titulo = titulo;
-    existing.detalle = detalle;
-    existing.creadoEn = payload.creadoEn;
-    existing.creadoPorRut = payload.creadoPorRut;
-  }else{
-    rutinas.push({ id: crypto.randomUUID(), ...payload });
-  }
-  setRutinas(rutinas);
-
-  apiPost("RUTINAS_TXT", payload).catch(console.error);
-}
-
-function rutinaDeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinas().find(r => r.rutSocio === rutSocioN) || null;
-}
-
-function upsertRutinaV2({rutSocio, routine, creadoPorRut}){
-  const rutSocioN = normalizeRut(rutSocio);
-  const list = getRutinasV2();
-  const existing = list.find(x => x.rutSocio === rutSocioN);
-
-  const payload = {
-    rutSocio: rutSocioN,
-    routine_json: JSON.stringify(routine),
-    creadoPorRut: creadoPorRut || "",
-    actualizadoEn: nowISO()
-  };
-
-  if(existing){
-    existing.routine = routine;
-    existing.creadoPorRut = payload.creadoPorRut;
-    existing.actualizadoEn = payload.actualizadoEn;
-  }else{
-    list.push({
-      rutSocio: rutSocioN,
-      routine,
-      creadoPorRut: payload.creadoPorRut,
-      actualizadoEn: payload.actualizadoEn
-    });
-  }
-  setRutinasV2(list);
-
-  apiPost("RUTINAS_V2", payload).catch(console.error);
-}
-
+// ---------------- V2 helper ----------------
 function rutinaV2DeSocio(rutSocio){
   const rutSocioN = normalizeRut(rutSocio);
   return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
-// ---------------- Plantillas helpers ----------------
-function plantillasVisiblesPara(user){
-  const rut = normalizeRut(user?.rut || "");
-  return getPlantillasV2().filter(p=>{
-    const vis = String(p.visibility || "").toUpperCase();
-    const owner = normalizeRut(p.ownerRut || "");
-    return vis === "PUBLICA" || owner === rut;
+// ---------------- INIT INDEX (ESTO FALTABA) ----------------
+function initIndex(){
+  const loginForm = document.getElementById("loginForm");
+  const msgLogin  = document.getElementById("msgLogin");
+
+  function showMsg(txt, ok=false){
+    if(!msgLogin) return;
+    msgLogin.textContent = txt;
+    msgLogin.style.color = ok ? "#a7ffb3" : "#ffb0b0";
+  }
+
+  // si ya hay sesión válida, redirige
+  const s = getSession();
+  if(s){
+    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
+    if(u){
+      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      return;
+    }
+  }
+
+  loginForm?.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    try{
+      const rut = document.getElementById("loginRut")?.value || "";
+      const pass = document.getElementById("loginPass")?.value || "";
+      const user = login({ rut, pass });
+      showMsg("Ingreso correcto…", true);
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    }catch(err){
+      showMsg(err.message, false);
+    }
+  });
+
+  const resetBtn = document.getElementById("resetBtn");
+  resetBtn?.addEventListener("click", ()=>{
+    localStorage.removeItem("mahfit_users");
+    localStorage.removeItem("mahfit_rutinas");
+    localStorage.removeItem("mahfit_rutinas_v2");
+    localStorage.removeItem("mahfit_plantillas_v2");
+    localStorage.removeItem("mahfit_session");
+    alert("Datos locales reiniciados. Recarga la página.");
+    window.location.reload();
   });
 }
 
-async function savePlantillaV2(payload){
-  const data = { ...payload };
-
-  if(!data.templateId) data.templateId = crypto.randomUUID();
-  if(!data.creadoEn) data.creadoEn = nowISO();
-  data.actualizadoEn = nowISO();
-  data.ownerRut = normalizeRut(data.ownerRut || "");
-
-  const templateObj = data.template_json ?? null;
-  if(typeof data.template_json !== "string"){
-    data.template_json = JSON.stringify(templateObj);
-  }
-
-  await apiPost("PLANTILLAS_V2", data);
-
-  const list = getPlantillasV2();
-  const idx = list.findIndex(x => String(x.templateId) === String(data.templateId));
-
-  const localObj = {
-    templateId: data.templateId,
-    nombrePlantilla: data.nombrePlantilla || "",
-    nivel: data.nivel || "",
-    objetivo: data.objetivo || "",
-    dias: Number(data.dias || 0),
-    visibility: data.visibility || "PRIVADA",
-    ownerRut: normalizeRut(data.ownerRut || ""),
-    ownerNombre: data.ownerNombre || "",
-    template_json: (()=>{ try{ return JSON.parse(data.template_json); }catch{ return null; } })(),
-    creadoEn: data.creadoEn || "",
-    actualizadoEn: data.actualizadoEn || ""
-  };
-
-  if(idx >= 0) list[idx] = localObj;
-  else list.push(localObj);
-  setPlantillasV2(list);
-
-  return localObj;
-}
+// ---------------- INIT AUTO POR ELEMENTOS ----------------
+document.addEventListener("DOMContentLoaded", ()=>{
+  // Si existe loginForm => index
+  if(document.getElementById("loginForm")) initIndex();
+});
 
 // ---------------- BOOT ----------------
 (async function boot(){
@@ -407,25 +340,11 @@ async function savePlantillaV2(payload){
 window.API_URL = API_URL;
 window.apiGet = apiGet;
 window.apiPost = apiPost;
-
 window.getUsers = getUsers;
 window.setUsers = setUsers;
-
-window.getRutinas = getRutinas;
-window.setRutinas = setRutinas;
-
 window.getRutinasV2 = getRutinasV2;
-window.setRutinasV2 = setRutinasV2;
 window.rutinaV2DeSocio = rutinaV2DeSocio;
-
-window.getPlantillasV2 = getPlantillasV2;
-window.setPlantillasV2 = setPlantillasV2;
-window.plantillasVisiblesPara = plantillasVisiblesPara;
-window.savePlantillaV2 = savePlantillaV2;
-
 window.requireAuth = requireAuth;
-window.upsertRutina = upsertRutina;
-window.upsertRutinaV2 = upsertRutinaV2;
 window.syncDown = syncDown;
 window.clearSession = clearSession;
 window.login = login;
