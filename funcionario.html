@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MAH FIT | Funcionario</title>
-
-  <link rel="stylesheet" href="assets/styles.css"/>
+  <link rel="stylesheet" href="styles.css"/>
 
   <style>
     :root{
@@ -13,27 +12,25 @@
       --bg1:#0b0f18;
       --panel:rgba(255,255,255,.04);
       --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(255,255,255,.14);
       --txt:rgba(255,255,255,.90);
       --mut:rgba(255,255,255,.65);
-      --ok:#2bd576;
-      --bad:#ff5a67;
       --brand:#23a6ff;
       --brand2:#7c5cff;
+      --ok:#2bd576;
+      --bad:#ff5a67;
       --shadow:0 12px 34px rgba(0,0,0,.45);
       --radius:16px;
     }
-
     body{
       margin:0;
-      background:
-        radial-gradient(1100px 500px at 50% -10%, rgba(124,92,255,.18), transparent 60%),
-        radial-gradient(900px 480px at 60% 10%, rgba(35,166,255,.12), transparent 60%),
-        linear-gradient(180deg,var(--bg0),var(--bg1));
+      background:radial-gradient(1100px 500px at 50% -10%, rgba(124,92,255,.18), transparent 60%),
+                 radial-gradient(900px 480px at 60% 10%, rgba(35,166,255,.12), transparent 60%),
+                 linear-gradient(180deg,var(--bg0),var(--bg1));
       color:var(--txt);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       min-height:100vh;
     }
-
     .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
 
     .topbar{
@@ -45,19 +42,18 @@
       box-shadow:var(--shadow);
       backdrop-filter: blur(8px);
     }
-
     .brand{
       display:flex; align-items:center; gap:10px;
-      font-weight:900; letter-spacing:.4px;
+      font-weight:800; letter-spacing:.4px;
     }
-    .logo{
+    .brand .logo{
       width:38px; height:38px; border-radius:12px;
       background:linear-gradient(135deg,var(--brand2),var(--brand));
       box-shadow:0 10px 20px rgba(35,166,255,.12);
     }
-
-    .rightTop{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-
+    .rightTop{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
     .pill{
       font-size:12px;
       padding:6px 10px;
@@ -72,7 +68,7 @@
       border:none; cursor:pointer;
       border-radius:12px;
       padding:9px 12px;
-      font-weight:900;
+      font-weight:700;
       color:#fff;
       background:linear-gradient(135deg,var(--brand2),var(--brand));
       box-shadow:0 10px 18px rgba(35,166,255,.10);
@@ -82,30 +78,15 @@
       background:rgba(255,255,255,.06);
       border:1px solid var(--stroke);
       box-shadow:none;
-      color:rgba(255,255,255,.92);
+      color:rgba(255,255,255,.88);
     }
     .btn.danger{
-      background:rgba(255,90,103,.14);
+      background:rgba(255,90,103,.12);
       border:1px solid rgba(255,90,103,.35);
       color:#ffd8dc;
       box-shadow:none;
     }
     .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
-
-    /* ✅ Botón Activar/Desactivar bien visible */
-    .btn.toggle{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      color:rgba(255,255,255,.92);
-      box-shadow:none;
-    }
-    .btn.toggle:hover{ background:rgba(255,255,255,.12); }
-
-    .btn.toggle.off{
-      background:rgba(255,90,103,.14);
-      border:1px solid rgba(255,90,103,.35);
-      color:#ffd8dc;
-    }
 
     .kpis{
       margin-top:16px;
@@ -113,8 +94,9 @@
       grid-template-columns: repeat(3, 1fr);
       gap:14px;
     }
-    @media (max-width: 900px){ .kpis{ grid-template-columns: 1fr; } }
-
+    @media (max-width: 900px){
+      .kpis{ grid-template-columns: 1fr; }
+    }
     .kpi{
       background:var(--panel);
       border:1px solid var(--stroke);
@@ -122,8 +104,8 @@
       box-shadow:var(--shadow);
       padding:14px;
     }
-    .kpi .t{ color:var(--mut); font-size:12px; font-weight:800; letter-spacing:.3px; }
-    .kpi .v{ font-size:28px; font-weight:1000; margin-top:4px; }
+    .kpi .t{ color:var(--mut); font-size:12px; font-weight:700; letter-spacing:.3px; }
+    .kpi .v{ font-size:28px; font-weight:900; margin-top:4px; }
 
     .card{
       margin-top:16px;
@@ -133,7 +115,6 @@
       box-shadow:var(--shadow);
       padding:14px;
     }
-
     .cardHead{
       display:flex;
       align-items:center;
@@ -142,7 +123,10 @@
       flex-wrap:wrap;
       margin-bottom:10px;
     }
-    .cardTitle{ font-weight:1000; letter-spacing:.3px; }
+    .cardTitle{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
 
     .filters{
       display:flex;
@@ -170,7 +154,7 @@
     th{
       text-align:left;
       color:rgba(255,255,255,.55);
-      font-weight:900;
+      font-weight:700;
       font-size:12px;
       padding:0 10px;
     }
@@ -179,7 +163,6 @@
       background:rgba(255,255,255,.03);
       border-top:1px solid var(--stroke);
       border-bottom:1px solid var(--stroke);
-      vertical-align:middle;
     }
     td:first-child{
       border-left:1px solid var(--stroke);
@@ -200,11 +183,16 @@
       gap:12px;
       margin-top:12px;
     }
-    @media (max-width: 900px){ .rowForm{ grid-template-columns: 1fr; } }
-
+    @media (max-width: 900px){
+      .rowForm{ grid-template-columns: 1fr; }
+    }
     label{ display:block; font-size:12px; color:var(--mut); margin-bottom:6px; }
-    .field input, .field select{ width:100%; min-width:unset; }
+    .field input, .field select{
+      width:100%;
+      min-width:unset;
+    }
 
+    /* badge conexión */
     .db-badge{
       display:flex; align-items:center; gap:8px;
       padding:6px 10px;
@@ -214,19 +202,13 @@
       color:rgba(255,255,255,.85);
       font-size:12px;
     }
-    .db-dot{ width:10px;height:10px;border-radius:999px; background:rgba(255,255,255,.40); }
+    .db-dot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.40);
+    }
     .db-dot.connecting{ background:rgba(255,255,255,.40); }
     .db-dot.connected{ background:var(--ok); }
     .db-dot.error{ background:var(--bad); }
-
-    /* Acciones alineadas */
-    .actionsCell{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
   </style>
 </head>
 
@@ -237,55 +219,55 @@
       <div class="brand">
         <div class="logo"></div>
         <div>
-          <div style="font-size:14px;font-weight:1000;">MAH FIT</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.65);">Panel Funcionario</div>
+          <div style="font-size:18px;">MAH FIT</div>
+          <div class="muted">Panel Funcionario</div>
         </div>
       </div>
 
       <div class="rightTop">
-        <span class="pill">Hola, <b id="who"></b></span>
-        <span class="pill" id="roleBadge"></span>
-
-        <span class="db-badge">
+        <div class="db-badge">
           <span id="dbDot" class="db-dot connecting"></span>
           <span id="dbText">Conectando…</span>
-        </span>
+        </div>
 
-        <button class="btn ghost" id="btnRutinas">Rutinas</button>
-        <button class="btn danger" id="btnLogout">Salir</button>
+        <div class="pill">Hola, <b id="who">Usuario</b></div>
+        <div class="pill" id="roleBadge">FUNCIONARIO</div>
+
+        <button class="btn small" id="btnRutinas">Creador Rutinas</button>
+        <button class="btn danger small" id="btnLogout">Salir</button>
       </div>
     </div>
 
     <div class="kpis">
       <div class="kpi">
-        <div class="t">Socios</div>
+        <div class="t">SOCIOS</div>
         <div class="v" id="kSocios">0</div>
       </div>
       <div class="kpi">
-        <div class="t">Funcionarios</div>
+        <div class="t">FUNCIONARIOS</div>
         <div class="v" id="kFunc">0</div>
       </div>
       <div class="kpi">
-        <div class="t">Activos</div>
+        <div class="t">ACTIVOS</div>
         <div class="v" id="kActivos">0</div>
       </div>
     </div>
 
     <div class="card">
       <div class="cardHead">
-        <div class="cardTitle">Crear usuario</div>
-        <span class="muted">Se guarda en Sheets</span>
+        <div class="cardTitle">CREAR USUARIO</div>
+        <div class="pill">Solo admin / funcionario</div>
       </div>
 
       <form id="createUserForm">
         <div class="rowForm">
           <div class="field">
             <label>RUT/Usuario</label>
-            <input id="newRut" placeholder="Ej: 20228778-6 / ADMIN" />
+            <input id="newRut" placeholder="Ej: 20228778-6" required />
           </div>
           <div class="field">
             <label>Nombre</label>
-            <input id="newNombre" placeholder="Ej: Juan Perez" />
+            <input id="newNombre" placeholder="Ej: Juan Pérez" required />
           </div>
           <div class="field">
             <label>Email</label>
@@ -293,7 +275,7 @@
           </div>
           <div class="field">
             <label>Clave</label>
-            <input id="newPass" placeholder="1234" />
+            <input id="newPass" placeholder="1234" required />
           </div>
           <div class="field">
             <label>Rol</label>
@@ -311,10 +293,14 @@
       </form>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- 🟦 INICIO CRM USUARIOS                                   -->
+    <!-- ========================================================= -->
     <div class="card">
       <div class="cardHead">
         <div class="cardTitle">CRM USUARIOS</div>
 
+        <!-- ✅ Buscador + filtro -->
         <div class="filters">
           <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
           <select id="roleFilter">
@@ -333,11 +319,9 @@
             <th>ROL</th>
             <th>ACTIVO</th>
             <th>TIEMPO PLAN</th>
-            <th style="text-align:right;">ACCIONES</th>
+            <th>ACCIONES</th>
           </tr>
         </thead>
-
-        <!-- IMPORTANTE: el app.js rellena este tbody -->
         <tbody id="usersTbody"></tbody>
       </table>
 
@@ -345,28 +329,11 @@
         Tip: escribe en el buscador y se filtra altiro.
       </div>
     </div>
-
+    <!-- ========================================================= -->
+    <!-- 🟥 FIN CRM USUARIOS                                      -->
+    <!-- ========================================================= -->
   </div>
 
-  <!-- ✅ Un solo JS para todo -->
-  <script src="app.js"></script>
-
-  <!-- ✅ “Patch visual” por si tu app.js deja el botón ghost invisible:
-       Fuerza que los botones de activar/desactivar se vean. -->
-  <script>
-    // Este patch NO toca tu lógica: solo mejora cómo se ven los botones toggle creados por app.js
-    const obs = new MutationObserver(() => {
-      document.querySelectorAll('#usersTbody [data-act]').forEach(btn => {
-        btn.classList.add('toggle');
-        // si el texto dice "Activar", lo ponemos rojo suave para distinguir
-        if ((btn.textContent || '').toLowerCase().includes('activar')) btn.classList.add('off');
-      });
-      document.querySelectorAll('#usersTbody td:last-child').forEach(td => {
-        td.classList.add('actionsCell');
-      });
-    });
-    obs.observe(document.getElementById('usersTbody'), { childList: true, subtree: true });
-  </script>
+  <script src="assets/app.js"></script>
 </body>
 </html>
-
