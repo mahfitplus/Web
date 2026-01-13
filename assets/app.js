@@ -11,8 +11,7 @@
    - ✅ NUEVO: Plan/Membresía (PlanFin) + columna TIEMPO PLAN + botón Renovar
    ========================================================= */
 
-
-const API_URL = "https://script.google.com/macros/s/AKfycbwouCS-t64DLBWAf62c-iKX53ZiSyxG2Rly6eXYMdUH1IU98dLM7UGC7xiv46r8ysa3eg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwYs3kK33DxuWGN25df6TGTaARZASOZ2rpTaE7cb11btIM2zwAW70QshT-B42qc63Fc5Q/exec";
 
 // ---------------- LocalStorage helpers ----------------
 const LS = {
@@ -702,4 +701,3 @@ window.syncDown = syncDown;
 
 // ✅ nuevo
 window.renovarPlan = renovarPlan;
-
