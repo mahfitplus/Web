@@ -261,7 +261,6 @@
     }
     .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    /* Última rutina bonita */
     .lastCard{
       background:rgba(0,0,0,.20);
       border:1px solid var(--line);
@@ -292,7 +291,6 @@
       line-height:1.35;
     }
 
-    /* Modal Vista Socio */
     .modal{
       position:fixed;
       inset:0;
@@ -389,16 +387,12 @@
       </div>
       <div class="row" style="margin:0">
         <div class="row" style="margin:0; align-items:center;">
-  <!-- 🔌 BADGE CONEXIÓN -->
-  <div class="db-badge" title="Estado de conexión" style="margin-right:8px;">
-    <span id="dbDot" class="db-dot connecting"></span>
-    <span id="dbText">Conectando…</span>
-  </div>
+          <div class="db-badge" title="Estado de conexión" style="margin-right:8px;">
+            <span id="dbDot" class="db-dot connecting"></span>
+            <span id="dbText">Conectando…</span>
+          </div>
+        </div>
 
-</div>
-
-
-        
         <button class="btn ghost small" id="btnVolver">Volver</button>
         <button class="btn danger small" id="btnLogout">Salir</button>
       </div>
@@ -484,7 +478,6 @@
 
         <div class="hr"></div>
 
-        <!-- ✅ ACCIONES -->
         <h2>Acciones</h2>
 
         <div class="footerBtns">
@@ -494,7 +487,6 @@
 
         <div class="hr"></div>
 
-        <!-- ✅ PLANTILLAS -->
         <h2>Plantillas</h2>
 
         <div class="row">
@@ -551,9 +543,6 @@
   <script src="assets/app.js"></script>
 
   <script>
-    // ==========================================================
-    // Helpers base
-    // ==========================================================
     function $(sel){ return document.querySelector(sel); }
     function showMsg(el, msg, ok=false){
       if(!el) return;
@@ -562,16 +551,20 @@
     }
     function nowISO(){ return new Date().toISOString(); }
 
+    // ✅ UUID seguro (evita el error rojo si no existe crypto.randomUUID)
+    function uid(){
+      try{
+        if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+      }catch{}
+      return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+
     // ==========================================================
     // Base ejercicios
     // ==========================================================
     const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
-
     const MUSCLES = Object.keys(EXERCISE_DB);
 
-    // ==========================================================
-    // Templates UI
-    // ==========================================================
     function dayCardTemplate(dayNum){
       return `
         <div class="dayCard" data-day="${dayNum}">
@@ -646,9 +639,6 @@
       `;
     }
 
-    // ==========================================================
-    // Helpers UI
-    // ==========================================================
     function updateDatalist(dayNum, muscle){
       const dl = document.getElementById(`dl-${dayNum}`);
       if(!dl) return;
@@ -706,9 +696,6 @@
       });
     }
 
-    // ==========================================================
-    // Data builder
-    // ==========================================================
     function collectRoutine(){
       const socioVal = $("#socioSelect").value;
       const socio = getUsers().find(u=>String(u.rut) === String(socioVal));
@@ -781,9 +768,6 @@
       return out;
     }
 
-    // ==========================================================
-    // Última rutina bonita + cargar para editar
-    // ==========================================================
     function showLastRoutineBoxPretty(lastV2){
       const box = $("#lastRoutineBox");
       if(!lastV2){
@@ -901,9 +885,6 @@
       });
     }
 
-    // ==========================================================
-    // Vista Socio (modal)
-    // ==========================================================
     function renderVistaSocio(routine, profesorNombre){
       const cont = $("#vistaContenido");
       const m = routine.meta || {};
@@ -964,9 +945,6 @@
     function openVistaModal(){ $("#vistaModal").style.display = "flex"; }
     function closeVistaModal(){ $("#vistaModal").style.display = "none"; }
 
-    // ==========================================================
-    // Socios filter (✅ FIX: rol o role)
-    // ==========================================================
     function filterSocios(q){
       q = String(q||"").toLowerCase().trim();
       const users = getUsers().filter(u=>{
@@ -981,21 +959,13 @@
       );
     }
 
-    // ==========================================================
-    // Preload core data (fallback seguro)
-    // ==========================================================
     async function preloadCoreData(){
-      // Si tu app.js tiene preloadCoreData, úsala
       if(typeof window.preloadCoreData === "function"){
         try{ await window.preloadCoreData(); return; }catch(e){ console.warn(e); }
       }
-
-      // Fallback: syncDown si existe
       if(typeof window.syncDown === "function"){
         try{ await window.syncDown(); return; }catch(e){ console.warn(e); }
       }
-
-      // Último fallback manual: trae USERS y RUTINAS_V2 a cache si hay setUsers/setRutinasV2
       try{
         if(typeof window.apiGet === "function" && typeof window.setUsers === "function"){
           const u = await apiGet("USERS");
@@ -1015,33 +985,66 @@
       }
     }
 
-    // ==========================================================
-    // Main
-    // ==========================================================
+    // ✅ Guardado REAL (await) para evitar "error rojo" silencioso
+    async function saveRutinaV2Online({rutSocio, routine, creadoPorRut}){
+      const payload = {
+        rutSocio: String(rutSocio||"").trim().toUpperCase(),
+        routine_json: JSON.stringify(routine),
+        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
+        actualizadoEn: nowISO()
+      };
+      await apiPost("RUTINAS_V2", payload);
+
+      // cache local
+      const list = getRutinasV2();
+      const idx = list.findIndex(x => String(x.rutSocio||"").toUpperCase() === payload.rutSocio);
+      const localObj = {
+        rutSocio: payload.rutSocio,
+        routine,
+        creadoPorRut: payload.creadoPorRut,
+        actualizadoEn: payload.actualizadoEn
+      };
+      if(idx >= 0) list[idx] = localObj; else list.push(localObj);
+      setRutinasV2(list);
+    }
+
+    async function saveRutinaTxtOnline({rutSocio, titulo, detalle, creadoPorRut}){
+      const payload = {
+        rutSocio: String(rutSocio||"").trim().toUpperCase(),
+        titulo: titulo || "",
+        detalle: detalle || "",
+        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
+        creadoEn: nowISO()
+      };
+      await apiPost("RUTINAS_TXT", payload);
+
+      // cache local (1 por socio)
+      const rutinas = getRutinas();
+      const idx = rutinas.findIndex(r => String(r.rutSocio||"").toUpperCase() === payload.rutSocio);
+      const localObj = { id: (idx>=0 ? rutinas[idx].id : uid()), ...payload };
+      if(idx >= 0) rutinas[idx] = localObj; else rutinas.push(localObj);
+      setRutinas(rutinas);
+    }
+
     const addedDays = new Set();
 
     document.addEventListener("DOMContentLoaded", async ()=>{
-      // Auth (funcionario)
       let me = requireAuth("FUNCIONARIO");
       if(!me) return;
 
-      // Cargar data base (users / rutinas / plantillas)
       await preloadCoreData();
 
-      // Volver / logout
       $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
       $("#btnLogout").onclick = ()=>{
         localStorage.removeItem("mahfit_session");
         window.location.href = "index.html";
       };
 
-      // Modal
       $("#btnCerrarVista").onclick = closeVistaModal;
       $("#vistaModal").addEventListener("click", (e)=>{
         if(e.target.id === "vistaModal") closeVistaModal();
       });
 
-      // Poblar socios
       const socioSelect = $("#socioSelect");
       const search = $("#socioSearch");
 
@@ -1064,14 +1067,12 @@
       search.addEventListener("input", ()=> renderSocios(filterSocios(search.value)));
       search.addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
 
-      // Cambia socio => última rutina
       socioSelect.addEventListener("change", ()=>{
         const rut = socioSelect.value;
         const last = rutinaV2DeSocio(rut);
         showLastRoutineBoxPretty(last);
       });
 
-      // Agregar día
       $("#btnAddDay").onclick = ()=>{
         const d = String($("#dayPicker").value);
         if(addedDays.has(d)){
@@ -1085,11 +1086,9 @@
         showMsg($("#msg"), `Agregado: Día ${d}`, true);
       };
 
-      // Día 1 por defecto
       $("#dayPicker").value = "1";
       $("#btnAddDay").click();
 
-      // Inicial: última rutina si socio seleccionado
       setTimeout(()=>{
         const rut = socioSelect.value;
         if(rut){
@@ -1098,46 +1097,55 @@
         }
       }, 150);
 
-      // Guardar rutina
+      // ✅ GUARDAR RUTINA (FIX REAL)
       $("#btnGuardar").onclick = async ()=>{
+        const msgEl = $("#msg");
         try{
-          const routine = collectRoutine();
-          const rutinaId = crypto.randomUUID();
+          showMsg(msgEl, "Guardando rutina…", true);
 
-          // 1) items (histórico)
-          apiPost("RUTINAS_ITEMS", {
+          const routine = collectRoutine();
+          const rutinaId = uid();
+
+          // 1) ITEMS (histórico) -> ahora SÍ esperamos
+          await apiPost("RUTINAS_ITEMS", {
             rutinaId,
             routine,
             profesorRut: me.rut,
             profesorNombre: me.nombre
-          }).catch(console.error);
+          });
 
-          // 2) Rutina V2 (por socio)
-          await upsertRutinaV2({
+          // 2) V2 (por socio) -> await real
+          await saveRutinaV2Online({
             rutSocio: routine.socio.rut,
             routine,
             creadoPorRut: me.rut
           });
 
-          // 3) Texto legacy
+          // 3) TXT legacy -> await real
           const txt = formatRutinaText(routine, me.nombre);
-          await upsertRutina({
+          await saveRutinaTxtOnline({
             rutSocio: routine.socio.rut,
             titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
             detalle: txt,
             creadoPorRut: me.rut
           });
 
+          // (Opcional) refrescar desde Sheets para asegurar
+          if(typeof syncDown === "function"){
+            try{ await syncDown(); }catch(e){ console.warn("syncDown falló:", e); }
+          }
+
           const last = rutinaV2DeSocio(routine.socio.rut);
           showLastRoutineBoxPretty(last);
 
-          showMsg($("#msg"), "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
+          showMsg(msgEl, "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
         }catch(err){
-          showMsg($("#msg"), err.message, false);
+          console.error(err);
+          const msg = (err && err.message) ? err.message : String(err);
+          showMsg(msgEl, "⛔ Error al guardar: " + msg, false);
         }
       };
 
-      // Vista Socio
       $("#btnVista").onclick = ()=>{
         try{
           const routine = collectRoutine();
@@ -1148,9 +1156,7 @@
         }
       };
 
-      // ==========================================================
-      // ✅ PLANTILLAS (V2) - cargar/guardar (FIX apiGet)
-      // ==========================================================
+      // Plantillas (igual que antes)
       const tplSearch = $("#tplSearch");
       const tplSelect = $("#tplSelect");
       let plantillasCache = [];
@@ -1207,7 +1213,7 @@
             return vis === "PUBLICA" || owner === myRut;
           }).map(p=>{
             return {
-              templateId: p.templateId || p.id || crypto.randomUUID(),
+              templateId: p.templateId || p.id || uid(),
               nombrePlantilla: p.nombrePlantilla || p.nombre || "",
               nivel: p.nivel || "",
               objetivo: p.objetivo || "",
@@ -1252,8 +1258,7 @@
 
       $("#btnGuardarPlantilla").onclick = async ()=>{
         try{
-          const r = collectRoutine(); // incluye socio, pero guardamos SOLO meta+dias como plantilla
-
+          const r = collectRoutine();
           const nombre = prompt("Nombre de la plantilla:", `${r.meta.objetivo} ${r.dias.length} días · ${r.meta.nivel}`) || "";
           if(!nombre.trim()) throw new Error("Debes colocar un nombre de plantilla.");
 
@@ -1263,7 +1268,7 @@
           const templateRoutine = { meta: r.meta, dias: r.dias };
 
           await apiPost("PLANTILLAS_V2", {
-            templateId: crypto.randomUUID(),
+            templateId: uid(),
             nombrePlantilla: nombre.trim(),
             nivel: r.meta.nivel,
             objetivo: r.meta.objetivo,
@@ -1271,7 +1276,6 @@
             visibility,
             ownerRut: String(me.rut||"").trim().toUpperCase(),
             ownerNombre: me.nombre || "",
-            // ✅ CLAVE: mandarlo como string JSON (backend lo guarda correcto)
             template_json: JSON.stringify(templateRoutine),
             creadoEn: nowISO(),
             actualizadoEn: nowISO()
@@ -1289,5 +1293,3 @@
   </script>
 </body>
 </html>
-
-
