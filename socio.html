@@ -5,242 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAH FIT | Socio</title>
   <link rel="stylesheet" href="assets/styles.css" />
-
   <style>
-    /* ====== UI UPGRADE SOCIO ====== */
-    :root{
-      --ok:#2bd576;
-      --bad:#ff5a67;
-      --warn:#ffd36e;
-      --glass: rgba(255,255,255,.06);
-      --stroke: rgba(255,255,255,.10);
-      --stroke2: rgba(255,255,255,.14);
-      --shadow: 0 14px 38px rgba(0,0,0,.45);
-      --r: 18px;
-    }
-
-    .topbar{
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      backdrop-filter: blur(12px);
-      background: rgba(0,0,0,.25);
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    .hero{
-      background:
-        radial-gradient(1000px 420px at 50% -10%, rgba(124,92,255,.20), transparent 55%),
-        radial-gradient(900px 460px at 60% 10%, rgba(35,166,255,.14), transparent 60%);
-    }
-
-    .dashHead{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .greet{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .greet .t{
-      font-weight:900;
-      font-size:22px;
-      letter-spacing:.3px;
-    }
-    .greet .s{
-      color: var(--muted);
-      font-size:13px;
-    }
-
-    .planBadge{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.05);
-      box-shadow: 0 10px 20px rgba(0,0,0,.20);
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.4px;
-      text-transform:uppercase;
-      color: rgba(255,255,255,.90);
-    }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: rgba(255,255,255,.45);
-    }
-    .dot.ok{ background: var(--ok); }
-    .dot.bad{ background: var(--bad); }
-    .dot.warn{ background: var(--warn); }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:14px;
-    }
-    @media(max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
-
-    .card2{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card2 .h{
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.22);
-    }
-    .card2 .h strong{
-      font-size:14px;
-      letter-spacing:.3px;
-    }
-    .card2 .b{
-      padding:14px 16px 16px;
-    }
-
-    .planCard{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .planTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .planMain{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width: 260px;
-    }
-    .planMain .big{
-      font-weight:1000;
-      font-size:26px;
-      letter-spacing:.3px;
-    }
-    .planMain .small{
-      color: rgba(255,255,255,.70);
-      font-size:13px;
-      line-height:1.35;
-    }
-
-    .planMeta{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .pill2{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.28);
-      color: rgba(255,255,255,.88);
-      font-weight:900;
-      font-size:12px;
-    }
-    .pill2 .i{
-      width:20px;height:20px;
-      border-radius:999px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.12);
-      border:1px solid rgba(0,200,255,.20);
-      color:#bdf2ff;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .bar{
-      height:10px;
-      border-radius:999px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.35);
-    }
-    .bar > div{
-      height:100%;
-      width:0%;
-      border-radius:999px;
-      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(35,166,255,.95));
-      transition: width .35s ease;
-    }
-    .barTxt{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      color: rgba(255,255,255,.65);
-      font-size:12px;
-      margin-top:6px;
-    }
-
-    /* Paywall */
-    .paywall{
-      border:1px solid rgba(255,90,103,.35);
-      background: radial-gradient(700px 300px at 30% 0%, rgba(255,90,103,.22), transparent 55%),
-                  rgba(255,90,103,.10);
-      border-radius: var(--r);
-      padding:16px;
-      color: rgba(255,255,255,.92);
-    }
-    .paywall .title{
-      font-weight:1000;
-      font-size:18px;
-      letter-spacing:.2px;
-    }
-    .paywall .sub{
-      margin-top:6px;
-      color: rgba(255,255,255,.80);
-      line-height:1.45;
-      font-size:13px;
-    }
-    .ctaRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-    .btn2{
-      border:none; cursor:pointer;
-      border-radius:14px;
-      padding:10px 12px;
-      font-weight:900;
-      color:#fff;
-      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(35,166,255,.95));
-      box-shadow: 0 12px 22px rgba(35,166,255,.12);
-    }
-    .btn2.ghost{
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:none;
-      color: rgba(255,255,255,.88);
-    }
-
-    /* Rutina cards (tu base, mejorada leve) */
     details.day{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.28);
-      border-radius: 16px;
+      border-radius: 14px;
       overflow:hidden;
       margin-top:12px;
     }
@@ -300,8 +69,8 @@
       display:inline-flex;
       gap:8px;
       align-items:center;
-      font-weight:1000;
-      letter-spacing:.6px;
+      font-weight:900;
+      .letter-spacing:.6px;
       text-transform:uppercase;
       color: rgba(255,255,255,.92);
     }
@@ -315,7 +84,7 @@
       font-weight:900;
     }
     .exerciseName{
-      font-weight:1000;
+      font-weight:900;
       font-size:15px;
       color:#fff;
       overflow:hidden;
@@ -323,6 +92,7 @@
       white-space:nowrap;
       max-width: 100%;
     }
+
     .chips{
       display:flex;
       gap:10px;
@@ -338,7 +108,7 @@
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.30);
       color: rgba(255,255,255,.88);
-      font-weight:900;
+      font-weight:800;
       font-size:13px;
     }
     .chip .cIcon{
@@ -351,6 +121,7 @@
       font-size:12px;
       font-weight:900;
     }
+
     .note{
       display:flex;
       gap:10px;
@@ -369,6 +140,7 @@
       color:#ffe7a1;
       font-weight:900;
     }
+
     .exDone{
       display:flex;
       align-items:center;
@@ -382,13 +154,50 @@
       cursor:pointer;
     }
 
-    .notice{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      border-radius: var(--r);
-      padding:14px 16px;
-      color: rgba(255,255,255,.88);
+    .metaLine{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color: rgba(255,255,255,.72);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    .metaLine .pill{ background: rgba(255,255,255,.04); }
+
+    /* ✅ Estado plan / paywall */
+    .paywall{
+      border:1px solid rgba(255,90,103,.35);
+      background: rgba(255,90,103,.10);
+      border-radius:16px;
+      padding:16px;
+      margin-top:14px;
+      color: rgba(255,255,255,.92);
+    }
+    .paywall b{ font-size:16px; }
+    .paywall .sub{
+      margin-top:6px;
+      color: rgba(255,255,255,.78);
       line-height:1.4;
+    }
+    .planPill{
+      font-weight: 900 !important;
+      border-width: 1px !important;
+    }
+    .planOk{
+      background: rgba(43,213,118,.12) !important;
+      border-color: rgba(43,213,118,.35) !important;
+      color: rgba(220,255,235,.95) !important;
+    }
+    .planWarn{
+      background: rgba(255,211,110,.12) !important;
+      border-color: rgba(255,211,110,.35) !important;
+      color: rgba(255,244,210,.95) !important;
+    }
+    .planBad{
+      background: rgba(255,90,103,.12) !important;
+      border-color: rgba(255,90,103,.35) !important;
+      color: rgba(255,230,233,.95) !important;
     }
   </style>
 </head>
@@ -406,93 +215,32 @@
   <main class="hero">
     <div class="container">
 
-      <div class="dashHead">
-        <div class="greet">
-          <div class="t">Tu panel</div>
-          <div class="s">Rutina, progreso y estado de tu membresía.</div>
+      <div class="kpi">
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Plan</div>
+          <b id="kPlan">-</b>
+          <div style="color:var(--muted);font-size:13px;" id="kNivel">(sin rutina)</div>
         </div>
-
-        <div class="planBadge" id="planBadge">
-          <span class="dot" id="planDot"></span>
-          <span id="planBadgeText">Cargando plan…</span>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio</div>
+          <b id="kCardio">-</b>
+          <div style="color:var(--muted);font-size:13px;" id="kCardio2">-</div>
         </div>
-      </div>
-
-      <div class="grid">
-        <!-- PLAN -->
-        <div class="card2">
-          <div class="h">
-            <strong>Tu plan</strong>
-            <span class="pill">Membresía</span>
-          </div>
-          <div class="b">
-            <div class="planCard">
-              <div class="planTop">
-                <div class="planMain">
-                  <div class="big" id="planBig">—</div>
-                  <div class="small" id="planSmall">—</div>
-                </div>
-                <div class="planMeta">
-                  <span class="pill2"><span class="i">⏳</span><span id="planDays">—</span></span>
-                  <span class="pill2"><span class="i">📅</span><span id="planEnd">—</span></span>
-                  <span class="pill2"><span class="i">🏷</span><span id="planType">—</span></span>
-                </div>
-              </div>
-
-              <div>
-                <div class="bar"><div id="planBar"></div></div>
-                <div class="barTxt">
-                  <span id="barLeft">—</span>
-                  <span id="barRight">—</span>
-                </div>
-              </div>
-
-              <div id="paywallBox" style="display:none;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- KPIs -->
-        <div class="card2">
-          <div class="h">
-            <strong>Resumen</strong>
-            <span class="pill">Rutina</span>
-          </div>
-          <div class="b">
-            <div class="kpi" style="margin:0;">
-              <div class="box">
-                <div style="color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;">Nivel</div>
-                <b id="kNivel">(sin rutina)</b>
-                <div style="color:var(--muted);font-size:13px;" id="kObj">Objetivo: -</div>
-              </div>
-              <div class="box">
-                <div style="color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;">Cardio</div>
-                <b id="kCardio">-</b>
-                <div style="color:var(--muted);font-size:13px;" id="kCardio2">-</div>
-              </div>
-              <div class="box">
-                <div style="color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;">Días</div>
-                <b id="kDias">0</b>
-                <div style="color:var(--muted);font-size:13px;">Rutina semanal</div>
-              </div>
-            </div>
-
-            <div class="notice" style="margin-top:12px;">
-              Tip: marca tus ejercicios completados ✅ para llevar control en tu celular o PC.
-            </div>
-          </div>
+        <div class="box">
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Días</div>
+          <b id="kDias">0</b>
+          <div style="color:var(--muted);font-size:13px;">Rutina semanal</div>
         </div>
       </div>
 
-      <div style="height:16px;"></div>
+      <div style="height:18px;"></div>
 
-      <!-- RUTINA -->
-      <div class="card2">
-        <div class="h">
+      <div class="card">
+        <div class="head">
           <strong>Tu plan de entrenamiento</strong>
           <span class="pill">Por día (desplegable)</span>
         </div>
-        <div class="b" id="rutinaBox"></div>
+        <div class="body" id="rutinaBox"></div>
       </div>
 
     </div>
@@ -504,39 +252,32 @@
       return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
     }
 
-    // === PLAN helpers ===
-    function parseDateSafe(v){
-      if(!v) return null;
-      const d = new Date(v);
-      return isNaN(d.getTime()) ? null : d;
+    // ✅ calcula días restantes del plan (usa user.planFin)
+    function planInfo(planFin){
+      if(!planFin) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      const end = new Date(planFin);
+      if(isNaN(end.getTime())) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
+
+      end.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const diff = Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24));
+      const endTxt = end.toLocaleDateString("es-CL");
+
+      if(diff < 0) return { status:"expired", days:diff, endTxt, label:`Vencido (vence ${endTxt})` };
+      if(diff === 0) return { status:"today", days:0, endTxt, label:`Vence hoy (${endTxt})` };
+      return { status:"active", days:diff, endTxt, label:`Quedan ${diff} días (vence ${endTxt})` };
     }
-    function planInfo(user){
-      const end = parseDateSafe(user.planFin);
-      const start = parseDateSafe(user.planInicio);
-      const type = safe(user.planTipo, "—");
 
-      if(!end){
-        return { status:"none", days:null, endTxt:"—", startTxt:"—", type, pct:0 };
+    function planClass(status, days){
+      if(status === "active"){
+        if(typeof days === "number" && days <= 5) return "planWarn";
+        return "planOk";
       }
-
-      const today = new Date(); today.setHours(0,0,0,0);
-      const e = new Date(end); e.setHours(0,0,0,0);
-
-      const days = Math.ceil((e.getTime() - today.getTime()) / (1000*60*60*24));
-      const endTxt = e.toLocaleDateString("es-CL");
-
-      let pct = 0;
-      if(start){
-        const s = new Date(start); s.setHours(0,0,0,0);
-        const total = Math.max(1, Math.ceil((e.getTime() - s.getTime()) / (1000*60*60*24)));
-        const used = Math.min(total, Math.max(0, Math.ceil((today.getTime() - s.getTime()) / (1000*60*60*24))));
-        pct = Math.round((used / total) * 100);
-      }
-
-      if(days < 0) return { status:"expired", days, endTxt, startTxt: start?start.toLocaleDateString("es-CL"):"—", type, pct:100 };
-      if(days === 0) return { status:"today", days, endTxt, startTxt: start?start.toLocaleDateString("es-CL"):"—", type, pct:100 };
-      if(days <= 5) return { status:"soon", days, endTxt, startTxt: start?start.toLocaleDateString("es-CL"):"—", type, pct };
-      return { status:"active", days, endTxt, startTxt: start?start.toLocaleDateString("es-CL"):"—", type, pct };
+      if(status === "today") return "planWarn";
+      return "planBad";
     }
 
     function getDoneKey(rut, day, idx){
@@ -556,7 +297,6 @@
         const chipReps   = safe(e.reps, "-");
         const chipCarga  = safe(e.carga, "-");
         const chipDesc   = safe(e.descanso, "-");
-
         const noteText = safe(e.obs, "");
 
         return `
@@ -615,142 +355,80 @@
       document.querySelector("#who").textContent = user.nombre;
       document.querySelector("#roleBadge").textContent = "SOCIO";
 
-      const p = planInfo(user);
-
-      // Badge plan
-      const dot = document.querySelector("#planDot");
-      const txt = document.querySelector("#planBadgeText");
-
-      function setBadge(kind, label){
-        dot.className = "dot";
-        if(kind === "ok") dot.classList.add("ok");
-        if(kind === "bad") dot.classList.add("bad");
-        if(kind === "warn") dot.classList.add("warn");
-        txt.textContent = label;
-      }
-
-      // Plan card
-      const planBig = document.querySelector("#planBig");
-      const planSmall = document.querySelector("#planSmall");
-      const planDays = document.querySelector("#planDays");
-      const planEnd = document.querySelector("#planEnd");
-      const planType = document.querySelector("#planType");
-      const planBar = document.querySelector("#planBar");
-      const barLeft = document.querySelector("#barLeft");
-      const barRight = document.querySelector("#barRight");
-      const paywallBox = document.querySelector("#paywallBox");
-
-      planType.textContent = p.type;
-
-      if(p.status === "active"){
-        setBadge("ok", `PLAN ACTIVO · ${p.days} DÍAS`);
-        planBig.textContent = `Quedan ${p.days} días`;
-        planBig.style.color = "var(--ok)";
-        planSmall.textContent = `Tu plan está vigente. Vence el ${p.endTxt}.`;
-        planDays.textContent = `${p.days} días`;
-        planEnd.textContent = p.endTxt;
-        planBar.style.width = `${Math.min(100, Math.max(0, p.pct))}%`;
-        barLeft.textContent = `Inicio: ${p.startTxt}`;
-        barRight.textContent = `Vence: ${p.endTxt}`;
-      } else if(p.status === "today"){
-        setBadge("warn", `VENCE HOY`);
-        planBig.textContent = `Vence hoy`;
-        planBig.style.color = "var(--warn)";
-        planSmall.textContent = `Renueva para no perder acceso a rutinas y asesorías.`;
-        planDays.textContent = `0 días`;
-        planEnd.textContent = p.endTxt;
-        planBar.style.width = `100%`;
-        barLeft.textContent = `Inicio: ${p.startTxt}`;
-        barRight.textContent = `Vence: ${p.endTxt}`;
-      } else if(p.status === "soon"){
-        setBadge("warn", `QUEDAN ${p.days} DÍAS`);
-        planBig.textContent = `Quedan ${p.days} días`;
-        planBig.style.color = "var(--warn)";
-        planSmall.textContent = `Tu plan está por vencer. Vence el ${p.endTxt}.`;
-        planDays.textContent = `${p.days} días`;
-        planEnd.textContent = p.endTxt;
-        planBar.style.width = `${Math.min(100, Math.max(0, p.pct))}%`;
-        barLeft.textContent = `Inicio: ${p.startTxt}`;
-        barRight.textContent = `Vence: ${p.endTxt}`;
-      } else {
-        // none / expired
-        setBadge("bad", `PLAN INACTIVO`);
-        planBig.textContent = `Plan inactivo`;
-        planBig.style.color = "var(--bad)";
-        planSmall.textContent = `Renueva tu plan para disfrutar tus entrenamientos y asesorías.`;
-        planDays.textContent = `—`;
-        planEnd.textContent = p.endTxt || "—";
-        planBar.style.width = `0%`;
-        barLeft.textContent = `Acceso restringido`;
-        barRight.textContent = `Renueva con administración`;
-
-        paywallBox.style.display = "block";
-        paywallBox.innerHTML = `
-          <div class="paywall">
-            <div class="title">Renueva tu plan para disfrutar tus entrenamientos y asesorías</div>
-            <div class="sub">
-              Tu membresía está <b>inactiva</b>. Solicita la renovación para reactivar tu acceso.
-            </div>
-            <div class="ctaRow">
-              <button class="btn2" onclick="alert('Pídele a tu entrenador que renueve tu plan desde el CRM ✅')">¿Cómo renuevo?</button>
-              <button class="btn2 ghost" onclick="location.reload()">Actualizar</button>
-            </div>
-          </div>
-        `;
-      }
-
-      // Rutina
       const box = document.querySelector("#rutinaBox");
 
-      // Si plan está inactivo/vencido → bloquea rutina
-      if(p.status === "none" || p.status === "expired"){
+      // ✅ PLAN: mostrar días restantes y bloquear si está vencido/inactivo
+      const p = planInfo(user.planFin);
+      const kPlan = document.querySelector("#kPlan");
+
+      if(p.status === "active"){
+        kPlan.textContent = `Activo · ${p.days} días`;
+        kPlan.style.color = (p.days <= 5) ? "var(--warn)" : "var(--ok)";
+      }else if(p.status === "today"){
+        kPlan.textContent = "Vence hoy";
+        kPlan.style.color = "var(--warn)";
+      }else{
+        kPlan.textContent = "Inactivo";
+        kPlan.style.color = "var(--bad)";
+      }
+
+      if(p.status !== "active" && p.status !== "today"){
+        document.querySelector("#kNivel").textContent = "Renueva tu plan";
+        document.querySelector("#kDias").textContent = "0";
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "-";
+
         box.innerHTML = `
           <div class="paywall">
-            <div class="title">Acceso restringido</div>
+            <b>Renueva tu plan para disfrutar tus entrenamientos y asesorías</b>
             <div class="sub">
-              Renueva tu plan para disfrutar tus entrenamientos y asesorías.
-            </div>
-            <div class="ctaRow">
-              <button class="btn2 ghost" onclick="location.reload()">Actualizar</button>
+              Tu membresía está <b>inactiva</b>. Para reactivar tu acceso, solicita la renovación con administración.
             </div>
           </div>
         `;
-      } else {
-        const rv2 = rutinaV2DeSocio(user.rut);
-        if(!rv2 || !rv2.routine){
-          box.innerHTML = `
-            <div class="notice">
-              <b>Plan de entrenamiento no asignado</b><br>
-              Tienes un plan activo, pero aún no se te asigna una rutina específica.
-            </div>
-          `;
-        } else {
-          const routine = rv2.routine;
-          const meta = routine.meta || {};
-          const cardio = meta.cardio || {};
+        return;
+      }
 
-          document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
-          document.querySelector("#kObj").textContent = `Objetivo: ${safe(meta.objetivo,"-")}`;
-          document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
-          document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
-          document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
+      const rv2 = rutinaV2DeSocio(user.rut);
+      if(!rv2 || !rv2.routine){
+        box.innerHTML = `
+          <div class="notice">
+            <b>Plan de entrenamiento no asignado</b><br>
+            Tienes un plan activo, pero aún no se te asigna una rutina específica.
+          </div>
+        `;
+      }else{
+        const routine = rv2.routine;
+        const meta = routine.meta || {};
+        const cardio = meta.cardio || {};
 
-          const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
-          dias.sort((a,b)=>{
-            const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
-            const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
-            return na-nb;
+        document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
+        document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
+        document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
+        document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
+
+        const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
+        dias.sort((a,b)=>{
+          const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
+          const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
+          return na-nb;
+        });
+
+        box.innerHTML = `
+          <div class="metaLine">
+            <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
+            <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
+            <span class="pill">Fecha: ${safe(meta.fecha,"-")}</span>
+          </div>
+          ${dias.map(d=>renderDay(d, user.rut)).join("")}
+        `;
+
+        box.querySelectorAll('[data-done]').forEach(chk=>{
+          chk.addEventListener("change", ()=>{
+            const key = chk.getAttribute("data-done");
+            localStorage.setItem(key, chk.checked ? "1" : "0");
           });
-
-          box.innerHTML = dias.map(d=>renderDay(d, user.rut)).join("");
-
-          box.querySelectorAll('[data-done]').forEach(chk=>{
-            chk.addEventListener("change", ()=>{
-              const key = chk.getAttribute("data-done");
-              localStorage.setItem(key, chk.checked ? "1" : "0");
-            });
-          });
-        }
+        });
       }
 
       document.querySelector("#btnLogout").addEventListener("click", ()=>{
