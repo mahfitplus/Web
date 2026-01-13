@@ -8,10 +8,34 @@
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
    - ✅ FIX: Activar/Desactivar ahora SÍ alterna y escribe TRUE/FALSE en Sheets
    - ✅ Funcionario: buscador y filtro en vivo (sin tocar tu backend)
-   - ✅ NUEVO: Plan/Membresía (PlanFin) + columna TIEMPO PLAN + botón Renovar
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxmrZWr44VUw_QkcUD4J5COzVase3vexs7VvGn5tFvXXAhvgvj9ba5hjuT3qkKqg89jMA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx0XfhanWYg40EwVbPbJ4uuUK31BF3BzAMPM_NzO9pJ90kenvxbbFacLn2bRnFPfAa9Mw/exec";
+
+// ---------------- DOMContentLoaded GATE ----------------
+(function(){
+  const origAdd = document.addEventListener.bind(document);
+  const queued = [];
+  let ready = false;
+
+  document.addEventListener = function(type, listener, options){
+    if(type === "DOMContentLoaded"){
+      if(ready){
+        try{ listener(); }catch(e){ console.error(e); }
+      } else {
+        queued.push(listener);
+      }
+      return;
+    }
+    return origAdd(type, listener, options);
+  };
+
+  window.__mahfitReleaseDOMContentLoaded = function(){
+    ready = true;
+    queued.forEach(fn=>{ try{ fn(); }catch(e){ console.error(e); } });
+    queued.length = 0;
+  };
+})();
 
 // ---------------- LocalStorage helpers ----------------
 const LS = {
@@ -46,47 +70,30 @@ function setDbStatus(status){
   }
 }
 
-// ---------------- DOMContentLoaded GATE ----------------
-(function gateDOMContentLoaded(){
-  const origAdd = document.addEventListener.bind(document);
-  const queued = [];
-  let ready = false;
-
-  document.addEventListener = function(type, listener, options){
-    if(type === "DOMContentLoaded"){
-      if(ready){
-        try{ listener(); }catch(e){ console.error(e); }
-      } else {
-        queued.push(listener);
-      }
-      return;
-    }
-    return origAdd(type, listener, options);
-  };
-
-  window.__mahfitReleaseDOMContentLoaded = function(){
-    ready = true;
-    queued.forEach(fn=>{ try{ fn(); }catch(e){ console.error(e); } });
-    queued.length = 0;
-  };
-})();
-
-// ---------------- API (resource-based) ----------------
+// ---------------- API helpers ----------------
 async function apiGet(resource){
-  const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API GET error");
+  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
+  const r = await fetch(url, { method:"GET", cache:"no-store" });
+  const t = await r.text();
+  let j = null;
+  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  if(j && j.ok === false) throw new Error(j.error || "API error");
   return j;
 }
 
 async function apiPost(resource, data){
+  const payload = { resource, data };
   const r = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ resource, data })
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
   });
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error || "API POST error");
+  const t = await r.text();
+  let j = null;
+  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  if(j && j.ok === false) throw new Error(j.error || "API error");
   return j;
 }
 
@@ -110,44 +117,6 @@ function setSession(user){
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
 
-// ---------------- Fechas Plan helpers ----------------
-function parseDateSafe(v){
-  if(!v) return null;
-  if(v instanceof Date) return v;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? null : d;
-}
-function toDateOnly(d){
-  const x = new Date(d);
-  x.setHours(0,0,0,0);
-  return x;
-}
-function diffDays(a, b){
-  // a y b Date (date-only)
-  const ms = b.getTime() - a.getTime();
-  return Math.ceil(ms / (1000*60*60*24));
-}
-function planStatusObj(planFin){
-  const end = parseDateSafe(planFin);
-  if(!end) return { kind:"none", text:"Sin plan", html:`<span class="muted">Sin plan</span>` };
-
-  const today = toDateOnly(new Date());
-  const e = toDateOnly(end);
-  const d = diffDays(today, e);
-  const endTxt = e.toLocaleDateString("es-CL");
-
-  if(d < 0){
-    return { kind:"expired", days:d, text:`Vencido (vence ${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vencido</span> <span class="muted">(vence ${endTxt})</span>` };
-  }
-  if(d === 0){
-    return { kind:"today", days:d, text:`Vence hoy (${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vence hoy</span> <span class="muted">(${endTxt})</span>` };
-  }
-  if(d <= 5){
-    return { kind:"soon", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:#ffd36e;font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
-  }
-  return { kind:"ok", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:var(--ok);font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
-}
-
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
   // USERS
@@ -159,16 +128,15 @@ async function syncDown(){
     pass: String(x.pass ?? ""),
     rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false) ? false : true,
-    creadoEn: x.creadoEn ?? "",
-
-    // ✅ NUEVO: Plan/Membresía
-    planTipo: x.planTipo ?? x.PlanTipo ?? "",
-    planInicio: x.planInicio ?? x.PlanInicio ?? "",
-    planFin: x.planFin ?? x.PlanFin ?? ""
+    // ✅ Plan (si existe en la hoja)
+    planTipo: x.planTipo ?? x.plan_tipo ?? "",
+    planInicio: x.planInicio ?? x.plan_inicio ?? "",
+    planFin: x.planFin ?? x.plan_fin ?? "",
+    creadoEn: x.creadoEn ?? ""
   }));
   setUsers(users);
 
-  // RUTINAS_TXT
+  // Rutinas TXT
   const rt = await apiGet("RUTINAS_TXT");
   const rutinas = (rt.rutinas_txt || []).map(x => ({
     id: x.id || crypto.randomUUID(),
@@ -180,7 +148,7 @@ async function syncDown(){
   }));
   setRutinas(rutinas);
 
-  // RUTINAS_V2
+  // Rutinas V2
   const rv2 = await apiGet("RUTINAS_V2");
   const list = (rv2.rutinas_v2 || []).map(x => {
     let routine = null;
@@ -194,7 +162,7 @@ async function syncDown(){
   });
   setRutinasV2(list);
 
-  // PLANTILLAS_V2
+  // Plantillas V2
   const pv2 = await apiGet("PLANTILLAS_V2");
   const tpl = (pv2.plantillas_v2 || []).map(x => {
     let templateObj = null;
@@ -236,6 +204,9 @@ async function seedRemoteAdmin(){
     pass: "1234",
     rol: "FUNCIONARIO",
     activo: true,
+    planTipo: "",
+    planInicio: "",
+    planFin: "",
     creadoEn: nowISO()
   });
 
@@ -279,12 +250,10 @@ function registerUser({rut, nombre, email, pass, rol}){
     pass: String(pass),
     rol,
     activo: true,
-    creadoEn: nowISO(),
-
-    // ✅ NUEVO: plan por defecto vacío
     planTipo: "",
     planInicio: "",
-    planFin: ""
+    planFin: "",
+    creadoEn: nowISO()
   };
 
   users.push(user);
@@ -418,239 +387,6 @@ async function savePlantillaV2(payload){
   return localObj;
 }
 
-// ---------------- UI helpers ----------------
-function $(sel){ return document.querySelector(sel); }
-function showMsg(el, msg, ok=false){
-  if(!el) return;
-  el.textContent = msg;
-  el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
-}
-
-// ---------------- Plan: Renovar (backend) ----------------
-async function renovarPlan(rut){
-  rut = normalizeRut(rut);
-  const dias = parseInt(prompt("¿Cuántos días quieres agregar al plan? Ej: 30 / 90 / 365"), 10);
-  if(!dias || dias <= 0) return;
-
-  try{
-    await apiPost("users_plan_update", { rut, dias });
-    await syncDown();
-    alert("Plan renovado ✅");
-  }catch(e){
-    console.error(e);
-    alert("No se pudo renovar el plan. Revisa Apps Script (users_plan_update).");
-  }
-}
-
-// ---------------- INIT por página ----------------
-function initIndex(){
-  const loginForm = $("#loginForm");
-  const msgLogin  = $("#msgLogin");
-
-  const s = getSession();
-  if(s){
-    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
-    if(u){
-      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-      return;
-    }
-  }
-
-  loginForm?.addEventListener("submit", (e)=>{
-    e.preventDefault();
-    try{
-      const user = login({ rut: $("#loginRut").value, pass: $("#loginPass").value });
-      showMsg(msgLogin, "Ingreso correcto. Redirigiendo...", true);
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
-    }catch(err){
-      showMsg(msgLogin, err.message);
-    }
-  });
-
-  const resetBtn = document.getElementById("resetBtn");
-  if(resetBtn){
-    resetBtn.addEventListener("click", ()=>{
-      localStorage.removeItem("mahfit_users");
-      localStorage.removeItem("mahfit_rutinas");
-      localStorage.removeItem("mahfit_rutinas_v2");
-      localStorage.removeItem("mahfit_plantillas_v2");
-      localStorage.removeItem("mahfit_session");
-      alert("Datos locales reiniciados. Recarga la página.");
-      window.location.reload();
-    });
-  }
-}
-
-function initFuncionario(){
-  const me = requireAuth("FUNCIONARIO");
-  if(!me) return;
-
-  const who = document.getElementById("who");
-  const roleBadge = document.getElementById("roleBadge");
-  if(who) who.textContent = me.nombre;
-  if(roleBadge) roleBadge.textContent = "FUNCIONARIO";
-
-  const msgUser = $("#msgUser");
-  const tbody = $("#usersTbody");
-
-  const searchInput = document.getElementById("userSearch");
-  const roleFilter  = document.getElementById("roleFilter");
-
-  function refreshKPIs(){
-    const users = getUsers();
-    const kSocios = document.getElementById("kSocios");
-    const kFunc = document.getElementById("kFunc");
-    const kActivos = document.getElementById("kActivos");
-    if(kSocios) kSocios.textContent = users.filter(u=>String(u.rol).toUpperCase()==="SOCIO").length;
-    if(kFunc) kFunc.textContent = users.filter(u=>String(u.rol).toUpperCase()==="FUNCIONARIO").length;
-    if(kActivos) kActivos.textContent = users.filter(u=>u.activo !== false).length;
-  }
-
-  function getFilteredUsers(){
-    const users = getUsers().slice();
-
-    const q = String(searchInput?.value || "").toLowerCase().trim();
-    const rf = String(roleFilter?.value || "ALL").toUpperCase();
-
-    return users.filter(u=>{
-      const rol = String(u.rol || "").toUpperCase();
-      const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
-
-      const roleOk = (rf === "ALL") ? true : (rol === rf);
-      if(!roleOk) return false;
-
-      if(!q) return true;
-
-      const hay = [
-        u.nombre || "",
-        u.rut || "",
-        u.email || "",
-        rol,
-        activoTxt,
-        u.planFin || "",
-        u.planTipo || ""
-      ].join(" ").toLowerCase();
-
-      return hay.includes(q);
-    }).sort((a,b)=> (a.rol>b.rol?1:-1) || String(a.nombre||"").localeCompare(String(b.nombre||"")));
-  }
-
-  function refreshTable(){
-    if(!tbody) return;
-
-    const list = getFilteredUsers();
-    tbody.innerHTML = "";
-
-    for(const u of list){
-      const rol = String(u.rol || "").toUpperCase();
-      const activo = (u.activo !== false);
-
-      const plan = planStatusObj(u.planFin);
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.nombre || ""}</td>
-        <td>${u.rut || ""}</td>
-        <td><span class="pill">${rol}</span></td>
-        <td>${activo ? "✅" : "⛔"}</td>
-        <td>${plan.html}</td>
-        <td style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn small ghost" data-act="${u.rut}">
-            ${activo ? "Desactivar" : "Activar"}
-          </button>
-
-          ${rol === "SOCIO" ? `
-            <button class="btn small" data-ren="${u.rut}">Renovar</button>
-          ` : ``}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    // ✅ FIX REAL: toggle + guarda en Sheets + resync
-    tbody.querySelectorAll("[data-act]").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const rut = btn.getAttribute("data-act");
-        const users = getUsers();
-        const u = users.find(x=>x.rut===rut);
-        if(!u) return;
-
-        const activoActual = (u.activo !== false);
-        u.activo = !activoActual;
-
-        // optimista local
-        setUsers(users);
-        refreshKPIs();
-        refreshTable();
-
-        try{
-          await apiPost("USERS", u);
-          await syncDown();
-          refreshKPIs();
-          refreshTable();
-          showMsg(msgUser, "✅ Estado actualizado en Sheets.", true);
-        }catch(e){
-          console.error(e);
-          showMsg(msgUser, "❌ No se pudo guardar en Sheets. Revisa API/permisos.", false);
-          await syncDown().catch(()=>{});
-          refreshKPIs();
-          refreshTable();
-        }
-      });
-    });
-
-    // ✅ Renovar plan
-    tbody.querySelectorAll("[data-ren]").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const rut = btn.getAttribute("data-ren");
-        await renovarPlan(rut);
-        refreshKPIs();
-        refreshTable();
-      });
-    });
-  }
-
-  // crear usuario
-  const createForm = document.getElementById("createUserForm");
-  createForm?.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    try{
-      const newUser = registerUser({
-        rut: $("#newRut").value,
-        nombre: $("#newNombre").value,
-        email: $("#newEmail").value,
-        pass: $("#newPass").value,
-        rol: $("#newRol").value
-      });
-      showMsg(msgUser, `✅ Usuario creado: ${newUser.nombre} (${newUser.rol})`, true);
-      e.target.reset();
-
-      await syncDown();
-      refreshKPIs();
-      refreshTable();
-    }catch(err){
-      showMsg(msgUser, err.message, false);
-    }
-  });
-
-  // buscador
-  searchInput?.addEventListener("input", refreshTable);
-  roleFilter?.addEventListener("change", refreshTable);
-
-  // botones top
-  document.getElementById("btnLogout")?.addEventListener("click", ()=>{
-    clearSession();
-    window.location.href = "index.html";
-  });
-
-  document.getElementById("btnRutinas")?.addEventListener("click", ()=>{
-    window.location.href = "rutinas.html";
-  });
-
-  refreshKPIs();
-  refreshTable();
-}
-
 // ---------------- BOOT ----------------
 (async function boot(){
   setDbStatus("connecting");
@@ -666,13 +402,6 @@ function initFuncionario(){
     if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
   }
 })();
-
-// ---------------- Ejecuta init por página ----------------
-document.addEventListener("DOMContentLoaded", ()=>{
-  const page = document.body.getAttribute("data-page");
-  if(page === "index") initIndex();
-  if(page === "funcionario") initFuncionario();
-});
 
 // ---------------- Exponer helpers globales ----------------
 window.API_URL = API_URL;
@@ -698,7 +427,6 @@ window.requireAuth = requireAuth;
 window.upsertRutina = upsertRutina;
 window.upsertRutinaV2 = upsertRutinaV2;
 window.syncDown = syncDown;
-
-// ✅ nuevo
-window.renovarPlan = renovarPlan;
-
+window.clearSession = clearSession;
+window.login = login;
+window.registerUser = registerUser;
