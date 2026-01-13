@@ -1,5 +1,5 @@
 /* =========================================================
-   MAH FIT - app.js (COMPLETO / LISTO PARA REEMPLAZAR)
+   MAH FIT - assets/app.js (COMPLETO / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
    - Mantiene funciones SINCRÓNICAS para no romper tus HTML
    - requireAuth("ROL") y requireAuth(["A","B"])
@@ -7,14 +7,14 @@
    - Helpers plantillas: plantillasVisiblesPara + savePlantillaV2
    - Indicador conexión (dbDot/dbText) 🟢🔴⚪
    - ✅ FIX: Activar/Desactivar ahora SÍ alterna y escribe TRUE/FALSE en Sheets
-   - ✅ Funcionario: buscador y filtro en vivo (sin tocar tu backend)
-   - ✅ NUEVO: Plan/Membresía (PlanFin) + columna TIEMPO PLAN + botón Renovar
-   - ✅ FIX EXTRA: planInicio/planFin tolerante a llaves del backend (PlanFin/planfin/plan_fin)
+   - ✅ Funcionario: buscador y filtro en vivo
+   - ✅ Plan/Membresía: planInicio/planFin + TIEMPO PLAN + Renovar
+   - ✅ Tolerante a llaves backend: PlanFin/planfin/plan_fin etc.
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwvVYMWWSMdX31lO8fOUfsETb6yVDwq6g27uEsUNdkhTkEFH3M592pENr57FvBh6KxY/exec";
 
-// ---------------- LocalStorage helpers ----------------
+/* ---------------- LocalStorage helpers ---------------- */
 const LS = {
   get(key, fallback){
     try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -27,7 +27,7 @@ const LS = {
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
 
-// ---------------- DB STATUS (pelotita) ----------------
+/* ---------------- DB STATUS (pelotita) ---------------- */
 function setDbStatus(status){
   // status: "connecting" | "connected" | "error"
   const dot  = document.getElementById("dbDot");
@@ -47,7 +47,9 @@ function setDbStatus(status){
   }
 }
 
-// ---------------- DOMContentLoaded GATE ----------------
+/* ---------------- DOMContentLoaded GATE ----------------
+   Evita que tus HTML se ejecuten antes del syncDown/seed.
+-------------------------------------------------------- */
 (function gateDOMContentLoaded(){
   const origAdd = document.addEventListener.bind(document);
   const queued = [];
@@ -72,7 +74,7 @@ function setDbStatus(status){
   };
 })();
 
-// ---------------- API (resource-based) ----------------
+/* ---------------- API (resource-based) ---------------- */
 async function apiGet(resource){
   const r = await fetch(`${API_URL}?resource=${encodeURIComponent(resource)}`);
   const j = await r.json();
@@ -91,7 +93,7 @@ async function apiPost(resource, data){
   return j;
 }
 
-// ---------------- Cache local ----------------
+/* ---------------- Cache local ---------------- */
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
 
@@ -104,14 +106,14 @@ function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
-// ---------------- Session ----------------
+/* ---------------- Session ---------------- */
 function setSession(user){
   LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
 }
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
 
-// ---------------- Fechas Plan helpers ----------------
+/* ---------------- Plan helpers ---------------- */
 function parseDateSafe(v){
   if(!v) return null;
   if(v instanceof Date) return v;
@@ -124,7 +126,6 @@ function toDateOnly(d){
   return x;
 }
 function diffDays(a, b){
-  // a y b Date (date-only)
   const ms = b.getTime() - a.getTime();
   return Math.ceil(ms / (1000*60*60*24));
 }
@@ -138,21 +139,26 @@ function planStatusObj(planFin){
   const endTxt = e.toLocaleDateString("es-CL");
 
   if(d < 0){
-    return { kind:"expired", days:d, text:`Vencido (vence ${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vencido</span> <span class="muted">(vence ${endTxt})</span>` };
+    return { kind:"expired", days:d, text:`Vencido (vence ${endTxt})`,
+      html:`<span style="color:var(--bad);font-weight:900;">Vencido</span> <span class="muted">(vence ${endTxt})</span>` };
   }
   if(d === 0){
-    return { kind:"today", days:d, text:`Vence hoy (${endTxt})`, html:`<span style="color:var(--bad);font-weight:900;">Vence hoy</span> <span class="muted">(${endTxt})</span>` };
+    return { kind:"today", days:d, text:`Vence hoy (${endTxt})`,
+      html:`<span style="color:#ffd36e;font-weight:900;">Vence hoy</span> <span class="muted">(${endTxt})</span>` };
   }
   if(d <= 5){
-    return { kind:"soon", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:#ffd36e;font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
+    return { kind:"soon", days:d, text:`Quedan ${d} días (vence ${endTxt})`,
+      html:`<span style="color:#ffd36e;font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
   }
-  return { kind:"ok", days:d, text:`Quedan ${d} días (vence ${endTxt})`, html:`<span style="color:var(--ok);font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
+  return { kind:"ok", days:d, text:`Quedan ${d} días (vence ${endTxt})`,
+    html:`<span style="color:var(--ok);font-weight:900;">Quedan ${d} días</span> <span class="muted">(vence ${endTxt})</span>` };
 }
 
-// ---------------- Sync DOWN (Sheets -> cache) ----------------
+/* ---------------- Sync DOWN (Sheets -> cache) ---------------- */
 async function syncDown(){
   // USERS
   const u = await apiGet("USERS");
+
   const users = (u.users || []).map(x => ({
     rut: normalizeRut(x.rut),
     nombre: x.nombre ?? "",
@@ -162,10 +168,7 @@ async function syncDown(){
     activo: (x.activo === false) ? false : true,
     creadoEn: x.creadoEn ?? "",
 
-    // ✅ NUEVO: Plan/Membresía (tolerante a distintas llaves del backend)
-    // - Algunos Apps Script devuelven PlanFin/PlanInicio
-    // - Otros devuelven planfin/planinicio
-    // - Otros devuelven plan_fin/plan_inicio
+    // Plan (tolerante a nombres)
     planTipo: x.planTipo ?? x.PlanTipo ?? x.plantipo ?? x.plan_tipo ?? "",
     planInicio: x.planInicio ?? x.PlanInicio ?? x.planinicio ?? x.plan_inicio ?? "",
     planFin: x.planFin ?? x.PlanFin ?? x.planfin ?? x.plan_fin ?? ""
@@ -227,7 +230,7 @@ async function syncDown(){
   setPlantillasV2(tpl);
 }
 
-// ---------------- Seed ADMIN remoto ----------------
+/* ---------------- Seed ADMIN remoto ---------------- */
 async function seedRemoteAdmin(){
   const users = getUsers();
   const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
@@ -240,13 +243,16 @@ async function seedRemoteAdmin(){
     pass: "1234",
     rol: "FUNCIONARIO",
     activo: true,
-    creadoEn: nowISO()
+    creadoEn: nowISO(),
+    planTipo: "",
+    planInicio: "",
+    planFin: ""
   });
 
   await syncDown();
 }
 
-// ---------------- Auth (SINCRÓNICO) ----------------
+/* ---------------- Auth (SINCRÓNICO) ---------------- */
 function requireAuth(expectedRole){
   const s = getSession();
   if(!s){ window.location.href = "index.html"; return null; }
@@ -268,7 +274,7 @@ function requireAuth(expectedRole){
   return user;
 }
 
-// ---------------- Login/Register ----------------
+/* ---------------- Login/Register ---------------- */
 function registerUser({rut, nombre, email, pass, rol}){
   rut = normalizeRut(rut);
   if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
@@ -284,8 +290,6 @@ function registerUser({rut, nombre, email, pass, rol}){
     rol,
     activo: true,
     creadoEn: nowISO(),
-
-    // ✅ plan por defecto vacío
     planTipo: "",
     planInicio: "",
     planFin: ""
@@ -307,7 +311,7 @@ function login({rut, pass}){
   return user;
 }
 
-// ---------------- Rutinas ----------------
+/* ---------------- Rutinas ---------------- */
 function upsertRutina({rutSocio, titulo, detalle, creadoPorRut}){
   const rutSocioN = normalizeRut(rutSocio);
   const rutinas = getRutinas();
@@ -373,7 +377,7 @@ function rutinaV2DeSocio(rutSocio){
   return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
 }
 
-// ---------------- Plantillas helpers ----------------
+/* ---------------- Plantillas helpers ---------------- */
 function plantillasVisiblesPara(user){
   const rut = normalizeRut(user?.rut || "");
   return getPlantillasV2().filter(p=>{
@@ -422,7 +426,7 @@ async function savePlantillaV2(payload){
   return localObj;
 }
 
-// ---------------- UI helpers ----------------
+/* ---------------- UI helpers ---------------- */
 function $(sel){ return document.querySelector(sel); }
 function showMsg(el, msg, ok=false){
   if(!el) return;
@@ -430,7 +434,7 @@ function showMsg(el, msg, ok=false){
   el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
 }
 
-// ---------------- Plan: Renovar (backend) ----------------
+/* ---------------- Plan: Renovar (backend) ---------------- */
 async function renovarPlan(rut){
   rut = normalizeRut(rut);
   const dias = parseInt(prompt("¿Cuántos días quieres agregar al plan? Ej: 30 / 90 / 365"), 10);
@@ -446,7 +450,7 @@ async function renovarPlan(rut){
   }
 }
 
-// ---------------- INIT por página ----------------
+/* ---------------- INIT por página ---------------- */
 function initIndex(){
   const loginForm = $("#loginForm");
   const msgLogin  = $("#msgLogin");
@@ -532,6 +536,7 @@ function initFuncionario(){
         rol,
         activoTxt,
         u.planFin || "",
+        u.planInicio || "",
         u.planTipo || ""
       ].join(" ").toLowerCase();
 
@@ -571,7 +576,7 @@ function initFuncionario(){
       tbody.appendChild(tr);
     }
 
-    // ✅ toggle + guarda en Sheets + resync
+    // toggle activo
     tbody.querySelectorAll("[data-act]").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
         const rut = btn.getAttribute("data-act");
@@ -582,6 +587,7 @@ function initFuncionario(){
         const activoActual = (u.activo !== false);
         u.activo = !activoActual;
 
+        // optimista local
         setUsers(users);
         refreshKPIs();
         refreshTable();
@@ -602,7 +608,7 @@ function initFuncionario(){
       });
     });
 
-    // ✅ Renovar plan
+    // renovar plan
     tbody.querySelectorAll("[data-ren]").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
         const rut = btn.getAttribute("data-ren");
@@ -654,7 +660,7 @@ function initFuncionario(){
   refreshTable();
 }
 
-// ---------------- BOOT ----------------
+/* ---------------- BOOT ---------------- */
 (async function boot(){
   setDbStatus("connecting");
 
@@ -670,14 +676,15 @@ function initFuncionario(){
   }
 })();
 
-// ---------------- Ejecuta init por página ----------------
+/* ---------------- Ejecuta init por página ---------------- */
 document.addEventListener("DOMContentLoaded", ()=>{
   const page = document.body.getAttribute("data-page");
   if(page === "index") initIndex();
   if(page === "funcionario") initFuncionario();
+  // socio.html y rutinas.html se manejan con scripts internos + helpers globales
 });
 
-// ---------------- Exponer helpers globales ----------------
+/* ---------------- Exponer helpers globales ---------------- */
 window.API_URL = API_URL;
 window.apiGet = apiGet;
 window.apiPost = apiPost;
@@ -702,5 +709,9 @@ window.upsertRutina = upsertRutina;
 window.upsertRutinaV2 = upsertRutinaV2;
 window.syncDown = syncDown;
 
-// ✅ nuevo
+window.clearSession = clearSession;
+window.login = login;
+window.registerUser = registerUser;
+
+// plan
 window.renovarPlan = renovarPlan;
