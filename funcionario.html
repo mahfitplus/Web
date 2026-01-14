@@ -229,13 +229,55 @@
       gap: 10px;
       flex-wrap:wrap;
       margin-top: 10px;
+      align-items:center;
     }
     .filters input{ flex: 1; min-width: 220px; }
     .filters select{ width: 220px; }
 
+    /* ✅ Tabs */
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin-top: 10px;
+      flex-wrap:wrap;
+    }
+    .tabBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: rgba(255,255,255,.88);
+      font-weight: 1000;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .08s ease, background .12s ease, border .12s ease;
+    }
+    .tabBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); }
+    .tabBtn:active{ transform: translateY(0px); }
+    .tabBtn.active{
+      border-color: rgba(35,166,255,.35);
+      background: rgba(35,166,255,.14);
+    }
+    .tabCount{
+      min-width: 28px;
+      height: 22px;
+      padding: 0 8px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-weight: 1000;
+      font-size: 12px;
+    }
+
     /* tabla + scroll */
     .tableWrap{
-      max-height: 520px;
+      max-height: 540px;
       overflow: auto;
       border-top:1px solid rgba(255,255,255,.06);
     }
@@ -315,6 +357,10 @@
       justify-content:flex-end;
       border-top: 1px solid rgba(255,255,255,.08);
     }
+
+    /* vistas */
+    .view{ display:none; }
+    .view.active{ display:block; }
   </style>
 </head>
 
@@ -375,7 +421,7 @@
       </div>
     </div>
 
-    <!-- CRM PRINCIPAL -->
+    <!-- CRM -->
     <div class="card">
       <div class="cardHead">
         <div>
@@ -389,61 +435,62 @@
               <option value="SOCIO">Solo socios</option>
               <option value="FUNCIONARIO">Solo funcionarios</option>
             </select>
+
+            <!-- ✅ Tabs -->
+            <div class="tabs">
+              <button id="tabActivos" class="tabBtn active" type="button">
+                Activos <span id="countActivos" class="tabCount">0</span>
+              </button>
+              <button id="tabVencidos" class="tabBtn" type="button">
+                Vencidos <span id="countVencidos" class="tabCount">0</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <span class="pill">Lista</span>
+        <span class="pill">Vista</span>
       </div>
 
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>NOMBRE</th>
-              <th>RUT/USUARIO</th>
-              <th>ROL</th>
-              <th>ACTIVO</th>
-              <th>PLAN</th>
-              <th>ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody id="usersTbody"></tbody>
-        </table>
-      </div>
-
-      <div class="cardBody">
-        <div class="muted">Tip: escribe en el buscador y se filtra altiro.</div>
-      </div>
-    </div>
-
-    <!-- ✅ NUEVO: SOCIOS VENCIDOS -->
-    <div class="card" id="expiredCard">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Socios Plan Vencidos</div>
-          <div class="muted">Se desactivan automáticamente al vencer</div>
+      <!-- ✅ Vista Activos -->
+      <div id="viewActivos" class="view active">
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>NOMBRE</th>
+                <th>RUT/USUARIO</th>
+                <th>ROL</th>
+                <th>ACTIVO</th>
+                <th>PLAN</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
         </div>
-        <span class="pill bad">Vencidos</span>
       </div>
 
-      <div class="tableWrap" style="max-height: 380px;">
-        <table>
-          <thead>
-            <tr>
-              <th>NOMBRE</th>
-              <th>RUT/USUARIO</th>
-              <th>ROL</th>
-              <th>ACTIVO</th>
-              <th>PLAN</th>
-              <th>ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody id="expiredTbody"></tbody>
-        </table>
+      <!-- ✅ Vista Vencidos -->
+      <div id="viewVencidos" class="view">
+        <div class="tableWrap" style="max-height: 540px;">
+          <table>
+            <thead>
+              <tr>
+                <th>NOMBRE</th>
+                <th>RUT/USUARIO</th>
+                <th>ROL</th>
+                <th>ACTIVO</th>
+                <th>PLAN</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="expiredTbody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="cardBody">
-        <div class="muted">Estos socios tienen el plan vencido. Para reactivar: Renovar.</div>
+        <div class="muted" id="hintText">Tip: escribe en el buscador y se filtra altiro.</div>
       </div>
     </div>
 
@@ -584,8 +631,30 @@
     const roleFilter = document.getElementById("roleFilter");
     const msgUser = document.getElementById("msgUser");
 
-    const expiredCard = document.getElementById("expiredCard");
+    // tabs
+    const tabActivos = document.getElementById("tabActivos");
+    const tabVencidos = document.getElementById("tabVencidos");
+    const viewActivos = document.getElementById("viewActivos");
+    const viewVencidos = document.getElementById("viewVencidos");
+    const countActivos = document.getElementById("countActivos");
+    const countVencidos = document.getElementById("countVencidos");
+    const hintText = document.getElementById("hintText");
 
+    function setTab(which){
+      const isAct = (which === "activos");
+      tabActivos.classList.toggle("active", isAct);
+      tabVencidos.classList.toggle("active", !isAct);
+      viewActivos.classList.toggle("active", isAct);
+      viewVencidos.classList.toggle("active", !isAct);
+      hintText.textContent = isAct
+        ? "Tip: aquí ves usuarios NO vencidos. (Activos e inactivos normales)"
+        : "Tip: aquí ves socios con plan vencido. “Activar” abre la renovación.";
+    }
+
+    tabActivos.addEventListener("click", ()=> setTab("activos"));
+    tabVencidos.addEventListener("click", ()=> setTab("vencidos"));
+
+    // modal
     const modalBack = document.getElementById("modalBack");
     const mTitle = document.getElementById("mTitle");
     const mSub = document.getElementById("mSub");
@@ -661,7 +730,6 @@
       try{ await syncDown(); }catch(e){ console.error(e); }
     }
 
-    // ✅ AUTO DESACTIVAR VENCIDOS (SOLO SOCIOS)
     async function autoDeactivateExpiredSocios(){
       const users = getUsers();
       let changed = false;
@@ -674,12 +742,7 @@
         if(p.status === "expired" && (u.activo !== false)){
           u.activo = false;
           changed = true;
-
-          try{
-            await apiPost("USERS", u);
-          }catch(e){
-            console.warn("No se pudo desactivar vencido en server:", u.rut, e);
-          }
+          try{ await apiPost("USERS", u); }catch(e){ console.warn("No se pudo desactivar vencido:", u.rut, e); }
         }
       }
 
@@ -733,13 +796,24 @@
         else normal.push(u);
       }
 
-      expiredCard.style.display = expired.length ? "block" : "none";
+      // contadores tabs
+      countActivos.textContent = String(normal.length);
+      countVencidos.textContent = String(expired.length);
 
-      // forceInactive=true => SIEMPRE mostrar INACTIVO
+      // auto cambia a activos si ya no hay vencidos en filtro
+      if(expired.length === 0 && tabVencidos.classList.contains("active")){
+        setTab("activos");
+      }
+      // si activos queda vacío y vencidos tiene, muévete a vencidos
+      if(normal.length === 0 && expired.length > 0 && tabActivos.classList.contains("active")){
+        setTab("vencidos");
+      }
+
       function renderRow(container, u, forceInactive){
         const rol = safe(u.rol,"SOCIO").toUpperCase();
         const p = planInfo(u.planFin);
 
+        // ✅ vencidos => SIEMPRE INACTIVO visual
         const activo = forceInactive ? false : (u.activo !== false);
 
         const tr = document.createElement("tr");
@@ -768,7 +842,7 @@
       normal.forEach(u => renderRow(tbody, u, false));
       expired.forEach(u => renderRow(expiredTbody, u, true));
 
-      // ✅ toggle solo para los que no están vencidos
+      // toggle solo en normales
       document.querySelectorAll("[data-toggle]").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           const rut = btn.getAttribute("data-toggle");
@@ -795,7 +869,7 @@
         });
       });
 
-      // ✅ Renovar (y Activar en vencidos) => abre modal renovación
+      // renovar (y activar en vencidos) => abre modal
       document.querySelectorAll("[data-renew]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const rut = btn.getAttribute("data-renew");
@@ -856,6 +930,7 @@
       try{
         await apiPost("users_plan_update", payload);
         await refreshFromServer();
+        await autoDeactivateExpiredSocios();
         render();
         msg(mMsg, "✅ Renovación guardada", true);
         setTimeout(closeModal, 450);
@@ -898,10 +973,11 @@
       location.href = "rutinas.html";
     });
 
-    // ✅ Orden correcto: primero sync, luego desactiva vencidos, y recién renderiza
+    // orden correcto
     await refreshFromServer();
     await autoDeactivateExpiredSocios();
     render();
+    setTab("activos");
   });
 </script>
 
