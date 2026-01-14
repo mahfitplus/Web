@@ -375,7 +375,7 @@
       </div>
     </div>
 
-    <!-- CRM -->
+    <!-- CRM PRINCIPAL -->
     <div class="card">
       <div class="cardHead">
         <div>
@@ -416,10 +416,41 @@
       </div>
     </div>
 
+    <!-- ✅ NUEVO: SOCIOS VENCIDOS -->
+    <div class="card" id="expiredCard">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Socios Plan Vencidos</div>
+          <div class="muted">Se desactivan automáticamente al vencer</div>
+        </div>
+        <span class="pill bad">Vencidos</span>
+      </div>
+
+      <div class="tableWrap" style="max-height: 380px;">
+        <table>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>RUT/USUARIO</th>
+              <th>ROL</th>
+              <th>ACTIVO</th>
+              <th>PLAN</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="expiredTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="cardBody">
+        <div class="muted">Estos socios tienen el plan vencido. Para reactivar: Renovar.</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- MODAL RENOVAR (MEJORADO: SUMAR DÍAS + FIN AUTOMÁTICO) -->
+<!-- MODAL RENOVAR -->
 <div id="modalBack" class="modalBack">
   <div class="modal">
     <div class="modalHead">
@@ -446,7 +477,6 @@
         </select>
       </div>
 
-      <!-- ✅ INICIO + DURACIÓN -->
       <div class="row">
         <input id="mInicio" type="date" />
         <select id="mDias">
@@ -460,7 +490,6 @@
         </select>
       </div>
 
-      <!-- ✅ FIN + PREVIEW -->
       <div class="row">
         <input id="mFin" type="date" />
         <div class="pill" id="mPreview" style="justify-content:center;">—</div>
@@ -549,9 +578,13 @@
     document.getElementById("roleBadge").textContent = "FUNCIONARIO";
 
     const tbody = document.getElementById("usersTbody");
+    const expiredTbody = document.getElementById("expiredTbody");
+
     const searchInput = document.getElementById("userSearch");
     const roleFilter = document.getElementById("roleFilter");
     const msgUser = document.getElementById("msgUser");
+
+    const expiredCard = document.getElementById("expiredCard");
 
     const modalBack = document.getElementById("modalBack");
     const mTitle = document.getElementById("mTitle");
@@ -628,6 +661,34 @@
       try{ await syncDown(); }catch(e){ console.error(e); }
     }
 
+    // ✅ AUTO DESACTIVAR VENCIDOS (SOLO SOCIOS)
+    async function autoDeactivateExpiredSocios(){
+      const users = getUsers();
+      let changed = false;
+
+      for(const u of users){
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        if(rol !== "SOCIO") continue;
+
+        const p = planInfo(u.planFin);
+        if(p.status === "expired" && (u.activo !== false)){
+          u.activo = false;
+          changed = true;
+
+          try{
+            await apiPost("USERS", u);
+          }catch(e){
+            console.warn("No se pudo desactivar vencido en server:", u.rut, e);
+          }
+        }
+      }
+
+      if(changed){
+        setUsers(users);
+        await refreshFromServer();
+      }
+    }
+
     function getFilteredUsers(){
       const users = getUsers().slice();
       const q = safe(searchInput.value,"").toLowerCase().trim();
@@ -651,14 +712,35 @@
       }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
     }
 
+    function isSocioExpired(u){
+      const rol = safe(u.rol,"SOCIO").toUpperCase();
+      if(rol !== "SOCIO") return false;
+      const p = planInfo(u.planFin);
+      return p.status === "expired";
+    }
+
     function render(){
       const list = getFilteredUsers();
-      tbody.innerHTML = "";
 
-      list.forEach(u=>{
+      tbody.innerHTML = "";
+      expiredTbody.innerHTML = "";
+
+      const normal = [];
+      const expired = [];
+
+      for(const u of list){
+        if(isSocioExpired(u)) expired.push(u);
+        else normal.push(u);
+      }
+
+      expiredCard.style.display = expired.length ? "block" : "none";
+
+      // forceInactive=true => SIEMPRE mostrar INACTIVO
+      function renderRow(container, u, forceInactive){
         const rol = safe(u.rol,"SOCIO").toUpperCase();
-        const activo = (u.activo !== false);
         const p = planInfo(u.planFin);
+
+        const activo = forceInactive ? false : (u.activo !== false);
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -669,17 +751,25 @@
           <td>${planPill(p)}</td>
           <td>
             <div class="actions">
-              <button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}">
-                ${activo ? "Desactivar" : "Activar"}
-              </button>
+              ${
+                forceInactive
+                ? `<button class="btn small ok" data-renew="${safe(u.rut,"")}">Activar</button>`
+                : `<button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}">
+                     ${activo ? "Desactivar" : "Activar"}
+                   </button>`
+              }
               <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
             </div>
           </td>
         `;
-        tbody.appendChild(tr);
-      });
+        container.appendChild(tr);
+      }
 
-      tbody.querySelectorAll("[data-toggle]").forEach(btn=>{
+      normal.forEach(u => renderRow(tbody, u, false));
+      expired.forEach(u => renderRow(expiredTbody, u, true));
+
+      // ✅ toggle solo para los que no están vencidos
+      document.querySelectorAll("[data-toggle]").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           const rut = btn.getAttribute("data-toggle");
           const users = getUsers();
@@ -705,7 +795,8 @@
         });
       });
 
-      tbody.querySelectorAll("[data-renew]").forEach(btn=>{
+      // ✅ Renovar (y Activar en vencidos) => abre modal renovación
+      document.querySelectorAll("[data-renew]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const rut = btn.getAttribute("data-renew");
           const u = getUsers().find(x=>x.rut===rut);
@@ -718,7 +809,6 @@
     mPlanTipo.addEventListener("change", ()=>{
       if(mDias.value === "0") { updatePreview(); return; }
       const sug = suggestedDaysByTipo(mPlanTipo.value);
-      // no forzamos si el user eligió 1 o 7
       if(!["1","7"].includes(mDias.value)) mDias.value = String(sug);
       mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
       updatePreview();
@@ -759,6 +849,7 @@
       u.planInicio = payload.planInicio;
       u.planFin = payload.planFin;
       if(payload.activo) u.activo = true;
+
       setUsers(users);
       render();
 
@@ -788,6 +879,7 @@
         });
         e.target.reset();
         await refreshFromServer();
+        await autoDeactivateExpiredSocios();
         render();
         msg(msgUser, "✅ Usuario creado", true);
       }catch(err){
@@ -806,8 +898,9 @@
       location.href = "rutinas.html";
     });
 
-    render();
+    // ✅ Orden correcto: primero sync, luego desactiva vencidos, y recién renderiza
     await refreshFromServer();
+    await autoDeactivateExpiredSocios();
     render();
   });
 </script>
