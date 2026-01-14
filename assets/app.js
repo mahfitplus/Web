@@ -2,6 +2,8 @@
    MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
    - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
+   - ✅ FIX: rutinaV2DeSocio() + helpers de plantillas
+   - ✅ DB badge estable (🟢🔴⚪)
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw8te03WeMuCXDbC6I4IxAZXks-BWaJE-IO7tivf2mY_tKl8EaKQm5NFDKQqMzhDRDH4g/exec"; // <-- pega tu /exec
@@ -188,6 +190,8 @@ async function syncDown(){
     return {
       rutSocio: normalizeRut(x.rutSocio),
       routine,
+      // por compatibilidad: conserva también routine_json crudo si viene
+      routine_json: x.routine_json ?? null,
       creadoPorRut: x.creadoPorRut ?? "",
       actualizadoEn: x.actualizadoEn ?? ""
     };
@@ -269,6 +273,8 @@ function registerUser({rut, nombre, email, pass, rol}){
 
   users.push(user);
   setUsers(users);
+
+  // No bloquea UI, pero si falla lo verás en consola
   apiPost("USERS", user).catch(console.error);
   return user;
 }
@@ -321,6 +327,38 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(document.getElementById("loginForm")) initIndex();
 });
 
+/* =========================================================
+   ✅ FIX GLOBAL: rutinaV2DeSocio()
+   - Evita: "rutinaV2DeSocio is not defined"
+   - Devuelve {rutSocio, routine, actualizadoEn...} o null
+   ========================================================= */
+function rutinaV2DeSocio(rutSocio){
+  const rut = normalizeRut(rutSocio);
+  const list = getRutinasV2() || [];
+  const row = list.find(x => normalizeRut(x.rutSocio) === rut) || null;
+  if(!row) return null;
+
+  // Si no viene objeto routine, intenta parsear routine_json
+  let routine = row.routine || null;
+  if(!routine && row.routine_json){
+    try{ routine = JSON.parse(row.routine_json); }catch(e){ routine = null; }
+  }
+  return { ...row, routine };
+}
+
+/* =========================================================
+   ✅ Helpers Plantillas (compat)
+   - plantillasVisiblesPara(rut)
+   ========================================================= */
+function plantillasVisiblesPara(rut){
+  const meRut = normalizeRut(rut);
+  return (getPlantillasV2() || []).filter(p=>{
+    const vis = String(p.visibility || "PRIVADA").toUpperCase().trim();
+    const owner = normalizeRut(p.ownerRut || "");
+    return vis === "PUBLICA" || owner === meRut;
+  });
+}
+
 // ---------------- BOOT ----------------
 (async function boot(){
   setDbStatus("connecting");
@@ -362,3 +400,7 @@ window.clearSession = clearSession;
 window.login = login;
 window.registerUser = registerUser;
 window.setDbStatus = setDbStatus;
+
+// ✅ exporta los nuevos helpers
+window.rutinaV2DeSocio = rutinaV2DeSocio;
+window.plantillasVisiblesPara = plantillasVisiblesPara;
