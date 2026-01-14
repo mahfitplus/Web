@@ -6,12 +6,239 @@
   <title>MAH FIT | Socio</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
+    /* =========================
+       SOCIO UI UPGRADE (MAH FIT)
+       ========================= */
+
+    :root{
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(0,0,0,.26);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --txt: rgba(255,255,255,.92);
+      --mut: rgba(255,255,255,.68);
+      --mut2: rgba(255,255,255,.78);
+
+      /* fallback por si no existen en styles.css */
+      --ok: rgba(43,213,118,1);
+      --warn: rgba(255,211,110,1);
+      --bad: rgba(255,90,103,1);
+    }
+
+    /* ---------- Top spacing helper ---------- */
+    .sp12{ height:12px; }
+    .sp16{ height:16px; }
+    .sp18{ height:18px; }
+    .sp22{ height:22px; }
+
+    /* ---------- Banner Plan ---------- */
+    .planBanner{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
+      border-radius:18px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      overflow:hidden;
+      position:relative;
+    }
+    .planBanner::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(800px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),
+                  radial-gradient(800px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .planBanner > *{ position:relative; }
+
+    .planLeft{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+    .planTitleRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .planTitle{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size:12px;
+      color: var(--mut);
+    }
+    .planBig{
+      font-weight:1000;
+      font-size:18px;
+      color:#fff;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .planSmall{
+      color: var(--mut2);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .planCTA{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      min-width: 210px;
+    }
+    .ctaBtn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .ctaBtn:hover{ background: rgba(255,255,255,.09); }
+    .ctaBtn:active{ transform: translateY(1px); }
+
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.30);
+      font-weight:900;
+      font-size:12px;
+      color: rgba(255,255,255,.90);
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: rgba(255,255,255,.35);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+    .stOk{ border-color: rgba(43,213,118,.30); background: rgba(43,213,118,.10); }
+    .stOk .dot{ background: rgba(43,213,118,1); box-shadow: 0 0 0 3px rgba(43,213,118,.16); }
+    .stWarn{ border-color: rgba(255,211,110,.30); background: rgba(255,211,110,.10); }
+    .stWarn .dot{ background: rgba(255,211,110,1); box-shadow: 0 0 0 3px rgba(255,211,110,.16); }
+    .stBad{ border-color: rgba(255,90,103,.30); background: rgba(255,90,103,.10); }
+    .stBad .dot{ background: rgba(255,90,103,1); box-shadow: 0 0 0 3px rgba(255,90,103,.16); }
+
+    /* ---------- KPI improvements ---------- */
+    .kpi .box b{
+      display:block;
+      font-size:18px;
+      margin-top:4px;
+    }
+    .kpiSub{
+      color: var(--mut);
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:4px;
+    }
+    .kpiSub .kIco{
+      width:22px;height:22px;
+      border-radius:9px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.10);
+      border:1px solid rgba(0,200,255,.20);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+      flex: 0 0 auto;
+    }
+
+    /* ---------- Today Card ---------- */
+    .todayCard{
+      border:1px solid rgba(0,200,255,.22);
+      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.18), transparent 60%),
+                  rgba(0,0,0,.20);
+      border-radius:18px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      overflow:hidden;
+    }
+    .todayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .todayTitle{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      font-weight:1000;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.92);
+    }
+    .todayTitle .flame{
+      width:26px;height:26px;border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(255,120,0,.14);
+      border:1px solid rgba(255,120,0,.22);
+    }
+    .todayMain{
+      font-weight:1000;
+      font-size:16px;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .todayMeta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color: var(--mut2);
+      font-size:13px;
+    }
+    .miniPill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      font-weight:900;
+      font-size:12px;
+      color: rgba(255,255,255,.90);
+    }
+    .miniPill .mIco{
+      width:20px;height:20px;border-radius:999px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.10);
+      border:1px solid rgba(0,200,255,.18);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+    }
+
+    /* ---------- Day accordion (improved) ---------- */
     details.day{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.28);
-      border-radius: 14px;
+      border-radius: 16px;
       overflow:hidden;
       margin-top:12px;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    details.day[open]{
+      border-color: rgba(0,200,255,.22);
+      background: rgba(0,0,0,.32);
     }
     summary.daySum{
       list-style:none;
@@ -24,29 +251,73 @@
       user-select:none;
     }
     summary.daySum::-webkit-details-marker{ display:none; }
-    .dayLeft{ display:flex; flex-direction:column; gap:4px; }
+    .dayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
     .dayLeft b{
-      font-size:14px;
-      letter-spacing:.4px;
+      font-size:13px;
+      letter-spacing:.6px;
       text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
     }
     .dayLeft .sub{
       font-size:12px;
       color: rgba(255,255,255,.68);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
     }
     .chev{
-      width:34px;height:34px;
-      border-radius:10px;
+      width:36px;height:36px;
+      border-radius:12px;
       display:grid;place-items:center;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       color: rgba(255,255,255,.85);
       font-weight:900;
-      transition: transform .15s ease;
+      transition: transform .25s ease;
+      flex: 0 0 auto;
     }
     details[open] .chev{ transform: rotate(180deg); }
+
     .dayBody{ padding:14px 14px 16px; border-top:1px solid rgba(255,255,255,.08); }
 
+    /* ---------- Progress bar per day ---------- */
+    .progressRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+      color: rgba(255,255,255,.82);
+      font-size:12px;
+    }
+    .bar{
+      flex:1;
+      height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: rgba(0,200,255,.55);
+      border-right:1px solid rgba(0,200,255,.18);
+      transition: width .25s ease;
+    }
+    .progressTxt{
+      min-width: 120px;
+      text-align:right;
+      color: rgba(255,255,255,.78);
+      font-weight:900;
+    }
+
+    /* ---------- Exercise card ---------- */
     .exCard{
       background: rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.10);
@@ -56,7 +327,9 @@
       display:flex;
       gap:14px;
       align-items:flex-start;
+      transition: border-color .2s ease, background .2s ease, transform .08s ease;
     }
+    .exCard:active{ transform: translateY(1px); }
     .exMain{ flex:1; min-width:0; }
     .exTitle{
       display:flex;
@@ -69,8 +342,8 @@
       display:inline-flex;
       gap:8px;
       align-items:center;
-      font-weight:900;
-      .letter-spacing:.6px;
+      font-weight:1000;
+      letter-spacing:.6px;
       text-transform:uppercase;
       color: rgba(255,255,255,.92);
     }
@@ -81,10 +354,10 @@
       background: rgba(0,200,255,.14);
       border:1px solid rgba(0,200,255,.25);
       color:#aeefff;
-      font-weight:900;
+      font-weight:1000;
     }
     .exerciseName{
-      font-weight:900;
+      font-weight:1000;
       font-size:15px;
       color:#fff;
       overflow:hidden;
@@ -108,7 +381,7 @@
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.30);
       color: rgba(255,255,255,.88);
-      font-weight:800;
+      font-weight:900;
       font-size:13px;
     }
     .chip .cIcon{
@@ -119,7 +392,7 @@
       border:1px solid rgba(0,200,255,.22);
       color:#baf2ff;
       font-size:12px;
-      font-weight:900;
+      font-weight:1000;
     }
 
     .note{
@@ -138,22 +411,47 @@
       background: rgba(242,196,0,.10);
       border:1px solid rgba(242,196,0,.22);
       color:#ffe7a1;
-      font-weight:900;
+      font-weight:1000;
     }
 
     .exDone{
       display:flex;
       align-items:center;
       justify-content:center;
-      width:44px;
-      padding-top:8px;
+      width:54px;
+      padding-top:6px;
     }
     .exDone input{
-      width:22px;height:22px;
+      width:24px;height:24px;
       accent-color: var(--brand);
       cursor:pointer;
     }
 
+    /* Completed state */
+    .exCard.done{
+      border-color: rgba(43,213,118,.30);
+      background: rgba(43,213,118,.07);
+    }
+    .exCard.done .exerciseName,
+    .exCard.done .muscleTag{ opacity:.92; }
+    .exCard.done .chips,
+    .exCard.done .note{ opacity:.72; }
+
+    .doneBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(43,213,118,.28);
+      background: rgba(43,213,118,.10);
+      color: rgba(220,255,235,.95);
+      font-weight:1000;
+      font-size:12px;
+      margin-left:auto;
+    }
+
+    /* ---------- Meta line (plan pill) ---------- */
     .metaLine{
       display:flex;
       gap:10px;
@@ -163,9 +461,8 @@
       font-size:12px;
       margin-bottom:10px;
     }
-    .metaLine .pill{ background: rgba(255,255,255,.04); }
 
-    /* ✅ Estado plan / paywall */
+    /* ---------- Paywall ---------- */
     .paywall{
       border:1px solid rgba(255,90,103,.35);
       background: rgba(255,90,103,.10);
@@ -180,10 +477,9 @@
       color: rgba(255,255,255,.78);
       line-height:1.4;
     }
-    .planPill{
-      font-weight: 900 !important;
-      border-width: 1px !important;
-    }
+
+    /* Plan pill coloring (kept from your original) */
+    .planPill{ font-weight: 1000 !important; border-width: 1px !important; }
     .planOk{
       background: rgba(43,213,118,.12) !important;
       border-color: rgba(43,213,118,.35) !important;
@@ -198,6 +494,18 @@
       background: rgba(255,90,103,.12) !important;
       border-color: rgba(255,90,103,.35) !important;
       color: rgba(255,230,233,.95) !important;
+    }
+
+    /* ---------- Mobile tweaks ---------- */
+    @media (max-width: 700px){
+      .planCTA{ min-width: 0; justify-content:flex-start; }
+      .planBanner{ flex-direction:column; align-items:stretch; }
+      .todayCard{ flex-direction:column; align-items:stretch; }
+      .progressTxt{ min-width: 0; text-align:left; }
+      .exDone{ width:48px; }
+      .exCard{ padding:12px; }
+      .exerciseName{ white-space:normal; }
+      .chips .chip{ font-size:12px; }
     }
   </style>
 </head>
@@ -215,25 +523,72 @@
   <main class="hero">
     <div class="container">
 
+      <!-- ✅ Banner Plan (nuevo) -->
+      <div id="planBanner" class="planBanner" style="display:none;">
+        <div class="planLeft">
+          <div class="planTitleRow">
+            <div class="planTitle">Estado de tu plan</div>
+            <span id="planStatusPill" class="statusPill"><span class="dot"></span><span>-</span></span>
+          </div>
+          <div id="planBig" class="planBig">-</div>
+          <div id="planSmall" class="planSmall">-</div>
+        </div>
+        <div class="planCTA">
+          <a id="btnWhats" class="ctaBtn" href="#" target="_blank" rel="noopener">
+            <span>💬</span><span>Hablar por WhatsApp</span>
+          </a>
+          <button id="btnGoToday" class="ctaBtn" type="button" style="display:none;">
+            <span>🔥</span><span>Ir a hoy</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sp16"></div>
+
       <div class="kpi">
         <div class="box">
           <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Plan</div>
           <b id="kPlan">-</b>
-          <div style="color:var(--muted);font-size:13px;" id="kNivel">(sin rutina)</div>
+          <div class="kpiSub" id="kNivelRow">
+            <span class="kIco">🏷</span><span id="kNivel">(sin rutina)</span>
+          </div>
         </div>
+
         <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio</div>
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio semanal</div>
           <b id="kCardio">-</b>
-          <div style="color:var(--muted);font-size:13px;" id="kCardio2">-</div>
+          <div class="kpiSub">
+            <span class="kIco">🫀</span><span id="kCardio2">-</span>
+          </div>
         </div>
+
         <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Días</div>
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Rutina semanal</div>
           <b id="kDias">0</b>
-          <div style="color:var(--muted);font-size:13px;">Rutina semanal</div>
+          <div class="kpiSub">
+            <span class="kIco">🗓</span><span>día(s) de entrenamiento</span>
+          </div>
         </div>
       </div>
 
-      <div style="height:18px;"></div>
+      <div class="sp18"></div>
+
+      <!-- ✅ Entrenamiento de hoy (nuevo) -->
+      <div id="todayCard" class="todayCard" style="display:none;">
+        <div class="todayLeft">
+          <div class="todayTitle"><span class="flame">🔥</span> Entrenamiento de hoy</div>
+          <div id="todayMain" class="todayMain">-</div>
+          <div class="todayMeta">
+            <span id="todayMuscle" class="miniPill"><span class="mIco">🏋️</span><span>-</span></span>
+            <span id="todayCount" class="miniPill"><span class="mIco">#</span><span>-</span></span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <button id="btnOpenToday" class="ctaBtn" type="button"><span>✅</span><span>Ver rutina</span></button>
+        </div>
+      </div>
+
+      <div class="sp18"></div>
 
       <div class="card">
         <div class="head">
@@ -280,14 +635,37 @@
       return "planBad";
     }
 
+    function statusPillClass(status, days){
+      if(status === "active"){
+        if(typeof days === "number" && days <= 5) return "stWarn";
+        return "stOk";
+      }
+      if(status === "today") return "stWarn";
+      return "stBad";
+    }
+
     function getDoneKey(rut, day, idx){
       return `mahfit_done_${rut}_${day}_${idx}`;
+    }
+
+    function getDayProgress(rutSocio, day){
+      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
+      const total = ejercicios.length;
+      let done = 0;
+      ejercicios.forEach((e, i)=>{
+        const k = getDoneKey(rutSocio, day.dia, i);
+        if(localStorage.getItem(k) === "1") done++;
+      });
+      const pct = total ? Math.round((done/total)*100) : 0;
+      return { total, done, pct };
     }
 
     function renderDay(day, rutSocio){
       const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
       const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
       const total = ejercicios.length;
+
+      const prog = getDayProgress(rutSocio, day);
 
       const cards = ejercicios.map((e, i)=>{
         const doneKey = getDoneKey(rutSocio, day.dia, i);
@@ -300,11 +678,12 @@
         const noteText = safe(e.obs, "");
 
         return `
-          <div class="exCard">
+          <div class="exCard ${checked ? "done" : ""}" data-excard="${doneKey}">
             <div class="exMain">
               <div class="exTitle">
                 <span class="muscleTag"><span class="icon">🏋️</span>${safe(e.musculo,"Músculo")}</span>
                 <span class="exerciseName">${safe(e.ejercicio,"Ejercicio")}</span>
+                ${checked ? `<span class="doneBadge">✓ Hecho</span>` : ``}
               </div>
 
               <div class="chips">
@@ -323,29 +702,64 @@
             </div>
 
             <div class="exDone">
-              <input type="checkbox" ${checked} data-done="${doneKey}">
+              <input type="checkbox" ${checked} data-done="${doneKey}" data-day="${safe(day.dia)}" data-idx="${i}">
             </div>
           </div>
         `;
       }).join("");
 
       return `
-        <details class="day">
+        <details class="day" data-day="${safe(day.dia)}">
           <summary class="daySum">
             <div class="dayLeft">
               <b>${safe(day.dia)}</b>
               <div class="sub">
                 Enfocado: <span class="pill">${enfoque}</span>
                 · Ejercicios: <span class="pill">${total}</span>
+                ${total ? `· <span class="pill">${prog.pct}%</span>` : ``}
               </div>
             </div>
             <div class="chev">⌄</div>
           </summary>
           <div class="dayBody">
-            ${total ? cards : `<div class="notice"><b>Sin ejercicios</b><br>Este día aún no tiene ejercicios cargados.</div>`}
+            ${total ? `
+              <div class="progressRow">
+                <div class="bar" aria-label="Progreso"><i style="width:${prog.pct}%"></i></div>
+                <div class="progressTxt"><span data-prog="${safe(day.dia)}">${prog.done} de ${prog.total} ✓</span></div>
+              </div>
+              ${cards}
+            ` : `<div class="notice"><b>Aún no hay ejercicios</b><br>Este día todavía no tiene ejercicios cargados 💪</div>`}
           </div>
         </details>
       `;
+    }
+
+    // elige "día de hoy" simple: rota según día de semana sobre cantidad de días
+    function pickTodayIndex(nDias){
+      if(!nDias || nDias <= 0) return 0;
+      const dow = new Date().getDay(); // 0 dom ... 6 sáb
+      // Lunes=1 .. Domingo=0; usamos lunes como base
+      const map = (dow === 0) ? 6 : (dow - 1); // 0=lun ... 6=dom
+      return map % nDias;
+    }
+
+    function openOnly(detailsEl){
+      document.querySelectorAll("details.day[open]").forEach(d=>{
+        if(d !== detailsEl) d.removeAttribute("open");
+      });
+    }
+
+    function scrollToEl(el){
+      if(!el) return;
+      el.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    // WhatsApp link (ajústalo a tu número si quieres)
+    function buildWhatsLink(user){
+      // ⚠️ Cambia este número por el de tu admin (con código país, sin +)
+      const phone = "56900000000";
+      const msg = `Hola! Soy ${safe(user.nombre,"")} (RUT: ${safe(user.rut,"")}). Quiero revisar mi plan en MAH FIT.`;
+      return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
     document.addEventListener("DOMContentLoaded", ()=>{
@@ -355,28 +769,59 @@
       document.querySelector("#who").textContent = user.nombre;
       document.querySelector("#roleBadge").textContent = "SOCIO";
 
+      // WhatsApp CTA
+      const btnWhats = document.querySelector("#btnWhats");
+      btnWhats.href = buildWhatsLink(user);
+
       const box = document.querySelector("#rutinaBox");
 
       // ✅ PLAN: mostrar días restantes y bloquear si está vencido/inactivo
       const p = planInfo(user.planFin);
+
+      // Banner plan
+      const planBanner = document.querySelector("#planBanner");
+      const planStatusPill = document.querySelector("#planStatusPill");
+      const planBig = document.querySelector("#planBig");
+      const planSmall = document.querySelector("#planSmall");
+      const btnGoToday = document.querySelector("#btnGoToday");
+
+      planBanner.style.display = "flex";
+      planStatusPill.className = "statusPill " + statusPillClass(p.status, p.days);
+
+      // KPI Plan
       const kPlan = document.querySelector("#kPlan");
 
       if(p.status === "active"){
-        kPlan.textContent = `Activo · ${p.days} días`;
+        kPlan.textContent = `Activo · ${p.days} día(s)`;
         kPlan.style.color = (p.days <= 5) ? "var(--warn)" : "var(--ok)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "ACTIVO";
+        planBig.textContent = `Te quedan ${p.days} día(s)`;
+        planSmall.textContent = `Vence el ${p.endTxt}. Mantén constancia y a darle 🔥`;
       }else if(p.status === "today"){
         kPlan.textContent = "Vence hoy";
         kPlan.style.color = "var(--warn)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "ÚLTIMO DÍA";
+        planBig.textContent = "Tu plan vence hoy";
+        planSmall.textContent = `Vence el ${p.endTxt}. Si quieres seguir entrenando, solicita renovación ✅`;
       }else{
         kPlan.textContent = "Inactivo";
         kPlan.style.color = "var(--bad)";
+
+        planStatusPill.querySelector("span:last-child").textContent = "INACTIVO";
+        planBig.textContent = "Tu plan está inactivo 😕";
+        planSmall.textContent = "Renueva tu plan para disfrutar tus entrenamientos y asesorías.";
       }
 
+      // Si NO está activo ni hoy → paywall
       if(p.status !== "active" && p.status !== "today"){
         document.querySelector("#kNivel").textContent = "Renueva tu plan";
         document.querySelector("#kDias").textContent = "0";
         document.querySelector("#kCardio").textContent = "-";
-        document.querySelector("#kCardio2").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "—";
+
+        document.querySelector("#todayCard").style.display = "none";
 
         box.innerHTML = `
           <div class="paywall">
@@ -389,12 +834,19 @@
         return;
       }
 
+      // Rutina
       const rv2 = rutinaV2DeSocio(user.rut);
       if(!rv2 || !rv2.routine){
+        document.querySelector("#kNivel").textContent = "(sin rutina)";
+        document.querySelector("#kDias").textContent = "0";
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "—";
+        document.querySelector("#todayCard").style.display = "none";
+
         box.innerHTML = `
           <div class="notice">
-            <b>Plan de entrenamiento no asignado</b><br>
-            Tienes un plan activo, pero aún no se te asigna una rutina específica.
+            <b>Aún no tienes rutina asignada</b><br>
+            Tu plan está activo, pero todavía no se te asigna una rutina específica. Escríbenos y la dejamos lista 💪
           </div>
         `;
       }else{
@@ -402,10 +854,8 @@
         const meta = routine.meta || {};
         const cardio = meta.cardio || {};
 
+        // KPI
         document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
-        document.querySelector("#kDias").textContent = String((routine.dias||[]).length || 0);
-        document.querySelector("#kCardio").textContent = safe(cardio.tipo, "-");
-        document.querySelector("#kCardio2").textContent = `${safe(cardio.min,"-")} min · ${safe(cardio.freq,"-")} /sem`;
 
         const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
         dias.sort((a,b)=>{
@@ -414,19 +864,118 @@
           return na-nb;
         });
 
+        const nDias = (dias||[]).length || 0;
+        document.querySelector("#kDias").textContent = String(nDias);
+
+        // Cardio human
+        const cTipo = safe(cardio.tipo, "-");
+        const cMin  = safe(cardio.min, "-");
+        const cFreq = safe(cardio.freq, "-");
+        document.querySelector("#kCardio").textContent = (cTipo === "-" ? "-" : cTipo);
+        document.querySelector("#kCardio2").textContent =
+          (cMin === "-" && cFreq === "-") ? "—" : `${cMin} min · ${cFreq} veces`;
+
+        // Today card
+        const todayCard = document.querySelector("#todayCard");
+        const idxToday = pickTodayIndex(nDias);
+        const dayToday = dias[idxToday] || dias[0];
+
+        if(dayToday){
+          const enfoque = Array.isArray(dayToday.enfoque) ? dayToday.enfoque.join(" + ") : safe(dayToday.enfoque, "Full Body");
+          const ejercicios = Array.isArray(dayToday.ejercicios) ? dayToday.ejercicios : [];
+
+          document.querySelector("#todayMain").textContent = `${safe(dayToday.dia)} · ${enfoque}`;
+          document.querySelector("#todayMuscle").querySelector("span:last-child").textContent = enfoque;
+          document.querySelector("#todayCount").querySelector("span:last-child").textContent = `${ejercicios.length} ejercicio(s)`;
+
+          todayCard.style.display = "flex";
+          btnGoToday.style.display = "inline-flex";
+
+          // acciones hoy
+          const go = ()=>{
+            const det = document.querySelector(`details.day[data-day="${CSS.escape(safe(dayToday.dia))}"]`);
+            if(det){
+              det.setAttribute("open", "");
+              openOnly(det);
+              scrollToEl(det);
+            }
+          };
+          document.querySelector("#btnOpenToday").addEventListener("click", go);
+          btnGoToday.addEventListener("click", go);
+        }else{
+          todayCard.style.display = "none";
+          btnGoToday.style.display = "none";
+        }
+
+        // Render rutina
         box.innerHTML = `
           <div class="metaLine">
             <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
-            <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
-            <span class="pill">Fecha: ${safe(meta.fecha,"-")}</span>
+            <span class="pill">Tu objetivo: ${safe(meta.objetivo,"-")}</span>
+            <span class="pill">Actualizado: ${safe(meta.fecha,"-")}</span>
           </div>
           ${dias.map(d=>renderDay(d, user.rut)).join("")}
         `;
 
+        // Solo un día abierto a la vez
+        box.querySelectorAll("details.day").forEach(det=>{
+          det.addEventListener("toggle", ()=>{
+            if(det.open) openOnly(det);
+          });
+        });
+
+        // Done checkbox interactions + update progress bar
         box.querySelectorAll('[data-done]').forEach(chk=>{
           chk.addEventListener("change", ()=>{
             const key = chk.getAttribute("data-done");
+            const dayName = chk.getAttribute("data-day");
             localStorage.setItem(key, chk.checked ? "1" : "0");
+
+            // toggle card style
+            const card = box.querySelector(`[data-excard="${CSS.escape(key)}"]`);
+            if(card){
+              card.classList.toggle("done", chk.checked);
+              // badge
+              const titleRow = card.querySelector(".exTitle");
+              const existing = card.querySelector(".doneBadge");
+              if(chk.checked && !existing){
+                const b = document.createElement("span");
+                b.className = "doneBadge";
+                b.textContent = "✓ Hecho";
+                titleRow.appendChild(b);
+              }
+              if(!chk.checked && existing) existing.remove();
+            }
+
+            // update progress bar + text for that day
+            const det = box.querySelector(`details.day[data-day="${CSS.escape(dayName)}"]`);
+            if(det){
+              const dayObj = dias.find(x => safe(x.dia) === safe(dayName));
+              if(dayObj){
+                const prog = getDayProgress(user.rut, dayObj);
+                const barI = det.querySelector(".bar > i");
+                if(barI) barI.style.width = prog.pct + "%";
+                const txt = det.querySelector(`[data-prog="${CSS.escape(dayName)}"]`);
+                if(txt) txt.textContent = `${prog.done} de ${prog.total} ✓`;
+
+                // update sub pill pct (en summary)
+                const sub = det.querySelector(".dayLeft .sub");
+                if(sub){
+                  // reemplaza el último pill de % si existe
+                  const pills = sub.querySelectorAll(".pill");
+                  const last = pills[pills.length - 1];
+                  if(last && last.textContent.includes("%")){
+                    last.textContent = `${prog.pct}%`;
+                  }else if(prog.total){
+                    const pEl = document.createElement("span");
+                    pEl.className = "pill";
+                    pEl.textContent = `${prog.pct}%`;
+                    sub.appendChild(document.createTextNode(" · "));
+                    sub.appendChild(pEl);
+                  }
+                }
+              }
+            }
           });
         });
       }
