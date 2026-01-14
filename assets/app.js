@@ -2,10 +2,9 @@
    MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
    - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
-   - ✅ USERS: planTipo, planInicio, planFin, planId, planPrecioBase, planDescPct, planPrecioFinal, planPagado
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbythNNChz4eTFIUDv3k9Il4JMuQtgqCutuNIqf_QOOFHisL8NBGLVzKsmxeTpKR5Sl8/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxoUzH5Xeo-Cg1Op5mQ8Q8t-N-kYQrbNn6Jep_veAx8lxKQKfHb_auoLjugzMgPJahacQ/exec"; // <-- pega tu /exec
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -136,7 +135,6 @@ function clearSession(){ LS.del("mahfit_session"); }
 
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
-  // USERS
   const u = await apiGet("USERS");
   const users = (u.users || []).map(x => ({
     rut: normalizeRut(x.rut),
@@ -160,7 +158,6 @@ async function syncDown(){
   }));
   setUsers(users);
 
-  // PLANES
   const p = await apiGet("PLANES");
   const planes = (p.planes || []).map(x => ({
     planId: String(x.PlanId ?? x.planId ?? "").trim().toUpperCase(),
@@ -174,7 +171,6 @@ async function syncDown(){
   })).filter(p=>p.planId);
   setPlanes(planes);
 
-  // Rutinas TXT
   const rt = await apiGet("RUTINAS_TXT");
   setRutinas((rt.rutinas_txt || []).map(x => ({
     id: x.id || crypto.randomUUID(),
@@ -185,7 +181,6 @@ async function syncDown(){
     creadoPorRut: x.creadoPorRut ?? ""
   })));
 
-  // Rutinas V2
   const rv2 = await apiGet("RUTINAS_V2");
   setRutinasV2((rv2.rutinas_v2 || []).map(x => {
     let routine = null;
@@ -198,7 +193,6 @@ async function syncDown(){
     };
   }));
 
-  // Plantillas V2
   const pv2 = await apiGet("PLANTILLAS_V2");
   setPlantillasV2((pv2.plantillas_v2 || []).map(x => {
     let templateObj = null;
@@ -367,3 +361,4 @@ window.syncDown = syncDown;
 window.clearSession = clearSession;
 window.login = login;
 window.registerUser = registerUser;
+window.setDbStatus = setDbStatus;
