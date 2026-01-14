@@ -33,7 +33,6 @@
       min-height:100vh;
     }
 
-    /* topbar */
     .topbar{
       position: sticky;
       top:0;
@@ -75,7 +74,6 @@
       letter-spacing:.4px;
     }
 
-    /* indicador db */
     .db-indicator{
       display:inline-flex;
       align-items:center;
@@ -112,14 +110,12 @@
       white-space:nowrap;
     }
 
-    /* layout */
     .wrap{
       max-width: 1200px;
       margin: 18px auto 60px;
       padding: 0 18px;
     }
 
-    /* ✅ 1 sola columna */
     .col{
       display:flex;
       flex-direction:column;
@@ -152,7 +148,6 @@
     .muted{ color: var(--mut); font-size: 13px; font-weight:700; }
     .cardBody{ padding: 14px; }
 
-    /* inputs */
     .row{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -172,6 +167,7 @@
       font-weight:800;
     }
     input::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
+    input:disabled{ opacity:.75; cursor:not-allowed; }
 
     .btn{
       border:1px solid rgba(255,255,255,.12);
@@ -192,19 +188,9 @@
       background: rgba(35,166,255,.14);
     }
     .btn.ghost{ background: transparent; }
-    .btn.small{
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-    .btn.danger{
-      border-color: rgba(255,90,103,.35);
-      background: rgba(255,90,103,.12);
-    }
-    .btn.ok{
-      border-color: rgba(43,213,118,.35);
-      background: rgba(43,213,118,.12);
-    }
+    .btn.small{ padding: 8px 10px; border-radius: 10px; font-size: 12px; }
+    .btn.danger{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.12); }
+    .btn.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.12); }
 
     .pill{
       display:inline-flex;
@@ -223,7 +209,6 @@
     .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
     .pill.bad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
 
-    /* filtros */
     .filters{
       display:flex;
       gap: 10px;
@@ -234,50 +219,43 @@
     .filters input{ flex: 1; min-width: 220px; }
     .filters select{ width: 220px; }
 
-    /* ✅ Tabs */
     .tabs{
       display:flex;
       gap:10px;
-      margin-top: 10px;
       flex-wrap:wrap;
+      margin-top: 10px;
     }
-    .tabBtn{
+    .tab{
       display:inline-flex;
       align-items:center;
-      gap:10px;
-      padding: 10px 12px;
+      gap:8px;
+      padding: 8px 12px;
       border-radius: 999px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
+      background: rgba(0,0,0,.22);
       color: rgba(255,255,255,.88);
       font-weight: 1000;
       cursor:pointer;
       user-select:none;
-      transition: transform .08s ease, background .12s ease, border .12s ease;
     }
-    .tabBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); }
-    .tabBtn:active{ transform: translateY(0px); }
-    .tabBtn.active{
-      border-color: rgba(35,166,255,.35);
-      background: rgba(35,166,255,.14);
+    .tab.active{
+      border-color: rgba(35,166,255,.40);
+      background: rgba(35,166,255,.18);
     }
-    .tabCount{
-      min-width: 28px;
+    .tab .count{
+      min-width: 22px;
       height: 22px;
-      padding: 0 8px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       border-radius: 999px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
-      font-weight: 1000;
       font-size: 12px;
     }
 
-    /* tabla + scroll */
     .tableWrap{
-      max-height: 540px;
+      max-height: 520px;
       overflow: auto;
       border-top:1px solid rgba(255,255,255,.06);
     }
@@ -305,20 +283,11 @@
       color: rgba(255,255,255,.78);
       border-bottom: 1px solid rgba(255,255,255,.10);
     }
-    .actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .msg{
-      margin-top: 10px;
-      font-weight: 900;
-      font-size: 13px;
-    }
+    .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .msg{ margin-top: 10px; font-weight: 900; font-size: 13px; }
     .msg.ok{ color: rgba(170,255,200,.95); }
     .msg.bad{ color: rgba(255,180,186,.95); }
 
-    /* mini modal renovar */
     .modalBack{
       position: fixed;
       inset:0;
@@ -330,7 +299,7 @@
       z-index: 20;
     }
     .modal{
-      width: min(560px, 100%);
+      width: min(740px, 100%);
       background: rgba(18,27,42,.92);
       border:1px solid rgba(255,255,255,.12);
       border-radius: 18px;
@@ -345,10 +314,7 @@
       gap: 10px;
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
-    .modalHead strong{
-      font-weight: 1000;
-      letter-spacing:.4px;
-    }
+    .modalHead strong{ font-weight: 1000; letter-spacing:.4px; }
     .modalBody{ padding: 14px; }
     .modalFoot{
       padding: 12px 14px 14px;
@@ -358,9 +324,37 @@
       border-top: 1px solid rgba(255,255,255,.08);
     }
 
-    /* vistas */
-    .view{ display:none; }
-    .view.active{ display:block; }
+    .miniTableWrap{
+      margin-top: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 360px;
+    }
+    .miniTableWrap table{ min-width: 860px; }
+    .miniTableWrap th{ background: rgba(18,27,42,.96); }
+    .miniInp{
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      outline:none;
+    }
+
+    .checkRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+    }
+    .checkRow input{ width:auto; }
   </style>
 </head>
 
@@ -379,6 +373,7 @@
     <span id="roleBadge" class="badge"></span>
 
     <button id="btnRutinas" class="btn ghost small">Rutinas</button>
+    <button id="btnPlanes" class="btn ghost small">Planes</button>
     <button id="btnLogout" class="btn ghost small">Salir</button>
   </div>
 </header>
@@ -421,7 +416,7 @@
       </div>
     </div>
 
-    <!-- CRM -->
+    <!-- CRM PRINCIPAL -->
     <div class="card">
       <div class="cardHead">
         <div>
@@ -435,62 +430,36 @@
               <option value="SOCIO">Solo socios</option>
               <option value="FUNCIONARIO">Solo funcionarios</option>
             </select>
+          </div>
 
-            <!-- ✅ Tabs -->
-            <div class="tabs">
-              <button id="tabActivos" class="tabBtn active" type="button">
-                Activos <span id="countActivos" class="tabCount">0</span>
-              </button>
-              <button id="tabVencidos" class="tabBtn" type="button">
-                Vencidos <span id="countVencidos" class="tabCount">0</span>
-              </button>
-            </div>
+          <div class="tabs">
+            <div class="tab active" data-tab="ALL">Todos <span class="count" id="cAll">0</span></div>
+            <div class="tab" data-tab="ACTIVE">Activos <span class="count" id="cActive">0</span></div>
+            <div class="tab" data-tab="EXPIRED">Vencidos <span class="count" id="cExpired">0</span></div>
           </div>
         </div>
 
-        <span class="pill">Vista</span>
+        <span class="pill">Lista</span>
       </div>
 
-      <!-- ✅ Vista Activos -->
-      <div id="viewActivos" class="view active">
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th>NOMBRE</th>
-                <th>RUT/USUARIO</th>
-                <th>ROL</th>
-                <th>ACTIVO</th>
-                <th>PLAN</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ✅ Vista Vencidos -->
-      <div id="viewVencidos" class="view">
-        <div class="tableWrap" style="max-height: 540px;">
-          <table>
-            <thead>
-              <tr>
-                <th>NOMBRE</th>
-                <th>RUT/USUARIO</th>
-                <th>ROL</th>
-                <th>ACTIVO</th>
-                <th>PLAN</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody id="expiredTbody"></tbody>
-          </table>
-        </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>RUT/USUARIO</th>
+              <th>ROL</th>
+              <th>ACTIVO</th>
+              <th>PLAN</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
       </div>
 
       <div class="cardBody">
-        <div class="muted" id="hintText">Tip: escribe en el buscador y se filtra altiro.</div>
+        <div class="muted">Tip: aquí ves todo según tu buscador/filtro de rol y pestaña.</div>
       </div>
     </div>
 
@@ -510,12 +479,8 @@
 
     <div class="modalBody">
       <div class="row">
-        <select id="mPlanTipo">
-          <option value="">(sin tipo)</option>
-          <option value="MENSUAL">MENSUAL</option>
-          <option value="TRIMESTRAL">TRIMESTRAL</option>
-          <option value="SEMESTRAL">SEMESTRAL</option>
-          <option value="ANUAL">ANUAL</option>
+        <select id="mPlanId">
+          <option value="">(sin plan)</option>
         </select>
 
         <select id="mActivar">
@@ -542,6 +507,35 @@
         <div class="pill" id="mPreview" style="justify-content:center;">—</div>
       </div>
 
+      <!-- PRECIOS -->
+      <div class="row">
+        <input id="mPrecioBase" type="number" min="0" step="1" placeholder="Precio base (CLP)" disabled />
+        <input id="mDescPct" type="number" min="0" max="100" step="1" placeholder="Descuento % (0-100)" />
+      </div>
+
+      <div class="row">
+        <input id="mPrecioFinal" type="number" min="0" step="1" placeholder="Precio final (CLP)" disabled />
+        <input id="mPagado" type="number" min="0" step="1" placeholder="Monto pagado (CLP)" />
+      </div>
+
+      <div class="row">
+        <div class="pill" id="mPrecioSug" style="justify-content:center;">Base: —</div>
+        <div class="pill" id="mPrecioResumen" style="justify-content:center;">Final: —</div>
+      </div>
+
+      <!-- ✅ COMPROBANTE -->
+      <div class="checkRow">
+        <input type="checkbox" id="mSendReceipt" />
+        <label for="mSendReceipt" style="cursor:pointer;font-weight:900;color:rgba(255,255,255,.88);">
+          Enviar comprobante al correo
+        </label>
+      </div>
+
+      <div class="row">
+        <input id="mReceiptEmail" type="email" placeholder="Correo destino (ej: socio@gmail.com)" />
+        <button id="mSendNow" class="btn ok" type="button">Enviar comprobante</button>
+      </div>
+
       <div class="muted" style="margin-top:10px;">
         Consejo: elige inicio + duración y el fin se calcula solo. (Si usas “Personalizado…”, ajusta el fin manual).
       </div>
@@ -556,10 +550,61 @@
   </div>
 </div>
 
+<!-- MODAL PLANES -->
+<div id="plansBack" class="modalBack">
+  <div class="modal" style="width:min(980px,100%);">
+    <div class="modalHead">
+      <div>
+        <strong>Gestión de Planes</strong>
+        <div class="muted">Edita precios/días y guarda directo en la sheet <b>PLANES</b></div>
+      </div>
+      <button id="pClose" class="btn small ghost">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="row">
+        <button id="pAdd" class="btn ok">+ Agregar plan</button>
+        <button id="pReload" class="btn">Recargar</button>
+      </div>
+
+      <div class="miniTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>PLAN ID</th>
+              <th>NOMBRE</th>
+              <th>TIPO</th>
+              <th>DÍAS</th>
+              <th>PRECIO CLP</th>
+              <th>ACTIVO</th>
+              <th>ORDEN</th>
+              <th>GUARDAR</th>
+            </tr>
+          </thead>
+          <tbody id="plansTbody"></tbody>
+        </table>
+      </div>
+
+      <div id="pMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="pDone" class="btn primary">Listo</button>
+    </div>
+  </div>
+</div>
+
 <script src="assets/app.js"></script>
 
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
+  function normalizeRutLocal(r){ return String(r||"").trim().toUpperCase(); }
+
+  function moneyCLP(n){
+    n = Number(n||0);
+    return n.toLocaleString("es-CL", { style:"currency", currency:"CLP", maximumFractionDigits:0 });
+  }
+  function clamp(n, a, b){ n = Number(n||0); return Math.max(a, Math.min(b, n)); }
 
   function ymdFromAny(d){
     if(!d) return "";
@@ -608,7 +653,8 @@
   function planPill(p){
     if(p.status==="active") return `<span class="pill ok">${p.label}</span>`;
     if(p.status==="soon" || p.status==="today") return `<span class="pill warn">${p.label}</span>`;
-    return `<span class="pill bad">${p.label}</span>`;
+    if(p.status==="expired") return `<span class="pill bad">${p.label}</span>`;
+    return `<span class="pill">${p.label}</span>`;
   }
 
   function msg(el, text, ok){
@@ -625,40 +671,28 @@
     document.getElementById("roleBadge").textContent = "FUNCIONARIO";
 
     const tbody = document.getElementById("usersTbody");
-    const expiredTbody = document.getElementById("expiredTbody");
-
     const searchInput = document.getElementById("userSearch");
     const roleFilter = document.getElementById("roleFilter");
     const msgUser = document.getElementById("msgUser");
 
-    // tabs
-    const tabActivos = document.getElementById("tabActivos");
-    const tabVencidos = document.getElementById("tabVencidos");
-    const viewActivos = document.getElementById("viewActivos");
-    const viewVencidos = document.getElementById("viewVencidos");
-    const countActivos = document.getElementById("countActivos");
-    const countVencidos = document.getElementById("countVencidos");
-    const hintText = document.getElementById("hintText");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const cAll = document.getElementById("cAll");
+    const cActive = document.getElementById("cActive");
+    const cExpired = document.getElementById("cExpired");
+    let activeTab = "ALL";
 
-    function setTab(which){
-      const isAct = (which === "activos");
-      tabActivos.classList.toggle("active", isAct);
-      tabVencidos.classList.toggle("active", !isAct);
-      viewActivos.classList.toggle("active", isAct);
-      viewVencidos.classList.toggle("active", !isAct);
-      hintText.textContent = isAct
-        ? "Tip: aquí ves usuarios NO vencidos. (Activos e inactivos normales)"
-        : "Tip: aquí ves socios con plan vencido. “Activar” abre la renovación.";
+    function setTab(t){
+      activeTab = t;
+      tabs.forEach(x=>x.classList.toggle("active", x.getAttribute("data-tab")===t));
+      render();
     }
+    tabs.forEach(x=> x.addEventListener("click", ()=> setTab(x.getAttribute("data-tab"))) );
 
-    tabActivos.addEventListener("click", ()=> setTab("activos"));
-    tabVencidos.addEventListener("click", ()=> setTab("vencidos"));
-
-    // modal
+    // ----- modal renovar -----
     const modalBack = document.getElementById("modalBack");
     const mTitle = document.getElementById("mTitle");
     const mSub = document.getElementById("mSub");
-    const mPlanTipo = document.getElementById("mPlanTipo");
+    const mPlanId = document.getElementById("mPlanId");
     const mActivar = document.getElementById("mActivar");
     const mInicio = document.getElementById("mInicio");
     const mDias = document.getElementById("mDias");
@@ -666,14 +700,47 @@
     const mPreview = document.getElementById("mPreview");
     const mMsg = document.getElementById("mMsg");
 
+    const mPrecioBase = document.getElementById("mPrecioBase");
+    const mDescPct = document.getElementById("mDescPct");
+    const mPrecioFinal = document.getElementById("mPrecioFinal");
+    const mPagado = document.getElementById("mPagado");
+    const mPrecioSug = document.getElementById("mPrecioSug");
+    const mPrecioResumen = document.getElementById("mPrecioResumen");
+
+    // ✅ comprobante
+    const mSendReceipt = document.getElementById("mSendReceipt");
+    const mReceiptEmail = document.getElementById("mReceiptEmail");
+    const mSendNow = document.getElementById("mSendNow");
+
     let currentRut = "";
 
-    function suggestedDaysByTipo(tipo){
-      const t = (tipo || "").toUpperCase();
-      if(t === "TRIMESTRAL") return 90;
-      if(t === "SEMESTRAL") return 180;
-      if(t === "ANUAL") return 365;
-      return 30;
+    // ----- modal planes -----
+    const plansBack = document.getElementById("plansBack");
+    const plansTbody = document.getElementById("plansTbody");
+    const pMsg = document.getElementById("pMsg");
+
+    function calcFinal(base, pct){
+      base = Number(base||0);
+      pct = clamp(pct, 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      return { base, pct, final };
+    }
+    function refreshPriceUI(){
+      const base = Number(mPrecioBase.value||0);
+      const pct = Number(mDescPct.value||0);
+      const { final } = calcFinal(base, pct);
+
+      mPrecioFinal.value = final;
+
+      if(!mPagado.value || Number(mPagado.value) === 0){
+        mPagado.value = final;
+      }
+
+      mPrecioSug.textContent = `Base: ${moneyCLP(base)} · Desc: ${clamp(pct,0,100)}%`;
+      mPrecioSug.className = "pill " + (base>0 ? "ok" : "");
+
+      mPrecioResumen.textContent = `Final: ${moneyCLP(final)} · Pagado: ${moneyCLP(Number(mPagado.value||0))}`;
+      mPrecioResumen.className = "pill " + (final>0 ? "ok" : "");
     }
 
     function updatePreview(){
@@ -687,14 +754,37 @@
       mPreview.className = "pill " + (d <= 5 ? "warn" : "ok");
     }
 
+    function getPlanesActivosLocal(){
+      if(typeof window.getPlanesActivos === "function") return window.getPlanesActivos();
+      const all = (window.getPlanes ? window.getPlanes() : []) || [];
+      return all.filter(p => Number(p.activo ?? 1) === 1);
+    }
+
+    function fillPlanSelect(selectedId=""){
+      const planes = getPlanesActivosLocal();
+      mPlanId.innerHTML = `<option value="">(sin plan)</option>` + planes.map(p=>{
+        const label = `${p.nombre || p.planId} · ${p.dias} días · ${moneyCLP(p.precioCLP)}`;
+        return `<option value="${p.planId}" data-dias="${p.dias}" data-precio="${p.precioCLP}">${label}</option>`;
+      }).join("");
+      mPlanId.value = selectedId || "";
+    }
+
+    function suggestedDaysByPlan(){
+      const opt = mPlanId.selectedOptions?.[0];
+      const d = Number(opt?.dataset?.dias || 0);
+      return d > 0 ? d : 30;
+    }
+
     function openModal(user){
       currentRut = user.rut;
+
       mTitle.textContent = `Renovar plan`;
       mSub.textContent = `${user.nombre} · ${user.rut}`;
 
-      mPlanTipo.value = safe(user.planTipo,"");
-      mActivar.value = "1";
+      const userPlanId = String(user.planId || "").trim().toUpperCase();
+      fillPlanSelect(userPlanId);
 
+      mActivar.value = "1";
       mInicio.value = ymdFromAny(user.planInicio) || ymdFromAny(new Date());
 
       const userFin = ymdFromAny(user.planFin);
@@ -704,10 +794,26 @@
         if([1,7,30,90,180,365].includes(d)) mDias.value = String(d);
         else mDias.value = "0";
       }else{
-        const sug = suggestedDaysByTipo(mPlanTipo.value);
-        mDias.value = String(sug);
-        mFin.value = addDaysToYMD(mInicio.value, sug);
+        const sug = suggestedDaysByPlan();
+        mDias.value = String([1,7,30,90,180,365].includes(sug) ? sug : 30);
+        mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
       }
+
+      const opt = mPlanId.selectedOptions?.[0];
+      const base = Number(opt?.dataset?.precio || user.planPrecioBase || 0);
+      mPrecioBase.value = base;
+
+      mDescPct.value = Number(user.planDescPct || 0);
+      refreshPriceUI();
+
+      if(Number(user.planPagado || 0) > 0){
+        mPagado.value = Number(user.planPagado || 0);
+        refreshPriceUI();
+      }
+
+      // ✅ correo destino (editable)
+      mReceiptEmail.value = String(user.email || "").trim();
+      mSendReceipt.checked = false;
 
       mMsg.textContent = "";
       mMsg.className = "msg";
@@ -722,9 +828,7 @@
 
     document.getElementById("mClose").addEventListener("click", closeModal);
     document.getElementById("mCancel").addEventListener("click", closeModal);
-    modalBack.addEventListener("click", (e)=>{
-      if(e.target === modalBack) closeModal();
-    });
+    modalBack.addEventListener("click", (e)=>{ if(e.target === modalBack) closeModal(); });
 
     async function refreshFromServer(){
       try{ await syncDown(); }catch(e){ console.error(e); }
@@ -742,7 +846,7 @@
         if(p.status === "expired" && (u.activo !== false)){
           u.activo = false;
           changed = true;
-          try{ await apiPost("USERS", u); }catch(e){ console.warn("No se pudo desactivar vencido:", u.rut, e); }
+          try{ await apiPost("USERS", u); }catch(e){}
         }
       }
 
@@ -775,46 +879,28 @@
       }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
     }
 
-    function isSocioExpired(u){
-      const rol = safe(u.rol,"SOCIO").toUpperCase();
-      if(rol !== "SOCIO") return false;
-      const p = planInfo(u.planFin);
-      return p.status === "expired";
-    }
-
     function render(){
-      const list = getFilteredUsers();
+      const all = getFilteredUsers();
+
+      const expired = all.filter(u => planInfo(u.planFin).status === "expired");
+      const active = all.filter(u => planInfo(u.planFin).status !== "expired");
+
+      cAll.textContent = String(all.length);
+      cActive.textContent = String(active.length);
+      cExpired.textContent = String(expired.length);
+
+      let list = all;
+      if(activeTab === "ACTIVE") list = active;
+      if(activeTab === "EXPIRED") list = expired;
 
       tbody.innerHTML = "";
-      expiredTbody.innerHTML = "";
 
-      const normal = [];
-      const expired = [];
-
-      for(const u of list){
-        if(isSocioExpired(u)) expired.push(u);
-        else normal.push(u);
-      }
-
-      // contadores tabs
-      countActivos.textContent = String(normal.length);
-      countVencidos.textContent = String(expired.length);
-
-      // auto cambia a activos si ya no hay vencidos en filtro
-      if(expired.length === 0 && tabVencidos.classList.contains("active")){
-        setTab("activos");
-      }
-      // si activos queda vacío y vencidos tiene, muévete a vencidos
-      if(normal.length === 0 && expired.length > 0 && tabActivos.classList.contains("active")){
-        setTab("vencidos");
-      }
-
-      function renderRow(container, u, forceInactive){
+      list.forEach(u=>{
         const rol = safe(u.rol,"SOCIO").toUpperCase();
         const p = planInfo(u.planFin);
 
-        // ✅ vencidos => SIEMPRE INACTIVO visual
-        const activo = forceInactive ? false : (u.activo !== false);
+        const isExpired = (p.status === "expired");
+        const activo = (u.activo !== false) && !isExpired;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -825,30 +911,29 @@
           <td>${planPill(p)}</td>
           <td>
             <div class="actions">
-              ${
-                forceInactive
-                ? `<button class="btn small ok" data-renew="${safe(u.rut,"")}">Activar</button>`
-                : `<button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}">
-                     ${activo ? "Desactivar" : "Activar"}
-                   </button>`
-              }
+              <button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
+                ${activo ? "Desactivar" : "Activar"}
+              </button>
               <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
             </div>
           </td>
         `;
-        container.appendChild(tr);
-      }
+        tbody.appendChild(tr);
+      });
 
-      normal.forEach(u => renderRow(tbody, u, false));
-      expired.forEach(u => renderRow(expiredTbody, u, true));
-
-      // toggle solo en normales
       document.querySelectorAll("[data-toggle]").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           const rut = btn.getAttribute("data-toggle");
+          const isExpired = btn.getAttribute("data-expired") === "1";
+
           const users = getUsers();
           const u = users.find(x=>x.rut===rut);
           if(!u) return;
+
+          if(isExpired){
+            openModal(u);
+            return;
+          }
 
           const cur = (u.activo !== false);
           u.activo = !cur;
@@ -861,7 +946,6 @@
             render();
             msg(msgUser, "✅ Estado actualizado", true);
           }catch(e){
-            console.error(e);
             await refreshFromServer();
             render();
             msg(msgUser, "❌ No se pudo actualizar", false);
@@ -869,7 +953,6 @@
         });
       });
 
-      // renovar (y activar en vencidos) => abre modal
       document.querySelectorAll("[data-renew]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const rut = btn.getAttribute("data-renew");
@@ -880,13 +963,70 @@
       });
     }
 
-    mPlanTipo.addEventListener("change", ()=>{
-      if(mDias.value === "0") { updatePreview(); return; }
-      const sug = suggestedDaysByTipo(mPlanTipo.value);
-      if(!["1","7"].includes(mDias.value)) mDias.value = String(sug);
-      mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
-      updatePreview();
+    // ✅ Enviar comprobante (sin guardar)
+    async function sendReceiptNow(){
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentRut);
+      if(!u) return;
+
+      const to = String(mReceiptEmail.value||"").trim();
+      if(!to){
+        msg(mMsg, "❌ El socio no tiene correo. Escribe un correo destino.", false);
+        return;
+      }
+
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(Number(mDescPct.value || 0), 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      const pagado = Number(mPagado.value || 0);
+
+      const payload = {
+        to,
+        subject: "MAH FIT · Comprobante de pago",
+        nombre: u.nombre || "",
+        rut: u.rut || "",
+        planId: String(mPlanId.value||"").trim().toUpperCase(),
+        planInicio: String(mInicio.value||""),
+        planFin: String(mFin.value||""),
+        precioBase: base,
+        descPct: pct,
+        precioFinal: final,
+        pagado: pagado,
+        activo: (mActivar.value === "1")
+      };
+
+      try{
+        msg(mMsg, "Enviando comprobante…", true);
+        await apiPost("send_receipt_email", payload);
+        msg(mMsg, "✅ Comprobante enviado al correo", true);
+      }catch(e){
+        msg(mMsg, "❌ No se pudo enviar el comprobante: " + (e.message||e), false);
+      }
+    }
+
+    mSendNow.addEventListener("click", sendReceiptNow);
+
+    // modal renovar listeners
+    mPlanId.addEventListener("change", ()=>{
+      const opt = mPlanId.selectedOptions?.[0];
+      const precio = Number(opt?.dataset?.precio || 0);
+      const diasSug = Number(opt?.dataset?.dias || 0);
+
+      mPrecioBase.value = precio || 0;
+      refreshPriceUI();
+
+      if(mDias.value !== "0"){
+        const use = [1,7,30,90,180,365].includes(diasSug) ? diasSug : Number(mDias.value||0);
+        if(use > 0){
+          mDias.value = String(use);
+          mFin.value = addDaysToYMD(mInicio.value, use);
+          updatePreview();
+        }
+      }
     });
+
+    mDescPct.addEventListener("input", refreshPriceUI);
+    mPagado.addEventListener("input", refreshPriceUI);
 
     mDias.addEventListener("change", ()=>{
       if(mDias.value === "0"){ updatePreview(); return; }
@@ -911,18 +1051,39 @@
       const u = users.find(x=>x.rut===currentRut);
       if(!u) return;
 
+      const planId = safe(mPlanId.value,"").trim().toUpperCase();
+
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(Number(mDescPct.value || 0), 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      const pagado = Number(mPagado.value || 0);
+
       const payload = {
         rut: currentRut,
-        planTipo: safe(mPlanTipo.value,""),
+        planId,
         planInicio: safe(mInicio.value,""),
         planFin: safe(mFin.value,""),
+
+        planPrecioBase: base,
+        planDescPct: pct,
+        planPrecioFinal: final,
+        planPagado: pagado,
+
         activo: (mActivar.value === "1")
       };
 
-      u.planTipo = payload.planTipo;
+      // local
+      u.planId = payload.planId;
       u.planInicio = payload.planInicio;
       u.planFin = payload.planFin;
+      u.planPrecioBase = payload.planPrecioBase;
+      u.planDescPct = payload.planDescPct;
+      u.planPrecioFinal = payload.planPrecioFinal;
+      u.planPagado = payload.planPagado;
       if(payload.activo) u.activo = true;
+
+      // guarda correo en local (si lo editaste)
+      u.email = String(mReceiptEmail.value||u.email||"").trim();
 
       setUsers(users);
       render();
@@ -930,18 +1091,23 @@
       try{
         await apiPost("users_plan_update", payload);
         await refreshFromServer();
-        await autoDeactivateExpiredSocios();
         render();
         msg(mMsg, "✅ Renovación guardada", true);
+
+        // ✅ si checkbox activo: enviar comprobante
+        if(mSendReceipt.checked){
+          await sendReceiptNow();
+        }
+
         setTimeout(closeModal, 450);
       }catch(e){
-        console.error(e);
         await refreshFromServer();
         render();
-        msg(mMsg, "❌ No se pudo guardar (Apps Script)", false);
+        msg(mMsg, "❌ No se pudo guardar (Apps Script): " + (e.message||e), false);
       }
     });
 
+    // crear usuario
     document.getElementById("createUserForm").addEventListener("submit", async (e)=>{
       e.preventDefault();
       try{
@@ -954,7 +1120,6 @@
         });
         e.target.reset();
         await refreshFromServer();
-        await autoDeactivateExpiredSocios();
         render();
         msg(msgUser, "✅ Usuario creado", true);
       }catch(err){
@@ -965,6 +1130,7 @@
     searchInput.addEventListener("input", render);
     roleFilter.addEventListener("change", render);
 
+    // topbar
     document.getElementById("btnLogout").addEventListener("click", ()=>{
       clearSession();
       location.href = "index.html";
@@ -973,11 +1139,119 @@
       location.href = "rutinas.html";
     });
 
-    // orden correcto
+    // Planes modal
+    function openPlans(){
+      plansBack.style.display = "flex";
+      renderPlansTable();
+      msg(pMsg, "", true);
+    }
+    function closePlans(){ plansBack.style.display = "none"; }
+
+    document.getElementById("btnPlanes").addEventListener("click", openPlans);
+    document.getElementById("pClose").addEventListener("click", closePlans);
+    document.getElementById("pDone").addEventListener("click", closePlans);
+    plansBack.addEventListener("click", (e)=>{ if(e.target === plansBack) closePlans(); });
+
+    function renderPlansTable(){
+      const planes = (window.getPlanes ? window.getPlanes() : []) || [];
+      const sorted = planes.slice().sort((a,b)=> Number(a.orden||999) - Number(b.orden||999));
+
+      plansTbody.innerHTML = "";
+      sorted.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input class="miniInp" data-k="planId" value="${safe(p.planId,"")}" disabled></td>
+          <td><input class="miniInp" data-k="nombre" value="${safe(p.nombre,"")}"></td>
+          <td><input class="miniInp" data-k="tipo" value="${safe(p.tipo,"")}" placeholder="MENSUAL/TRIMESTRAL..."></td>
+          <td><input class="miniInp" data-k="dias" type="number" min="0" step="1" value="${Number(p.dias||0)}"></td>
+          <td><input class="miniInp" data-k="precioCLP" type="number" min="0" step="1" value="${Number(p.precioCLP||0)}"></td>
+          <td>
+            <select class="miniInp" data-k="activo">
+              <option value="1" ${Number(p.activo??1)===1?"selected":""}>1</option>
+              <option value="0" ${Number(p.activo??1)===0?"selected":""}>0</option>
+            </select>
+          </td>
+          <td><input class="miniInp" data-k="orden" type="number" min="0" step="1" value="${Number(p.orden||999)}"></td>
+          <td><button class="btn small primary" data-save-plan="${safe(p.planId,"")}">Guardar</button></td>
+        `;
+        plansTbody.appendChild(tr);
+      });
+
+      plansTbody.querySelectorAll("[data-save-plan]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const planId = btn.getAttribute("data-save-plan");
+          const row = btn.closest("tr");
+          if(!row) return;
+
+          const data = {};
+          row.querySelectorAll("[data-k]").forEach(inp=>{
+            const k = inp.getAttribute("data-k");
+            data[k] = (inp.value ?? "").trim();
+          });
+
+          const payload = {
+            PlanId: planId,
+            Nombre: data.nombre,
+            Tipo: String(data.tipo||"").toUpperCase(),
+            Dias: Number(data.dias||0),
+            PrecioCLP: Number(data.precioCLP||0),
+            Activo: Number(data.activo||1),
+            Orden: Number(data.orden||999),
+          };
+
+          try{
+            await apiPost("PLANES", payload);
+            await refreshFromServer();
+            fillPlanSelect(mPlanId.value);
+            msg(pMsg, "✅ Plan guardado", true);
+          }catch(e){
+            msg(pMsg, "❌ No se pudo guardar plan: " + (e.message||e), false);
+          }
+        });
+      });
+    }
+
+    document.getElementById("pAdd").addEventListener("click", async ()=>{
+      const id = prompt("PlanId (ej: MENSUAL, ANUAL, SEMANAL):", "NUEVO_PLAN");
+      if(!id) return;
+
+      const payload = {
+        PlanId: String(id).trim().toUpperCase(),
+        Nombre: "Nuevo plan",
+        Tipo: String(id).trim().toUpperCase(),
+        Dias: 30,
+        PrecioCLP: 0,
+        Activo: 1,
+        Orden: 999
+      };
+
+      try{
+        await apiPost("PLANES", payload);
+        await refreshFromServer();
+        renderPlansTable();
+        fillPlanSelect(mPlanId.value);
+        msg(pMsg, "✅ Plan creado", true);
+      }catch(e){
+        msg(pMsg, "❌ No se pudo crear plan (¿PlanId repetido?): " + (e.message||e), false);
+      }
+    });
+
+    document.getElementById("pReload").addEventListener("click", async ()=>{
+      await refreshFromServer();
+      renderPlansTable();
+      fillPlanSelect(mPlanId.value);
+      msg(pMsg, "✅ Recargado", true);
+    });
+
+    // arranque
+    fillPlanSelect("");
+    render();
+
     await refreshFromServer();
+    fillPlanSelect("");
+
     await autoDeactivateExpiredSocios();
     render();
-    setTab("activos");
   });
 </script>
 
