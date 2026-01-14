@@ -3,121 +3,406 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT · Crear contraseña</title>
+  <title>MAH FIT | Cambiar contraseña</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+
+  <!-- ✅ Mejora visual SOLO para esta página (no rompe tu styles.css) -->
   <style>
-    :root{
-      --bg0:#070a11; --bg1:#0f1623; --card:#121b2a;
-      --line:rgba(255,255,255,.10);
-      --txt:rgba(255,255,255,.92);
-      --mut:rgba(255,255,255,.65);
-      --ok:#2bd576; --bad:#ff5a67;
-      --pri:#23a6ff;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --r:16px;
+    /* Base */
+    body[data-page="pw"]{
+      background:
+        radial-gradient(900px 500px at 18% 18%, rgba(77,125,255,.14), transparent 55%),
+        radial-gradient(700px 420px at 85% 30%, rgba(0,210,255,.10), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.92));
+      min-height: 100vh;
     }
-    body{ margin:0; background:radial-gradient(1200px 600px at 20% 10%, rgba(124,92,255,.18), transparent 60%),
-                         radial-gradient(900px 500px at 80% 20%, rgba(35,166,255,.14), transparent 55%),
-                         linear-gradient(180deg, var(--bg0), var(--bg1));
-          min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--txt);
-          font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:18px;
+    main.wrap{
+      padding: 26px 16px 42px;
     }
-    .card{ width:min(520px, 100%); background:rgba(255,255,255,.04); border:1px solid var(--line);
-           border-radius:22px; box-shadow:var(--shadow); padding:18px;
+
+    /* Card upgrade */
+    .pw-card{
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      background: rgba(18, 27, 42, .75);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
     }
-    h1{ margin:0 0 6px; font-size:20px; letter-spacing:.4px; }
-    p{ margin:0 0 14px; color:var(--mut); font-size:13px; line-height:1.5; }
-    label{ display:block; font-size:12px; color:var(--mut); margin:10px 0 6px; }
-    input{
-      width:100%; padding:12px 12px; border-radius:12px;
-      background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color:var(--txt);
-      outline:none;
+    .pw-card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(420px 220px at 10% 0%, rgba(124,92,255,.28), transparent 60%),
+                  radial-gradient(420px 220px at 92% 10%, rgba(35,166,255,.22), transparent 62%);
+      pointer-events:none;
+      opacity:.95;
     }
-    .row{ display:flex; gap:10px; }
-    .row > *{ flex:1; }
-    .btn{
-      width:100%; padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(135deg, rgba(35,166,255,.20), rgba(43,213,118,.15));
-      color:var(--txt); font-weight:900; cursor:pointer; margin-top:14px;
+    .pw-card > *{ position: relative; z-index: 1; }
+
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
     }
-    .msg{ margin-top:12px; font-size:13px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); }
-    .ok{ color:#b6ffd2; background:rgba(43,213,118,.10); border-color:rgba(43,213,118,.22); }
-    .bad{ color:#ffd0d0; background:rgba(255,90,103,.10); border-color:rgba(255,90,103,.22); }
-    .small{ font-size:12px; color:var(--mut); margin-top:10px; }
+    .cardTitle{
+      font-size: 20px;
+      letter-spacing: .2px;
+      margin-bottom: 4px;
+    }
+    .pw-sub{
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .pw-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(43,213,118,.28);
+      background: rgba(43,213,118,.10);
+      color: rgba(255,255,255,.92);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pw-pill .dot{
+      width:9px; height:9px; border-radius:50%;
+      background: #2bd576;
+      box-shadow: 0 0 0 3px rgba(43,213,118,.18);
+      display:inline-block;
+    }
+
+    .cardBody{
+      padding: 16px 18px 18px;
+    }
+
+    /* Form layout */
+    .pw-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (max-width: 720px){
+      .pw-grid{ grid-template-columns: 1fr; }
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .label{
+      font-size: 12.5px;
+      color: rgba(255,255,255,.72);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .hint{
+      font-size: 12px;
+      color: rgba(255,255,255,.56);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    /* Input with icon + toggle */
+    .inputWrap{
+      position: relative;
+      display:flex;
+      align-items:center;
+    }
+    .inputWrap input{
+      width: 100%;
+      padding: 11px 42px 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, transform .05s;
+    }
+    .inputWrap input::placeholder{
+      color: rgba(255,255,255,.42);
+    }
+    .inputWrap input:focus{
+      border-color: rgba(35,166,255,.55);
+      box-shadow: 0 0 0 3px rgba(35,166,255,.14);
+    }
+    .inputWrap input:active{ transform: translateY(1px); }
+
+    .toggleBtn{
+      position:absolute;
+      right: 8px;
+      height: 34px;
+      width: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+      display:grid;
+      place-items:center;
+      cursor: pointer;
+      user-select:none;
+      transition: background .15s, transform .05s, border-color .15s;
+    }
+    .toggleBtn:hover{
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.18);
+    }
+    .toggleBtn:active{ transform: translateY(1px); }
+
+    .pw-actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .pw-actions .btn{
+      min-height: 40px;
+      border-radius: 12px;
+    }
+    .pw-actions .btn.primary{
+      padding: 10px 14px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .pw-actions .btn.ghost{
+      padding: 10px 14px;
+    }
+
+    /* Message nicer */
+    #pwMsg.msg{
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.86);
+    }
+    #pwMsg.msg.ok{
+      border-color: rgba(43,213,118,.28);
+      background: rgba(43,213,118,.10);
+    }
+    #pwMsg.msg.bad{
+      border-color: rgba(255,90,103,.28);
+      background: rgba(255,90,103,.10);
+    }
+
+    /* Small helper chips */
+    .pw-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+    }
+    .chip strong{ color: rgba(255,255,255,.92); }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h1>Crear / Cambiar contraseña</h1>
-    <p>Por seguridad, crea una contraseña nueva para tu cuenta MAH FIT.  
-      Si abriste este enlace hace mucho, puede haber expirado.</p>
 
-    <div class="row">
-      <div>
-        <label>Nueva contraseña</label>
-        <input id="p1" type="password" placeholder="Nueva contraseña" />
+<body data-page="pw">
+  <header class="topbar">
+    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="nav-right">
+      <div class="db-indicator">
+        <span id="dbDot" class="db-dot connecting"></span>
+        <span id="dbText" class="db-text">Conectando…</span>
       </div>
-      <div>
-        <label>Repetir contraseña</label>
-        <input id="p2" type="password" placeholder="Repite la contraseña" />
+      <button id="btnBack" class="btn ghost small">Volver</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="max-width:760px;">
+    <div class="card pw-card">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Cambiar contraseña</div>
+          <div class="pw-sub">Recomendado al primer ingreso o si quieres mejorar tu seguridad.</div>
+
+          <div class="pw-badges">
+            <span class="chip">🔒 <strong>Consejo:</strong> usa 8+ caracteres</span>
+            <span class="chip">⚡ Evita: <strong>1234</strong> / <strong>rut</strong></span>
+          </div>
+        </div>
+
+        <span class="pw-pill"><span class="dot"></span>Seguridad</span>
+      </div>
+
+      <div class="cardBody">
+        <div class="muted" style="color:rgba(255,255,255,.72);">
+          Ingresa tu <b>RUT/Usuario</b>, tu <b>contraseña actual</b> y define una nueva.
+        </div>
+
+        <form id="pwForm" autocomplete="off">
+          <div class="pw-grid">
+            <div class="field">
+              <div class="label">RUT / Usuario</div>
+              <div class="inputWrap">
+                <input id="pwRut" placeholder="Ej: 12345678-9" required />
+              </div>
+              <div class="hint">Debe coincidir con tu cuenta registrada.</div>
+            </div>
+
+            <div class="field">
+              <div class="label">
+                Contraseña actual
+                <span style="font-size:12px;color:rgba(255,255,255,.55);">obligatoria</span>
+              </div>
+              <div class="inputWrap">
+                <input id="pwOld" placeholder="Tu contraseña actual" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwOld" aria-label="Mostrar/Ocultar">
+                  👁
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="label">Nueva contraseña</div>
+              <div class="inputWrap">
+                <input id="pwNew" placeholder="Mín. 4 caracteres" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwNew" aria-label="Mostrar/Ocultar">
+                  👁
+                </button>
+              </div>
+              <div class="hint" id="pwStrength">Tip: mezcla letras y números para mayor seguridad.</div>
+            </div>
+
+            <div class="field">
+              <div class="label">Repetir nueva contraseña</div>
+              <div class="inputWrap">
+                <input id="pwNew2" placeholder="Repite la nueva contraseña" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwNew2" aria-label="Mostrar/Ocultar">
+                  👁
+                </button>
+              </div>
+              <div class="hint" id="pwMatchHint">Asegúrate que coincidan.</div>
+            </div>
+          </div>
+
+          <div class="pw-actions">
+            <a class="btn ghost" href="index.html">Ir a Login</a>
+            <button class="btn primary" id="btnSave" type="submit">Guardar nueva contraseña</button>
+          </div>
+        </form>
+
+        <div id="pwMsg" class="msg" style="display:none;"></div>
       </div>
     </div>
+  </main>
 
-    <button class="btn" id="btnSave">Guardar contraseña</button>
+  <script src="assets/app.js"></script>
+  <script>
+    // Volver
+    const btnBack = document.getElementById("btnBack");
+    btnBack.addEventListener("click", ()=> location.href="index.html");
 
-    <div id="msg" class="msg" style="display:none;"></div>
+    const pwForm = document.getElementById("pwForm");
+    const pwMsg  = document.getElementById("pwMsg");
+    const btnSave = document.getElementById("btnSave");
 
-    <div class="small">
-      Al guardar, tu contraseña se actualizará automáticamente en nuestra base de datos.
-    </div>
-  </div>
+    const pwNew  = document.getElementById("pwNew");
+    const pwNew2 = document.getElementById("pwNew2");
+    const pwStrength = document.getElementById("pwStrength");
+    const pwMatchHint = document.getElementById("pwMatchHint");
 
-<script>
-  const WEBAPP_URL = "<?= (typeof WEBAPP_URL !== 'undefined' ? WEBAPP_URL : '') ?>";
-
-  function qs(name){
-    const u = new URL(window.location.href);
-    return u.searchParams.get(name) || "";
-  }
-  function showMsg(text, ok){
-    const el = document.getElementById("msg");
-    el.style.display = "block";
-    el.textContent = text;
-    el.className = "msg " + (ok ? "ok" : "bad");
-  }
-
-  async function apiPost(resource, data){
-    const r = await fetch(WEBAPP_URL, {
-      method: "POST",
-      headers: { "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify({ resource, data })
-    });
-    const t = await r.text();
-    let j;
-    try{ j = JSON.parse(t); }catch{ j = { ok:false, error:t }; }
-    if(!r.ok) throw new Error(j.error || ("HTTP " + r.status));
-    if(j.ok === false) throw new Error(j.error || "Error");
-    return j;
-  }
-
-  document.getElementById("btnSave").addEventListener("click", async ()=>{
-    const p1 = document.getElementById("p1").value;
-    const p2 = document.getElementById("p2").value;
-    const token = qs("token");
-
-    if(!token) return showMsg("Falta token. Abre el enlace desde tu correo nuevamente.", false);
-    if(!p1 || p1.length < 4) return showMsg("La contraseña debe tener al menos 4 caracteres.", false);
-    if(p1 !== p2) return showMsg("Las contraseñas no coinciden.", false);
-
-    try{
-      await apiPost("set_password_token", { token, newPass: p1 });
-      showMsg("✅ Contraseña actualizada. Ahora puedes iniciar sesión en MAH FIT.", true);
-
-      // redirige al index de tu web (si quieres, lo dejas)
-      setTimeout(()=>{ window.location.href = "https://mahfitplus.github.io/Web/index.html"; }, 1100);
-    }catch(err){
-      showMsg("❌ " + err.message, false);
+    function showMsg(text, ok){
+      pwMsg.style.display = "block";
+      pwMsg.className = "msg " + (ok ? "ok" : "bad");
+      pwMsg.textContent = text;
     }
-  });
-</script>
+
+    // 👁 Toggle mostrar/ocultar
+    document.querySelectorAll("[data-toggle]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-toggle");
+        const input = document.getElementById(id);
+        if(!input) return;
+        input.type = (input.type === "password") ? "text" : "password";
+        btn.textContent = (input.type === "password") ? "👁" : "🙈";
+      });
+    });
+
+    // Feedback liviano: fuerza/coinicidencia (sin reglas estrictas)
+    function updateHints(){
+      const v = pwNew.value || "";
+      // fuerza simple
+      let score = 0;
+      if(v.length >= 8) score++;
+      if(/[A-Z]/.test(v)) score++;
+      if(/[0-9]/.test(v)) score++;
+      if(/[^a-zA-Z0-9]/.test(v)) score++;
+
+      const labels = [
+        "Tip: mezcla letras y números para mayor seguridad.",
+        "Bien: considera 8+ caracteres.",
+        "Mejor: agrega una MAYÚSCULA o símbolo.",
+        "Muy bien: buena combinación.",
+        "Excelente: contraseña fuerte."
+      ];
+      pwStrength.textContent = labels[Math.min(score, 4)];
+
+      // match
+      const v2 = pwNew2.value || "";
+      if(!v && !v2){
+        pwMatchHint.textContent = "Asegúrate que coincidan.";
+        return;
+      }
+      if(v2.length === 0){
+        pwMatchHint.textContent = "Repítela para confirmar.";
+        return;
+      }
+      pwMatchHint.textContent = (v === v2) ? "✅ Coinciden." : "❌ No coinciden.";
+    }
+    pwNew.addEventListener("input", updateHints);
+    pwNew2.addEventListener("input", updateHints);
+
+    pwForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      pwMsg.style.display = "none";
+
+      try{
+        const rut = (document.getElementById("pwRut").value || "").trim();
+        const oldPass = document.getElementById("pwOld").value || "";
+        const newPass = pwNew.value || "";
+        const newPass2 = pwNew2.value || "";
+
+        if(newPass !== newPass2) throw new Error("Las nuevas contraseñas no coinciden.");
+        if(newPass.length < 4) throw new Error("La nueva contraseña debe tener al menos 4 caracteres.");
+
+        btnSave.disabled = true;
+        btnSave.textContent = "Guardando…";
+
+        await apiPost("change_password", { rut, oldPass, newPass });
+
+        showMsg("✅ Contraseña actualizada. Ya puedes ingresar.", true);
+        setTimeout(()=> location.href="index.html", 900);
+      }catch(err){
+        showMsg("❌ " + (err.message || err), false);
+      }finally{
+        btnSave.disabled = false;
+        btnSave.textContent = "Guardar nueva contraseña";
+      }
+    });
+  </script>
 </body>
 </html>
+
