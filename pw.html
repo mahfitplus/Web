@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAH FIT · Crear contraseña</title>
+  <style>
+    :root{
+      --bg0:#070a11; --bg1:#0f1623; --card:#121b2a;
+      --line:rgba(255,255,255,.10);
+      --txt:rgba(255,255,255,.92);
+      --mut:rgba(255,255,255,.65);
+      --ok:#2bd576; --bad:#ff5a67;
+      --pri:#23a6ff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    body{ margin:0; background:radial-gradient(1200px 600px at 20% 10%, rgba(124,92,255,.18), transparent 60%),
+                         radial-gradient(900px 500px at 80% 20%, rgba(35,166,255,.14), transparent 55%),
+                         linear-gradient(180deg, var(--bg0), var(--bg1));
+          min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--txt);
+          font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:18px;
+    }
+    .card{ width:min(520px, 100%); background:rgba(255,255,255,.04); border:1px solid var(--line);
+           border-radius:22px; box-shadow:var(--shadow); padding:18px;
+    }
+    h1{ margin:0 0 6px; font-size:20px; letter-spacing:.4px; }
+    p{ margin:0 0 14px; color:var(--mut); font-size:13px; line-height:1.5; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:10px 0 6px; }
+    input{
+      width:100%; padding:12px 12px; border-radius:12px;
+      background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color:var(--txt);
+      outline:none;
+    }
+    .row{ display:flex; gap:10px; }
+    .row > *{ flex:1; }
+    .btn{
+      width:100%; padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(135deg, rgba(35,166,255,.20), rgba(43,213,118,.15));
+      color:var(--txt); font-weight:900; cursor:pointer; margin-top:14px;
+    }
+    .msg{ margin-top:12px; font-size:13px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); }
+    .ok{ color:#b6ffd2; background:rgba(43,213,118,.10); border-color:rgba(43,213,118,.22); }
+    .bad{ color:#ffd0d0; background:rgba(255,90,103,.10); border-color:rgba(255,90,103,.22); }
+    .small{ font-size:12px; color:var(--mut); margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Crear / Cambiar contraseña</h1>
+    <p>Por seguridad, crea una contraseña nueva para tu cuenta MAH FIT.  
+      Si abriste este enlace hace mucho, puede haber expirado.</p>
+
+    <div class="row">
+      <div>
+        <label>Nueva contraseña</label>
+        <input id="p1" type="password" placeholder="Nueva contraseña" />
+      </div>
+      <div>
+        <label>Repetir contraseña</label>
+        <input id="p2" type="password" placeholder="Repite la contraseña" />
+      </div>
+    </div>
+
+    <button class="btn" id="btnSave">Guardar contraseña</button>
+
+    <div id="msg" class="msg" style="display:none;"></div>
+
+    <div class="small">
+      Al guardar, tu contraseña se actualizará automáticamente en nuestra base de datos.
+    </div>
+  </div>
+
+<script>
+  const WEBAPP_URL = "<?= (typeof WEBAPP_URL !== 'undefined' ? WEBAPP_URL : '') ?>";
+
+  function qs(name){
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name) || "";
+  }
+  function showMsg(text, ok){
+    const el = document.getElementById("msg");
+    el.style.display = "block";
+    el.textContent = text;
+    el.className = "msg " + (ok ? "ok" : "bad");
+  }
+
+  async function apiPost(resource, data){
+    const r = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({ resource, data })
+    });
+    const t = await r.text();
+    let j;
+    try{ j = JSON.parse(t); }catch{ j = { ok:false, error:t }; }
+    if(!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+    if(j.ok === false) throw new Error(j.error || "Error");
+    return j;
+  }
+
+  document.getElementById("btnSave").addEventListener("click", async ()=>{
+    const p1 = document.getElementById("p1").value;
+    const p2 = document.getElementById("p2").value;
+    const token = qs("token");
+
+    if(!token) return showMsg("Falta token. Abre el enlace desde tu correo nuevamente.", false);
+    if(!p1 || p1.length < 4) return showMsg("La contraseña debe tener al menos 4 caracteres.", false);
+    if(p1 !== p2) return showMsg("Las contraseñas no coinciden.", false);
+
+    try{
+      await apiPost("set_password_token", { token, newPass: p1 });
+      showMsg("✅ Contraseña actualizada. Ahora puedes iniciar sesión en MAH FIT.", true);
+
+      // redirige al index de tu web (si quieres, lo dejas)
+      setTimeout(()=>{ window.location.href = "https://mahfitplus.github.io/Web/index.html"; }, 1100);
+    }catch(err){
+      showMsg("❌ " + err.message, false);
+    }
+  });
+</script>
+</body>
+</html>

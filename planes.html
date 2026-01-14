@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAH FIT | Planes</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+
+  <style>
+    :root{
+      --bg0:#0a0e14;
+      --bg1:#0f1623;
+      --card:#121b2a;
+      --line:rgba(255,255,255,.10);
+      --txt:rgba(255,255,255,.88);
+      --mut:rgba(255,255,255,.65);
+      --ok:#2bd576;
+      --bad:#ff5a67;
+      --pri2:#23a6ff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.20), transparent 60%),
+                  radial-gradient(900px 700px at 100% 0%, rgba(35,166,255,.18), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      color: var(--txt);
+      min-height:100vh;
+    }
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index: 5;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10,14,20,.75);
+      backdrop-filter: blur(12px);
+    }
+    .brand{ font-weight:1000; letter-spacing:.7px; user-select:none; }
+    .brand .fit{ color: var(--pri2); }
+    .nav-right{ display:flex; align-items:center; gap:10px; }
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.88);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 1000;
+    }
+    .btn.ghost{ background: transparent; }
+    .btn.primary{
+      border-color: rgba(35,166,255,.35);
+      background: rgba(35,166,255,.14);
+    }
+    .wrap{ max-width: 1100px; margin: 18px auto 60px; padding: 0 18px; }
+    .card{
+      background: rgba(18,27,42,.75);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHead{
+      padding: 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .title{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 12px;
+    }
+    .muted{ color: var(--mut); font-size: 13px; font-weight:700; margin-top:4px; }
+    .cardBody{ padding: 14px; }
+    .tableWrap{ overflow:auto; border-top:1px solid rgba(255,255,255,.06); max-height: 560px; }
+    table{ width:100%; border-collapse: collapse; min-width: 900px; }
+    th, td{
+      text-align:left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      font-weight: 800;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    th{
+      position: sticky;
+      top:0;
+      background: rgba(18,27,42,.92);
+      z-index: 1;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.78);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    input, select{
+      width:100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.92);
+      outline:none;
+      font-weight:800;
+    }
+    .msg{
+      margin-top: 10px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .msg.ok{ color: rgba(170,255,200,.95); }
+    .msg.bad{ color: rgba(255,180,186,.95); }
+    .pill{
+      display:inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      font-weight: 900;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
+    .pill.bad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">MAH <span class="fit">FIT</span></div>
+  <div class="nav-right">
+    <button id="btnBack" class="btn ghost">← Volver</button>
+    <button id="btnReload" class="btn">Recargar</button>
+    <button id="btnSaveAll" class="btn primary">Guardar cambios</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="cardHead">
+      <div>
+        <div class="title">Planes</div>
+        <div class="muted">Edita precios/días/activo/orden. Se guarda en la hoja PLANES.</div>
+      </div>
+      <span class="pill">Admin</span>
+    </div>
+
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>PlanId</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Días</th>
+            <th>Precio (CLP)</th>
+            <th>Activo</th>
+            <th>Orden</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+
+    <div class="cardBody">
+      <div id="msg" class="msg"></div>
+      <div class="muted">Tip: puedes desactivar un plan (Activo=0) para que no aparezca en la renovación.</div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+
+<script>
+  function msg(el, text, ok){
+    if(!el) return;
+    el.className = "msg " + (ok ? "ok" : "bad");
+    el.textContent = text;
+  }
+
+  function safeNum(v, fb=0){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fb;
+  }
+
+  function normalizeId(s){
+    return String(s||"").trim().toUpperCase();
+  }
+
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    const me = requireAuth("FUNCIONARIO");
+    if(!me) return;
+
+    const tb = document.getElementById("tb");
+    const msgEl = document.getElementById("msg");
+
+    async function load(){
+      msg(msgEl, "Cargando planes…", true);
+      try{
+        await syncDown();
+        const planes = (typeof getPlanes === "function") ? getPlanes() : [];
+        render(planes);
+        msg(msgEl, "Listo ✅", true);
+      }catch(e){
+        console.error(e);
+        msg(msgEl, "❌ No se pudo cargar PLANES (revisa Apps Script/Deploy)", false);
+      }
+    }
+
+    function render(planes){
+      tb.innerHTML = "";
+      const list = (planes || []).slice().sort((a,b)=> safeNum(a.orden,999)-safeNum(b.orden,999));
+
+      list.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="pill">${normalizeId(p.planId)}</span></td>
+          <td><input data-k="nombre" value="${String(p.nombre||"").replaceAll('"','&quot;')}" /></td>
+          <td>
+            <select data-k="tipo">
+              ${["MENSUAL","TRIMESTRAL","SEMESTRAL","ANUAL","SEMANAL","DIARIO","OTRO"].map(t=>`
+                <option value="${t}" ${String(p.tipo||"").toUpperCase()===t?"selected":""}>${t}</option>
+              `).join("")}
+            </select>
+          </td>
+          <td><input data-k="dias" type="number" min="0" step="1" value="${safeNum(p.dias,0)}" /></td>
+          <td><input data-k="precioCLP" type="number" min="0" step="1" value="${safeNum(p.precioCLP,0)}" /></td>
+          <td>
+            <select data-k="activo">
+              <option value="1" ${(String(p.activo)==="1"||p.activo===1||p.activo===true)?"selected":""}>1</option>
+              <option value="0" ${(String(p.activo)==="0"||p.activo===0||p.activo===false)?"selected":""}>0</option>
+            </select>
+          </td>
+          <td><input data-k="orden" type="number" min="0" step="1" value="${safeNum(p.orden,999)}" /></td>
+          <td>${(String(p.activo)==="1"||p.activo===1||p.activo===true) ? `<span class="pill ok">ACTIVO</span>` : `<span class="pill bad">INACTIVO</span>`}</td>
+        `;
+
+        tr.dataset.planId = normalizeId(p.planId);
+        tb.appendChild(tr);
+      });
+    }
+
+    async function saveAll(){
+      const rows = Array.from(tb.querySelectorAll("tr"));
+      if(!rows.length) return;
+
+      msg(msgEl, "Guardando cambios…", true);
+
+      try{
+        for(const tr of rows){
+          const planId = normalizeId(tr.dataset.planId);
+          const inputs = tr.querySelectorAll("[data-k]");
+          const obj = { PlanId: planId };
+
+          inputs.forEach(el=>{
+            const k = el.getAttribute("data-k");
+            let v = el.value;
+
+            if(k === "dias" || k === "precioCLP" || k === "orden"){
+              v = safeNum(v, 0);
+            }
+            if(k === "activo"){
+              v = String(v) === "1" ? 1 : 0;
+            }
+            if(k === "tipo"){
+              v = String(v||"").toUpperCase();
+            }
+
+            if(k === "nombre") obj.Nombre = v;
+            if(k === "tipo") obj.Tipo = v;
+            if(k === "dias") obj.Dias = v;
+            if(k === "precioCLP") obj.PrecioCLP = v;
+            if(k === "activo") obj.Activo = v;
+            if(k === "orden") obj.Orden = v;
+          });
+
+          // ✅ Guarda cada plan en Sheets
+          await apiPost("PLANES", obj);
+        }
+
+        // recargar cache
+        await syncDown();
+        msg(msgEl, "✅ Guardado! (planes actualizados)", true);
+      }catch(e){
+        console.error(e);
+        msg(msgEl, "❌ Error guardando (revisa Apps Script / permisos)", false);
+      }
+    }
+
+    document.getElementById("btnBack").addEventListener("click", ()=> location.href="funcionario.html");
+    document.getElementById("btnReload").addEventListener("click", load);
+    document.getElementById("btnSaveAll").addEventListener("click", saveAll);
+
+    await load();
+  });
+</script>
+
+</body>
+</html>
