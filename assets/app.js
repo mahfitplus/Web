@@ -1,14 +1,25 @@
 /* =========================================================
    MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
-   - Cache local: users / rutinas / rutinas_v2 / plantillas_v2
-   - Login funcional en index.html (engancha submit)
-   - requireAuth("ROL") y requireAuth(["A","B"])
-   - ✅ USERS incluye planTipo, planInicio, planFin
-   - Indicador conexión (dbDot/dbText) 🟢🔴⚪
+   - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
+   - ✅ USERS: planTipo, planInicio, planFin, planId, planPrecioBase, planDescPct, planPrecioFinal, planPagado
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxOjrnGx1cj0jg_AmcF3miXVqfql5eIaA2y8J0pDStDXz9ZYTYfITUY0KGBlXVVrTEtTQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbythNNChz4eTFIUDv3k9Il4JMuQtgqCutuNIqf_QOOFHisL8NBGLVzKsmxeTpKR5Sl8/exec";
+
+/* ---------------- small compat ---------------- */
+(function ensureUUID(){
+  if(!window.crypto) window.crypto = {};
+  if(typeof window.crypto.randomUUID !== "function"){
+    window.crypto.randomUUID = function(){
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{
+        const r = Math.random()*16|0;
+        const v = (c==="x") ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
+    };
+  }
+})();
 
 // ---------------- DOMContentLoaded GATE ----------------
 (function(){
@@ -98,6 +109,15 @@ async function apiPost(resource, data){
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
 
+function getPlanes(){ return LS.get("mahfit_planes", []); }
+function setPlanes(v){ LS.set("mahfit_planes", v); }
+
+function getPlanesActivos(){
+  return getPlanes()
+    .filter(p => Number(p.activo ?? p.Activo ?? 1) === 1)
+    .sort((a,b)=> Number(a.orden ?? a.Orden ?? 999) - Number(b.orden ?? b.Orden ?? 999));
+}
+
 function getRutinas(){ return LS.get("mahfit_rutinas", []); }
 function setRutinas(v){ LS.set("mahfit_rutinas", v); }
 
@@ -124,14 +144,35 @@ async function syncDown(){
     email: x.email ?? "",
     pass: String(x.pass ?? ""),
     rol: (x.rol ?? x.role ?? "SOCIO"),
-    activo: (x.activo === false) ? false : true,
-    // ✅ plan
-    planTipo: x.planTipo ?? x.plan_tipo ?? "",
-    planInicio: x.planInicio ?? x.plan_inicio ?? "",
-    planFin: x.planFin ?? x.plan_fin ?? "",
+    activo: (x.activo === false || x.activo === 0 || String(x.activo) === "0") ? false : true,
+
+    planTipo: x.planTipo ?? "",
+    planInicio: x.planInicio ?? "",
+    planFin: x.planFin ?? "",
+
+    planId: (x.planId ?? x.planID ?? "").toString().trim().toUpperCase(),
+    planPrecioBase: Number(x.planPrecioBase ?? 0),
+    planDescPct: Number(x.planDescPct ?? 0),
+    planPrecioFinal: Number(x.planPrecioFinal ?? 0),
+    planPagado: Number(x.planPagado ?? 0),
+
     creadoEn: x.creadoEn ?? ""
   }));
   setUsers(users);
+
+  // PLANES
+  const p = await apiGet("PLANES");
+  const planes = (p.planes || []).map(x => ({
+    planId: String(x.PlanId ?? x.planId ?? "").trim().toUpperCase(),
+    nombre: x.Nombre ?? x.nombre ?? "",
+    tipo: String(x.Tipo ?? x.tipo ?? "").trim().toUpperCase(),
+    dias: Number(x.Dias ?? x.dias ?? 0),
+    precioCLP: Number(x.PrecioCLP ?? x.precioCLP ?? 0),
+    activo: Number(x.Activo ?? x.activo ?? 1),
+    orden: Number(x.Orden ?? x.orden ?? 999),
+    actualizadoEn: x.ActualizadoEn ?? x.actualizadoEn ?? ""
+  })).filter(p=>p.planId);
+  setPlanes(planes);
 
   // Rutinas TXT
   const rt = await apiGet("RUTINAS_TXT");
@@ -181,28 +222,6 @@ async function syncDown(){
   }));
 }
 
-// ---------------- Seed ADMIN remoto ----------------
-async function seedRemoteAdmin(){
-  const users = getUsers();
-  const exists = users.some(u => normalizeRut(u.rut) === "ADMIN");
-  if(exists) return;
-
-  await apiPost("USERS", {
-    rut: "ADMIN",
-    nombre: "Administrador MAH FIT",
-    email: "admin@mahfit.cl",
-    pass: "1234",
-    rol: "FUNCIONARIO",
-    activo: true,
-    planTipo: "",
-    planInicio: "",
-    planFin: "",
-    creadoEn: nowISO()
-  });
-
-  await syncDown();
-}
-
 // ---------------- Auth (SINCRÓNICO) ----------------
 function requireAuth(expectedRole){
   const s = getSession();
@@ -240,15 +259,22 @@ function registerUser({rut, nombre, email, pass, rol}){
     pass: String(pass),
     rol,
     activo: true,
+
     planTipo: "",
     planInicio: "",
     planFin: "",
+
+    planId: "",
+    planPrecioBase: 0,
+    planDescPct: 0,
+    planPrecioFinal: 0,
+    planPagado: 0,
+
     creadoEn: nowISO()
   };
 
   users.push(user);
   setUsers(users);
-
   apiPost("USERS", user).catch(console.error);
   return user;
 }
@@ -262,13 +288,7 @@ function login({rut, pass}){
   return user;
 }
 
-// ---------------- V2 helper ----------------
-function rutinaV2DeSocio(rutSocio){
-  const rutSocioN = normalizeRut(rutSocio);
-  return getRutinasV2().find(x => x.rutSocio === rutSocioN) || null;
-}
-
-// ---------------- INIT INDEX (ESTO FALTABA) ----------------
+// ---------------- INIT INDEX ----------------
 function initIndex(){
   const loginForm = document.getElementById("loginForm");
   const msgLogin  = document.getElementById("msgLogin");
@@ -279,7 +299,6 @@ function initIndex(){
     msgLogin.style.color = ok ? "#a7ffb3" : "#ffb0b0";
   }
 
-  // si ya hay sesión válida, redirige
   const s = getSession();
   if(s){
     const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
@@ -301,32 +320,18 @@ function initIndex(){
       showMsg(err.message, false);
     }
   });
-
-  const resetBtn = document.getElementById("resetBtn");
-  resetBtn?.addEventListener("click", ()=>{
-    localStorage.removeItem("mahfit_users");
-    localStorage.removeItem("mahfit_rutinas");
-    localStorage.removeItem("mahfit_rutinas_v2");
-    localStorage.removeItem("mahfit_plantillas_v2");
-    localStorage.removeItem("mahfit_session");
-    alert("Datos locales reiniciados. Recarga la página.");
-    window.location.reload();
-  });
 }
 
 // ---------------- INIT AUTO POR ELEMENTOS ----------------
 document.addEventListener("DOMContentLoaded", ()=>{
-  // Si existe loginForm => index
   if(document.getElementById("loginForm")) initIndex();
 });
 
 // ---------------- BOOT ----------------
 (async function boot(){
   setDbStatus("connecting");
-
   try{
     await syncDown();
-    await seedRemoteAdmin();
     setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
@@ -340,10 +345,23 @@ document.addEventListener("DOMContentLoaded", ()=>{
 window.API_URL = API_URL;
 window.apiGet = apiGet;
 window.apiPost = apiPost;
+
 window.getUsers = getUsers;
 window.setUsers = setUsers;
+
+window.getPlanes = getPlanes;
+window.setPlanes = setPlanes;
+window.getPlanesActivos = getPlanesActivos;
+
+window.getRutinas = getRutinas;
+window.setRutinas = setRutinas;
+
 window.getRutinasV2 = getRutinasV2;
-window.rutinaV2DeSocio = rutinaV2DeSocio;
+window.setRutinasV2 = setRutinasV2;
+
+window.getPlantillasV2 = getPlantillasV2;
+window.setPlantillasV2 = setPlantillasV2;
+
 window.requireAuth = requireAuth;
 window.syncDown = syncDown;
 window.clearSession = clearSession;
