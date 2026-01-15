@@ -23,6 +23,43 @@
       --ok: rgba(43,213,118,1);
       --warn: rgba(255,211,110,1);
       --bad: rgba(255,90,103,1);
+      --brand: rgba(0,200,255,.95);
+    }
+
+    /* ✅ Badge conexión (igual que funcionario) */
+    .db-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.88);
+      font-weight:900;
+      font-size:12px;
+      user-select:none;
+      white-space:nowrap;
+      backdrop-filter: blur(8px);
+    }
+    .db-dot{
+      width:10px; height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.35);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+    /* estados opcionales si tu app.js agrega clases */
+    .db-dot.ok{ background: var(--ok); box-shadow:0 0 0 3px rgba(43,213,118,.16); }
+    .db-dot.bad{ background: var(--bad); box-shadow:0 0 0 3px rgba(255,90,103,.16); }
+    .db-dot.pending{
+      background: rgba(255,255,255,.35);
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%{ transform:scale(1); opacity:.8; }
+      50%{ transform:scale(1.15); opacity:1; }
+      100%{ transform:scale(1); opacity:.8; }
     }
 
     /* ---------- Top spacing helper ---------- */
@@ -478,7 +515,7 @@
       line-height:1.4;
     }
 
-    /* Plan pill coloring (kept from your original) */
+    /* Plan pill coloring */
     .planPill{ font-weight: 1000 !important; border-width: 1px !important; }
     .planOk{
       background: rgba(43,213,118,.12) !important;
@@ -513,7 +550,14 @@
 <body data-page="socio">
   <header class="topbar">
     <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
-    <div class="nav-right">
+
+    <div class="nav-right" style="gap:10px; flex-wrap:wrap;">
+      <!-- ✅ Conexión (NUEVO) -->
+      <span class="db-badge">
+        <span id="dbDot" class="db-dot pending"></span>
+        <span id="dbText">Conectando...</span>
+      </span>
+
       <span>Hola, <b id="who"></b></span>
       <span id="roleBadge" class="badge"></span>
       <button id="btnLogout" class="btn ghost small">Salir</button>
@@ -523,7 +567,7 @@
   <main class="hero">
     <div class="container">
 
-      <!-- ✅ Banner Plan (nuevo) -->
+      <!-- ✅ Banner Plan -->
       <div id="planBanner" class="planBanner" style="display:none;">
         <div class="planLeft">
           <div class="planTitleRow">
@@ -573,7 +617,7 @@
 
       <div class="sp18"></div>
 
-      <!-- ✅ Entrenamiento de hoy (nuevo) -->
+      <!-- ✅ Entrenamiento de hoy -->
       <div id="todayCard" class="todayCard" style="display:none;">
         <div class="todayLeft">
           <div class="todayTitle"><span class="flame">🔥</span> Entrenamiento de hoy</div>
@@ -734,11 +778,9 @@
       `;
     }
 
-    // elige "día de hoy" simple: rota según día de semana sobre cantidad de días
     function pickTodayIndex(nDias){
       if(!nDias || nDias <= 0) return 0;
       const dow = new Date().getDay(); // 0 dom ... 6 sáb
-      // Lunes=1 .. Domingo=0; usamos lunes como base
       const map = (dow === 0) ? 6 : (dow - 1); // 0=lun ... 6=dom
       return map % nDias;
     }
@@ -754,31 +796,29 @@
       el.scrollIntoView({ behavior:"smooth", block:"start" });
     }
 
-    // WhatsApp link (ajústalo a tu número si quieres)
     function buildWhatsLink(user){
-      // ⚠️ Cambia este número por el de tu admin (con código país, sin +)
       const phone = "56900000000";
       const msg = `Hola! Soy ${safe(user.nombre,"")} (RUT: ${safe(user.rut,"")}). Quiero revisar mi plan en MAH FIT.`;
       return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
     document.addEventListener("DOMContentLoaded", ()=>{
+      // ✅ Tip: si tu app.js ya actualiza dbDot/dbText, esto se verá reflejado solo.
+      // Dejar el "pending" por defecto ayuda a que se vea "Conectando..." apenas abre.
+
       const user = requireAuth("SOCIO");
       if(!user) return;
 
       document.querySelector("#who").textContent = user.nombre;
       document.querySelector("#roleBadge").textContent = "SOCIO";
 
-      // WhatsApp CTA
       const btnWhats = document.querySelector("#btnWhats");
       btnWhats.href = buildWhatsLink(user);
 
       const box = document.querySelector("#rutinaBox");
 
-      // ✅ PLAN: mostrar días restantes y bloquear si está vencido/inactivo
       const p = planInfo(user.planFin);
 
-      // Banner plan
       const planBanner = document.querySelector("#planBanner");
       const planStatusPill = document.querySelector("#planStatusPill");
       const planBig = document.querySelector("#planBig");
@@ -788,7 +828,6 @@
       planBanner.style.display = "flex";
       planStatusPill.className = "statusPill " + statusPillClass(p.status, p.days);
 
-      // KPI Plan
       const kPlan = document.querySelector("#kPlan");
 
       if(p.status === "active"){
@@ -814,13 +853,11 @@
         planSmall.textContent = "Renueva tu plan para disfrutar tus entrenamientos y asesorías.";
       }
 
-      // Si NO está activo ni hoy → paywall
       if(p.status !== "active" && p.status !== "today"){
         document.querySelector("#kNivel").textContent = "Renueva tu plan";
         document.querySelector("#kDias").textContent = "0";
         document.querySelector("#kCardio").textContent = "-";
         document.querySelector("#kCardio2").textContent = "—";
-
         document.querySelector("#todayCard").style.display = "none";
 
         box.innerHTML = `
@@ -834,7 +871,6 @@
         return;
       }
 
-      // Rutina
       const rv2 = rutinaV2DeSocio(user.rut);
       if(!rv2 || !rv2.routine){
         document.querySelector("#kNivel").textContent = "(sin rutina)";
@@ -854,7 +890,6 @@
         const meta = routine.meta || {};
         const cardio = meta.cardio || {};
 
-        // KPI
         document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
 
         const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
@@ -867,7 +902,6 @@
         const nDias = (dias||[]).length || 0;
         document.querySelector("#kDias").textContent = String(nDias);
 
-        // Cardio human
         const cTipo = safe(cardio.tipo, "-");
         const cMin  = safe(cardio.min, "-");
         const cFreq = safe(cardio.freq, "-");
@@ -875,7 +909,6 @@
         document.querySelector("#kCardio2").textContent =
           (cMin === "-" && cFreq === "-") ? "—" : `${cMin} min · ${cFreq} veces`;
 
-        // Today card
         const todayCard = document.querySelector("#todayCard");
         const idxToday = pickTodayIndex(nDias);
         const dayToday = dias[idxToday] || dias[0];
@@ -891,7 +924,6 @@
           todayCard.style.display = "flex";
           btnGoToday.style.display = "inline-flex";
 
-          // acciones hoy
           const go = ()=>{
             const det = document.querySelector(`details.day[data-day="${CSS.escape(safe(dayToday.dia))}"]`);
             if(det){
@@ -907,7 +939,6 @@
           btnGoToday.style.display = "none";
         }
 
-        // Render rutina
         box.innerHTML = `
           <div class="metaLine">
             <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
@@ -917,25 +948,21 @@
           ${dias.map(d=>renderDay(d, user.rut)).join("")}
         `;
 
-        // Solo un día abierto a la vez
         box.querySelectorAll("details.day").forEach(det=>{
           det.addEventListener("toggle", ()=>{
             if(det.open) openOnly(det);
           });
         });
 
-        // Done checkbox interactions + update progress bar
         box.querySelectorAll('[data-done]').forEach(chk=>{
           chk.addEventListener("change", ()=>{
             const key = chk.getAttribute("data-done");
             const dayName = chk.getAttribute("data-day");
             localStorage.setItem(key, chk.checked ? "1" : "0");
 
-            // toggle card style
             const card = box.querySelector(`[data-excard="${CSS.escape(key)}"]`);
             if(card){
               card.classList.toggle("done", chk.checked);
-              // badge
               const titleRow = card.querySelector(".exTitle");
               const existing = card.querySelector(".doneBadge");
               if(chk.checked && !existing){
@@ -947,7 +974,6 @@
               if(!chk.checked && existing) existing.remove();
             }
 
-            // update progress bar + text for that day
             const det = box.querySelector(`details.day[data-day="${CSS.escape(dayName)}"]`);
             if(det){
               const dayObj = dias.find(x => safe(x.dia) === safe(dayName));
@@ -958,10 +984,8 @@
                 const txt = det.querySelector(`[data-prog="${CSS.escape(dayName)}"]`);
                 if(txt) txt.textContent = `${prog.done} de ${prog.total} ✓`;
 
-                // update sub pill pct (en summary)
                 const sub = det.querySelector(".dayLeft .sub");
                 if(sub){
-                  // reemplaza el último pill de % si existe
                   const pills = sub.querySelectorAll(".pill");
                   const last = pills[pills.length - 1];
                   if(last && last.textContent.includes("%")){
