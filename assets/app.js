@@ -2,10 +2,13 @@
    MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
    - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
-   - ✅ Perfil: telefono, direccion, etc. (syncDown completo)
+   - ✅ Perfil syncDown completo
+   - ✅ LOGS PRO: workout_log / cardio_log / body_log
+   - ✅ PRO PATCH: IDs robustos + compat logId/id + fallback sync
+   - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzhSrozYsFaGhAcXj8v6v17EgS5bA3fF5hy6R9cvUMjP0Tr0uBhboNKJUSppUCHV4g03Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7lqbmRL7iTHGX7fGCsVNIGXHOrVvEivZfFci6FBAbA7gqOAA/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -59,18 +62,25 @@ const LS = {
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
 
+// ✅ Helpers fecha / ids (PRO)
+function isoLocalDate(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function safeStr(v, fb=""){ return (v===undefined || v===null) ? fb : String(v); }
+
 // ---------------- DB STATUS (pelotita) ----------------
-// ✅ FIX: clases compatibles con tu CSS (ok/bad/pending) + compat vieja (connected/error/connecting)
 function setDbStatus(status){
   const dot  = document.getElementById("dbDot");
   const text = document.getElementById("dbText");
   if(!dot || !text) return;
 
-  // resetea
   dot.className = "db-dot";
 
   if(status === "connected"){
-    // nuevo + compat
     dot.classList.add("ok", "connected");
     text.textContent = "Conectado";
   }else if(status === "error"){
@@ -98,7 +108,7 @@ async function apiPost(resource, data){
   const payload = { resource, data };
   const r = await fetch(API_URL, {
     method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // ✅ compat
     body: JSON.stringify(payload),
   });
   const t = await r.text();
@@ -131,12 +141,78 @@ function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
+// ✅ LOGS PRO caches
+function getWorkoutLog(){ return LS.get("mahfit_workout_log", []); }
+function setWorkoutLog(v){ LS.set("mahfit_workout_log", v); }
+
+function getCardioLog(){ return LS.get("mahfit_cardio_log", []); }
+function setCardioLog(v){ LS.set("mahfit_cardio_log", v); }
+
+function getBodyLog(){ return LS.get("mahfit_body_log", []); }
+function setBodyLog(v){ LS.set("mahfit_body_log", v); }
+
+// ✅ NUEVO: EVALUATIONS cache
+function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
+function setEvaluations(v){ LS.set("mahfit_evaluations", v); }
+
 // ---------------- Session ----------------
 function setSession(user){
   LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
 }
 function getSession(){ return LS.get("mahfit_session", null); }
 function clearSession(){ LS.del("mahfit_session"); }
+
+/* =========================================================
+   ✅ LOGS PRO: ID builders (robustos)
+   ========================================================= */
+function makeWorkoutLogId({ rutSocio, fecha, dayLabel, idx }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const d = safeStr(dayLabel, "DIA").trim().replace(/\s+/g,"_");
+  const i = String(idx ?? 0).trim();
+  return `WL_${r}_${f}_${d}_${i}`;
+}
+function makeCardioId({ rutSocio, fecha, dayLabel }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const d = safeStr(dayLabel, "DIA").trim().replace(/\s+/g,"_");
+  return `CL_${r}_${f}_${d}`;
+}
+function makeBodyId({ rutSocio, fecha }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  return `BL_${r}_${f}`;
+}
+
+/* =========================================================
+   ✅ NUEVO: EVALUATIONS ID builder
+   - Apps Script también lo genera, pero acá lo hacemos robusto
+   ========================================================= */
+function makeEvalId({ rutSocio, fecha }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const uid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).slice(0,8);
+  return `EV_${r}_${f}_${uid}`;
+}
+
+/* =========================================================
+   ✅ Helpers internos (local upsert)
+   ========================================================= */
+function upsertLocalByKey(list, keyName, obj){
+  const key = String(obj?.[keyName] ?? "").trim();
+  if(!key) return list;
+  const next = (list || []).slice();
+  const idx = next.findIndex(x => String(x?.[keyName] ?? "").trim() === key);
+  if(idx >= 0) next[idx] = { ...next[idx], ...obj };
+  else next.push(obj);
+  return next;
+}
+
+function getWorkoutLogById(logId){
+  const id = String(logId||"").trim();
+  if(!id) return null;
+  return (getWorkoutLog() || []).find(x => String(x.logId||x.id||"").trim() === id) || null;
+}
 
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
@@ -237,6 +313,62 @@ async function syncDown(){
       actualizadoEn: x.actualizadoEn ?? ""
     };
   }));
+
+  // ✅ LOGS PRO (con fallback logId/id)
+  const wl = await apiGet("WORKOUT_LOG");
+  setWorkoutLog((wl.workout_log || []).map(x => {
+    const rutSocio = normalizeRut(x.rutSocio);
+    const logId = String(x.logId ?? x.id ?? "").trim();
+    return { ...x, rutSocio, logId, id: String(x.id ?? logId ?? "").trim() };
+  }).filter(x=>x.logId));
+
+  const cl = await apiGet("CARDIO_LOG");
+  setCardioLog((cl.cardio_log || []).map(x => ({
+    ...x,
+    rutSocio: normalizeRut(x.rutSocio),
+    cardioId: String(x.cardioId ?? "").trim(),
+  })).filter(x=>x.cardioId));
+
+  const bl = await apiGet("BODY_LOG");
+  setBodyLog((bl.body_log || []).map(x => ({
+    ...x,
+    rutSocio: normalizeRut(x.rutSocio),
+    entryId: String(x.entryId ?? "").trim(),
+  })).filter(x=>x.entryId));
+
+  // ✅ NUEVO: EVALUATIONS
+  const ev = await apiGet("EVALUATIONS");
+  setEvaluations((ev.evaluations || []).map(x => ({
+    evalId: String(x.evalId ?? "").trim(),
+    rutSocio: normalizeRut(x.rutSocio ?? ""),
+    fecha: String(x.fecha ?? "").trim(),
+    hora: String(x.hora ?? "").trim(),
+
+    pesoKg: x.pesoKg ?? "",
+    tallaCm: x.tallaCm ?? "",
+    imc: x.imc ?? "",
+
+    grasaPct: x.grasaPct ?? "",
+    masaMuscularKg: x.masaMuscularKg ?? "",
+    grasaVisceral: x.grasaVisceral ?? "",
+    aguaPct: x.aguaPct ?? "",
+
+    cinturaCm: x.cinturaCm ?? "",
+    caderaCm: x.caderaCm ?? "",
+    cuelloCm: x.cuelloCm ?? "",
+    brazoCm: x.brazoCm ?? "",
+    musloCm: x.musloCm ?? "",
+    pantorrillaCm: x.pantorrillaCm ?? "",
+
+    pliegues: x.pliegues ?? "",
+    observaciones: x.observaciones ?? "",
+
+    evaluadorRut: x.evaluadorRut ?? "",
+    evaluadorNombre: x.evaluadorNombre ?? "",
+
+    creadoEn: x.creadoEn ?? "",
+    actualizadoEn: x.actualizadoEn ?? ""
+  })).filter(x=>x.evalId && x.rutSocio));
 }
 
 // ---------------- Auth (SINCRÓNICO) ----------------
@@ -287,7 +419,6 @@ function registerUser({rut, nombre, email, pass, rol}){
     planPrecioFinal: 0,
     planPagado: 0,
 
-    // ✅ PERFIL
     telefono: "",
     fechaNacimiento: "",
     sexo: "",
@@ -385,6 +516,195 @@ function plantillasVisiblesPara(rut){
   });
 }
 
+/* =========================================================
+   ✅ LOGS PRO: helpers públicos
+   ========================================================= */
+function logsForRut(list, rut){
+  const r = normalizeRut(rut);
+  return (list || []).filter(x => normalizeRut(x.rutSocio) === r);
+}
+
+function getWorkoutLogForRut(rut){ return logsForRut(getWorkoutLog(), rut); }
+function getCardioLogForRut(rut){ return logsForRut(getCardioLog(), rut); }
+function getBodyLogForRut(rut){ return logsForRut(getBodyLog(), rut); }
+
+// última marca por ejercicio
+function lastWorkoutLogFor(rut, ejercicio){
+  const r = normalizeRut(rut);
+  const ex = String(ejercicio||"").trim().toLowerCase();
+  const list = getWorkoutLog()
+    .filter(x => normalizeRut(x.rutSocio) === r && String(x.ejercicio||"").trim().toLowerCase() === ex)
+    .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+  return list[0] || null;
+}
+
+/* =========================================================
+   ✅ LOGS PRO: save* robustos (compat logId/id)
+   ========================================================= */
+async function saveWorkoutLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+  e.dayLabel = e.dayLabel ?? e.dia ?? "DIA";
+
+  e.logId = String(e.logId ?? "").trim() || makeWorkoutLogId({
+    rutSocio: e.rutSocio, fecha: e.fecha, dayLabel: e.dayLabel, idx: e.idx ?? 0
+  });
+
+  e.id = String(e.id ?? "").trim() || e.logId;
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("WORKOUT_LOG", e);
+
+  const list = upsertLocalByKey(getWorkoutLog(), "logId", e);
+  setWorkoutLog(list);
+  return res;
+}
+
+async function saveCardioLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+  e.dayLabel = e.dayLabel ?? e.dia ?? "DIA";
+
+  e.cardioId = String(e.cardioId ?? "").trim() || makeCardioId({
+    rutSocio: e.rutSocio, fecha: e.fecha, dayLabel: e.dayLabel
+  });
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("CARDIO_LOG", e);
+
+  const list = upsertLocalByKey(getCardioLog(), "cardioId", e);
+  setCardioLog(list);
+  return res;
+}
+
+async function saveBodyLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+
+  e.entryId = String(e.entryId ?? "").trim() || makeBodyId({
+    rutSocio: e.rutSocio, fecha: e.fecha
+  });
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("BODY_LOG", e);
+
+  const list = upsertLocalByKey(getBodyLog(), "entryId", e);
+  setBodyLog(list);
+  return res;
+}
+
+/* =========================================================
+   ✅ NUEVO: EVALUATIONS helpers públicos
+   ========================================================= */
+function evaluationsForRut(rut){
+  const r = normalizeRut(rut);
+  return (getEvaluations() || []).filter(x => normalizeRut(x.rutSocio) === r);
+}
+
+function lastEvaluationForRut(rut){
+  const list = evaluationsForRut(rut)
+    .slice()
+    .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+  return list[0] || null;
+}
+
+async function saveEvaluation(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+
+  e.evalId = String(e.evalId ?? "").trim() || makeEvalId({ rutSocio: e.rutSocio, fecha: e.fecha });
+
+  // timestamps (Apps Script también los setea, pero acá es robusto)
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("EVALUATIONS", e);
+
+  const list = upsertLocalByKey(getEvaluations(), "evalId", e);
+  setEvaluations(list);
+
+  // si el backend devuelve evalId, lo retornamos
+  if(res && res.evalId) return res;
+  return { ok:true, evalId: e.evalId };
+}
+
+async function refreshEvaluations(){
+  const ev = await apiGet("EVALUATIONS");
+  setEvaluations((ev.evaluations || []).map(x => ({
+    evalId: String(x.evalId ?? "").trim(),
+    rutSocio: normalizeRut(x.rutSocio ?? ""),
+    fecha: String(x.fecha ?? "").trim(),
+    hora: String(x.hora ?? "").trim(),
+
+    pesoKg: x.pesoKg ?? "",
+    tallaCm: x.tallaCm ?? "",
+    imc: x.imc ?? "",
+
+    grasaPct: x.grasaPct ?? "",
+    masaMuscularKg: x.masaMuscularKg ?? "",
+    grasaVisceral: x.grasaVisceral ?? "",
+    aguaPct: x.aguaPct ?? "",
+
+    cinturaCm: x.cinturaCm ?? "",
+    caderaCm: x.caderaCm ?? "",
+    cuelloCm: x.cuelloCm ?? "",
+    brazoCm: x.brazoCm ?? "",
+    musloCm: x.musloCm ?? "",
+    pantorrillaCm: x.pantorrillaCm ?? "",
+
+    pliegues: x.pliegues ?? "",
+    observaciones: x.observaciones ?? "",
+
+    evaluadorRut: x.evaluadorRut ?? "",
+    evaluadorNombre: x.evaluadorNombre ?? "",
+
+    creadoEn: x.creadoEn ?? "",
+    actualizadoEn: x.actualizadoEn ?? ""
+  })).filter(x=>x.evalId && x.rutSocio));
+  return true;
+}
+
+/* =========================================================
+   ✅ (Opcional) refreshLogs(): baja SOLO logs sin bajar todo
+   ========================================================= */
+async function refreshLogs(){
+  const [wl,cl,bl] = await Promise.all([
+    apiGet("WORKOUT_LOG"),
+    apiGet("CARDIO_LOG"),
+    apiGet("BODY_LOG"),
+  ]);
+
+  setWorkoutLog((wl.workout_log || []).map(x => {
+    const rutSocio = normalizeRut(x.rutSocio);
+    const logId = String(x.logId ?? x.id ?? "").trim();
+    return { ...x, rutSocio, logId, id: String(x.id ?? logId ?? "").trim() };
+  }).filter(x=>x.logId));
+
+  setCardioLog((cl.cardio_log || []).map(x => ({
+    ...x, rutSocio: normalizeRut(x.rutSocio), cardioId: String(x.cardioId ?? "").trim()
+  })).filter(x=>x.cardioId));
+
+  setBodyLog((bl.body_log || []).map(x => ({
+    ...x, rutSocio: normalizeRut(x.rutSocio), entryId: String(x.entryId ?? "").trim()
+  })).filter(x=>x.entryId));
+
+  return true;
+}
+
 // ---------------- BOOT ----------------
 (async function boot(){
   setDbStatus("connecting");
@@ -429,3 +749,33 @@ window.setDbStatus = setDbStatus;
 
 window.rutinaV2DeSocio = rutinaV2DeSocio;
 window.plantillasVisiblesPara = plantillasVisiblesPara;
+
+// ✅ LOGS PRO exposed
+window.getWorkoutLog = getWorkoutLog;
+window.getCardioLog = getCardioLog;
+window.getBodyLog = getBodyLog;
+
+window.getWorkoutLogForRut = getWorkoutLogForRut;
+window.getCardioLogForRut = getCardioLogForRut;
+window.getBodyLogForRut = getBodyLogForRut;
+
+window.lastWorkoutLogFor = lastWorkoutLogFor;
+
+window.saveWorkoutLog = saveWorkoutLog;
+window.saveCardioLog = saveCardioLog;
+window.saveBodyLog = saveBodyLog;
+
+window.refreshLogs = refreshLogs;
+window.makeWorkoutLogId = makeWorkoutLogId;
+window.makeCardioId = makeCardioId;
+window.makeBodyId = makeBodyId;
+window.getWorkoutLogById = getWorkoutLogById;
+
+// ✅ EVALUATIONS exposed
+window.getEvaluations = getEvaluations;
+window.setEvaluations = setEvaluations;
+window.getEvaluationsForRut = evaluationsForRut;
+window.lastEvaluationForRut = lastEvaluationForRut;
+window.saveEvaluation = saveEvaluation;
+window.refreshEvaluations = refreshEvaluations;
+window.makeEvalId = makeEvalId;
