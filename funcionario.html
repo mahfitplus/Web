@@ -167,7 +167,7 @@
       font-weight:800;
     }
     input::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
-    input:disabled{ opacity:.75; cursor:not-allowed; }
+    input:disabled, select:disabled{ opacity:.65; cursor:not-allowed; }
 
     .btn{
       border:1px solid rgba(255,255,255,.12);
@@ -262,7 +262,7 @@
     table{
       width:100%;
       border-collapse: collapse;
-      min-width: 880px;
+      min-width: 1040px;
     }
     th, td{
       text-align:left;
@@ -355,6 +355,45 @@
       background: rgba(0,0,0,.22);
     }
     .checkRow input{ width:auto; }
+
+    /* ✅ Perfil summary */
+    .summaryGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr; /* ✅ ahora 4 columnas */
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 980px){ .summaryGrid{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 620px){ .summaryGrid{ grid-template-columns: 1fr; } }
+
+    .sumCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .sumLabel{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.62);
+      font-weight: 1000;
+    }
+    .sumValue{
+      margin-top: 6px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.90);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      word-break: break-word;
+    }
+    .divider{
+      margin: 12px 0;
+      height:1px;
+      background: rgba(255,255,255,.08);
+    }
   </style>
 </head>
 
@@ -416,12 +455,12 @@
       </div>
     </div>
 
-    <!-- CRM PRINCIPAL -->
+    <!-- CRM -->
     <div class="card">
       <div class="cardHead">
         <div>
           <div class="cardTitle">CRM Usuarios</div>
-          <div class="muted">Activa/desactiva y renueva membresías</div>
+          <div class="muted">Activa/desactiva, perfil y renueva membresías</div>
 
           <div class="filters">
             <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
@@ -436,6 +475,7 @@
             <div class="tab active" data-tab="ALL">Todos <span class="count" id="cAll">0</span></div>
             <div class="tab" data-tab="ACTIVE">Activos <span class="count" id="cActive">0</span></div>
             <div class="tab" data-tab="EXPIRED">Vencidos <span class="count" id="cExpired">0</span></div>
+            <div class="tab" data-tab="INACTIVE">Inactivos <span class="count" id="cInactive">0</span></div>
           </div>
         </div>
 
@@ -449,7 +489,7 @@
               <th>NOMBRE</th>
               <th>RUT/USUARIO</th>
               <th>ROL</th>
-              <th>ACTIVO</th>
+              <th>ESTADO</th>
               <th>PLAN</th>
               <th>ACCIONES</th>
             </tr>
@@ -459,7 +499,7 @@
       </div>
 
       <div class="cardBody">
-        <div class="muted">Tip: aquí ves todo según tu buscador/filtro de rol y pestaña.</div>
+        <div class="muted">Tip: “Inactivo” es desactivado manual. “Vencido” es plan vencido.</div>
       </div>
     </div>
 
@@ -471,7 +511,7 @@
   <div class="modal">
     <div class="modalHead">
       <div>
-        <strong id="mTitle">Renovar plan</strong>
+        <strong>Renovar plan</strong>
         <div class="muted" id="mSub">—</div>
       </div>
       <button id="mClose" class="btn small ghost">✕</button>
@@ -507,7 +547,6 @@
         <div class="pill" id="mPreview" style="justify-content:center;">—</div>
       </div>
 
-      <!-- PRECIOS -->
       <div class="row">
         <input id="mPrecioBase" type="number" min="0" step="1" placeholder="Precio base (CLP)" disabled />
         <input id="mDescPct" type="number" min="0" max="100" step="1" placeholder="Descuento % (0-100)" />
@@ -523,7 +562,6 @@
         <div class="pill" id="mPrecioResumen" style="justify-content:center;">Final: —</div>
       </div>
 
-      <!-- ✅ COMPROBANTE -->
       <div class="checkRow">
         <input type="checkbox" id="mSendReceipt" />
         <label for="mSendReceipt" style="cursor:pointer;font-weight:900;color:rgba(255,255,255,.88);">
@@ -537,7 +575,7 @@
       </div>
 
       <div class="muted" style="margin-top:10px;">
-        Consejo: elige inicio + duración y el fin se calcula solo. (Si usas “Personalizado…”, ajusta el fin manual).
+        Consejo: elige inicio + duración y el fin se calcula solo.
       </div>
 
       <div id="mMsg" class="msg"></div>
@@ -594,11 +632,106 @@
   </div>
 </div>
 
+<!-- MODAL PERFIL -->
+<div id="profileBack" class="modalBack">
+  <div class="modal" style="width:min(980px,100%);">
+    <div class="modalHead">
+      <div>
+        <strong id="prTitle">Perfil</strong>
+        <div class="muted" id="prSub">—</div>
+      </div>
+      <button id="prClose" class="btn small ghost">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <!-- ✅ Resumen arriba -->
+      <div class="summaryGrid">
+        <div class="sumCard">
+          <div class="sumLabel">Estado</div>
+          <div class="sumValue" id="prSumEstado">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Plan</div>
+          <div class="sumValue" id="prSumPlan">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Vencimiento</div>
+          <div class="sumValue" id="prSumVence">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Correo registrado</div>
+          <div class="sumValue" id="prSumEmail">—</div>
+        </div>
+      </div>
+
+      <!-- ✅ Acciones de perfil -->
+      <div class="row" style="grid-template-columns: 1fr 1fr 1fr; align-items:center;">
+        <button id="prLoad" class="btn">Cargar perfil</button>
+        <button id="prEdit" class="btn primary">Modificar</button>
+        <button id="prSave" class="btn ok" disabled>Guardar</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ✅ Email editable (nuevo) -->
+      <div class="row">
+        <input id="prEmail" type="email" placeholder="Correo (ej: socio@gmail.com)" />
+        <input id="prTelefono" placeholder="Teléfono (ej: +56 9 1234 5678)" />
+      </div>
+
+      <div class="row">
+        <input id="prNacimiento" type="date" />
+        <select id="prSexo">
+          <option value="">Sexo (opcional)</option>
+          <option value="HOMBRE">HOMBRE</option>
+          <option value="MUJER">MUJER</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <input id="prDireccion" placeholder="Dirección (opcional)" />
+        <input id="prEmergNombre" placeholder="Contacto emergencia (nombre)" />
+      </div>
+
+      <div class="row">
+        <input id="prEmergTel" placeholder="Contacto emergencia (teléfono)" />
+        <input id="prObjetivo" placeholder="Objetivo (ej: bajar grasa, ganar masa)" />
+      </div>
+
+      <div class="row">
+        <select id="prNivel">
+          <option value="">Nivel (opcional)</option>
+          <option value="PRINCIPIANTE">PRINCIPIANTE</option>
+          <option value="INTERMEDIO">INTERMEDIO</option>
+          <option value="AVANZADO">AVANZADO</option>
+        </select>
+        <input id="prLesiones" placeholder="Lesiones / limitaciones (texto corto)" />
+      </div>
+
+      <div class="row">
+        <input id="prPatologias" placeholder="Patologías (ej: HTA, DM2) (opcional)" />
+        <input id="prMedicamentos" placeholder="Medicamentos (opcional)" />
+      </div>
+
+      <div class="row">
+        <input id="prAlergias" placeholder="Alergias (opcional)" />
+        <input id="prNotas" placeholder="Notas internas (observaciones)" />
+      </div>
+
+      <div id="prMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="prCancel" class="btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="assets/app.js"></script>
 
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
-  function normalizeRutLocal(r){ return String(r||"").trim().toUpperCase(); }
 
   function moneyCLP(n){
     n = Number(n||0);
@@ -644,10 +777,10 @@
     const diff = Math.ceil((end.getTime()-today.getTime())/(1000*60*60*24));
     const endTxt = end.toLocaleDateString("es-CL");
 
-    if(diff < 0) return {status:"expired", label:`Vencido (${endTxt})`};
-    if(diff === 0) return {status:"today", label:`Vence hoy (${endTxt})`};
-    if(diff <= 5) return {status:"soon", label:`Quedan ${diff} días (${endTxt})`};
-    return {status:"active", label:`Quedan ${diff} días (${endTxt})`};
+    if(diff < 0) return {status:"expired", label:`Vencido (${endTxt})`, diff};
+    if(diff === 0) return {status:"today", label:`Vence hoy (${endTxt})`, diff};
+    if(diff <= 5) return {status:"soon", label:`Quedan ${diff} días (${endTxt})`, diff};
+    return {status:"active", label:`Quedan ${diff} días (${endTxt})`, diff};
   }
 
   function planPill(p){
@@ -662,6 +795,24 @@
     el.className = "msg " + (ok ? "ok" : "bad");
     el.textContent = text;
   }
+
+  function setBadge(state, text){
+    if(typeof window.setDbStatus === "function"){
+      window.setDbStatus(state, text);
+      return;
+    }
+    const dot = document.getElementById("dbDot");
+    const label = document.getElementById("dbText");
+    if(!dot || !label) return;
+    dot.classList.remove("connected","error","connecting");
+    dot.classList.add(state);
+    label.textContent = text;
+  }
+  const markConnecting = ()=>setBadge("connecting","Conectando…");
+  const markConnected  = ()=>setBadge("connected","Conectado");
+  const markError      = ()=>setBadge("error","Sin conexión");
+
+  async function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
   document.addEventListener("DOMContentLoaded", async ()=>{
     const me = requireAuth("FUNCIONARIO");
@@ -679,6 +830,7 @@
     const cAll = document.getElementById("cAll");
     const cActive = document.getElementById("cActive");
     const cExpired = document.getElementById("cExpired");
+    const cInactive = document.getElementById("cInactive");
     let activeTab = "ALL";
 
     function setTab(t){
@@ -690,7 +842,6 @@
 
     // ----- modal renovar -----
     const modalBack = document.getElementById("modalBack");
-    const mTitle = document.getElementById("mTitle");
     const mSub = document.getElementById("mSub");
     const mPlanId = document.getElementById("mPlanId");
     const mActivar = document.getElementById("mActivar");
@@ -707,7 +858,6 @@
     const mPrecioSug = document.getElementById("mPrecioSug");
     const mPrecioResumen = document.getElementById("mPrecioResumen");
 
-    // ✅ comprobante
     const mSendReceipt = document.getElementById("mSendReceipt");
     const mReceiptEmail = document.getElementById("mReceiptEmail");
     const mSendNow = document.getElementById("mSendNow");
@@ -725,6 +875,7 @@
       const final = Math.round(base * (1 - pct/100));
       return { base, pct, final };
     }
+
     function refreshPriceUI(){
       const base = Number(mPrecioBase.value||0);
       const pct = Number(mDescPct.value||0);
@@ -762,10 +913,12 @@
 
     function fillPlanSelect(selectedId=""){
       const planes = getPlanesActivosLocal();
-      mPlanId.innerHTML = `<option value="">(sin plan)</option>` + planes.map(p=>{
-        const label = `${p.nombre || p.planId} · ${p.dias} días · ${moneyCLP(p.precioCLP)}`;
-        return `<option value="${p.planId}" data-dias="${p.dias}" data-precio="${p.precioCLP}">${label}</option>`;
-      }).join("");
+      mPlanId.innerHTML =
+        `<option value="">(sin plan)</option>` +
+        planes.map(p=>{
+          const label = `${p.nombre || p.planId} · ${p.dias} días · ${moneyCLP(p.precioCLP)}`;
+          return `<option value="${safe(p.planId,"")}" data-dias="${Number(p.dias||0)}" data-precio="${Number(p.precioCLP||0)}">${label}</option>`;
+        }).join("");
       mPlanId.value = selectedId || "";
     }
 
@@ -775,11 +928,9 @@
       return d > 0 ? d : 30;
     }
 
-    function openModal(user){
+    function openRenewModal(user){
       currentRut = user.rut;
-
-      mTitle.textContent = `Renovar plan`;
-      mSub.textContent = `${user.nombre} · ${user.rut}`;
+      mSub.textContent = `${safe(user.nombre,"")} · ${safe(user.rut,"")}`;
 
       const userPlanId = String(user.planId || "").trim().toUpperCase();
       fillPlanSelect(userPlanId);
@@ -811,7 +962,6 @@
         refreshPriceUI();
       }
 
-      // ✅ correo destino (editable)
       mReceiptEmail.value = String(user.email || "").trim();
       mSendReceipt.checked = false;
 
@@ -821,149 +971,235 @@
       modalBack.style.display = "flex";
     }
 
-    function closeModal(){
+    function closeRenewModal(){
       modalBack.style.display = "none";
       currentRut = "";
     }
 
-    document.getElementById("mClose").addEventListener("click", closeModal);
-    document.getElementById("mCancel").addEventListener("click", closeModal);
-    modalBack.addEventListener("click", (e)=>{ if(e.target === modalBack) closeModal(); });
+    document.getElementById("mClose").addEventListener("click", closeRenewModal);
+    document.getElementById("mCancel").addEventListener("click", closeRenewModal);
+    modalBack.addEventListener("click", (e)=>{ if(e.target === modalBack) closeRenewModal(); });
 
     async function refreshFromServer(){
-      try{ await syncDown(); }catch(e){ console.error(e); }
-    }
-
-    async function autoDeactivateExpiredSocios(){
-      const users = getUsers();
-      let changed = false;
-
-      for(const u of users){
-        const rol = safe(u.rol,"SOCIO").toUpperCase();
-        if(rol !== "SOCIO") continue;
-
-        const p = planInfo(u.planFin);
-        if(p.status === "expired" && (u.activo !== false)){
-          u.activo = false;
-          changed = true;
-          try{ await apiPost("USERS", u); }catch(e){}
-        }
-      }
-
-      if(changed){
-        setUsers(users);
-        await refreshFromServer();
-      }
-    }
-
-    function getFilteredUsers(){
-      const users = getUsers().slice();
-      const q = safe(searchInput.value,"").toLowerCase().trim();
-      const rf = safe(roleFilter.value,"ALL").toUpperCase();
-
-      return users.filter(u=>{
-        const rol = safe(u.rol,"SOCIO").toUpperCase();
-        const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
-        if(rf !== "ALL" && rol !== rf) return false;
-        if(!q) return true;
-
-        const hay = [
-          safe(u.nombre,""),
-          safe(u.rut,""),
-          safe(u.email,""),
-          rol,
-          activoTxt
-        ].join(" ").toLowerCase();
-
-        return hay.includes(q);
-      }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
-    }
-
-    function render(){
-      const all = getFilteredUsers();
-
-      const expired = all.filter(u => planInfo(u.planFin).status === "expired");
-      const active = all.filter(u => planInfo(u.planFin).status !== "expired");
-
-      cAll.textContent = String(all.length);
-      cActive.textContent = String(active.length);
-      cExpired.textContent = String(expired.length);
-
-      let list = all;
-      if(activeTab === "ACTIVE") list = active;
-      if(activeTab === "EXPIRED") list = expired;
-
-      tbody.innerHTML = "";
-
-      list.forEach(u=>{
-        const rol = safe(u.rol,"SOCIO").toUpperCase();
-        const p = planInfo(u.planFin);
-
-        const isExpired = (p.status === "expired");
-        const activo = (u.activo !== false) && !isExpired;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${safe(u.nombre,"")}</td>
-          <td>${safe(u.rut,"")}</td>
-          <td><span class="pill">${rol}</span></td>
-          <td>${activo ? `<span class="pill ok">ACTIVO</span>` : `<span class="pill bad">INACTIVO</span>`}</td>
-          <td>${planPill(p)}</td>
-          <td>
-            <div class="actions">
-              <button class="btn small ${activo ? "danger" : "ok"}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
-                ${activo ? "Desactivar" : "Activar"}
-              </button>
-              <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.querySelectorAll("[data-toggle]").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const rut = btn.getAttribute("data-toggle");
-          const isExpired = btn.getAttribute("data-expired") === "1";
-
-          const users = getUsers();
-          const u = users.find(x=>x.rut===rut);
-          if(!u) return;
-
-          if(isExpired){
-            openModal(u);
-            return;
-          }
-
-          const cur = (u.activo !== false);
-          u.activo = !cur;
-          setUsers(users);
-          render();
-
+      markConnecting();
+      try{
+        for(let i=0;i<2;i++){
           try{
-            await apiPost("USERS", u);
-            await refreshFromServer();
-            render();
-            msg(msgUser, "✅ Estado actualizado", true);
+            await syncDown();
+            markConnected();
+            return true;
           }catch(e){
-            await refreshFromServer();
-            render();
-            msg(msgUser, "❌ No se pudo actualizar", false);
+            if(i===1) throw e;
+            await sleep(450);
           }
-        });
-      });
-
-      document.querySelectorAll("[data-renew]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const rut = btn.getAttribute("data-renew");
-          const u = getUsers().find(x=>x.rut===rut);
-          if(!u) return;
-          openModal(u);
-        });
-      });
+        }
+      }catch(e){
+        console.warn("syncDown error:", e);
+        markError();
+        return false;
+      }
     }
 
-    // ✅ Enviar comprobante (sin guardar)
+    // ===== PERFIL =====
+    const profileBack = document.getElementById("profileBack");
+    const prTitle = document.getElementById("prTitle");
+    const prSub = document.getElementById("prSub");
+    const prMsg = document.getElementById("prMsg");
+
+    const prSumEstado = document.getElementById("prSumEstado");
+    const prSumPlan = document.getElementById("prSumPlan");
+    const prSumVence = document.getElementById("prSumVence");
+    const prSumEmail = document.getElementById("prSumEmail");
+
+    const prLoad = document.getElementById("prLoad");
+    const prEdit = document.getElementById("prEdit");
+    const prSave = document.getElementById("prSave");
+
+    const prEmail = document.getElementById("prEmail");
+    const prTelefono = document.getElementById("prTelefono");
+    const prNacimiento = document.getElementById("prNacimiento");
+    const prSexo = document.getElementById("prSexo");
+    const prDireccion = document.getElementById("prDireccion");
+    const prEmergNombre = document.getElementById("prEmergNombre");
+    const prEmergTel = document.getElementById("prEmergTel");
+    const prObjetivo = document.getElementById("prObjetivo");
+    const prNivel = document.getElementById("prNivel");
+    const prLesiones = document.getElementById("prLesiones");
+    const prPatologias = document.getElementById("prPatologias");
+    const prMedicamentos = document.getElementById("prMedicamentos");
+    const prAlergias = document.getElementById("prAlergias");
+    const prNotas = document.getElementById("prNotas");
+
+    const prInputs = [
+      prEmail, prTelefono, prNacimiento, prSexo, prDireccion, prEmergNombre, prEmergTel,
+      prObjetivo, prNivel, prLesiones, prPatologias, prMedicamentos, prAlergias, prNotas
+    ];
+
+    let currentProfileRut = "";
+    let profileEditMode = false;
+
+    function setProfileEditMode(on){
+      profileEditMode = !!on;
+      prInputs.forEach(el => el.disabled = !profileEditMode);
+      prSave.disabled = !profileEditMode;
+      prEdit.textContent = profileEditMode ? "Bloquear" : "Modificar";
+      prEdit.className = "btn " + (profileEditMode ? "danger" : "primary");
+    }
+
+    function renderProfileSummary(u){
+      const p = planInfo(u.planFin);
+      const isInactive = (u.activo === false);
+
+      if(isInactive){
+        prSumEstado.innerHTML = `<span class="pill bad">INACTIVO</span>`;
+      }else if(p.status === "expired"){
+        prSumEstado.innerHTML = `<span class="pill warn">VENCIDO</span>`;
+      }else{
+        prSumEstado.innerHTML = `<span class="pill ok">ACTIVO</span>`;
+      }
+
+      const pid = safe(u.planId,"").trim().toUpperCase();
+      prSumPlan.innerHTML = pid ? `<span class="pill ok">${pid}</span>` : `<span class="pill">Sin plan</span>`;
+
+      if(!u.planFin){
+        prSumVence.innerHTML = `<span class="pill">—</span>`;
+      }else{
+        const endTxt = (new Date(u.planFin)).toLocaleDateString("es-CL");
+        const d = (p.diff ?? null);
+        const label =
+          (d===null) ? `Vence ${endTxt}` :
+          (d<0) ? `Venció ${endTxt}` :
+          (d===0) ? `Vence hoy (${endTxt})` :
+          `Quedan ${d} días (${endTxt})`;
+
+        const cls = (d!==null && d<=5) ? "warn" : (d!==null && d<0 ? "bad" : "ok");
+        prSumVence.innerHTML = `<span class="pill ${cls}">${label}</span>`;
+      }
+
+      // ✅ correo registrado
+      const em = String(u.email || "").trim();
+      prSumEmail.innerHTML = em ? `<span class="pill ok">${em}</span>` : `<span class="pill warn">Sin correo</span>`;
+    }
+
+    function fillProfileFields(u){
+      prEmail.value = String(u.email || "").trim();
+      prTelefono.value = safe(u.telefono,"");
+      prNacimiento.value = ymdFromAny(u.fechaNacimiento);
+      prSexo.value = safe(u.sexo,"").toUpperCase();
+      prDireccion.value = safe(u.direccion,"");
+
+      prEmergNombre.value = safe(u.emergenciaNom,"");
+      prEmergTel.value = safe(u.emergenciaTelef,"");
+
+      prObjetivo.value = safe(u.objetivo,"");
+      prNivel.value = safe(u.nivel,"").toUpperCase();
+      prLesiones.value = safe(u.lesiones,"");
+
+      prPatologias.value = safe(u.patologias,"");
+      prMedicamentos.value = safe(u.medicamentos,"");
+      prAlergias.value = safe(u.alergias,"");
+      prNotas.value = safe(u.notas,"");
+    }
+
+    function openProfileModal(u){
+      currentProfileRut = u.rut;
+
+      prTitle.textContent = "Perfil";
+      prSub.textContent = `${safe(u.nombre,"")} · ${safe(u.rut,"")} · ${safe(u.rol,"")}`;
+
+      renderProfileSummary(u);
+      fillProfileFields(u);
+
+      prMsg.textContent = "";
+      prMsg.className = "msg";
+
+      setProfileEditMode(false);
+      profileBack.style.display = "flex";
+    }
+
+    async function loadProfileFromServer(){
+      if(!currentProfileRut) return;
+      msg(prMsg, "Cargando desde servidor…", true);
+      await refreshFromServer();
+
+      const u = (getUsers() || []).find(x=>x.rut===currentProfileRut);
+      if(!u){
+        msg(prMsg, "❌ No se encontró el usuario en cache", false);
+        return;
+      }
+
+      renderProfileSummary(u);
+      fillProfileFields(u);
+      msg(prMsg, "✅ Perfil cargado", true);
+    }
+
+    function closeProfileModal(){
+      profileBack.style.display = "none";
+      currentProfileRut = "";
+      setProfileEditMode(false);
+    }
+
+    document.getElementById("prClose").addEventListener("click", closeProfileModal);
+    document.getElementById("prCancel").addEventListener("click", closeProfileModal);
+    profileBack.addEventListener("click", (e)=>{ if(e.target === profileBack) closeProfileModal(); });
+
+    prLoad.addEventListener("click", loadProfileFromServer);
+
+    prEdit.addEventListener("click", ()=>{
+      setProfileEditMode(!profileEditMode);
+      msg(prMsg, profileEditMode ? "Modo edición activado." : "Modo edición desactivado.", true);
+    });
+
+    prSave.addEventListener("click", async ()=>{
+      if(!currentProfileRut) return;
+
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentProfileRut);
+      if(!u) return;
+
+      // ✅ email + perfil
+      u.email = String(prEmail.value||"").trim();
+      u.telefono = String(prTelefono.value||"").trim();
+      u.fechaNacimiento = String(prNacimiento.value||"").trim();
+      u.sexo = String(prSexo.value||"").trim().toUpperCase();
+      u.direccion = String(prDireccion.value||"").trim();
+
+      u.emergenciaNom = String(prEmergNombre.value||"").trim();
+      u.emergenciaTelef = String(prEmergTel.value||"").trim();
+
+      u.objetivo = String(prObjetivo.value||"").trim();
+      u.nivel = String(prNivel.value||"").trim().toUpperCase();
+      u.lesiones = String(prLesiones.value||"").trim();
+
+      u.patologias = String(prPatologias.value||"").trim();
+      u.medicamentos = String(prMedicamentos.value||"").trim();
+      u.alergias = String(prAlergias.value||"").trim();
+      u.notas = String(prNotas.value||"").trim();
+
+      setUsers(users);
+      render();
+      renderProfileSummary(u);
+
+      try{
+        msg(prMsg, "Guardando…", true);
+        await apiPost("USERS", u);
+        await refreshFromServer();
+        render();
+
+        const u2 = (getUsers()||[]).find(x=>x.rut===currentProfileRut) || u;
+        renderProfileSummary(u2);
+        fillProfileFields(u2);
+
+        msg(prMsg, "✅ Perfil guardado (incluye correo)", true);
+        setProfileEditMode(false);
+      }catch(e){
+        await refreshFromServer();
+        render();
+        msg(prMsg, "❌ No se pudo guardar perfil: " + (e.message||e), false);
+      }
+    });
+
+    // ✅ Enviar comprobante
     async function sendReceiptNow(){
       const users = getUsers();
       const u = users.find(x=>x.rut===currentRut);
@@ -971,7 +1207,7 @@
 
       const to = String(mReceiptEmail.value||"").trim();
       if(!to){
-        msg(mMsg, "❌ El socio no tiene correo. Escribe un correo destino.", false);
+        msg(mMsg, "❌ Escribe un correo destino.", false);
         return;
       }
 
@@ -1000,10 +1236,9 @@
         await apiPost("send_receipt_email", payload);
         msg(mMsg, "✅ Comprobante enviado al correo", true);
       }catch(e){
-        msg(mMsg, "❌ No se pudo enviar el comprobante: " + (e.message||e), false);
+        msg(mMsg, "❌ No se pudo enviar: " + (e.message||e), false);
       }
     }
-
     mSendNow.addEventListener("click", sendReceiptNow);
 
     // modal renovar listeners
@@ -1082,7 +1317,7 @@
       u.planPagado = payload.planPagado;
       if(payload.activo) u.activo = true;
 
-      // guarda correo en local (si lo editaste)
+      // correo editable (para comprobantes)
       u.email = String(mReceiptEmail.value||u.email||"").trim();
 
       setUsers(users);
@@ -1090,20 +1325,23 @@
 
       try{
         await apiPost("users_plan_update", payload);
+
+        // también persistimos el email si lo editaron aquí
+        await apiPost("USERS", u);
+
         await refreshFromServer();
         render();
         msg(mMsg, "✅ Renovación guardada", true);
 
-        // ✅ si checkbox activo: enviar comprobante
         if(mSendReceipt.checked){
           await sendReceiptNow();
         }
 
-        setTimeout(closeModal, 450);
+        setTimeout(closeRenewModal, 450);
       }catch(e){
         await refreshFromServer();
         render();
-        msg(mMsg, "❌ No se pudo guardar (Apps Script): " + (e.message||e), false);
+        msg(mMsg, "❌ No se pudo guardar: " + (e.message||e), false);
       }
     });
 
@@ -1127,8 +1365,134 @@
       }
     });
 
-    searchInput.addEventListener("input", render);
-    roleFilter.addEventListener("change", render);
+    function getFilteredUsers(){
+      const users = (getUsers ? getUsers() : []).slice();
+      const q = safe(searchInput.value,"").toLowerCase().trim();
+      const rf = safe(roleFilter.value,"ALL").toUpperCase();
+
+      return users.filter(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
+        if(rf !== "ALL" && rol !== rf) return false;
+        if(!q) return true;
+
+        const hay = [
+          safe(u.nombre,""),
+          safe(u.rut,""),
+          safe(u.email,""),
+          rol,
+          activoTxt
+        ].join(" ").toLowerCase();
+
+        return hay.includes(q);
+      }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
+    }
+
+    function render(){
+      const all = getFilteredUsers();
+
+      const inactive = all.filter(u => u.activo === false);
+      const expired = all.filter(u => planInfo(u.planFin).status === "expired" && u.activo !== false);
+      const active = all.filter(u => u.activo !== false && planInfo(u.planFin).status !== "expired");
+
+      cAll.textContent = String(all.length);
+      cActive.textContent = String(active.length);
+      cExpired.textContent = String(expired.length);
+      cInactive.textContent = String(inactive.length);
+
+      let list = all;
+      if(activeTab === "ACTIVE") list = active;
+      if(activeTab === "EXPIRED") list = expired;
+      if(activeTab === "INACTIVE") list = inactive;
+
+      tbody.innerHTML = "";
+
+      list.forEach(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const p = planInfo(u.planFin);
+
+        const isExpired = (p.status === "expired");
+        const isInactive = (u.activo === false);
+
+        const estadoHtml =
+          isInactive ? `<span class="pill bad">INACTIVO</span>` :
+          isExpired ? `<span class="pill warn">VENCIDO</span>` :
+                     `<span class="pill ok">ACTIVO</span>`;
+
+        const toggleLabel = isInactive ? "Activar" : "Desactivar";
+        const toggleClass = isInactive ? "ok" : "danger";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${safe(u.nombre,"")}</td>
+          <td>${safe(u.rut,"")}</td>
+          <td><span class="pill">${rol}</span></td>
+          <td>${estadoHtml}</td>
+          <td>${planPill(p)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn small ${toggleClass}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
+                ${toggleLabel}
+              </button>
+              <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
+              <button class="btn small" data-profile="${safe(u.rut,"")}">Perfil</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll("[data-toggle]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const rut = btn.getAttribute("data-toggle");
+          const isExpired = btn.getAttribute("data-expired") === "1";
+
+          const users = getUsers();
+          const u = users.find(x=>x.rut===rut);
+          if(!u) return;
+
+          if(isExpired && u.activo !== false){
+            openRenewModal(u);
+            return;
+          }
+
+          const cur = (u.activo !== false);
+          u.activo = !cur;
+
+          setUsers(users);
+          render();
+
+          try{
+            await apiPost("USERS", u);
+            await refreshFromServer();
+            render();
+            msg(msgUser, "✅ Estado actualizado", true);
+          }catch(e){
+            await refreshFromServer();
+            render();
+            msg(msgUser, "❌ No se pudo actualizar", false);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-renew]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const rut = btn.getAttribute("data-renew");
+          const u = getUsers().find(x=>x.rut===rut);
+          if(!u) return;
+          openRenewModal(u);
+        });
+      });
+
+      document.querySelectorAll("[data-profile]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const rut = btn.getAttribute("data-profile");
+          const u = getUsers().find(x=>x.rut===rut);
+          if(!u) return;
+          openProfileModal(u);
+        });
+      });
+    }
 
     // topbar
     document.getElementById("btnLogout").addEventListener("click", ()=>{
@@ -1232,7 +1596,7 @@
         fillPlanSelect(mPlanId.value);
         msg(pMsg, "✅ Plan creado", true);
       }catch(e){
-        msg(pMsg, "❌ No se pudo crear plan (¿PlanId repetido?): " + (e.message||e), false);
+        msg(pMsg, "❌ No se pudo crear plan: " + (e.message||e), false);
       }
     });
 
@@ -1243,14 +1607,16 @@
       msg(pMsg, "✅ Recargado", true);
     });
 
-    // arranque
+    searchInput.addEventListener("input", render);
+    roleFilter.addEventListener("change", render);
+
+    // ARRANQUE
+    markConnecting();
     fillPlanSelect("");
     render();
 
     await refreshFromServer();
     fillPlanSelect("");
-
-    await autoDeactivateExpiredSocios();
     render();
   });
 </script>
