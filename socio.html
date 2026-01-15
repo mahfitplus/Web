@@ -533,6 +533,58 @@
       color: rgba(255,230,233,.95) !important;
     }
 
+    /* ✅ Cardio box (NUEVO) */
+    .cardioBox{
+      border:1px solid rgba(0,200,255,.22);
+      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.16), transparent 60%),
+                  rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .cardioTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .cardioTop b{ letter-spacing:.4px; }
+    .cardioGrid{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .cardioPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color: rgba(255,255,255,.88);
+      font-weight:900;
+      font-size:12px;
+    }
+    .cardioPill .ico{
+      width:22px;height:22px;border-radius:999px;
+      display:grid;place-items:center;
+      background: rgba(0,200,255,.12);
+      border:1px solid rgba(0,200,255,.20);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+    }
+    .cardioNote{
+      margin-top:8px;
+      color: rgba(255,255,255,.78);
+      font-size:12px;
+      line-height:1.35;
+      white-space:pre-wrap;
+    }
+
     /* ---------- Mobile tweaks ---------- */
     @media (max-width: 700px){
       .planCTA{ min-width: 0; justify-content:flex-start; }
@@ -625,6 +677,10 @@
           <div class="todayMeta">
             <span id="todayMuscle" class="miniPill"><span class="mIco">🏋️</span><span>-</span></span>
             <span id="todayCount" class="miniPill"><span class="mIco">#</span><span>-</span></span>
+            <!-- ✅ Cardio de hoy (NUEVO) -->
+            <span id="todayCardioPill" class="miniPill" style="display:none;">
+              <span class="mIco">🫀</span><span>-</span>
+            </span>
           </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
@@ -649,6 +705,14 @@
   <script>
     function safe(v, fallback="-"){
       return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
+    }
+
+    function toNum(v){
+      if(v===undefined || v===null) return null;
+      const s = String(v).replace(",", ".").trim();
+      if(!s) return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
     }
 
     // ✅ calcula días restantes del plan (usa user.planFin)
@@ -704,12 +768,87 @@
       return { total, done, pct };
     }
 
+    // ✅ Cardio stats semanal desde day.cardio (NUEVO)
+    function cardioStatsFromDays(dias){
+      const out = {
+        sessions: 0,
+        minutes: 0,
+        kcal: 0,
+        hrWeightedSum: 0,
+        hrWeight: 0,
+        zones: { Z1:0, Z2:0, Z3:0, Z4:0, Z5:0 }
+      };
+
+      (dias || []).forEach(d=>{
+        const c = d && d.cardio ? d.cardio : null;
+        if(!c || !c.tipo) return;
+
+        out.sessions += 1;
+
+        const min = toNum(c.min) || 0;
+        const kcal = toNum(c.kcal) || 0;
+        const hr = toNum(c.fcavg);
+
+        out.minutes += min;
+        out.kcal += kcal;
+
+        if(typeof hr === "number" && min > 0){
+          out.hrWeightedSum += (hr * min);
+          out.hrWeight += min;
+        }
+
+        const z = String(c.zona || "").toUpperCase().trim();
+        if(out.zones[z] !== undefined) out.zones[z] += 1;
+      });
+
+      const hrAvg = out.hrWeight > 0 ? Math.round(out.hrWeightedSum / out.hrWeight) : null;
+
+      // redondeo amigable
+      out.minutes = Math.round(out.minutes);
+      out.kcal = Math.round(out.kcal);
+
+      return { ...out, hrAvg };
+    }
+
+    function renderCardioBox(cardio){
+      if(!cardio || !cardio.tipo) return "";
+
+      const min = safe(cardio.min, "-");
+      const zona = safe(cardio.zona, "-");
+      const inten = safe(cardio.intensidad, "-");
+      const kcal = safe(cardio.kcal, "-");
+      const fcavg = safe(cardio.fcavg, "-");
+      const fcmax = safe(cardio.fcmax, "-");
+      const notas = safe(cardio.notas, "");
+
+      return `
+        <div class="cardioBox">
+          <div class="cardioTop">
+            <b>Cardio</b>
+            <span class="pill">🫀 ${safe(cardio.tipo,"-")}</span>
+          </div>
+
+          <div class="cardioGrid">
+            <span class="cardioPill"><span class="ico">⏱</span>${min} min</span>
+            <span class="cardioPill"><span class="ico">🎯</span>${zona}</span>
+            <span class="cardioPill"><span class="ico">⚡</span>${inten}</span>
+            <span class="cardioPill"><span class="ico">🔥</span>${kcal} kcal</span>
+            <span class="cardioPill"><span class="ico">📈</span>FC ${fcavg}/${fcmax}</span>
+          </div>
+
+          ${notas && notas !== "-" ? `<div class="cardioNote"><b>Notas:</b> ${notas}</div>` : ``}
+        </div>
+      `;
+    }
+
     function renderDay(day, rutSocio){
       const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
       const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
       const total = ejercicios.length;
 
       const prog = getDayProgress(rutSocio, day);
+
+      const cardioBox = renderCardioBox(day.cardio);
 
       const cards = ejercicios.map((e, i)=>{
         const doneKey = getDoneKey(rutSocio, day.dia, i);
@@ -752,6 +891,12 @@
         `;
       }).join("");
 
+      // ✅ resumen cardio en el summary (si existe)
+      const hasCardio = !!(day.cardio && day.cardio.tipo);
+      const sumCardio = hasCardio
+        ? ` · <span class="pill">🫀 ${safe(day.cardio.min,"-")} min</span>`
+        : ``;
+
       return `
         <details class="day" data-day="${safe(day.dia)}">
           <summary class="daySum">
@@ -761,11 +906,14 @@
                 Enfocado: <span class="pill">${enfoque}</span>
                 · Ejercicios: <span class="pill">${total}</span>
                 ${total ? `· <span class="pill">${prog.pct}%</span>` : ``}
+                ${sumCardio}
               </div>
             </div>
             <div class="chev">⌄</div>
           </summary>
           <div class="dayBody">
+            ${cardioBox}
+
             ${total ? `
               <div class="progressRow">
                 <div class="bar" aria-label="Progreso"><i style="width:${prog.pct}%"></i></div>
@@ -803,9 +951,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", ()=>{
-      // ✅ Tip: si tu app.js ya actualiza dbDot/dbText, esto se verá reflejado solo.
-      // Dejar el "pending" por defecto ayuda a que se vea "Conectando..." apenas abre.
-
       const user = requireAuth("SOCIO");
       if(!user) return;
 
@@ -888,7 +1033,6 @@
       }else{
         const routine = rv2.routine;
         const meta = routine.meta || {};
-        const cardio = meta.cardio || {};
 
         document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
 
@@ -902,12 +1046,27 @@
         const nDias = (dias||[]).length || 0;
         document.querySelector("#kDias").textContent = String(nDias);
 
-        const cTipo = safe(cardio.tipo, "-");
-        const cMin  = safe(cardio.min, "-");
-        const cFreq = safe(cardio.freq, "-");
-        document.querySelector("#kCardio").textContent = (cTipo === "-" ? "-" : cTipo);
-        document.querySelector("#kCardio2").textContent =
-          (cMin === "-" && cFreq === "-") ? "—" : `${cMin} min · ${cFreq} veces`;
+        // ✅ Cardio semanal real (desde day.cardio)
+        const stats = cardioStatsFromDays(dias);
+
+        if(stats.sessions <= 0){
+          document.querySelector("#kCardio").textContent = "-";
+          document.querySelector("#kCardio2").textContent = "—";
+        }else{
+          // principal: sesiones + minutos
+          document.querySelector("#kCardio").textContent = `${stats.sessions} ses · ${stats.minutes} min`;
+
+          // secundario: kcal + FC prom + zonas (compacto)
+          const zonesTxt = ["Z1","Z2","Z3","Z4","Z5"]
+            .map(z => stats.zones[z] ? `${z}:${stats.zones[z]}` : "")
+            .filter(Boolean)
+            .join(" · ");
+
+          const hrTxt = (stats.hrAvg ? `FC prom ${stats.hrAvg}` : `FC prom -`);
+          const kcalTxt = (stats.kcal ? `${stats.kcal} kcal` : `kcal -`);
+          document.querySelector("#kCardio2").textContent =
+            zonesTxt ? `${kcalTxt} · ${hrTxt} · ${zonesTxt}` : `${kcalTxt} · ${hrTxt}`;
+        }
 
         const todayCard = document.querySelector("#todayCard");
         const idxToday = pickTodayIndex(nDias);
@@ -920,6 +1079,17 @@
           document.querySelector("#todayMain").textContent = `${safe(dayToday.dia)} · ${enfoque}`;
           document.querySelector("#todayMuscle").querySelector("span:last-child").textContent = enfoque;
           document.querySelector("#todayCount").querySelector("span:last-child").textContent = `${ejercicios.length} ejercicio(s)`;
+
+          // ✅ cardio en el “hoy”
+          const todayCardioPill = document.querySelector("#todayCardioPill");
+          if(dayToday.cardio && dayToday.cardio.tipo){
+            const min = safe(dayToday.cardio.min, "-");
+            const tipo = safe(dayToday.cardio.tipo, "Cardio");
+            todayCardioPill.style.display = "inline-flex";
+            todayCardioPill.querySelector("span:last-child").textContent = `${tipo} · ${min} min`;
+          }else{
+            todayCardioPill.style.display = "none";
+          }
 
           todayCard.style.display = "flex";
           btnGoToday.style.display = "inline-flex";
@@ -937,6 +1107,7 @@
         }else{
           todayCard.style.display = "none";
           btnGoToday.style.display = "none";
+          document.querySelector("#todayCardioPill").style.display = "none";
         }
 
         box.innerHTML = `
