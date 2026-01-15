@@ -238,7 +238,6 @@
     .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
     .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
 
-    /* input buscador dentro del bloque (más chico) */
     .miniSearch{
       padding: 9px 12px;
       border-radius: 12px;
@@ -246,6 +245,89 @@
       background: rgba(0,0,0,.24);
       color: rgba(255,255,255,.92);
       font-weight:900;
+    }
+
+    /* ===== CHARTS - en recuadros aparte ===== */
+    .chartsSection{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .chartsTwo{
+      display:grid;
+      grid-templateTEMPLATE-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .chartsTwo{ grid-template-columns: 1fr; } }
+
+    .chartCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(18,27,42,.60);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .chartHead{
+      padding:12px 12px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .chartTitle{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 12px;
+      color: rgba(255,255,255,.90);
+    }
+    .legend{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .lg{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.86);
+      font-weight: 900;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      box-shadow:0 0 0 3px rgba(255,255,255,.06);
+    }
+    .chartBody{ padding:12px; }
+    .svgWrap{
+      width:100%;
+      overflow:hidden;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+    }
+    .svgWrap svg{ display:block; width:100%; height:auto; }
+    .chartHint{ margin-top:8px; font-size:12px; color: rgba(255,255,255,.55); font-weight:800; }
+    .chartMsg{
+      padding:10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.75);
+      font-weight:900;
+      font-size:12px;
     }
   </style>
 </head>
@@ -296,7 +378,6 @@
               <div class="pill" id="pNow">—</div>
             </div>
             <div class="blockBody">
-              <!-- ✅ BUSCADOR + SELECT (mismo estilo) -->
               <div class="two">
                 <div>
                   <div class="muted" style="margin-bottom:6px;">Socio</div>
@@ -331,7 +412,6 @@
               </div>
             </div>
 
-            <!-- ✅ BIOIMPEDANCIA: sin %Agua y Masa muscular -> % Masa muscular -->
             <div class="block">
               <div class="blockHead"><div class="h">Bioimpedancia</div></div>
               <div class="blockBody">
@@ -341,7 +421,6 @@
               </div>
             </div>
 
-            <!-- ✅ PERÍMETROS: orden pedido + sin cuello -->
             <div class="block">
               <div class="blockHead"><div class="h">Perímetros</div></div>
               <div class="blockBody">
@@ -382,6 +461,42 @@
               <div class="muted">Selecciona un socio para ver historial.</div>
             </div>
           </div>
+
+        </div>
+      </div>
+
+      <!-- ✅ SECCIÓN DE GRÁFICOS EN RECUADROS APARTE -->
+      <div class="chartsSection">
+        <div class="chartMsg" id="chartMsg">Selecciona un socio para ver gráficos.</div>
+
+        <div class="chartsTwo">
+          <div class="chartCard">
+            <div class="chartHead">
+              <div>
+                <div class="chartTitle">Gráfico</div>
+                <div class="muted">Medidas básicas y perímetros (últimas 12)</div>
+              </div>
+              <div class="legend" id="legendA"></div>
+            </div>
+            <div class="chartBody">
+              <div class="svgWrap" id="chartA"></div>
+              <div class="chartHint">Se grafican las últimas 12 evaluaciones (de más antigua a más reciente). Valores vacíos no se dibujan.</div>
+            </div>
+          </div>
+
+          <div class="chartCard">
+            <div class="chartHead">
+              <div>
+                <div class="chartTitle">Gráfico</div>
+                <div class="muted">Bioimpedancia (últimas 12)</div>
+              </div>
+              <div class="legend" id="legendB"></div>
+            </div>
+            <div class="chartBody">
+              <div class="svgWrap" id="chartB"></div>
+              <div class="chartHint">Series: % Grasa, % Masa muscular y Visceral.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -415,7 +530,7 @@
   }
 
   function toNum(v){
-    const n = Number(String(v||"").replace(",","."));
+    const n = Number(String(v||"").replace(",",".")); // admite coma
     return isNaN(n) ? "" : n;
   }
 
@@ -476,18 +591,14 @@
     document.getElementById("inpFecha").value = safe(x.fecha, nowYMD());
     document.getElementById("inpHora").value = safe(x.hora, nowHM());
 
-    // básicos
     document.getElementById("pesoKg").value = safe(x.pesoKg, "");
     document.getElementById("tallaCm").value = safe(x.tallaCm, "");
     document.getElementById("imc").value = safe(x.imc, "");
 
-    // bio
     document.getElementById("grasaPct").value = safe(x.grasaPct, "");
-    // compat: si antes existía masaMuscularKg, la usamos, si no, masaMuscularPct
     document.getElementById("masaMuscularPct").value = safe(x.masaMuscularPct, safe(x.masaMuscularKg,""));
     document.getElementById("grasaVisceral").value = safe(x.grasaVisceral, "");
 
-    // perímetros (orden nuevo)
     document.getElementById("brazoCm").value = safe(x.brazoCm, "");
     document.getElementById("cinturaCm").value = safe(x.cinturaCm, "");
     document.getElementById("caderaCm").value = safe(x.caderaCm, "");
@@ -525,13 +636,6 @@
     pill.className = lab.cls;
   }
 
-  // ✅ helper para mostrar mejor en historial
-  function valOrDash(v){
-    const s = String(v ?? "").trim();
-    if(s === "" || s === "0" || s === "0.0" || s === "0.00") return "—";
-    return s;
-  }
-
   function renderHistory(rut){
     const box = document.getElementById("histBox");
     const list = listForRut(rut).slice(0,6);
@@ -546,16 +650,13 @@
     }
 
     box.innerHTML = list.map(x=>{
-      const p = valOrDash(x.pesoKg);
-      const g = valOrDash(x.grasaPct);
-
-      // compat: masa muscular puede venir como masaMuscularPct o masaMuscularKg (viejo)
-      const mm = valOrDash(safe(x.masaMuscularPct, safe(x.masaMuscularKg,"")));
-
-      const vis = valOrDash(x.grasaVisceral);
-      const c = valOrDash(x.cinturaCm);
-
+      const p = safe(x.pesoKg,"—");
+      const g = safe(x.grasaPct,"—");
+      const mm = safe(x.masaMuscularPct, safe(x.masaMuscularKg,"—"));
+      const v = safe(x.grasaVisceral,"—");
+      const c = safe(x.cinturaCm,"—");
       const f = safe(x.fecha,"—");
+
       return `
         <div style="padding:10px 12px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);border-radius:12px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -563,7 +664,7 @@
             <button class="btn small" data-load="${safe(x.evalId)}">Cargar</button>
           </div>
           <div class="muted" style="margin-top:6px;">
-            Peso: <b>${p}</b> kg · % Grasa: <b>${g}</b> % · % Masa muscular: <b>${mm}</b> % · % Visceral: <b>${vis}</b> · Cintura: <b>${c}</b> cm
+            Peso: <b>${p}</b> kg · % Grasa: <b>${g}</b> % · % Masa muscular: <b>${mm}</b> % · % Visceral: <b>${v}</b> · Cintura: <b>${c}</b> cm
           </div>
         </div>
       `;
@@ -597,12 +698,10 @@
 
       grasaPct: toNum(document.getElementById("grasaPct").value),
       masaMuscularPct: masaPct,
-      // ✅ compat por si tu backend aún guarda "masaMuscularKg"
       masaMuscularKg: masaPct,
 
       grasaVisceral: toNum(document.getElementById("grasaVisceral").value),
 
-      // perímetros (orden nuevo)
       brazoCm: toNum(document.getElementById("brazoCm").value),
       cinturaCm: toNum(document.getElementById("cinturaCm").value),
       caderaCm: toNum(document.getElementById("caderaCm").value),
@@ -637,7 +736,6 @@
       });
     }
 
-    // Si hay rut seleccionado y no aparece por filtro, lo agregamos arriba
     if(keepRut){
       const exists = list.some(u=>normalizeRut(u.rut)===normalizeRut(keepRut));
       if(!exists){
@@ -650,6 +748,191 @@
       .sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")))
       .map(u=> `<option value="${safe(u.rut)}">${safe(u.nombre)} · ${safe(u.rut)}</option>`)
       .join("");
+  }
+
+  /* =========================
+     ✅ CHARTS (SVG)
+     ========================= */
+  function nOrNull(v){
+    const n = Number(v);
+    return (v === "" || v === null || v === undefined || isNaN(n)) ? null : n;
+  }
+
+  function svgLineChart({ containerEl, legendEl, title, labels, series, yPad=0.10 }){
+    if(!containerEl) return;
+    containerEl.innerHTML = "";
+    if(legendEl) legendEl.innerHTML = "";
+
+    const W = 920;
+    const H = 320;
+    const PAD_L = 52;
+    const PAD_R = 18;
+    const PAD_T = 16;
+    const PAD_B = 48;
+
+    const plotW = W - PAD_L - PAD_R;
+    const plotH = H - PAD_T - PAD_B;
+
+    const allVals = [];
+    series.forEach(s => (s.values||[]).forEach(v => { if(v!==null) allVals.push(v); }));
+
+    if(allVals.length === 0 || labels.length < 2){
+      containerEl.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
+      return;
+    }
+
+    let minV = Math.min(...allVals);
+    let maxV = Math.max(...allVals);
+    if(minV === maxV){ minV -= 1; maxV += 1; }
+    const pad = (maxV - minV) * yPad;
+    minV -= pad; maxV += pad;
+
+    function xAt(i){
+      const n = labels.length - 1;
+      return PAD_L + (n === 0 ? 0 : (i / n) * plotW);
+    }
+    function yAt(v){
+      const t = (v - minV) / (maxV - minV);
+      return PAD_T + (1 - t) * plotH;
+    }
+
+    if(legendEl){
+      legendEl.innerHTML = series.map(s => `
+        <span class="lg" title="${s.label}">
+          <span class="dot" style="background:${s.color};"></span>
+          ${s.label}
+        </span>
+      `).join("");
+    }
+
+    const gridCount = 5;
+    const gridLines = [];
+    for(let i=0;i<=gridCount;i++){
+      const yy = PAD_T + (i/gridCount) * plotH;
+      const val = (maxV - (i/gridCount)*(maxV-minV));
+      gridLines.push({ yy, val });
+    }
+
+    function pathFor(values){
+      let d = "";
+      let started = false;
+      for(let i=0;i<values.length;i++){
+        const v = values[i];
+        if(v === null){ started = false; continue; }
+        const x = xAt(i), y = yAt(v);
+        if(!started){ d += `M ${x.toFixed(2)} ${y.toFixed(2)} `; started = true; }
+        else { d += `L ${x.toFixed(2)} ${y.toFixed(2)} `; }
+      }
+      return d.trim();
+    }
+    function pointsFor(values){
+      const pts = [];
+      for(let i=0;i<values.length;i++){
+        const v = values[i];
+        if(v === null) continue;
+        pts.push({ x: xAt(i), y: yAt(v) });
+      }
+      return pts;
+    }
+
+    const xLabelEvery = labels.length <= 6 ? 1 : (labels.length <= 12 ? 2 : 3);
+
+    const svg = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">
+        <rect x="0" y="0" width="${W}" height="${H}" fill="rgba(0,0,0,.10)"/>
+
+        ${gridLines.map(g=>`
+          <line x1="${PAD_L}" y1="${g.yy}" x2="${W-PAD_R}" y2="${g.yy}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <text x="${PAD_L-10}" y="${g.yy+4}" fill="rgba(255,255,255,.55)" font-size="11" font-weight="800" text-anchor="end">${g.val.toFixed(1)}</text>
+        `).join("")}
+
+        <line x1="${PAD_L}" y1="${PAD_T+plotH}" x2="${W-PAD_R}" y2="${PAD_T+plotH}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+        <line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${PAD_T+plotH}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+
+        ${labels.map((lab,i)=>{
+          if(i % xLabelEvery !== 0 && i !== labels.length-1) return "";
+          const x = xAt(i);
+          return `<text x="${x}" y="${H-18}" fill="rgba(255,255,255,.65)" font-size="11" font-weight="900" text-anchor="middle">${lab}</text>`;
+        }).join("")}
+
+        ${series.map(s=>{
+          const d = pathFor(s.values||[]);
+          if(!d) return "";
+          const pts = pointsFor(s.values||[]);
+          return `
+            <path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+            ${pts.map(p=>`
+              <circle cx="${p.x}" cy="${p.y}" r="3.2" fill="${s.color}" opacity="0.95"/>
+            `).join("")}
+          `;
+        }).join("")}
+      </svg>
+    `;
+
+    containerEl.innerHTML = svg;
+  }
+
+  function renderCharts(rut){
+    const msgEl = document.getElementById("chartMsg");
+    const elA = document.getElementById("chartA");
+    const elB = document.getElementById("chartB");
+    const lgA = document.getElementById("legendA");
+    const lgB = document.getElementById("legendB");
+
+    if(!rut){
+      if(msgEl) msgEl.textContent = "Selecciona un socio para ver gráficos.";
+      if(elA) elA.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin socio seleccionado.</div>`;
+      if(elB) elB.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin socio seleccionado.</div>`;
+      if(lgA) lgA.innerHTML = "";
+      if(lgB) lgB.innerHTML = "";
+      return;
+    }
+
+    const latest = listForRut(rut).slice(0,12).reverse();
+
+    if(latest.length < 2){
+      if(msgEl) msgEl.textContent = "Necesitas al menos 2 evaluaciones para ver un gráfico de progreso.";
+      if(elA) elA.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
+      if(elB) elB.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
+      if(lgA) lgA.innerHTML = "";
+      if(lgB) lgB.innerHTML = "";
+      return;
+    }
+
+    msgEl.textContent = `Mostrando ${latest.length} evaluaciones (últimas 12).`;
+
+    const labels = latest.map((x,i)=> `C${i+1}`);
+
+    const seriesA = [
+      { label:"Peso (kg)", color:"rgba(255,255,255,.92)", values: latest.map(x=>nOrNull(x.pesoKg)) },
+      { label:"IMC", color:"rgba(35,166,255,.95)", values: latest.map(x=>{
+          const v = nOrNull(x.imc);
+          if(v !== null) return v;
+          const p = nOrNull(x.pesoKg);
+          const t = nOrNull(x.tallaCm);
+          const c = (p!==null && t!==null) ? calcIMC(p,t) : null;
+          return (c=== "" ? null : c);
+        })
+      },
+      { label:"Brazo (cm)", color:"rgba(124,92,255,.95)", values: latest.map(x=>nOrNull(x.brazoCm)) },
+      { label:"Cintura (cm)", color:"rgba(255,211,110,.95)", values: latest.map(x=>nOrNull(x.cinturaCm)) },
+      { label:"Cadera (cm)", color:"rgba(160,120,255,.95)", values: latest.map(x=>nOrNull(x.caderaCm)) },
+      { label:"Pantorrilla (cm)", color:"rgba(43,213,118,.95)", values: latest.map(x=>nOrNull(x.pantorrillaCm)) },
+    ];
+
+    svgLineChart({ containerEl: elA, legendEl: lgA, title:"Medidas básicas y perímetros", labels, series: seriesA });
+
+    const seriesB = [
+      { label:"% Masa muscular", color:"rgba(43,213,118,.95)", values: latest.map(x=>{
+        const mm = nOrNull(x.masaMuscularPct);
+        if(mm !== null) return mm;
+        return nOrNull(x.masaMuscularKg); // compat
+      })},
+      { label:"% Grasa", color:"rgba(255,90,103,.95)", values: latest.map(x=>nOrNull(x.grasaPct)) },
+      { label:"Visceral", color:"rgba(35,166,255,.95)", values: latest.map(x=>nOrNull(x.grasaVisceral)) },
+    ];
+
+    svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, series: seriesB });
   }
 
   document.addEventListener("DOMContentLoaded", async ()=>{
@@ -669,14 +952,9 @@
       location.href = "index.html";
     });
 
-    // socios
     const sel = document.getElementById("selSocio");
     const search = document.getElementById("socioSearch");
-
-    const socios = (getUsers()||[])
-      .filter(u => String(u.rol||"").toUpperCase() === "SOCIO");
-
-    // Rut desde URL
+    const socios = (getUsers()||[]).filter(u => String(u.rol||"").toUpperCase() === "SOCIO");
     const rutUrl = parseRutFromUrl();
 
     sel.innerHTML = buildSocioOptions(socios, "", rutUrl);
@@ -687,6 +965,7 @@
       const u = (getUsers()||[]).find(x=>normalizeRut(x.rut)===normalizeRut(rut));
       document.getElementById("subTitle").textContent = rut ? `${safe(u?.nombre,"Socio")} · ${rut}` : "Selecciona un socio para comenzar";
       renderHistory(rut);
+      renderCharts(rut);
     }
 
     search.addEventListener("input", ()=>{
@@ -697,11 +976,9 @@
 
     sel.addEventListener("change", updateSubtitle);
 
-    // IMC auto
     document.getElementById("pesoKg").addEventListener("input", updateIMC);
     document.getElementById("tallaCm").addEventListener("input", updateIMC);
 
-    // Toolbar
     document.getElementById("btnClear").addEventListener("click", ()=>{
       clearForm();
       msg(document.getElementById("msg"), "Formulario limpio.", true);
@@ -718,6 +995,7 @@
         await syncEvaluationsDown();
         await loadLastForRut(rut);
         renderHistory(rut);
+        renderCharts(rut);
       }catch(e){
         msg(document.getElementById("msg"), "❌ No se pudo cargar: " + (e.message||e), false);
       }
@@ -742,6 +1020,7 @@
 
         await syncEvaluationsDown();
         renderHistory(rut);
+        renderCharts(rut);
 
         msg(document.getElementById("msg"), "✅ Evaluación guardada", true);
       }catch(e){
@@ -749,7 +1028,6 @@
       }
     });
 
-    // Carga inicial evaluaciones (no bloqueante)
     try{ await syncEvaluationsDown(); }catch(e){}
 
     updateSubtitle();
