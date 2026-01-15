@@ -60,20 +60,24 @@ function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
 function nowISO(){ return new Date().toISOString(); }
 
 // ---------------- DB STATUS (pelotita) ----------------
+// ✅ FIX: clases compatibles con tu CSS (ok/bad/pending) + compat vieja (connected/error/connecting)
 function setDbStatus(status){
   const dot  = document.getElementById("dbDot");
   const text = document.getElementById("dbText");
   if(!dot || !text) return;
 
+  // resetea
   dot.className = "db-dot";
+
   if(status === "connected"){
-    dot.classList.add("connected");
+    // nuevo + compat
+    dot.classList.add("ok", "connected");
     text.textContent = "Conectado";
   }else if(status === "error"){
-    dot.classList.add("error");
+    dot.classList.add("bad", "error");
     text.textContent = "Sin conexión";
   }else{
-    dot.classList.add("connecting");
+    dot.classList.add("pending", "connecting");
     text.textContent = "Conectando…";
   }
 }
