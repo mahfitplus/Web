@@ -6,10 +6,6 @@
   <title>MAH FIT | Socio</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
-    /* =========================
-       SOCIO UI UPGRADE (MAH FIT)
-       ========================= */
-
     :root{
       --glass: rgba(255,255,255,.06);
       --glass2: rgba(0,0,0,.26);
@@ -18,583 +14,217 @@
       --txt: rgba(255,255,255,.92);
       --mut: rgba(255,255,255,.68);
       --mut2: rgba(255,255,255,.78);
-
-      /* fallback por si no existen en styles.css */
       --ok: rgba(43,213,118,1);
       --warn: rgba(255,211,110,1);
       --bad: rgba(255,90,103,1);
       --brand: rgba(0,200,255,.95);
     }
 
-    /* ✅ Badge conexión (igual que funcionario) */
-    .db-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.88);
-      font-weight:900;
-      font-size:12px;
-      user-select:none;
-      white-space:nowrap;
-      backdrop-filter: blur(8px);
-    }
-    .db-dot{
-      width:10px; height:10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.35);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
-    }
-    /* estados opcionales si tu app.js agrega clases */
+    .db-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);color:rgba(255,255,255,.88);font-weight:900;font-size:12px;user-select:none;white-space:nowrap;backdrop-filter: blur(8px);}
+    .db-dot{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.08);}
     .db-dot.ok{ background: var(--ok); box-shadow:0 0 0 3px rgba(43,213,118,.16); }
     .db-dot.bad{ background: var(--bad); box-shadow:0 0 0 3px rgba(255,90,103,.16); }
-    .db-dot.pending{
-      background: rgba(255,255,255,.35);
-      box-shadow:0 0 0 3px rgba(255,255,255,.08);
-      animation: pulse 1s ease-in-out infinite;
-    }
-    @keyframes pulse{
-      0%{ transform:scale(1); opacity:.8; }
-      50%{ transform:scale(1.15); opacity:1; }
-      100%{ transform:scale(1); opacity:.8; }
-    }
+    .db-dot.pending{background: rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.08);animation:pulse 1s ease-in-out infinite;}
+    @keyframes pulse{0%{transform:scale(1);opacity:.8;}50%{transform:scale(1.15);opacity:1;}100%{transform:scale(1);opacity:.8;}}
 
-    /* ---------- Top spacing helper ---------- */
-    .sp12{ height:12px; }
-    .sp16{ height:16px; }
-    .sp18{ height:18px; }
-    .sp22{ height:22px; }
+    .sp8{height:8px;} .sp12{height:12px;} .sp16{height:16px;} .sp18{height:18px;}
 
-    /* ---------- Banner Plan ---------- */
-    .planBanner{
-      border:1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
-      border-radius:18px;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      overflow:hidden;
-      position:relative;
-    }
-    .planBanner::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      background: radial-gradient(800px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),
-                  radial-gradient(800px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);
-      pointer-events:none;
-      opacity:.9;
-    }
-    .planBanner > *{ position:relative; }
+    .planBanner{border:1px solid var(--stroke);background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;position:relative;}
+    .planBanner::before{content:"";position:absolute;inset:-1px;background:radial-gradient(800px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),radial-gradient(800px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);pointer-events:none;opacity:.9;}
+    .planBanner > *{position:relative;}
+    .planLeft{display:flex;flex-direction:column;gap:6px;min-width:0;}
+    .planTitleRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .planTitle{font-weight:1000;letter-spacing:.6px;text-transform:uppercase;font-size:12px;color:var(--mut);}
+    .planBig{font-weight:1000;font-size:18px;color:#fff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+    .planSmall{color:var(--mut2);font-size:13px;line-height:1.35;}
+    .planCTA{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;min-width:210px;}
+    .ctaBtn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92);padding:10px 12px;border-radius:12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;user-select:none;}
+    .ctaBtn:hover{background:rgba(255,255,255,.09);} .ctaBtn:active{transform:translateY(1px);}
 
-    .planLeft{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:0;
+    .statusPill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.30);font-weight:900;font-size:12px;color:rgba(255,255,255,.90);white-space:nowrap;}
+    .dot{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.08);}
+    .stOk{border-color: rgba(43,213,118,.30); background: rgba(43,213,118,.10);} .stOk .dot{background:rgba(43,213,118,1); box-shadow:0 0 0 3px rgba(43,213,118,.16);}
+    .stWarn{border-color: rgba(255,211,110,.30); background: rgba(255,211,110,.10);} .stWarn .dot{background:rgba(255,211,110,1); box-shadow:0 0 0 3px rgba(255,211,110,.16);}
+    .stBad{border-color: rgba(255,90,103,.30); background: rgba(255,90,103,.10);} .stBad .dot{background:rgba(255,90,103,1); box-shadow:0 0 0 3px rgba(255,90,103,.16);}
+
+    .kpi .box b{display:block;font-size:18px;margin-top:4px;}
+    .kpiSub{color:var(--mut);font-size:13px;display:flex;align-items:center;gap:8px;margin-top:4px;}
+    .kpiSub .kIco{width:22px;height:22px;border-radius:9px;display:grid;place-items:center;background:rgba(0,200,255,.10);border:1px solid rgba(0,200,255,.20);color:#baf2ff;font-weight:1000;font-size:12px;flex:0 0 auto;}
+
+    .todayCard{border:1px solid rgba(0,200,255,.22);background:radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.18), transparent 60%),rgba(0,0,0,.20);border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;}
+    .todayLeft{display:flex;flex-direction:column;gap:6px;min-width:0;}
+    .todayTitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:1000;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.92);}
+    .todayTitle .flame{width:26px;height:26px;border-radius:10px;display:grid;place-items:center;background:rgba(255,120,0,.14);border:1px solid rgba(255,120,0,.22);}
+    .todayMain{font-weight:1000;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+    .todayMeta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:var(--mut2);font-size:13px;}
+    .miniPill{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);font-weight:900;font-size:12px;color:rgba(255,255,255,.90);}
+    .miniPill .mIco{width:20px;height:20px;border-radius:999px;display:grid;place-items:center;background:rgba(0,200,255,.10);border:1px solid rgba(0,200,255,.18);color:#baf2ff;font-weight:1000;font-size:12px;}
+
+    details.day{border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.28);border-radius:16px;overflow:hidden;margin-top:12px;transition:border-color .2s ease, background .2s ease;}
+    details.day[open]{border-color: rgba(0,200,255,.22);background:rgba(0,0,0,.32);}
+    summary.daySum{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;user-select:none;}
+    summary.daySum::-webkit-details-marker{display:none;}
+    .dayLeft{display:flex;flex-direction:column;gap:6px;min-width:0;}
+    .dayLeft b{font-size:13px;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+    .dayLeft .sub{font-size:12px;color:rgba(255,255,255,.68);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .chev{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:rgba(255,255,255,.85);font-weight:900;transition:transform .25s ease;flex:0 0 auto;}
+    details[open] .chev{transform:rotate(180deg);}
+    .dayBody{padding:14px 14px 16px;border-top:1px solid rgba(255,255,255,.08);}
+
+    .progressRowBar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:rgba(255,255,255,.82);font-size:12px;}
+    .bar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);overflow:hidden;}
+    .bar>i{display:block;height:100%;width:0%;background:rgba(0,200,255,.55);border-right:1px solid rgba(0,200,255,.18);transition:width .25s ease;}
+    .progressTxt{min-width:120px;text-align:right;color:rgba(255,255,255,.78);font-weight:900;}
+
+    .exCard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px;margin-top:12px;display:flex;gap:14px;align-items:flex-start;transition:border-color .2s ease, background .2s ease, transform .08s ease;}
+    .exCard:active{transform:translateY(1px);}
+    .exMain{flex:1;min-width:0;}
+    .exTitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+    .muscleTag{display:inline-flex;gap:8px;align-items:center;font-weight:1000;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.92);}
+    .muscleTag .icon{width:22px;height:22px;border-radius:8px;display:grid;place-items:center;background:rgba(0,200,255,.14);border:1px solid rgba(0,200,255,.25);color:#aeefff;font-weight:1000;}
+    .exerciseName{font-weight:1000;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+
+    .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.30);color:rgba(255,255,255,.88);font-weight:900;font-size:13px;}
+    .chip .cIcon{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.22);color:#baf2ff;font-size:12px;font-weight:1000;}
+
+    .note{display:flex;gap:10px;align-items:flex-start;color:rgba(255,255,255,.78);font-size:13px;line-height:1.4;white-space:pre-wrap;}
+    .note .bubble{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:rgba(242,196,0,.10);border:1px solid rgba(242,196,0,.22);color:#ffe7a1;font-weight:1000;}
+
+    .exDone{display:flex;align-items:center;justify-content:center;width:54px;padding-top:6px;}
+    .exDone input{width:24px;height:24px;accent-color:var(--brand);cursor:pointer;}
+
+    .exCard.done{border-color: rgba(43,213,118,.30);background: rgba(43,213,118,.07);}
+    .exCard.done .exerciseName,.exCard.done .muscleTag{opacity:.92;}
+    .exCard.done .chips,.exCard.done .note{opacity:.72;}
+    .doneBadge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(43,213,118,.28);background:rgba(43,213,118,.10);color:rgba(220,255,235,.95);font-weight:1000;font-size:12px;margin-left:auto;}
+
+    .metaLine{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:rgba(255,255,255,.72);font-size:12px;margin-bottom:10px;}
+
+    .paywall{border:1px solid rgba(255,90,103,.35);background:rgba(255,90,103,.10);border-radius:16px;padding:16px;margin-top:14px;color:rgba(255,255,255,.92);}
+    .paywall b{font-size:16px;}
+    .paywall .sub{margin-top:6px;color:rgba(255,255,255,.78);line-height:1.4;}
+
+    .planPill{ font-weight:1000 !important; border-width:1px !important; }
+    .planOk{background:rgba(43,213,118,.12)!important;border-color:rgba(43,213,118,.35)!important;color:rgba(220,255,235,.95)!important;}
+    .planWarn{background:rgba(255,211,110,.12)!important;border-color:rgba(255,211,110,.35)!important;color:rgba(255,244,210,.95)!important;}
+    .planBad{background:rgba(255,90,103,.12)!important;border-color:rgba(255,90,103,.35)!important;color:rgba(255,230,233,.95)!important;}
+
+    .cardioBox{border:1px solid rgba(0,200,255,.22);background:radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.16), transparent 60%),rgba(0,0,0,.22);border-radius:16px;padding:12px;margin-bottom:12px;}
+    .cardioTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+    .cardioTop b{letter-spacing:.4px;}
+    .cardioGrid{display:flex;gap:10px;flex-wrap:wrap;}
+    .cardioPill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.30);color:rgba(255,255,255,.88);font-weight:900;font-size:12px;}
+    .cardioPill .ico{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.20);color:#baf2ff;font-weight:1000;font-size:12px;}
+    .cardioNote{margin-top:8px;color:rgba(255,255,255,.78);font-size:12px;line-height:1.35;white-space:pre-wrap;}
+
+    /* ✅ PANEL REGISTRO PRO */
+    .logBox{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.26);
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
     }
-    .planTitleRow{
-      display:flex;
-      align-items:center;
+    .logTop{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .logTop b{ font-size:12px; letter-spacing:.5px; text-transform:uppercase; color:rgba(255,255,255,.85); }
+    .logHint{ color:rgba(255,255,255,.70); font-size:12px; }
+    .logGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
       gap:10px;
-      flex-wrap:wrap;
     }
-    .planTitle{
-      font-weight:1000;
-      letter-spacing:.6px;
+    .field{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius:12px;
+      padding:10px;
+    }
+    .field label{
+      display:block;
+      font-size:11px;
+      color:rgba(255,255,255,.70);
+      margin-bottom:6px;
+      font-weight:900;
+      letter-spacing:.4px;
       text-transform:uppercase;
-      font-size:12px;
-      color: var(--mut);
     }
-    .planBig{
-      font-weight:1000;
-      font-size:18px;
-      color:#fff;
-      line-height:1.15;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
+    .field input, .field textarea, .field select{
+      width:100%;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      border-radius:10px;
+      padding:10px;
+      font-weight:900;
+      outline:none;
     }
-    .planSmall{
-      color: var(--mut2);
-      font-size:13px;
-      line-height:1.35;
-    }
-    .planCTA{
-      display:flex;
+    .field textarea{ min-height: 42px; resize: vertical; font-weight:800; }
+    .logActions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
       align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
       justify-content:flex-end;
-      min-width: 210px;
     }
-    .ctaBtn{
+    .miniBtn{
       border:1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
       color: rgba(255,255,255,.92);
       padding:10px 12px;
       border-radius:12px;
-      font-weight:900;
+      font-weight:1000;
       cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
       user-select:none;
     }
-    .ctaBtn:hover{ background: rgba(255,255,255,.09); }
-    .ctaBtn:active{ transform: translateY(1px); }
-
-    .statusPill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.30);
-      font-weight:900;
-      font-size:12px;
-      color: rgba(255,255,255,.90);
-      white-space:nowrap;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:999px;
-      background: rgba(255,255,255,.35);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
-    }
-    .stOk{ border-color: rgba(43,213,118,.30); background: rgba(43,213,118,.10); }
-    .stOk .dot{ background: rgba(43,213,118,1); box-shadow: 0 0 0 3px rgba(43,213,118,.16); }
-    .stWarn{ border-color: rgba(255,211,110,.30); background: rgba(255,211,110,.10); }
-    .stWarn .dot{ background: rgba(255,211,110,1); box-shadow: 0 0 0 3px rgba(255,211,110,.16); }
-    .stBad{ border-color: rgba(255,90,103,.30); background: rgba(255,90,103,.10); }
-    .stBad .dot{ background: rgba(255,90,103,1); box-shadow: 0 0 0 3px rgba(255,90,103,.16); }
-
-    /* ---------- KPI improvements ---------- */
-    .kpi .box b{
-      display:block;
-      font-size:18px;
-      margin-top:4px;
-    }
-    .kpiSub{
-      color: var(--mut);
-      font-size:13px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-top:4px;
-    }
-    .kpiSub .kIco{
-      width:22px;height:22px;
-      border-radius:9px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.10);
-      border:1px solid rgba(0,200,255,.20);
-      color:#baf2ff;
-      font-weight:1000;
-      font-size:12px;
-      flex: 0 0 auto;
+    .miniBtn:hover{ background: rgba(255,255,255,.10); }
+    .miniBtn:active{ transform: translateY(1px); }
+    .okMsg{ color: rgba(220,255,235,.92); font-weight:1000; font-size:12px; }
+    .errMsg{ color: rgba(255,190,190,.95); font-weight:1000; font-size:12px; }
+    .tinyTag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.28);
+      font-weight:900; font-size:12px; color: rgba(255,255,255,.90);
     }
 
-    /* ---------- Today Card ---------- */
-    .todayCard{
+    /* ✅ PROGRESO CARD "peso corporal" */
+    .progressCard{
       border:1px solid rgba(0,200,255,.22);
-      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.18), transparent 60%),
-                  rgba(0,0,0,.20);
+      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.14), transparent 60%),
+                  rgba(0,0,0,.22);
       border-radius:18px;
       padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      overflow:hidden;
     }
-    .todayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
-    .todayTitle{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-      font-weight:1000;
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.6px;
-      color: rgba(255,255,255,.92);
-    }
-    .todayTitle .flame{
-      width:26px;height:26px;border-radius:10px;
-      display:grid;place-items:center;
-      background: rgba(255,120,0,.14);
-      border:1px solid rgba(255,120,0,.22);
-    }
-    .todayMain{
-      font-weight:1000;
-      font-size:16px;
-      color:#fff;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
-    }
-    .todayMeta{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      color: var(--mut2);
-      font-size:13px;
-    }
-    .miniPill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.28);
-      font-weight:900;
-      font-size:12px;
-      color: rgba(255,255,255,.90);
-    }
-    .miniPill .mIco{
-      width:20px;height:20px;border-radius:999px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.10);
-      border:1px solid rgba(0,200,255,.18);
-      color:#baf2ff;
-      font-weight:1000;
-      font-size:12px;
-    }
-
-    /* ---------- Day accordion (improved) ---------- */
-    details.day{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.28);
-      border-radius: 16px;
-      overflow:hidden;
-      margin-top:12px;
-      transition: border-color .2s ease, background .2s ease;
-    }
-    details.day[open]{
-      border-color: rgba(0,200,255,.22);
-      background: rgba(0,0,0,.32);
-    }
-    summary.daySum{
-      list-style:none;
-      cursor:pointer;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      user-select:none;
-    }
-    summary.daySum::-webkit-details-marker{ display:none; }
-    .dayLeft{ display:flex; flex-direction:column; gap:6px; min-width:0; }
-    .dayLeft b{
-      font-size:13px;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:100%;
-    }
-    .dayLeft .sub{
-      font-size:12px;
-      color: rgba(255,255,255,.68);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .chev{
-      width:36px;height:36px;
-      border-radius:12px;
-      display:grid;place-items:center;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.85);
-      font-weight:900;
-      transition: transform .25s ease;
-      flex: 0 0 auto;
-    }
-    details[open] .chev{ transform: rotate(180deg); }
-
-    .dayBody{ padding:14px 14px 16px; border-top:1px solid rgba(255,255,255,.08); }
-
-    /* ---------- Progress bar per day ---------- */
     .progressRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
-      color: rgba(255,255,255,.82);
-      font-size:12px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
     }
-    .bar{
-      flex:1;
-      height:10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      overflow:hidden;
-    }
-    .bar > i{
-      display:block;
-      height:100%;
-      width:0%;
-      background: rgba(0,200,255,.55);
-      border-right:1px solid rgba(0,200,255,.18);
-      transition: width .25s ease;
-    }
-    .progressTxt{
-      min-width: 120px;
-      text-align:right;
-      color: rgba(255,255,255,.78);
-      font-weight:900;
-    }
-
-    /* ---------- Exercise card ---------- */
-    .exCard{
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      padding:14px;
-      margin-top:12px;
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      transition: border-color .2s ease, background .2s ease, transform .08s ease;
-    }
-    .exCard:active{ transform: translateY(1px); }
-    .exMain{ flex:1; min-width:0; }
-    .exTitle{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .muscleTag{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      font-weight:1000;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      color: rgba(255,255,255,.92);
-    }
-    .muscleTag .icon{
-      width:22px;height:22px;
-      border-radius:8px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.14);
-      border:1px solid rgba(0,200,255,.25);
-      color:#aeefff;
-      font-weight:1000;
-    }
-    .exerciseName{
-      font-weight:1000;
-      font-size:15px;
-      color:#fff;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width: 100%;
-    }
-
-    .chips{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.30);
-      color: rgba(255,255,255,.88);
-      font-weight:900;
-      font-size:13px;
-    }
-    .chip .cIcon{
-      width:22px;height:22px;
-      border-radius:999px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.12);
-      border:1px solid rgba(0,200,255,.22);
-      color:#baf2ff;
-      font-size:12px;
-      font-weight:1000;
-    }
-
-    .note{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      color: rgba(255,255,255,.78);
-      font-size:13px;
-      line-height:1.4;
-      white-space:pre-wrap;
-    }
-    .note .bubble{
-      width:28px;height:28px;
-      border-radius:10px;
-      display:grid;place-items:center;
-      background: rgba(242,196,0,.10);
-      border:1px solid rgba(242,196,0,.22);
-      color:#ffe7a1;
-      font-weight:1000;
-    }
-
-    .exDone{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:54px;
-      padding-top:6px;
-    }
-    .exDone input{
-      width:24px;height:24px;
-      accent-color: var(--brand);
-      cursor:pointer;
-    }
-
-    /* Completed state */
-    .exCard.done{
-      border-color: rgba(43,213,118,.30);
-      background: rgba(43,213,118,.07);
-    }
-    .exCard.done .exerciseName,
-    .exCard.done .muscleTag{ opacity:.92; }
-    .exCard.done .chips,
-    .exCard.done .note{ opacity:.72; }
-
-    .doneBadge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(43,213,118,.28);
-      background: rgba(43,213,118,.10);
-      color: rgba(220,255,235,.95);
-      font-weight:1000;
-      font-size:12px;
-      margin-left:auto;
-    }
-
-    /* ---------- Meta line (plan pill) ---------- */
-    .metaLine{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      color: rgba(255,255,255,.72);
-      font-size:12px;
-      margin-bottom:10px;
-    }
-
-    /* ---------- Paywall ---------- */
-    .paywall{
-      border:1px solid rgba(255,90,103,.35);
-      background: rgba(255,90,103,.10);
-      border-radius:16px;
-      padding:16px;
-      margin-top:14px;
-      color: rgba(255,255,255,.92);
-    }
-    .paywall b{ font-size:16px; }
-    .paywall .sub{
-      margin-top:6px;
-      color: rgba(255,255,255,.78);
-      line-height:1.4;
-    }
-
-    /* Plan pill coloring */
-    .planPill{ font-weight: 1000 !important; border-width: 1px !important; }
-    .planOk{
-      background: rgba(43,213,118,.12) !important;
-      border-color: rgba(43,213,118,.35) !important;
-      color: rgba(220,255,235,.95) !important;
-    }
-    .planWarn{
-      background: rgba(255,211,110,.12) !important;
-      border-color: rgba(255,211,110,.35) !important;
-      color: rgba(255,244,210,.95) !important;
-    }
-    .planBad{
-      background: rgba(255,90,103,.12) !important;
-      border-color: rgba(255,90,103,.35) !important;
-      color: rgba(255,230,233,.95) !important;
-    }
-
-    /* ✅ Cardio box (NUEVO) */
-    .cardioBox{
-      border:1px solid rgba(0,200,255,.22);
-      background: radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.16), transparent 60%),
-                  rgba(0,0,0,.22);
-      border-radius:16px;
-      padding:12px;
-      margin-bottom:12px;
-    }
-    .cardioTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .cardioTop b{ letter-spacing:.4px; }
-    .cardioGrid{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .cardioPill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.30);
-      color: rgba(255,255,255,.88);
-      font-weight:900;
-      font-size:12px;
-    }
-    .cardioPill .ico{
-      width:22px;height:22px;border-radius:999px;
-      display:grid;place-items:center;
-      background: rgba(0,200,255,.12);
-      border:1px solid rgba(0,200,255,.20);
-      color:#baf2ff;
-      font-weight:1000;
-      font-size:12px;
-    }
-    .cardioNote{
-      margin-top:8px;
+    .progressRow .field{ flex: 1 1 160px; }
+    .history{
+      margin-top:10px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:10px;
       color: rgba(255,255,255,.78);
       font-size:12px;
-      line-height:1.35;
-      white-space:pre-wrap;
+      line-height:1.45;
     }
 
-    /* ---------- Mobile tweaks ---------- */
+    @media (max-width: 900px){
+      .logGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
     @media (max-width: 700px){
-      .planCTA{ min-width: 0; justify-content:flex-start; }
-      .planBanner{ flex-direction:column; align-items:stretch; }
-      .todayCard{ flex-direction:column; align-items:stretch; }
-      .progressTxt{ min-width: 0; text-align:left; }
-      .exDone{ width:48px; }
-      .exCard{ padding:12px; }
-      .exerciseName{ white-space:normal; }
-      .chips .chip{ font-size:12px; }
+      .planCTA{min-width:0;justify-content:flex-start;}
+      .planBanner{flex-direction:column;align-items:stretch;}
+      .todayCard{flex-direction:column;align-items:stretch;}
+      .progressTxt{min-width:0;text-align:left;}
+      .exDone{width:48px;}
+      .exCard{padding:12px;}
+      .exerciseName{white-space:normal;}
+      .chips .chip{font-size:12px;}
+      .logGrid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -604,7 +234,6 @@
     <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
 
     <div class="nav-right" style="gap:10px; flex-wrap:wrap;">
-      <!-- ✅ Conexión (NUEVO) -->
       <span class="db-badge">
         <span id="dbDot" class="db-dot pending"></span>
         <span id="dbText">Conectando...</span>
@@ -618,6 +247,37 @@
 
   <main class="hero">
     <div class="container">
+
+      <!-- ✅ PRO: Progreso corporal -->
+      <div class="progressCard" id="progressCard" style="display:none;">
+        <div class="head" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <strong>Tu progreso</strong>
+          <span class="pill">Peso corporal</span>
+        </div>
+
+        <div class="progressRow">
+          <div class="field">
+            <label>Peso (kg)</label>
+            <input id="bwKg" type="number" step="0.1" placeholder="Ej: 74.6">
+          </div>
+
+          <div class="field">
+            <label>Cintura (cm) (opcional)</label>
+            <input id="bwWaist" type="number" step="0.1" placeholder="Ej: 86.0">
+          </div>
+
+          <div class="field" style="flex: 2 1 240px;">
+            <label>Notas (opcional)</label>
+            <input id="bwNotes" type="text" placeholder="Ej: dormí poco / me sentí pesado">
+          </div>
+
+          <button class="ctaBtn" id="bwSave" type="button"><span>💾</span><span>Guardar</span></button>
+        </div>
+
+        <div class="history" id="bwHistory">—</div>
+      </div>
+
+      <div class="sp16"></div>
 
       <!-- ✅ Banner Plan -->
       <div id="planBanner" class="planBanner" style="display:none;">
@@ -651,7 +311,7 @@
         </div>
 
         <div class="box">
-          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio semanal</div>
+          <div style="color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Cardio semanal (real)</div>
           <b id="kCardio">-</b>
           <div class="kpiSub">
             <span class="kIco">🫀</span><span id="kCardio2">-</span>
@@ -677,7 +337,6 @@
           <div class="todayMeta">
             <span id="todayMuscle" class="miniPill"><span class="mIco">🏋️</span><span>-</span></span>
             <span id="todayCount" class="miniPill"><span class="mIco">#</span><span>-</span></span>
-            <!-- ✅ Cardio de hoy (NUEVO) -->
             <span id="todayCardioPill" class="miniPill" style="display:none;">
               <span class="mIco">🫀</span><span>-</span>
             </span>
@@ -706,7 +365,6 @@
     function safe(v, fallback="-"){
       return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
     }
-
     function toNum(v){
       if(v===undefined || v===null) return null;
       const s = String(v).replace(",", ".").trim();
@@ -714,26 +372,26 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : null;
     }
+    function isoLocalDate(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
 
-    // ✅ calcula días restantes del plan (usa user.planFin)
     function planInfo(planFin){
       if(!planFin) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
-
       const end = new Date(planFin);
       if(isNaN(end.getTime())) return { status:"none", days:null, endTxt:"", label:"Sin plan" };
-
       end.setHours(0,0,0,0);
-      const today = new Date();
-      today.setHours(0,0,0,0);
-
+      const today = new Date(); today.setHours(0,0,0,0);
       const diff = Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24));
       const endTxt = end.toLocaleDateString("es-CL");
-
       if(diff < 0) return { status:"expired", days:diff, endTxt, label:`Vencido (vence ${endTxt})` };
       if(diff === 0) return { status:"today", days:0, endTxt, label:`Vence hoy (${endTxt})` };
       return { status:"active", days:diff, endTxt, label:`Quedan ${diff} días (vence ${endTxt})` };
     }
-
     function planClass(status, days){
       if(status === "active"){
         if(typeof days === "number" && days <= 5) return "planWarn";
@@ -742,7 +400,6 @@
       if(status === "today") return "planWarn";
       return "planBad";
     }
-
     function statusPillClass(status, days){
       if(status === "active"){
         if(typeof days === "number" && days <= 5) return "stWarn";
@@ -755,7 +412,6 @@
     function getDoneKey(rut, day, idx){
       return `mahfit_done_${rut}_${day}_${idx}`;
     }
-
     function getDayProgress(rutSocio, day){
       const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
       const total = ejercicios.length;
@@ -768,162 +424,33 @@
       return { total, done, pct };
     }
 
-    // ✅ Cardio stats semanal desde day.cardio (NUEVO)
-    function cardioStatsFromDays(dias){
-      const out = {
-        sessions: 0,
-        minutes: 0,
-        kcal: 0,
-        hrWeightedSum: 0,
-        hrWeight: 0,
-        zones: { Z1:0, Z2:0, Z3:0, Z4:0, Z5:0 }
-      };
+    // ✅ últimos 7 días
+    function withinLast7(isoDate){
+      const d = new Date(isoDate + "T00:00:00");
+      if(isNaN(d.getTime())) return false;
+      const now = new Date(); now.setHours(0,0,0,0);
+      const diff = Math.round((now.getTime() - d.getTime()) / (1000*60*60*24));
+      return diff >= 0 && diff <= 6;
+    }
 
-      (dias || []).forEach(d=>{
-        const c = d && d.cardio ? d.cardio : null;
-        if(!c || !c.tipo) return;
-
+    function cardioWeeklyStatsReal(rut){
+      const list = (getCardioLogForRut(rut) || []).filter(x => withinLast7(String(x.fecha||"")));
+      const out = { sessions:0, minutes:0, kcal:0, hrSum:0, hrW:0, zones:{Z1:0,Z2:0,Z3:0,Z4:0,Z5:0} };
+      list.forEach(c=>{
         out.sessions += 1;
-
         const min = toNum(c.min) || 0;
         const kcal = toNum(c.kcal) || 0;
         const hr = toNum(c.fcavg);
-
         out.minutes += min;
         out.kcal += kcal;
-
-        if(typeof hr === "number" && min > 0){
-          out.hrWeightedSum += (hr * min);
-          out.hrWeight += min;
-        }
-
-        const z = String(c.zona || "").toUpperCase().trim();
+        if(typeof hr === "number" && min>0){ out.hrSum += hr*min; out.hrW += min; }
+        const z = String(c.zona||"").toUpperCase().trim();
         if(out.zones[z] !== undefined) out.zones[z] += 1;
       });
-
-      const hrAvg = out.hrWeight > 0 ? Math.round(out.hrWeightedSum / out.hrWeight) : null;
-
-      // redondeo amigable
+      const hrAvg = out.hrW>0 ? Math.round(out.hrSum/out.hrW) : null;
       out.minutes = Math.round(out.minutes);
       out.kcal = Math.round(out.kcal);
-
       return { ...out, hrAvg };
-    }
-
-    function renderCardioBox(cardio){
-      if(!cardio || !cardio.tipo) return "";
-
-      const min = safe(cardio.min, "-");
-      const zona = safe(cardio.zona, "-");
-      const inten = safe(cardio.intensidad, "-");
-      const kcal = safe(cardio.kcal, "-");
-      const fcavg = safe(cardio.fcavg, "-");
-      const fcmax = safe(cardio.fcmax, "-");
-      const notas = safe(cardio.notas, "");
-
-      return `
-        <div class="cardioBox">
-          <div class="cardioTop">
-            <b>Cardio</b>
-            <span class="pill">🫀 ${safe(cardio.tipo,"-")}</span>
-          </div>
-
-          <div class="cardioGrid">
-            <span class="cardioPill"><span class="ico">⏱</span>${min} min</span>
-            <span class="cardioPill"><span class="ico">🎯</span>${zona}</span>
-            <span class="cardioPill"><span class="ico">⚡</span>${inten}</span>
-            <span class="cardioPill"><span class="ico">🔥</span>${kcal} kcal</span>
-            <span class="cardioPill"><span class="ico">📈</span>FC ${fcavg}/${fcmax}</span>
-          </div>
-
-          ${notas && notas !== "-" ? `<div class="cardioNote"><b>Notas:</b> ${notas}</div>` : ``}
-        </div>
-      `;
-    }
-
-    function renderDay(day, rutSocio){
-      const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
-      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
-      const total = ejercicios.length;
-
-      const prog = getDayProgress(rutSocio, day);
-
-      const cardioBox = renderCardioBox(day.cardio);
-
-      const cards = ejercicios.map((e, i)=>{
-        const doneKey = getDoneKey(rutSocio, day.dia, i);
-        const checked = localStorage.getItem(doneKey) === "1" ? "checked" : "";
-
-        const chipSeries = safe(e.series, "-");
-        const chipReps   = safe(e.reps, "-");
-        const chipCarga  = safe(e.carga, "-");
-        const chipDesc   = safe(e.descanso, "-");
-        const noteText = safe(e.obs, "");
-
-        return `
-          <div class="exCard ${checked ? "done" : ""}" data-excard="${doneKey}">
-            <div class="exMain">
-              <div class="exTitle">
-                <span class="muscleTag"><span class="icon">🏋️</span>${safe(e.musculo,"Músculo")}</span>
-                <span class="exerciseName">${safe(e.ejercicio,"Ejercicio")}</span>
-                ${checked ? `<span class="doneBadge">✓ Hecho</span>` : ``}
-              </div>
-
-              <div class="chips">
-                <span class="chip"><span class="cIcon">≡</span>${chipSeries} series</span>
-                <span class="chip"><span class="cIcon">↻</span>${chipReps}</span>
-                <span class="chip"><span class="cIcon">⚖</span>${chipCarga}</span>
-                <span class="chip"><span class="cIcon">⏱</span>${chipDesc}</span>
-              </div>
-
-              ${noteText && noteText !== "-" ? `
-                <div class="note">
-                  <div class="bubble">💬</div>
-                  <div>${noteText}</div>
-                </div>
-              ` : ``}
-            </div>
-
-            <div class="exDone">
-              <input type="checkbox" ${checked} data-done="${doneKey}" data-day="${safe(day.dia)}" data-idx="${i}">
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      // ✅ resumen cardio en el summary (si existe)
-      const hasCardio = !!(day.cardio && day.cardio.tipo);
-      const sumCardio = hasCardio
-        ? ` · <span class="pill">🫀 ${safe(day.cardio.min,"-")} min</span>`
-        : ``;
-
-      return `
-        <details class="day" data-day="${safe(day.dia)}">
-          <summary class="daySum">
-            <div class="dayLeft">
-              <b>${safe(day.dia)}</b>
-              <div class="sub">
-                Enfocado: <span class="pill">${enfoque}</span>
-                · Ejercicios: <span class="pill">${total}</span>
-                ${total ? `· <span class="pill">${prog.pct}%</span>` : ``}
-                ${sumCardio}
-              </div>
-            </div>
-            <div class="chev">⌄</div>
-          </summary>
-          <div class="dayBody">
-            ${cardioBox}
-
-            ${total ? `
-              <div class="progressRow">
-                <div class="bar" aria-label="Progreso"><i style="width:${prog.pct}%"></i></div>
-                <div class="progressTxt"><span data-prog="${safe(day.dia)}">${prog.done} de ${prog.total} ✓</span></div>
-              </div>
-              ${cards}
-            ` : `<div class="notice"><b>Aún no hay ejercicios</b><br>Este día todavía no tiene ejercicios cargados 💪</div>`}
-          </div>
-        </details>
-      `;
     }
 
     function pickTodayIndex(nDias){
@@ -938,7 +465,6 @@
         if(d !== detailsEl) d.removeAttribute("open");
       });
     }
-
     function scrollToEl(el){
       if(!el) return;
       el.scrollIntoView({ behavior:"smooth", block:"start" });
@@ -950,18 +476,319 @@
       return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
-    document.addEventListener("DOMContentLoaded", ()=>{
+    // ====== LOG IDs ======
+    function workoutLogId(rutSocio, fecha, dayLabel, idx){
+      return `WL_${normalizeRut(rutSocio)}_${fecha}_${String(dayLabel||"DIA").replace(/\s+/g,"_")}_${String(idx??0)}`;
+    }
+    function cardioLogId(rutSocio, fecha, dayLabel){
+      return `CL_${normalizeRut(rutSocio)}_${fecha}_${String(dayLabel||"DIA").replace(/\s+/g,"_")}`;
+    }
+    function bodyLogId(rutSocio, fecha){
+      return `BL_${normalizeRut(rutSocio)}_${fecha}`;
+    }
+
+    function findWorkoutSaved(rutSocio, fecha, dayLabel, idx){
+      const id = workoutLogId(rutSocio, fecha, dayLabel, idx);
+      return (getWorkoutLogForRut(rutSocio)||[]).find(x => String(x.logId||x.id) === id) || null;
+    }
+    function findCardioSaved(rutSocio, fecha, dayLabel){
+      const id = cardioLogId(rutSocio, fecha, dayLabel);
+      return (getCardioLogForRut(rutSocio)||[]).find(x => String(x.cardioId) === id) || null;
+    }
+    function findBodySaved(rutSocio, fecha){
+      const id = bodyLogId(rutSocio, fecha);
+      return (getBodyLogForRut(rutSocio)||[]).find(x => String(x.entryId) === id) || null;
+    }
+
+    // ====== Render cardio box (plan + real) ======
+    function renderCardioBox(day, rutSocio){
+      const plan = day.cardio || null;
+      const fecha = isoLocalDate();
+      const dayLabel = safe(day.dia,"DIA");
+      const saved = findCardioSaved(rutSocio, fecha, dayLabel);
+
+      const planHtml = (plan && plan.tipo) ? `
+        <div class="cardioTop">
+          <b>Cardio (plan)</b>
+          <span class="pill">🫀 ${safe(plan.tipo,"-")}</span>
+        </div>
+        <div class="cardioGrid">
+          <span class="cardioPill"><span class="ico">⏱</span>${safe(plan.min,"-")} min</span>
+          <span class="cardioPill"><span class="ico">🎯</span>${safe(plan.zona,"-")}</span>
+          <span class="cardioPill"><span class="ico">⚡</span>${safe(plan.intensidad,"-")}</span>
+          <span class="cardioPill"><span class="ico">🔥</span>${safe(plan.kcal,"-")} kcal</span>
+          <span class="cardioPill"><span class="ico">📈</span>FC ${safe(plan.fcavg,"-")}/${safe(plan.fcmax,"-")}</span>
+        </div>
+        ${plan.notas ? `<div class="cardioNote"><b>Notas plan:</b> ${safe(plan.notas,"")}</div>` : ``}
+        <div class="sp12"></div>
+      ` : `
+        <div class="cardioTop">
+          <b>Cardio</b>
+          <span class="pill">Sin plan</span>
+        </div>
+        <div class="cardioNote">Si hoy hiciste cardio, puedes registrarlo abajo ✅</div>
+        <div class="sp12"></div>
+      `;
+
+      const savedTag = saved
+        ? `<span class="tinyTag">✅ Guardado hoy: ${safe(saved.tipo,"-")} · ${safe(saved.min,"-")} min</span>`
+        : `<span class="tinyTag">📝 Aún no registras cardio hoy</span>`;
+
+      return `
+        <div class="cardioBox">
+          ${planHtml}
+
+          <div class="logTop">
+            <b>Registro cardio (real)</b>
+            ${savedTag}
+          </div>
+
+          <div class="logGrid">
+            <div class="field">
+              <label>Tipo</label>
+              <select data-c-tipo>
+                <option value="">(seleccionar)</option>
+                <option>Caminar</option>
+                <option>Trote</option>
+                <option>Correr</option>
+                <option>Bicicleta</option>
+                <option>Elíptica</option>
+                <option>Escaladora</option>
+                <option>Remo</option>
+                <option>HIIT</option>
+                <option>Otro</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Minutos</label>
+              <input data-c-min type="number" step="1" min="0" placeholder="Ej: 25">
+            </div>
+
+            <div class="field">
+              <label>Kcal (opcional)</label>
+              <input data-c-kcal type="number" step="1" min="0" placeholder="Ej: 180">
+            </div>
+
+            <div class="field">
+              <label>Zona (opcional)</label>
+              <select data-c-zona>
+                <option value="">(—)</option>
+                <option>Z1</option><option>Z2</option><option>Z3</option><option>Z4</option><option>Z5</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Intensidad (opcional)</label>
+              <select data-c-int>
+                <option value="">(—)</option>
+                <option>Suave</option>
+                <option>Moderada</option>
+                <option>Intensa</option>
+                <option>Máxima</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>FC prom (opcional)</label>
+              <input data-c-fcavg type="number" step="1" min="0" placeholder="Ej: 142">
+            </div>
+
+            <div class="field">
+              <label>FC máx (opcional)</label>
+              <input data-c-fcmax type="number" step="1" min="0" placeholder="Ej: 172">
+            </div>
+
+            <div class="field" style="grid-column: span 4;">
+              <label>Notas (opcional)</label>
+              <input data-c-notas type="text" placeholder="Ej: me sentí bien / calor / ayunas">
+            </div>
+          </div>
+
+          <div class="logActions">
+            <span class="okMsg" data-c-ok style="display:none;">✅ Cardio guardado</span>
+            <span class="errMsg" data-c-err style="display:none;">❌ Error</span>
+            <button class="miniBtn" type="button"
+              data-save-cardio="1"
+              data-rut="${safe(rutSocio)}"
+              data-fecha="${safe(fecha)}"
+              data-day="${safe(dayLabel)}"
+            >💾 Guardar cardio</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ====== Render ejercicio + registro fuerza real ======
+    function renderExerciseCard(e, i, day, rutSocio){
+      const doneKey = getDoneKey(rutSocio, day.dia, i);
+      const checked = localStorage.getItem(doneKey) === "1" ? "checked" : "";
+
+      const chipSeries = safe(e.series, "-");
+      const chipReps   = safe(e.reps, "-");
+      const chipCarga  = safe(e.carga, "-");
+      const chipDesc   = safe(e.descanso, "-");
+      const noteText   = safe(e.obs, "");
+
+      const fecha = isoLocalDate();
+      const dayLabel = safe(day.dia,"DIA");
+
+      const saved = findWorkoutSaved(rutSocio, fecha, dayLabel, i);
+      const savedTag = saved
+        ? `<span class="tinyTag">✅ Guardado hoy: ${safe(saved.seriesReal,"-")}x${safe(saved.repsReal,"-")} · ${safe(saved.cargaReal,"-")}</span>`
+        : `<span class="tinyTag">📝 Aún no registras este ejercicio hoy</span>`;
+
+      return `
+        <div class="exCard ${checked ? "done" : ""}" data-excard="${doneKey}">
+          <div class="exMain">
+            <div class="exTitle">
+              <span class="muscleTag"><span class="icon">🏋️</span>${safe(e.musculo,"Músculo")}</span>
+              <span class="exerciseName">${safe(e.ejercicio,"Ejercicio")}</span>
+              ${checked ? `<span class="doneBadge">✓ Hecho</span>` : ``}
+            </div>
+
+            <div class="chips">
+              <span class="chip"><span class="cIcon">≡</span>${chipSeries} series</span>
+              <span class="chip"><span class="cIcon">↻</span>${chipReps}</span>
+              <span class="chip"><span class="cIcon">⚖</span>${chipCarga}</span>
+              <span class="chip"><span class="cIcon">⏱</span>${chipDesc}</span>
+              <button class="chip" type="button" data-toggle-wlog="1" data-idx="${i}" style="cursor:pointer;">
+                <span class="cIcon">🧾</span>Registrar fuerza
+              </button>
+            </div>
+
+            ${noteText && noteText !== "-" ? `
+              <div class="note">
+                <div class="bubble">💬</div>
+                <div>${noteText}</div>
+              </div>
+            ` : ``}
+
+            <div class="logBox" data-wlog-box="${i}" style="display:none;">
+              <div class="logTop">
+                <b>Registro fuerza (real)</b>
+                ${savedTag}
+              </div>
+
+              <div class="logGrid">
+                <div class="field">
+                  <label>Series (real)</label>
+                  <input data-w-series type="number" step="1" min="0" placeholder="Ej: 4">
+                </div>
+
+                <div class="field">
+                  <label>Reps (real)</label>
+                  <input data-w-reps type="text" placeholder="Ej: 12 / 10 / 8">
+                </div>
+
+                <div class="field">
+                  <label>Carga (real)</label>
+                  <input data-w-carga type="text" placeholder="Ej: 20kg / 2 mancuernas 12">
+                </div>
+
+                <div class="field">
+                  <label>RIR</label>
+                  <input data-w-rir type="number" step="1" min="0" max="10" placeholder="Ej: 2">
+                </div>
+
+                <div class="field">
+                  <label>RPE (1-10)</label>
+                  <input data-w-rpe type="number" step="1" min="1" max="10" placeholder="1 leve · 10 muy intenso" title="1 = muy fácil / 10 = máximo esfuerzo">
+                </div>
+
+                <div class="field" style="grid-column: span 3;">
+                  <label>Notas</label>
+                  <input data-w-notas type="text" placeholder="Ej: buena técnica / fallo en última serie">
+                </div>
+              </div>
+
+              <div class="logActions">
+                <span class="okMsg" data-w-ok style="display:none;">✅ Fuerza guardada</span>
+                <span class="errMsg" data-w-err style="display:none;">❌ Error</span>
+
+                <button class="miniBtn" type="button"
+                  data-save-wlog="1"
+                  data-rut="${safe(rutSocio)}"
+                  data-fecha="${safe(fecha)}"
+                  data-day="${safe(dayLabel)}"
+                  data-idx="${i}"
+                  data-mus="${safe(e.musculo)}"
+                  data-ej="${safe(e.ejercicio)}"
+                  data-seriesplan="${safe(e.series)}"
+                  data-repsplan="${safe(e.reps)}"
+                  data-cargaplan="${safe(e.carga)}"
+                  data-descplan="${safe(e.descanso)}"
+                >💾 Guardar fuerza</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="exDone">
+            <input type="checkbox" ${checked} data-done="${doneKey}" data-day="${safe(day.dia)}" data-idx="${i}">
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDay(day, rutSocio){
+      const enfoque = Array.isArray(day.enfoque) ? day.enfoque.join(" + ") : safe(day.enfoque, "Full Body");
+      const ejercicios = Array.isArray(day.ejercicios) ? day.ejercicios : [];
+      const total = ejercicios.length;
+
+      const prog = getDayProgress(rutSocio, day);
+
+      const hasCardioPlan = !!(day.cardio && day.cardio.tipo);
+      const sumCardio = hasCardioPlan ? ` · <span class="pill">🫀 ${safe(day.cardio.min,"-")} min</span>` : ``;
+
+      const cards = ejercicios.map((e,i)=>renderExerciseCard(e,i,day,rutSocio)).join("");
+
+      return `
+        <details class="day" data-day="${safe(day.dia)}">
+          <summary class="daySum">
+            <div class="dayLeft">
+              <b>${safe(day.dia)}</b>
+              <div class="sub">
+                Enfocado: <span class="pill">${enfoque}</span>
+                · Ejercicios: <span class="pill">${total}</span>
+                ${total ? `· <span class="pill" data-pctpill="${safe(day.dia)}">${prog.pct}%</span>` : ``}
+                ${sumCardio}
+              </div>
+            </div>
+            <div class="chev">⌄</div>
+          </summary>
+
+          <div class="dayBody">
+            ${renderCardioBox(day, rutSocio)}
+
+            ${total ? `
+              <div class="progressRowBar">
+                <div class="bar" aria-label="Progreso"><i style="width:${prog.pct}%"></i></div>
+                <div class="progressTxt"><span data-prog="${safe(day.dia)}">${prog.done} de ${prog.total} ✓</span></div>
+              </div>
+              ${cards}
+            ` : `
+              <div class="notice"><b>Aún no hay ejercicios</b><br>Este día todavía no tiene ejercicios cargados 💪</div>
+            `}
+          </div>
+        </details>
+      `;
+    }
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      // sincroniza cache (si falla, sigue con cache local)
+      try{ await syncDown(); }catch(e){}
+
       const user = requireAuth("SOCIO");
       if(!user) return;
 
       document.querySelector("#who").textContent = user.nombre;
       document.querySelector("#roleBadge").textContent = "SOCIO";
 
+      // WhatsApp
       const btnWhats = document.querySelector("#btnWhats");
       btnWhats.href = buildWhatsLink(user);
 
       const box = document.querySelector("#rutinaBox");
-
       const p = planInfo(user.planFin);
 
       const planBanner = document.querySelector("#planBanner");
@@ -969,41 +796,42 @@
       const planBig = document.querySelector("#planBig");
       const planSmall = document.querySelector("#planSmall");
       const btnGoToday = document.querySelector("#btnGoToday");
+      const kPlan = document.querySelector("#kPlan");
 
       planBanner.style.display = "flex";
       planStatusPill.className = "statusPill " + statusPillClass(p.status, p.days);
 
-      const kPlan = document.querySelector("#kPlan");
-
       if(p.status === "active"){
         kPlan.textContent = `Activo · ${p.days} día(s)`;
         kPlan.style.color = (p.days <= 5) ? "var(--warn)" : "var(--ok)";
-
         planStatusPill.querySelector("span:last-child").textContent = "ACTIVO";
         planBig.textContent = `Te quedan ${p.days} día(s)`;
         planSmall.textContent = `Vence el ${p.endTxt}. Mantén constancia y a darle 🔥`;
       }else if(p.status === "today"){
         kPlan.textContent = "Vence hoy";
         kPlan.style.color = "var(--warn)";
-
         planStatusPill.querySelector("span:last-child").textContent = "ÚLTIMO DÍA";
         planBig.textContent = "Tu plan vence hoy";
         planSmall.textContent = `Vence el ${p.endTxt}. Si quieres seguir entrenando, solicita renovación ✅`;
       }else{
         kPlan.textContent = "Inactivo";
         kPlan.style.color = "var(--bad)";
-
         planStatusPill.querySelector("span:last-child").textContent = "INACTIVO";
         planBig.textContent = "Tu plan está inactivo 😕";
         planSmall.textContent = "Renueva tu plan para disfrutar tus entrenamientos y asesorías.";
       }
 
+      // ✅ PROGRESO corporal (solo si plan activo)
+      const progressCard = document.querySelector("#progressCard");
+
+      // si plan no está activo => paywall
       if(p.status !== "active" && p.status !== "today"){
         document.querySelector("#kNivel").textContent = "Renueva tu plan";
         document.querySelector("#kDias").textContent = "0";
         document.querySelector("#kCardio").textContent = "-";
         document.querySelector("#kCardio2").textContent = "—";
         document.querySelector("#todayCard").style.display = "none";
+        progressCard.style.display = "none";
 
         box.innerHTML = `
           <div class="paywall">
@@ -1016,6 +844,57 @@
         return;
       }
 
+      // mostrar progreso
+      progressCard.style.display = "block";
+
+      // render history body log
+      const today = isoLocalDate();
+      const bwHistory = document.querySelector("#bwHistory");
+      const bodyList = (getBodyLogForRut(user.rut) || []).slice()
+        .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+      const latest = bodyList[0] || null;
+
+      if(latest){
+        bwHistory.innerHTML = `
+          <div><b>Último registro:</b> ${safe(latest.fecha)} · ${safe(latest.pesoKg,"-")} kg ${latest.cinturaCm ? `· cintura ${safe(latest.cinturaCm)} cm` : ""}</div>
+          ${latest.notas ? `<div style="margin-top:6px;color:rgba(255,255,255,.75);"><b>Notas:</b> ${safe(latest.notas)}</div>` : ``}
+          ${bodyList.length>1 ? `<div style="margin-top:6px;color:rgba(255,255,255,.70);">Historial: ${bodyList.slice(0,6).map(x=>`${safe(x.fecha)} (${safe(x.pesoKg)}kg)`).join(" · ")}</div>` : ``}
+        `;
+      }else{
+        bwHistory.textContent = "Aún no registras tu peso. Puedes guardarlo arriba ✅";
+      }
+
+      // botón guardar body
+      document.querySelector("#bwSave").addEventListener("click", async ()=>{
+        const kg = toNum(document.querySelector("#bwKg").value);
+        const waist = toNum(document.querySelector("#bwWaist").value);
+        const notes = safe(document.querySelector("#bwNotes").value, "");
+
+        if(kg === null || kg <= 0){
+          alert("Ingresa un peso válido (kg).");
+          return;
+        }
+
+        const payload = {
+          entryId: bodyLogId(user.rut, today),
+          rutSocio: user.rut,
+          fecha: today,
+          pesoKg: kg,
+          cinturaCm: (waist===null ? "" : waist),
+          notas: notes
+        };
+
+        try{
+          await saveBodyLog(payload);
+          alert("✅ Progreso guardado");
+          try{ await syncDown(); }catch(e){}
+          location.reload();
+        }catch(e){
+          alert("❌ Error: " + (e?.message || e));
+        }
+      });
+
+      // rutina
       const rv2 = rutinaV2DeSocio(user.rut);
       if(!rv2 || !rv2.routine){
         document.querySelector("#kNivel").textContent = "(sin rutina)";
@@ -1030,151 +909,276 @@
             Tu plan está activo, pero todavía no se te asigna una rutina específica. Escríbenos y la dejamos lista 💪
           </div>
         `;
-      }else{
-        const routine = rv2.routine;
-        const meta = routine.meta || {};
-
-        document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
-
-        const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
-        dias.sort((a,b)=>{
-          const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
-          const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
-          return na-nb;
-        });
-
-        const nDias = (dias||[]).length || 0;
-        document.querySelector("#kDias").textContent = String(nDias);
-
-        // ✅ Cardio semanal real (desde day.cardio)
-        const stats = cardioStatsFromDays(dias);
-
-        if(stats.sessions <= 0){
-          document.querySelector("#kCardio").textContent = "-";
-          document.querySelector("#kCardio2").textContent = "—";
-        }else{
-          // principal: sesiones + minutos
-          document.querySelector("#kCardio").textContent = `${stats.sessions} ses · ${stats.minutes} min`;
-
-          // secundario: kcal + FC prom + zonas (compacto)
-          const zonesTxt = ["Z1","Z2","Z3","Z4","Z5"]
-            .map(z => stats.zones[z] ? `${z}:${stats.zones[z]}` : "")
-            .filter(Boolean)
-            .join(" · ");
-
-          const hrTxt = (stats.hrAvg ? `FC prom ${stats.hrAvg}` : `FC prom -`);
-          const kcalTxt = (stats.kcal ? `${stats.kcal} kcal` : `kcal -`);
-          document.querySelector("#kCardio2").textContent =
-            zonesTxt ? `${kcalTxt} · ${hrTxt} · ${zonesTxt}` : `${kcalTxt} · ${hrTxt}`;
-        }
-
-        const todayCard = document.querySelector("#todayCard");
-        const idxToday = pickTodayIndex(nDias);
-        const dayToday = dias[idxToday] || dias[0];
-
-        if(dayToday){
-          const enfoque = Array.isArray(dayToday.enfoque) ? dayToday.enfoque.join(" + ") : safe(dayToday.enfoque, "Full Body");
-          const ejercicios = Array.isArray(dayToday.ejercicios) ? dayToday.ejercicios : [];
-
-          document.querySelector("#todayMain").textContent = `${safe(dayToday.dia)} · ${enfoque}`;
-          document.querySelector("#todayMuscle").querySelector("span:last-child").textContent = enfoque;
-          document.querySelector("#todayCount").querySelector("span:last-child").textContent = `${ejercicios.length} ejercicio(s)`;
-
-          // ✅ cardio en el “hoy”
-          const todayCardioPill = document.querySelector("#todayCardioPill");
-          if(dayToday.cardio && dayToday.cardio.tipo){
-            const min = safe(dayToday.cardio.min, "-");
-            const tipo = safe(dayToday.cardio.tipo, "Cardio");
-            todayCardioPill.style.display = "inline-flex";
-            todayCardioPill.querySelector("span:last-child").textContent = `${tipo} · ${min} min`;
-          }else{
-            todayCardioPill.style.display = "none";
-          }
-
-          todayCard.style.display = "flex";
-          btnGoToday.style.display = "inline-flex";
-
-          const go = ()=>{
-            const det = document.querySelector(`details.day[data-day="${CSS.escape(safe(dayToday.dia))}"]`);
-            if(det){
-              det.setAttribute("open", "");
-              openOnly(det);
-              scrollToEl(det);
-            }
-          };
-          document.querySelector("#btnOpenToday").addEventListener("click", go);
-          btnGoToday.addEventListener("click", go);
-        }else{
-          todayCard.style.display = "none";
-          btnGoToday.style.display = "none";
-          document.querySelector("#todayCardioPill").style.display = "none";
-        }
-
-        box.innerHTML = `
-          <div class="metaLine">
-            <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
-            <span class="pill">Tu objetivo: ${safe(meta.objetivo,"-")}</span>
-            <span class="pill">Actualizado: ${safe(meta.fecha,"-")}</span>
-          </div>
-          ${dias.map(d=>renderDay(d, user.rut)).join("")}
-        `;
-
-        box.querySelectorAll("details.day").forEach(det=>{
-          det.addEventListener("toggle", ()=>{
-            if(det.open) openOnly(det);
-          });
-        });
-
-        box.querySelectorAll('[data-done]').forEach(chk=>{
-          chk.addEventListener("change", ()=>{
-            const key = chk.getAttribute("data-done");
-            const dayName = chk.getAttribute("data-day");
-            localStorage.setItem(key, chk.checked ? "1" : "0");
-
-            const card = box.querySelector(`[data-excard="${CSS.escape(key)}"]`);
-            if(card){
-              card.classList.toggle("done", chk.checked);
-              const titleRow = card.querySelector(".exTitle");
-              const existing = card.querySelector(".doneBadge");
-              if(chk.checked && !existing){
-                const b = document.createElement("span");
-                b.className = "doneBadge";
-                b.textContent = "✓ Hecho";
-                titleRow.appendChild(b);
-              }
-              if(!chk.checked && existing) existing.remove();
-            }
-
-            const det = box.querySelector(`details.day[data-day="${CSS.escape(dayName)}"]`);
-            if(det){
-              const dayObj = dias.find(x => safe(x.dia) === safe(dayName));
-              if(dayObj){
-                const prog = getDayProgress(user.rut, dayObj);
-                const barI = det.querySelector(".bar > i");
-                if(barI) barI.style.width = prog.pct + "%";
-                const txt = det.querySelector(`[data-prog="${CSS.escape(dayName)}"]`);
-                if(txt) txt.textContent = `${prog.done} de ${prog.total} ✓`;
-
-                const sub = det.querySelector(".dayLeft .sub");
-                if(sub){
-                  const pills = sub.querySelectorAll(".pill");
-                  const last = pills[pills.length - 1];
-                  if(last && last.textContent.includes("%")){
-                    last.textContent = `${prog.pct}%`;
-                  }else if(prog.total){
-                    const pEl = document.createElement("span");
-                    pEl.className = "pill";
-                    pEl.textContent = `${prog.pct}%`;
-                    sub.appendChild(document.createTextNode(" · "));
-                    sub.appendChild(pEl);
-                  }
-                }
-              }
-            }
-          });
-        });
+        return;
       }
 
+      const routine = rv2.routine;
+      const meta = routine.meta || {};
+      document.querySelector("#kNivel").textContent = safe(meta.nivel, "(sin nivel)");
+
+      const dias = Array.isArray(routine.dias) ? routine.dias.slice() : [];
+      dias.sort((a,b)=>{
+        const na = parseInt(String(a.dia||"").replaceAll(/\D/g,"")) || 0;
+        const nb = parseInt(String(b.dia||"").replaceAll(/\D/g,"")) || 0;
+        return na-nb;
+      });
+
+      const nDias = dias.length || 0;
+      document.querySelector("#kDias").textContent = String(nDias);
+
+      // cardio semanal REAL (CARDIO_LOG)
+      const stats = cardioWeeklyStatsReal(user.rut);
+      if(stats.sessions <= 0){
+        document.querySelector("#kCardio").textContent = "-";
+        document.querySelector("#kCardio2").textContent = "—";
+      }else{
+        document.querySelector("#kCardio").textContent = `${stats.sessions} ses · ${stats.minutes} min`;
+        const zonesTxt = ["Z1","Z2","Z3","Z4","Z5"]
+          .map(z => stats.zones[z] ? `${z}:${stats.zones[z]}` : "")
+          .filter(Boolean).join(" · ");
+        const hrTxt = (stats.hrAvg ? `FC prom ${stats.hrAvg}` : `FC prom -`);
+        const kcalTxt = (stats.kcal ? `${stats.kcal} kcal` : `kcal -`);
+        document.querySelector("#kCardio2").textContent = zonesTxt ? `${kcalTxt} · ${hrTxt} · ${zonesTxt}` : `${kcalTxt} · ${hrTxt}`;
+      }
+
+      // card "hoy"
+      const todayCard = document.querySelector("#todayCard");
+      const idxToday = pickTodayIndex(nDias);
+      const dayToday = dias[idxToday] || dias[0];
+
+      if(dayToday){
+        const enfoque = Array.isArray(dayToday.enfoque) ? dayToday.enfoque.join(" + ") : safe(dayToday.enfoque, "Full Body");
+        const ejercicios = Array.isArray(dayToday.ejercicios) ? dayToday.ejercicios : [];
+
+        document.querySelector("#todayMain").textContent = `${safe(dayToday.dia)} · ${enfoque}`;
+        document.querySelector("#todayMuscle").querySelector("span:last-child").textContent = enfoque;
+        document.querySelector("#todayCount").querySelector("span:last-child").textContent = `${ejercicios.length} ejercicio(s)`;
+
+        const todayCardioPill = document.querySelector("#todayCardioPill");
+        if(dayToday.cardio && dayToday.cardio.tipo){
+          const min = safe(dayToday.cardio.min, "-");
+          const tipo = safe(dayToday.cardio.tipo, "Cardio");
+          todayCardioPill.style.display = "inline-flex";
+          todayCardioPill.querySelector("span:last-child").textContent = `${tipo} · ${min} min`;
+        }else{
+          todayCardioPill.style.display = "none";
+        }
+
+        todayCard.style.display = "flex";
+        btnGoToday.style.display = "inline-flex";
+
+        const go = ()=>{
+          const det = document.querySelector(`details.day[data-day="${CSS.escape(safe(dayToday.dia))}"]`);
+          if(det){
+            det.setAttribute("open", "");
+            openOnly(det);
+            scrollToEl(det);
+          }
+        };
+        document.querySelector("#btnOpenToday").addEventListener("click", go);
+        btnGoToday.addEventListener("click", go);
+      }else{
+        todayCard.style.display = "none";
+        btnGoToday.style.display = "none";
+        document.querySelector("#todayCardioPill").style.display = "none";
+      }
+
+      // render rutina
+      box.innerHTML = `
+        <div class="metaLine">
+          <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
+          <span class="pill">Tu objetivo: ${safe(meta.objetivo,"-")}</span>
+          <span class="pill">Actualizado: ${safe(meta.fecha,"-")}</span>
+        </div>
+        ${dias.map(d=>renderDay(d, user.rut)).join("")}
+      `;
+
+      // accordion
+      box.querySelectorAll("details.day").forEach(det=>{
+        det.addEventListener("toggle", ()=>{ if(det.open) openOnly(det); });
+      });
+
+      // check done
+      box.querySelectorAll('[data-done]').forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const key = chk.getAttribute("data-done");
+          const dayName = chk.getAttribute("data-day");
+          localStorage.setItem(key, chk.checked ? "1" : "0");
+
+          const card = box.querySelector(`[data-excard="${CSS.escape(key)}"]`);
+          if(card){
+            card.classList.toggle("done", chk.checked);
+            const titleRow = card.querySelector(".exTitle");
+            const existing = card.querySelector(".doneBadge");
+            if(chk.checked && !existing){
+              const b = document.createElement("span");
+              b.className = "doneBadge";
+              b.textContent = "✓ Hecho";
+              titleRow.appendChild(b);
+            }
+            if(!chk.checked && existing) existing.remove();
+          }
+
+          const det = box.querySelector(`details.day[data-day="${CSS.escape(dayName)}"]`);
+          if(det){
+            const dayObj = dias.find(x => safe(x.dia) === safe(dayName));
+            if(dayObj){
+              const prog = getDayProgress(user.rut, dayObj);
+              const barI = det.querySelector(".bar > i");
+              if(barI) barI.style.width = prog.pct + "%";
+              const txt = det.querySelector(`[data-prog="${CSS.escape(dayName)}"]`);
+              if(txt) txt.textContent = `${prog.done} de ${prog.total} ✓`;
+              const pctPill = det.querySelector(`[data-pctpill="${CSS.escape(dayName)}"]`);
+              if(pctPill) pctPill.textContent = `${prog.pct}%`;
+            }
+          }
+        });
+      });
+
+      // toggle panel fuerza
+      box.addEventListener("click", (ev)=>{
+        const t = ev.target.closest("[data-toggle-wlog]");
+        if(!t) return;
+        const idx = t.getAttribute("data-idx");
+        const wrap = ev.target.closest(".exMain");
+        if(!wrap) return;
+        const panel = wrap.querySelector(`[data-wlog-box="${CSS.escape(idx)}"]`);
+        if(!panel) return;
+        panel.style.display = (panel.style.display === "none" || !panel.style.display) ? "block" : "none";
+      });
+
+      // guardar fuerza
+      box.addEventListener("click", async (ev)=>{
+        const btn = ev.target.closest("[data-save-wlog]");
+        if(!btn) return;
+
+        const wrap = btn.closest(".logBox");
+        const ok = wrap.querySelector("[data-w-ok]");
+        const err = wrap.querySelector("[data-w-err]");
+        ok.style.display = "none";
+        err.style.display = "none";
+
+        const rut = btn.getAttribute("data-rut");
+        const fecha = btn.getAttribute("data-fecha");
+        const dayLabel = btn.getAttribute("data-day");
+        const idx = Number(btn.getAttribute("data-idx") || 0);
+
+        const seriesReal = safe(wrap.querySelector("[data-w-series]").value, "");
+        const repsReal = safe(wrap.querySelector("[data-w-reps]").value, "");
+        const cargaReal = safe(wrap.querySelector("[data-w-carga]").value, "");
+        const rir = safe(wrap.querySelector("[data-w-rir]").value, "");
+        const rpe = safe(wrap.querySelector("[data-w-rpe]").value, "");
+        const notas = safe(wrap.querySelector("[data-w-notas]").value, "");
+
+        // mínimo para guardar
+        if(!seriesReal && !repsReal && !cargaReal && !notas && !rir && !rpe){
+          err.textContent = "❌ Completa al menos 1 dato (series/reps/carga/notas)";
+          err.style.display = "inline";
+          return;
+        }
+
+        const payload = {
+          logId: workoutLogId(rut, fecha, dayLabel, idx),
+          id: workoutLogId(rut, fecha, dayLabel, idx),
+          rutSocio: rut,
+          fecha: fecha,
+          dia: dayLabel,
+          dayLabel: dayLabel,
+          idx: idx,
+          musculo: btn.getAttribute("data-mus") || "",
+          ejercicio: btn.getAttribute("data-ej") || "",
+
+          seriesPlan: btn.getAttribute("data-seriesplan") || "",
+          repsPlan: btn.getAttribute("data-repsplan") || "",
+          cargaPlan: btn.getAttribute("data-cargaplan") || "",
+          descansoPlan: btn.getAttribute("data-descplan") || "",
+
+          seriesReal: seriesReal,
+          repsReal: repsReal,
+          cargaReal: cargaReal,
+          rir: rir,
+          rpe: rpe,
+          notas: notas,
+          nota: notas
+        };
+
+        try{
+          await saveWorkoutLog(payload);
+          ok.style.display = "inline";
+          try{ await syncDown(); }catch(e){}
+        }catch(e){
+          err.textContent = "❌ Error: " + (e?.message || e);
+          err.style.display = "inline";
+        }
+      });
+
+      // guardar cardio
+      box.addEventListener("click", async (ev)=>{
+        const btn = ev.target.closest("[data-save-cardio]");
+        if(!btn) return;
+
+        const wrap = btn.closest(".cardioBox");
+        const ok = wrap.querySelector("[data-c-ok]");
+        const err = wrap.querySelector("[data-c-err]");
+        ok.style.display = "none";
+        err.style.display = "none";
+
+        const rut = btn.getAttribute("data-rut");
+        const fecha = btn.getAttribute("data-fecha");
+        const dayLabel = btn.getAttribute("data-day");
+
+        const tipo = safe(wrap.querySelector("[data-c-tipo]").value, "");
+        const min = safe(wrap.querySelector("[data-c-min]").value, "");
+        const kcal = safe(wrap.querySelector("[data-c-kcal]").value, "");
+        const zona = safe(wrap.querySelector("[data-c-zona]").value, "");
+        const intensidad = safe(wrap.querySelector("[data-c-int]").value, "");
+        const fcavg = safe(wrap.querySelector("[data-c-fcavg]").value, "");
+        const fcmax = safe(wrap.querySelector("[data-c-fcmax]").value, "");
+        const notas = safe(wrap.querySelector("[data-c-notas]").value, "");
+
+        if(!tipo && !min && !kcal && !notas){
+          err.textContent = "❌ Completa al menos Tipo o Minutos";
+          err.style.display = "inline";
+          return;
+        }
+
+        const payload = {
+          cardioId: cardioLogId(rut, fecha, dayLabel),
+          rutSocio: rut,
+          fecha: fecha,
+          dayLabel: dayLabel,
+          tipo: tipo,
+          min: min,
+          kcal: kcal,
+          fcavg: fcavg,
+          fcmax: fcmax,
+          zona: zona,
+          intensidad: intensidad,
+          notas: notas
+        };
+
+        try{
+          await saveCardioLog(payload);
+          ok.style.display = "inline";
+          try{ await syncDown(); }catch(e){}
+          // refresca KPI cardio
+          const stats = cardioWeeklyStatsReal(rut);
+          if(stats.sessions > 0){
+            document.querySelector("#kCardio").textContent = `${stats.sessions} ses · ${stats.minutes} min`;
+            const zonesTxt = ["Z1","Z2","Z3","Z4","Z5"]
+              .map(z => stats.zones[z] ? `${z}:${stats.zones[z]}` : "")
+              .filter(Boolean).join(" · ");
+            const hrTxt = (stats.hrAvg ? `FC prom ${stats.hrAvg}` : `FC prom -`);
+            const kcalTxt = (stats.kcal ? `${stats.kcal} kcal` : `kcal -`);
+            document.querySelector("#kCardio2").textContent = zonesTxt ? `${kcalTxt} · ${hrTxt} · ${zonesTxt}` : `${kcalTxt} · ${hrTxt}`;
+          }
+        }catch(e){
+          err.textContent = "❌ Error: " + (e?.message || e);
+          err.style.display = "inline";
+        }
+      });
+
+      // logout
       document.querySelector("#btnLogout").addEventListener("click", ()=>{
         clearSession();
         window.location.href = "index.html";
