@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAH FIT | Evaluación</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+
+  <style>
+    :root{
+      --bg0:#0a0e14;
+      --bg1:#0f1623;
+      --card:#121b2a;
+      --line:rgba(255,255,255,.10);
+      --txt:rgba(255,255,255,.88);
+      --mut:rgba(255,255,255,.65);
+      --ok:#2bd576;
+      --warn:#ffd36e;
+      --bad:#ff5a67;
+      --pri:#7c5cff;
+      --pri2:#23a6ff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.20), transparent 60%),
+                  radial-gradient(900px 700px at 100% 0%, rgba(35,166,255,.18), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      color: var(--txt);
+      min-height:100vh;
+    }
+
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index: 5;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10,14,20,.75);
+      backdrop-filter: blur(12px);
+    }
+    .brand{ display:flex; gap:8px; align-items:baseline; letter-spacing:.7px; font-weight: 1000; user-select:none; }
+    .brand .mah{ color:#fff; }
+    .brand .fit{ color: var(--pri2); }
+
+    .nav-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color: var(--mut);
+      font-weight: 800;
+      font-size: 13px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.86);
+      font-weight: 900;
+      letter-spacing:.4px;
+    }
+
+    .db-indicator{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+    .db-dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.45);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+    }
+    .db-dot.connected{ background: var(--ok); box-shadow:0 0 0 3px rgba(43,213,118,.12); }
+    .db-dot.error{ background: var(--bad); box-shadow:0 0 0 3px rgba(255,90,103,.12); }
+    .db-dot.connecting{
+      background: rgba(255,255,255,.35);
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+      animation: dbPulse 1.0s ease-in-out infinite;
+    }
+    @keyframes dbPulse{ 0%,100%{ transform:scale(1); opacity:.75; } 50%{ transform:scale(1.25); opacity:1; } }
+    .db-text{ font-size:12px; font-weight:900; color: rgba(255,255,255,.85); letter-spacing:.3px; white-space:nowrap; }
+
+    .wrap{ max-width: 1200px; margin: 18px auto 60px; padding: 0 18px; }
+
+    .card{
+      background: rgba(18,27,42,.75);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHead{
+      padding: 14px 14px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .cardTitle{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 12px;
+      color: rgba(255,255,255,.90);
+    }
+    .muted{ color: var(--mut); font-size: 13px; font-weight:700; }
+    .cardBody{ padding: 14px; }
+
+    input, select, textarea{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.92);
+      outline:none;
+      font-weight:800;
+      box-sizing:border-box;
+    }
+    textarea{ min-height: 110px; resize: vertical; font-weight:800; line-height:1.35; }
+    input::placeholder, textarea::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
+
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.88);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.2px;
+      transition: transform .08s ease, background .12s ease, border .12s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
+    .btn:active{ transform: translateY(0px); }
+    .btn.primary{ border-color: rgba(35,166,255,.35); background: rgba(35,166,255,.14); }
+    .btn.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.12); }
+    .btn.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.12); }
+    .btn.ghost{ background: transparent; }
+    .btn.small{ padding: 8px 10px; border-radius: 10px; font-size: 12px; }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .msg{ margin-top: 10px; font-weight: 900; font-size: 13px; }
+    .msg.ok{ color: rgba(170,255,200,.95); }
+    .msg.bad{ color: rgba(255,180,186,.95); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+
+    .blockGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px){ .blockGrid{ grid-template-columns: 1fr; } }
+
+    .block{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    .blockHead{
+      padding:10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .blockHead .h{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 11px;
+      color: rgba(255,255,255,.78);
+    }
+    .blockBody{ padding: 12px; }
+
+    .two{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .two{ grid-template-columns: 1fr; } }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 140px;
+      gap:10px;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+    @media (max-width:520px){ .kv{ grid-template-columns: 1fr; } }
+
+    .kv label{ font-size:12px; color: rgba(255,255,255,.70); font-weight: 900; }
+    .hint{ font-size:12px; color: rgba(255,255,255,.55); font-weight:800; margin-top:6px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: rgba(255,255,255,.86);
+      font-weight: 900;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
+    .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
+
+    /* input buscador dentro del bloque (más chico) */
+    .miniSearch{
+      padding: 9px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.24);
+      color: rgba(255,255,255,.92);
+      font-weight:900;
+    }
+  </style>
+</head>
+
+<body data-page="evaluacion">
+
+<header class="topbar">
+  <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+
+  <div class="nav-right">
+    <div class="db-indicator">
+      <span id="dbDot" class="db-dot connecting"></span>
+      <span id="dbText" class="db-text">Conectando…</span>
+    </div>
+
+    <span>Hola, <b id="who"></b></span>
+    <span id="roleBadge" class="badge"></span>
+
+    <button id="btnBack" class="btn ghost small">Volver</button>
+    <button id="btnLogout" class="btn ghost small">Salir</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="cardHead">
+      <div>
+        <div class="cardTitle">Evaluación corporal</div>
+        <div class="muted" id="subTitle">Selecciona un socio para comenzar</div>
+      </div>
+
+      <div class="toolbar">
+        <button id="btnLoadLast" class="btn">Cargar última</button>
+        <button id="btnClear" class="btn warn">Limpiar</button>
+        <button id="btnSave" class="btn ok">Guardar evaluación</button>
+      </div>
+    </div>
+
+    <div class="cardBody">
+
+      <div class="grid">
+        <!-- IZQ -->
+        <div>
+          <div class="block">
+            <div class="blockHead">
+              <div class="h">Datos del socio</div>
+              <div class="pill" id="pNow">—</div>
+            </div>
+            <div class="blockBody">
+              <!-- ✅ BUSCADOR + SELECT (mismo estilo) -->
+              <div class="two">
+                <div>
+                  <div class="muted" style="margin-bottom:6px;">Socio</div>
+                  <input id="socioSearch" class="miniSearch" placeholder="Buscar socio por nombre o RUT…" />
+                </div>
+                <div>
+                  <div class="muted" style="margin-bottom:6px;">Selecciona socio</div>
+                  <select id="selSocio">
+                    <option value="">(Selecciona socio)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="two" style="margin-top:10px;">
+                <input id="inpFecha" type="date"/>
+                <input id="inpHora" type="time"/>
+              </div>
+
+              <div class="hint">Tip: puedes abrir esto directo con <b>evaluacion.html?rut=...</b></div>
+            </div>
+          </div>
+
+          <div class="blockGrid">
+
+            <div class="block">
+              <div class="blockHead"><div class="h">Medidas básicas</div></div>
+              <div class="blockBody">
+                <div class="kv"><label>Peso (kg)</label><input id="pesoKg" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Talla (cm)</label><input id="tallaCm" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>IMC</label><input id="imc" type="number" step="0.01" min="0" disabled/></div>
+                <div class="hint">IMC se calcula automático con peso y talla.</div>
+              </div>
+            </div>
+
+            <!-- ✅ BIOIMPEDANCIA: sin %Agua y Masa muscular -> % Masa muscular -->
+            <div class="block">
+              <div class="blockHead"><div class="h">Bioimpedancia</div></div>
+              <div class="blockBody">
+                <div class="kv"><label>% Grasa</label><input id="grasaPct" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>% Masa muscular</label><input id="masaMuscularPct" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Grasa visceral</label><input id="grasaVisceral" type="number" step="1" min="0"/></div>
+              </div>
+            </div>
+
+            <!-- ✅ PERÍMETROS: orden pedido + sin cuello -->
+            <div class="block">
+              <div class="blockHead"><div class="h">Perímetros</div></div>
+              <div class="blockBody">
+                <div class="kv"><label>Brazo (cm)</label><input id="brazoCm" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Cintura (cm)</label><input id="cinturaCm" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Cadera (cm)</label><input id="caderaCm" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Muslo (cm)</label><input id="musloCm" type="number" step="0.1" min="0"/></div>
+                <div class="kv"><label>Pantorrilla (cm)</label><input id="pantorrillaCm" type="number" step="0.1" min="0"/></div>
+              </div>
+            </div>
+
+            <div class="block">
+              <div class="blockHead"><div class="h">Pliegues</div></div>
+              <div class="blockBody">
+                <textarea id="pliegues" placeholder="Ej: Tricipital 12mm · Subescapular 10mm · Suprailiaco 14mm ..."></textarea>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- DER -->
+        <div>
+          <div class="block">
+            <div class="blockHead">
+              <div class="h">Observaciones</div>
+              <div class="pill" id="pImcLabel">IMC: —</div>
+            </div>
+            <div class="blockBody">
+              <textarea id="observaciones" placeholder="Notas, resumen, recomendaciones..."></textarea>
+              <div id="msg" class="msg"></div>
+            </div>
+          </div>
+
+          <div class="block" style="margin-top:12px;">
+            <div class="blockHead"><div class="h">Historial (últimas 6)</div></div>
+            <div class="blockBody" id="histBox">
+              <div class="muted">Selecciona un socio para ver historial.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
+  function normalizeRut(r){ return String(r||"").trim().toUpperCase(); }
+
+  function nowYMD(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+  function nowHM(){
+    const d = new Date();
+    const h = String(d.getHours()).padStart(2,"0");
+    const m = String(d.getMinutes()).padStart(2,"0");
+    return `${h}:${m}`;
+  }
+
+  function parseRutFromUrl(){
+    const sp = new URLSearchParams(location.search);
+    return sp.get("rut") ? normalizeRut(sp.get("rut")) : "";
+  }
+
+  function toNum(v){
+    const n = Number(String(v||"").replace(",","."));
+    return isNaN(n) ? "" : n;
+  }
+
+  function calcIMC(pesoKg, tallaCm){
+    const p = Number(pesoKg||0);
+    const t = Number(tallaCm||0);
+    if(p<=0 || t<=0) return "";
+    const m = t/100;
+    const imc = p/(m*m);
+    return Math.round(imc*100)/100;
+  }
+
+  function imcLabel(imc){
+    if(imc === "" || imc === null || imc === undefined) return {txt:"IMC: —", cls:"pill"};
+    const v = Number(imc);
+    let txt = `IMC: ${v}`;
+    let cls = "pill ok";
+    if(v < 18.5){ txt += " (Bajo)"; cls = "pill warn"; }
+    else if(v < 25){ txt += " (Normal)"; cls = "pill ok"; }
+    else if(v < 30){ txt += " (Sobrepeso)"; cls = "pill warn"; }
+    else { txt += " (Obesidad)"; cls = "pill warn"; }
+    return {txt, cls};
+  }
+
+  function msg(el, text, ok){
+    if(!el) return;
+    el.className = "msg " + (ok ? "ok" : "bad");
+    el.textContent = text;
+  }
+
+  function getEvaluationsCached(){
+    try{ return JSON.parse(localStorage.getItem("mahfit_evaluations")||"[]"); }
+    catch{ return []; }
+  }
+  function setEvaluationsCached(v){
+    localStorage.setItem("mahfit_evaluations", JSON.stringify(v||[]));
+  }
+
+  async function syncEvaluationsDown(){
+    const j = await apiGet("EVALUATIONS");
+    const list = (j.evaluations || []).map(x=>({
+      ...x,
+      rutSocio: normalizeRut(x.rutSocio),
+      evalId: safe(x.evalId,"").trim()
+    })).filter(x=>x.evalId && x.rutSocio);
+    setEvaluationsCached(list);
+    return list;
+  }
+
+  function listForRut(rut){
+    const r = normalizeRut(rut);
+    const all = getEvaluationsCached();
+    return all.filter(x=>normalizeRut(x.rutSocio)===r)
+      .sort((a,b)=> safe(b.fecha,"").localeCompare(safe(a.fecha,"")) || safe(b.hora,"").localeCompare(safe(a.hora,"")));
+  }
+
+  function fillForm(x){
+    document.getElementById("inpFecha").value = safe(x.fecha, nowYMD());
+    document.getElementById("inpHora").value = safe(x.hora, nowHM());
+
+    // básicos
+    document.getElementById("pesoKg").value = safe(x.pesoKg, "");
+    document.getElementById("tallaCm").value = safe(x.tallaCm, "");
+    document.getElementById("imc").value = safe(x.imc, "");
+
+    // bio
+    document.getElementById("grasaPct").value = safe(x.grasaPct, "");
+    // compat: si antes existía masaMuscularKg, la usamos, si no, masaMuscularPct
+    document.getElementById("masaMuscularPct").value = safe(x.masaMuscularPct, safe(x.masaMuscularKg,""));
+    document.getElementById("grasaVisceral").value = safe(x.grasaVisceral, "");
+
+    // perímetros (orden nuevo)
+    document.getElementById("brazoCm").value = safe(x.brazoCm, "");
+    document.getElementById("cinturaCm").value = safe(x.cinturaCm, "");
+    document.getElementById("caderaCm").value = safe(x.caderaCm, "");
+    document.getElementById("musloCm").value = safe(x.musloCm, "");
+    document.getElementById("pantorrillaCm").value = safe(x.pantorrillaCm, "");
+
+    document.getElementById("pliegues").value = safe(x.pliegues, "");
+    document.getElementById("observaciones").value = safe(x.observaciones, "");
+
+    updateIMC();
+    msg(document.getElementById("msg"), "✅ Evaluación cargada", true);
+  }
+
+  function clearForm(){
+    ["pesoKg","tallaCm","imc",
+     "grasaPct","masaMuscularPct","grasaVisceral",
+     "brazoCm","cinturaCm","caderaCm","musloCm","pantorrillaCm",
+     "pliegues","observaciones"
+    ].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.value = "";
+    });
+    updateIMC();
+  }
+
+  function updateIMC(){
+    const p = document.getElementById("pesoKg").value;
+    const t = document.getElementById("tallaCm").value;
+    const imc = calcIMC(p, t);
+    document.getElementById("imc").value = (imc==="" ? "" : imc);
+
+    const lab = imcLabel(imc);
+    const pill = document.getElementById("pImcLabel");
+    pill.textContent = lab.txt;
+    pill.className = lab.cls;
+  }
+
+  // ✅ helper para mostrar mejor en historial
+  function valOrDash(v){
+    const s = String(v ?? "").trim();
+    if(s === "" || s === "0" || s === "0.0" || s === "0.00") return "—";
+    return s;
+  }
+
+  function renderHistory(rut){
+    const box = document.getElementById("histBox");
+    const list = listForRut(rut).slice(0,6);
+
+    if(!rut){
+      box.innerHTML = `<div class="muted">Selecciona un socio para ver historial.</div>`;
+      return;
+    }
+    if(list.length === 0){
+      box.innerHTML = `<div class="muted">Sin evaluaciones registradas.</div>`;
+      return;
+    }
+
+    box.innerHTML = list.map(x=>{
+      const p = valOrDash(x.pesoKg);
+      const g = valOrDash(x.grasaPct);
+
+      // compat: masa muscular puede venir como masaMuscularPct o masaMuscularKg (viejo)
+      const mm = valOrDash(safe(x.masaMuscularPct, safe(x.masaMuscularKg,"")));
+
+      const vis = valOrDash(x.grasaVisceral);
+      const c = valOrDash(x.cinturaCm);
+
+      const f = safe(x.fecha,"—");
+      return `
+        <div style="padding:10px 12px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);border-radius:12px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div style="font-weight:1000;">${f} ${safe(x.hora,"")}</div>
+            <button class="btn small" data-load="${safe(x.evalId)}">Cargar</button>
+          </div>
+          <div class="muted" style="margin-top:6px;">
+            Peso: <b>${p}</b> kg · % Grasa: <b>${g}</b> % · % Masa muscular: <b>${mm}</b> % · % Visceral: <b>${vis}</b> · Cintura: <b>${c}</b> cm
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    box.querySelectorAll("[data-load]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-load");
+        const all = getEvaluationsCached();
+        const row = all.find(x=>safe(x.evalId)===id);
+        if(row) fillForm(row);
+      });
+    });
+  }
+
+  function buildPayload(me){
+    const rutSocio = document.getElementById("selSocio").value;
+    const fecha = document.getElementById("inpFecha").value;
+    const hora = document.getElementById("inpHora").value;
+
+    const masaPct = toNum(document.getElementById("masaMuscularPct").value);
+
+    return {
+      rutSocio,
+      fecha,
+      hora,
+
+      pesoKg: toNum(document.getElementById("pesoKg").value),
+      tallaCm: toNum(document.getElementById("tallaCm").value),
+      imc: toNum(document.getElementById("imc").value),
+
+      grasaPct: toNum(document.getElementById("grasaPct").value),
+      masaMuscularPct: masaPct,
+      // ✅ compat por si tu backend aún guarda "masaMuscularKg"
+      masaMuscularKg: masaPct,
+
+      grasaVisceral: toNum(document.getElementById("grasaVisceral").value),
+
+      // perímetros (orden nuevo)
+      brazoCm: toNum(document.getElementById("brazoCm").value),
+      cinturaCm: toNum(document.getElementById("cinturaCm").value),
+      caderaCm: toNum(document.getElementById("caderaCm").value),
+      musloCm: toNum(document.getElementById("musloCm").value),
+      pantorrillaCm: toNum(document.getElementById("pantorrillaCm").value),
+
+      pliegues: safe(document.getElementById("pliegues").value, "").trim(),
+      observaciones: safe(document.getElementById("observaciones").value, "").trim(),
+
+      evaluadorRut: safe(me?.rut, ""),
+      evaluadorNombre: safe(me?.nombre, "")
+    };
+  }
+
+  async function loadLastForRut(rut){
+    const list = listForRut(rut);
+    if(list.length === 0){
+      msg(document.getElementById("msg"), "No hay evaluaciones previas.", false);
+      return;
+    }
+    fillForm(list[0]);
+  }
+
+  function buildSocioOptions(users, query, keepRut){
+    const q = String(query||"").toLowerCase().trim();
+    let list = (users||[]).slice();
+
+    if(q){
+      list = list.filter(u=>{
+        const hay = `${safe(u.nombre,"")} ${safe(u.rut,"")}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    // Si hay rut seleccionado y no aparece por filtro, lo agregamos arriba
+    if(keepRut){
+      const exists = list.some(u=>normalizeRut(u.rut)===normalizeRut(keepRut));
+      if(!exists){
+        const u = (users||[]).find(x=>normalizeRut(x.rut)===normalizeRut(keepRut));
+        if(u) list.unshift(u);
+      }
+    }
+
+    return `<option value="">(Selecciona socio)</option>` + list
+      .sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")))
+      .map(u=> `<option value="${safe(u.rut)}">${safe(u.nombre)} · ${safe(u.rut)}</option>`)
+      .join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    const me = requireAuth(["FUNCIONARIO"]);
+    if(!me) return;
+
+    document.getElementById("who").textContent = me.nombre || "Funcionario";
+    document.getElementById("roleBadge").textContent = "FUNCIONARIO";
+
+    document.getElementById("inpFecha").value = nowYMD();
+    document.getElementById("inpHora").value = nowHM();
+    document.getElementById("pNow").textContent = `${nowYMD()} ${nowHM()}`;
+
+    document.getElementById("btnBack").addEventListener("click", ()=> location.href = "funcionario.html");
+    document.getElementById("btnLogout").addEventListener("click", ()=>{
+      clearSession();
+      location.href = "index.html";
+    });
+
+    // socios
+    const sel = document.getElementById("selSocio");
+    const search = document.getElementById("socioSearch");
+
+    const socios = (getUsers()||[])
+      .filter(u => String(u.rol||"").toUpperCase() === "SOCIO");
+
+    // Rut desde URL
+    const rutUrl = parseRutFromUrl();
+
+    sel.innerHTML = buildSocioOptions(socios, "", rutUrl);
+    if(rutUrl) sel.value = rutUrl;
+
+    function updateSubtitle(){
+      const rut = sel.value;
+      const u = (getUsers()||[]).find(x=>normalizeRut(x.rut)===normalizeRut(rut));
+      document.getElementById("subTitle").textContent = rut ? `${safe(u?.nombre,"Socio")} · ${rut}` : "Selecciona un socio para comenzar";
+      renderHistory(rut);
+    }
+
+    search.addEventListener("input", ()=>{
+      const keep = sel.value || rutUrl || "";
+      sel.innerHTML = buildSocioOptions(socios, search.value, keep);
+      if(keep) sel.value = keep;
+    });
+
+    sel.addEventListener("change", updateSubtitle);
+
+    // IMC auto
+    document.getElementById("pesoKg").addEventListener("input", updateIMC);
+    document.getElementById("tallaCm").addEventListener("input", updateIMC);
+
+    // Toolbar
+    document.getElementById("btnClear").addEventListener("click", ()=>{
+      clearForm();
+      msg(document.getElementById("msg"), "Formulario limpio.", true);
+    });
+
+    document.getElementById("btnLoadLast").addEventListener("click", async ()=>{
+      const rut = sel.value;
+      if(!rut){
+        msg(document.getElementById("msg"), "Selecciona un socio.", false);
+        return;
+      }
+      try{
+        msg(document.getElementById("msg"), "Cargando…", true);
+        await syncEvaluationsDown();
+        await loadLastForRut(rut);
+        renderHistory(rut);
+      }catch(e){
+        msg(document.getElementById("msg"), "❌ No se pudo cargar: " + (e.message||e), false);
+      }
+    });
+
+    document.getElementById("btnSave").addEventListener("click", async ()=>{
+      const rut = sel.value;
+      if(!rut){
+        msg(document.getElementById("msg"), "Selecciona un socio.", false);
+        return;
+      }
+
+      const payload = buildPayload(me);
+      if(!payload.fecha){
+        msg(document.getElementById("msg"), "Falta fecha.", false);
+        return;
+      }
+
+      try{
+        msg(document.getElementById("msg"), "Guardando…", true);
+        await apiPost("EVALUATIONS", payload);
+
+        await syncEvaluationsDown();
+        renderHistory(rut);
+
+        msg(document.getElementById("msg"), "✅ Evaluación guardada", true);
+      }catch(e){
+        msg(document.getElementById("msg"), "❌ No se pudo guardar: " + (e.message||e), false);
+      }
+    });
+
+    // Carga inicial evaluaciones (no bloqueante)
+    try{ await syncEvaluationsDown(); }catch(e){}
+
+    updateSubtitle();
+    updateIMC();
+  });
+</script>
+</body>
+</html>
