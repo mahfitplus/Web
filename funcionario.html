@@ -412,6 +412,10 @@
     <span id="roleBadge" class="badge"></span>
 
     <button id="btnRutinas" class="btn ghost small">Rutinas</button>
+
+    <!-- ✅ NUEVO BOTÓN -->
+    <button id="btnEvaluaciones" class="btn ghost small">Evaluaciones</button>
+
     <button id="btnPlanes" class="btn ghost small">Planes</button>
     <button id="btnLogout" class="btn ghost small">Salir</button>
   </div>
@@ -1076,7 +1080,6 @@
         prSumVence.innerHTML = `<span class="pill ${cls}">${label}</span>`;
       }
 
-      // ✅ correo registrado
       const em = String(u.email || "").trim();
       prSumEmail.innerHTML = em ? `<span class="pill ok">${em}</span>` : `<span class="pill warn">Sin correo</span>`;
     }
@@ -1157,7 +1160,6 @@
       const u = users.find(x=>x.rut===currentProfileRut);
       if(!u) return;
 
-      // ✅ email + perfil
       u.email = String(prEmail.value||"").trim();
       u.telefono = String(prTelefono.value||"").trim();
       u.fechaNacimiento = String(prNacimiento.value||"").trim();
@@ -1501,6 +1503,11 @@
     });
     document.getElementById("btnRutinas").addEventListener("click", ()=>{
       location.href = "rutinas.html";
+    });
+
+    // ✅ NUEVO: Evaluaciones -> evaluacion.html
+    document.getElementById("btnEvaluaciones").addEventListener("click", ()=>{
+      location.href = "evaluacion.html";
     });
 
     // Planes modal
