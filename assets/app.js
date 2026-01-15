@@ -2,11 +2,10 @@
    MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
    - Backend Google Sheets Apps Script (resource-based)
    - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
-   - ✅ FIX: rutinaV2DeSocio() + helpers de plantillas
-   - ✅ DB badge estable (🟢🔴⚪)
+   - ✅ Perfil: telefono, direccion, etc. (syncDown completo)
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbw8te03WeMuCXDbC6I4IxAZXks-BWaJE-IO7tivf2mY_tKl8EaKQm5NFDKQqMzhDRDH4g/exec"; // <-- pega tu /exec
+const API_URL = "https://script.google.com/macros/s/AKfycbzhSrozYsFaGhAcXj8v6v17EgS5bA3fF5hy6R9cvUMjP0Tr0uBhboNKJUSppUCHV4g03Q/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -138,6 +137,7 @@ function clearSession(){ LS.del("mahfit_session"); }
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
 async function syncDown(){
   const u = await apiGet("USERS");
+
   const users = (u.users || []).map(x => ({
     rut: normalizeRut(x.rut),
     nombre: x.nombre ?? "",
@@ -156,8 +156,24 @@ async function syncDown(){
     planPrecioFinal: Number(x.planPrecioFinal ?? 0),
     planPagado: Number(x.planPagado ?? 0),
 
+    // ✅ PERFIL
+    telefono: x.telefono ?? "",
+    fechaNacimiento: x.fechaNacimiento ?? "",
+    sexo: (x.sexo ?? "").toString().trim().toUpperCase(),
+    direccion: x.direccion ?? "",
+    emergenciaNom: x.emergenciaNom ?? "",
+    emergenciaTelef: x.emergenciaTelef ?? "",
+    objetivo: x.objetivo ?? "",
+    nivel: (x.nivel ?? "").toString().trim().toUpperCase(),
+    lesiones: x.lesiones ?? "",
+    patologias: x.patologias ?? "",
+    medicamentos: x.medicamentos ?? "",
+    alergias: x.alergias ?? "",
+    notas: x.notas ?? "",
+
     creadoEn: x.creadoEn ?? ""
   }));
+
   setUsers(users);
 
   const p = await apiGet("PLANES");
@@ -190,7 +206,6 @@ async function syncDown(){
     return {
       rutSocio: normalizeRut(x.rutSocio),
       routine,
-      // por compatibilidad: conserva también routine_json crudo si viene
       routine_json: x.routine_json ?? null,
       creadoPorRut: x.creadoPorRut ?? "",
       actualizadoEn: x.actualizadoEn ?? ""
@@ -268,13 +283,27 @@ function registerUser({rut, nombre, email, pass, rol}){
     planPrecioFinal: 0,
     planPagado: 0,
 
+    // ✅ PERFIL
+    telefono: "",
+    fechaNacimiento: "",
+    sexo: "",
+    direccion: "",
+    emergenciaNom: "",
+    emergenciaTelef: "",
+    objetivo: "",
+    nivel: "",
+    lesiones: "",
+    patologias: "",
+    medicamentos: "",
+    alergias: "",
+    notas: "",
+
     creadoEn: nowISO()
   };
 
   users.push(user);
   setUsers(users);
 
-  // No bloquea UI, pero si falla lo verás en consola
   apiPost("USERS", user).catch(console.error);
   return user;
 }
@@ -329,8 +358,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 /* =========================================================
    ✅ FIX GLOBAL: rutinaV2DeSocio()
-   - Evita: "rutinaV2DeSocio is not defined"
-   - Devuelve {rutSocio, routine, actualizadoEn...} o null
    ========================================================= */
 function rutinaV2DeSocio(rutSocio){
   const rut = normalizeRut(rutSocio);
@@ -338,7 +365,6 @@ function rutinaV2DeSocio(rutSocio){
   const row = list.find(x => normalizeRut(x.rutSocio) === rut) || null;
   if(!row) return null;
 
-  // Si no viene objeto routine, intenta parsear routine_json
   let routine = row.routine || null;
   if(!routine && row.routine_json){
     try{ routine = JSON.parse(row.routine_json); }catch(e){ routine = null; }
@@ -346,10 +372,6 @@ function rutinaV2DeSocio(rutSocio){
   return { ...row, routine };
 }
 
-/* =========================================================
-   ✅ Helpers Plantillas (compat)
-   - plantillasVisiblesPara(rut)
-   ========================================================= */
 function plantillasVisiblesPara(rut){
   const meRut = normalizeRut(rut);
   return (getPlantillasV2() || []).filter(p=>{
@@ -401,6 +423,5 @@ window.login = login;
 window.registerUser = registerUser;
 window.setDbStatus = setDbStatus;
 
-// ✅ exporta los nuevos helpers
 window.rutinaV2DeSocio = rutinaV2DeSocio;
 window.plantillasVisiblesPara = plantillasVisiblesPara;
