@@ -212,8 +212,146 @@
       line-height:1.45;
     }
 
+    /* ✅ NUEVO: mini chart dentro de Progreso */
+    .miniChartCard{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .miniChartCard::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(650px 220px at 15% 0%, rgba(0,200,255,.12), transparent 60%),
+        radial-gradient(650px 220px at 85% 100%, rgba(120,0,255,.09), transparent 60%);
+      opacity:.85;
+      pointer-events:none;
+    }
+    .miniChartCard > *{ position:relative; }
+    .miniChartHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .miniChartHead strong{ font-weight:1000; }
+    .miniChartCanvasWrap{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:10px;
+    }
+    canvas.miniChart{
+      width:100%;
+      height:220px;
+      display:block;
+    }
+    .miniChartHint{
+      margin-top:10px;
+      color: rgba(255,255,255,.72);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    /* ✅ NUEVO: GRAFICOS (recuadros aparte) */
+    .chartsGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+    .chartCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.26);
+      border-radius:18px;
+      padding:14px 16px;
+      overflow:hidden;
+      position:relative;
+    }
+    .chartCard::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(700px 240px at 15% 0%, rgba(0,200,255,.14), transparent 60%),
+        radial-gradient(700px 240px at 85% 100%, rgba(120,0,255,.10), transparent 60%);
+      opacity:.85;
+      pointer-events:none;
+    }
+    .chartCard > *{ position:relative; }
+    .chartHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .chartHead strong{font-weight:1000;}
+    .chartControls{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .chartSelect{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color: rgba(255,255,255,.92);
+      border-radius:12px;
+      padding:9px 10px;
+      font-weight:1000;
+      outline:none;
+      cursor:pointer;
+    }
+    .chartCanvasWrap{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.24);
+      border-radius:16px;
+      padding:10px;
+    }
+    canvas.chart{
+      width:100%;
+      height:240px;
+      display:block;
+    }
+    .chartHint{
+      margin-top:10px;
+      color: rgba(255,255,255,.72);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .evalMini{
+      margin-top:10px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:10px;
+      color: rgba(255,255,255,.78);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .evalRow{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      margin-top:8px;
+    }
+    .miniChip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.30);
+      color: rgba(255,255,255,.90);
+      font-weight:1000;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .miniChip .ic{
+      width:20px; height:20px; border-radius:999px;
+      display:grid; place-items:center;
+      background: rgba(0,200,255,.10);
+      border:1px solid rgba(0,200,255,.18);
+      color:#baf2ff;
+      font-weight:1000;
+      font-size:12px;
+    }
+
     @media (max-width: 900px){
       .logGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .chartsGrid{ grid-template-columns: 1fr; }
     }
     @media (max-width: 700px){
       .planCTA{min-width:0;justify-content:flex-start;}
@@ -275,9 +413,102 @@
         </div>
 
         <div class="history" id="bwHistory">—</div>
+
+        <!-- ✅ NUEVO: gráfico progreso peso + cintura (últimos 12) -->
+        <div class="miniChartCard" id="bodyChartCard" style="display:none;">
+          <div class="miniChartHead">
+            <strong>Gráfico progreso</strong>
+            <div class="chartControls">
+              <select id="bodyMetric" class="chartSelect" title="Selecciona vista">
+                <option value="both">Peso + Cintura</option>
+                <option value="pesoKg">Solo peso</option>
+                <option value="cinturaCm">Solo cintura</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="miniChartCanvasWrap">
+            <canvas id="bodyChart" class="miniChart"></canvas>
+          </div>
+
+          <div class="miniChartHint">
+            Muestra tus <b>últimos 12 registros</b> de progreso. Abajo de cada C# aparece la <b>fecha</b>.
+          </div>
+        </div>
       </div>
 
       <div class="sp16"></div>
+
+      <!-- ✅ NUEVO: Gráficos de Evaluaciones -->
+      <div id="chartsWrap" style="display:none;">
+        <div class="chartsGrid">
+
+          <!-- Bioimpedancia -->
+          <div class="chartCard">
+            <div class="chartHead">
+              <strong>Bioimpedancia</strong>
+              <div class="chartControls">
+                <select id="bioMetric" class="chartSelect" title="Selecciona métrica">
+                  <option value="all">Todas</option>
+                  <option value="grasaPct">% Grasa</option>
+                  <option value="masaMuscularPct">% Masa muscular</option>
+                  <option value="grasaVisceral">% Visceral</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="chartCanvasWrap">
+              <canvas id="bioChart" class="chart"></canvas>
+            </div>
+
+            <div class="chartHint">
+              Muestra las <b>últimas 12 evaluaciones</b>. 
+            </div>
+
+            <details class="evalMini" id="evalMiniDetails">
+              <summary style="
+                cursor:pointer; user-select:none;
+                display:flex; align-items:center; justify-content:space-between; gap:10px;
+                font-weight:1000;
+              ">
+                <span>Historial últimas 6</span>
+                <span class="pill">Ver</span>
+              </summary>
+
+              <div style="margin-top:10px;">
+                <div id="evalMiniList" class="evalRow"></div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Medidas / Peso -->
+          <div class="chartCard">
+            <div class="chartHead">
+              <strong>Medidas y peso</strong>
+              <div class="chartControls">
+                <select id="measMetric" class="chartSelect" title="Selecciona métrica">
+                  <option value="pesoKg">Peso (kg)</option>
+                  <option value="cinturaCm">Cintura (cm)</option>
+                  <option value="caderaCm">Cadera (cm)</option>
+                  <option value="brazoCm">Brazo (cm)</option>
+                  <option value="pantorrillaCm">Pantorrilla (cm)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="chartCanvasWrap">
+              <canvas id="measChart" class="chart"></canvas>
+            </div>
+
+            <div class="chartHint">
+              Puedes cambiar la métrica desde el selector para ver tu progreso por parámetro.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="sp16"></div>
+      </div>
 
       <!-- ✅ Banner Plan -->
       <div id="planBanner" class="planBanner" style="display:none;">
@@ -290,7 +521,7 @@
           <div id="planSmall" class="planSmall">-</div>
         </div>
         <div class="planCTA">
-          <a id="btnWhats" class="ctaBtn" href="#" target="_blank" rel="noopener">
+          <a id="btnWhats" class="ctaBtn" href="https://wa.me/56955245399?text=Hola profesor, le quiero hacer una consulta sobre..." target="_blank" rel="noopener">
             <span>💬</span><span>Hablar por WhatsApp</span>
           </a>
           <button id="btnGoToday" class="ctaBtn" type="button" style="display:none;">
@@ -372,6 +603,54 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : null;
     }
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+
+    function extractTimeHM(anyTime){
+      const s = safe(anyTime,"").trim();
+      if(!s) return "";
+      const m1 = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if(m1) return `${pad2(m1[1])}:${pad2(m1[2])}`;
+
+      if(s.includes("T")){
+        const d = new Date(s);
+        if(!isNaN(d.getTime())) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        const m2 = s.match(/T(\d{2}):(\d{2})/);
+        if(m2) return `${m2[1]}:${m2[2]}`;
+      }
+      return "";
+    }
+
+    function extractDateYMD(anyDate){
+      const s = safe(anyDate,"").trim();
+      if(!s) return "";
+      const m1 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(m1) return s;
+
+      if(s.includes("T")){
+        const d = new Date(s);
+        if(!isNaN(d.getTime())){
+          return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+        }
+        const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+        if(m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
+      }
+      return "";
+    }
+
+    function prettyDT(fecha, hora){
+      const ymd = extractDateYMD(fecha) || "";
+      const hm = extractTimeHM(hora) || "";
+
+      if(!ymd && !hm) return "—";
+      if(ymd){
+        const [Y,M,D] = ymd.split("-");
+        const dmy = `${D}-${M}-${Y}`;
+        return hm ? `${dmy} ${hm}` : dmy;
+      }
+      return hm;
+    }
+
     function isoLocalDate(){
       const d = new Date();
       const yyyy = d.getFullYear();
@@ -498,6 +777,273 @@
     function findBodySaved(rutSocio, fecha){
       const id = bodyLogId(rutSocio, fecha);
       return (getBodyLogForRut(rutSocio)||[]).find(x => String(x.entryId) === id) || null;
+    }
+
+    // =========================
+    // ✅ CHART ENGINE (vanilla canvas) + sublabels (fecha)
+    // =========================
+    function setupCanvas(canvas){
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width));
+      const h = Math.max(200, Math.floor(rect.height || 240));
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      return { ctx, w, h };
+    }
+
+    // compat wrapper: drawLineChart(canvas, labels, values, opts)
+    // nuevo:         drawLineChart(canvas, labels, subLabels, values, opts)
+    function drawLineChart(canvas, labels, a3, a4, a5){
+      let subLabels = null;
+      let values = null;
+      let opts = {};
+
+      if(Array.isArray(a3) && Array.isArray(a4)){
+        subLabels = a3;
+        values = a4;
+        opts = a5 || {};
+      }else{
+        values = a3;
+        optsTHEN_OPTS = a4;
+        opts = (typeof a4 === "object" && !Array.isArray(a4)) ? a4 : (a5 || {});
+      }
+
+      const { ctx, w, h } = setupCanvas(canvas);
+
+      const padL = 46, padR = 14, padT = 14, padB = subLabels ? 44 : 30;
+      const iw = w - padL - padR;
+      const ih = h - padT - padB;
+
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = "rgba(0,0,0,.00)";
+      ctx.fillRect(0,0,w,h);
+
+      const nums = (values||[]).filter(v => typeof v === "number" && isFinite(v));
+      if(nums.length < 2){
+        ctx.fillStyle = "rgba(255,255,255,.78)";
+        ctx.font = "900 13px system-ui, -apple-system, Segoe UI, Roboto";
+        ctx.fillText("No hay suficientes datos para graficar", padL, padT + 18);
+        ctx.fillStyle = "rgba(255,255,255,.60)";
+        ctx.font = "800 12px system-ui, -apple-system, Segoe UI, Roboto";
+        ctx.fillText("Agrega más registros para ver la curva.", padL, padT + 38);
+        return;
+      }
+
+      let min = Math.min(...nums);
+      let max = Math.max(...nums);
+      if(min === max){ min -= 1; max += 1; }
+      const margin = (max - min) * 0.10;
+      min = min - margin;
+      max = max + margin;
+
+      // grid
+      ctx.strokeStyle = "rgba(255,255,255,.08)";
+      ctx.lineWidth = 1;
+      const gridN = 4;
+      for(let i=0;i<=gridN;i++){
+        const y = padT + (ih/gridN)*i;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL+iw, y);
+        ctx.stroke();
+      }
+
+      // y labels
+      ctx.fillStyle = "rgba(255,255,255,.65)";
+      ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+      for(let i=0;i<=gridN;i++){
+        const v = max - ( (max-min)/gridN )*i;
+        const y = padT + (ih/gridN)*i;
+        ctx.fillText(String(Math.round(v*10)/10), 8, y+4);
+      }
+
+      // x labels + sublabels
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+      const step = Math.max(1, Math.floor(labels.length / 6));
+      for(let i=0;i<labels.length;i+=step){
+        const x = padL + (iw/(labels.length-1))*i;
+        ctx.fillText(labels[i], x-10, padT+ih+22);
+
+        if(subLabels && subLabels[i]){
+          ctx.fillStyle = "rgba(255,255,255,.52)";
+          ctx.font = "900 9px system-ui, -apple-system, Segoe UI, Roboto";
+          ctx.fillText(String(subLabels[i]).slice(0,16), x-18, padT+ih+36);
+          ctx.fillStyle = "rgba(255,255,255,.70)";
+          ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+        }
+      }
+
+      // line
+      ctx.strokeStyle = opts.stroke || "rgba(0,200,255,.85)";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+
+      let started = false;
+      ctx.beginPath();
+      (values||[]).forEach((v,i)=>{
+        const isNum = (typeof v === "number" && isFinite(v));
+        const x = padL + (iw/(labels.length-1))*i;
+        if(!isNum){
+          started = false;
+          return;
+        }
+        const t = (v - min) / (max - min);
+        const y = padT + ih - (t*ih);
+
+        if(!started){
+          ctx.moveTo(x,y);
+          started = true;
+        }else{
+          ctx.lineTo(x,y);
+        }
+      });
+      ctx.stroke();
+
+      // points
+      ctx.fillStyle = opts.point || "rgba(0,200,255,.95)";
+      (values||[]).forEach((v,i)=>{
+        if(!(typeof v === "number" && isFinite(v))) return;
+        const x = padL + (iw/(labels.length-1))*i;
+        const t = (v - min) / (max - min);
+        const y = padT + ih - (t*ih);
+        ctx.beginPath();
+        ctx.arc(x,y,3.2,0,Math.PI*2);
+        ctx.fill();
+      });
+    }
+
+    function drawMultiLineChart(canvas, labels, subLabelsOrLines, linesOrSeriesMap, seriesMapMaybe){
+      // compat:
+      // (canvas, labels, lines, seriesMap)
+      // (canvas, labels, subLabels, lines, seriesMap)
+      let subLabels = null;
+      let lines = null;
+      let seriesMap = null;
+
+      if(Array.isArray(subLabelsOrLines) && subLabelsOrLines.length && typeof subLabelsOrLines[0] === "string"){
+        subLabels = subLabelsOrLines;
+        lines = linesOrSeriesMap;
+        seriesMap = seriesMapMaybe || {};
+      }else{
+        lines = subLabelsOrLines;
+        seriesMap = linesOrSeriesMap || {};
+      }
+
+      const { ctx, w, h } = setupCanvas(canvas);
+
+      const padL = 46, padR = 14, padT = 14, padB = subLabels ? 44 : 30;
+      const iw = w - padL - padR;
+      const ih = h - padT - padB;
+
+      ctx.clearRect(0,0,w,h);
+
+      const allNums = [];
+      (lines||[]).forEach(L=>{
+        const arr = seriesMap[L.key] || [];
+        arr.forEach(v=>{
+          if(typeof v === "number" && isFinite(v)) allNums.push(v);
+        });
+      });
+
+      if(allNums.length < 2){
+        ctx.fillStyle = "rgba(255,255,255,.78)";
+        ctx.font = "900 13px system-ui, -apple-system, Segoe UI, Roboto";
+        ctx.fillText("No hay suficientes datos para graficar", padL, padT + 18);
+        ctx.fillStyle = "rgba(255,255,255,.60)";
+        ctx.font = "800 12px system-ui, -apple-system, Segoe UI, Roboto";
+        ctx.fillText("Agrega más registros para ver el progreso.", padL, padT + 38);
+        return;
+      }
+
+      let min = Math.min(...allNums);
+      let max = Math.max(...allNums);
+      if(min === max){ min -= 1; max += 1; }
+      const margin = (max - min) * 0.10;
+      min -= margin; max += margin;
+
+      // grid
+      ctx.strokeStyle = "rgba(255,255,255,.08)";
+      ctx.lineWidth = 1;
+      const gridN = 4;
+      for(let i=0;i<=gridN;i++){
+        const y = padT + (ih/gridN)*i;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+iw, y); ctx.stroke();
+      }
+
+      // y labels
+      ctx.fillStyle = "rgba(255,255,255,.65)";
+      ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+      for(let i=0;i<=gridN;i++){
+        const v = max - ( (max-min)/gridN )*i;
+        const y = padT + (ih/gridN)*i;
+        ctx.fillText(String(Math.round(v*10)/10), 8, y+4);
+      }
+
+      // x labels + sublabels
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+      const step = Math.max(1, Math.floor(labels.length / 6));
+      for(let i=0;i<labels.length;i+=step){
+        const x = padL + (iw/(labels.length-1))*i;
+        ctx.fillText(labels[i], x-10, padT+ih+22);
+
+        if(subLabels && subLabels[i]){
+          ctx.fillStyle = "rgba(255,255,255,.52)";
+          ctx.font = "900 9px system-ui, -apple-system, Segoe UI, Roboto";
+          ctx.fillText(String(subLabels[i]).slice(0,16), x-18, padT+ih+36);
+          ctx.fillStyle = "rgba(255,255,255,.70)";
+          ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+        }
+      }
+
+      // líneas
+      (lines||[]).forEach(L=>{
+        const values = seriesMap[L.key] || [];
+        ctx.strokeStyle = L.stroke || "rgba(0,200,255,.85)";
+        ctx.lineWidth = 2.4;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+
+        let started = false;
+        ctx.beginPath();
+        values.forEach((v,i)=>{
+          const isNum = (typeof v === "number" && isFinite(v));
+          const x = padL + (iw/(labels.length-1))*i;
+          if(!isNum){ started = false; return; }
+          const t = (v - min) / (max - min);
+          const y = padT + ih - (t*ih);
+          if(!started){ ctx.moveTo(x,y); started = true; }
+          else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+
+        // puntos
+        ctx.fillStyle = L.stroke || "rgba(0,200,255,.95)";
+        values.forEach((v,i)=>{
+          if(!(typeof v === "number" && isFinite(v))) return;
+          const x = padL + (iw/(labels.length-1))*i;
+          const t = (v - min) / (max - min);
+          const y = padT + ih - (t*ih);
+          ctx.beginPath();
+          ctx.arc(x,y,3.1,0,Math.PI*2);
+          ctx.fill();
+        });
+      });
+
+      // leyenda simple arriba
+      ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
+      let lx = padL, ly = padT + 12;
+      (lines||[]).forEach(L=>{
+        ctx.fillStyle = L.stroke || "rgba(255,255,255,.90)";
+        ctx.fillText(L.label, lx, ly);
+        lx += (ctx.measureText(L.label).width + 14);
+        if(lx > w - 120){ lx = padL; ly += 14; }
+      });
     }
 
     // ====== Render cardio box (plan + real) ======
@@ -774,6 +1320,207 @@
       `;
     }
 
+    // ✅ Render mini historial (últimas 6 evaluaciones)
+    function renderEvalMini(rut){
+      const box = document.getElementById("evalMiniList");
+      if(!box) return;
+
+      const list = (window.evaluationsLastN ? window.evaluationsLastN(rut, 6) : [])
+        .slice()
+        .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")) || String(b.hora||"").localeCompare(String(a.hora||"")));
+
+      if(!list.length){
+        box.innerHTML = `<span class="miniChip"><span class="ic">ℹ</span>Sin evaluaciones aún</span>`;
+        return;
+      }
+
+      box.innerHTML = list.map(x=>{
+        const f = prettyDT(x.fecha, x.hora);
+        const peso = safe(x.pesoKg,"-");
+        const grasa = safe(x.grasaPct,"-");
+        const mus = safe((x.masaMuscularPct ?? x.masaMuscularKg), "-");
+        const vis = safe(x.grasaVisceral,"-");
+        const cin = safe(x.cinturaCm,"-");
+        return `
+          <span class="miniChip" title="${f}">
+            <span class="ic">📌</span>
+            ${f}: <b>${peso}</b>kg · <b>${grasa}</b>%G · <b>${mus}</b>%M · <b>${vis}</b>%V · <b>${cin}</b>cm
+          </span>
+        `;
+      }).join("");
+    }
+
+    // ✅ Construye data de evaluaciones (labels C#, subLabels fecha/hora) SIN depender de app.js
+    function buildEvalChartDataSmart(rut, n=12){
+      // prefer: evaluationsLastN (si existe)
+      if(window.evaluationsLastN){
+        const raw = (window.evaluationsLastN(rut, n) || []).slice();
+
+        // ordenar por fecha/hora asc (antiguo->nuevo) robusto
+        raw.sort((a,b)=>{
+          const fa = String(a.fecha||"");
+          const fb = String(b.fecha||"");
+          if(fa !== fb) return fa.localeCompare(fb);
+          return String(a.hora||"").localeCompare(String(b.hora||""));
+        });
+
+        const labels = raw.map((_,i)=>`C${i+1}`);
+        const subLabels = raw.map(x => prettyDT(x.fecha, x.hora));
+
+        const getN = (v)=>{ const n = toNum(v); return (typeof n === "number" ? n : null); };
+
+        const series = {
+          grasaPct: raw.map(x=>getN(x.grasaPct)),
+          masaMuscularPct: raw.map(x=>getN(x.masaMuscularPct ?? x.masaMuscularKg)),
+          grasaVisceral: raw.map(x=>getN(x.grasaVisceral)),
+
+          pesoKg: raw.map(x=>getN(x.pesoKg)),
+          cinturaCm: raw.map(x=>getN(x.cinturaCm)),
+          caderaCm: raw.map(x=>getN(x.caderaCm)),
+          brazoCm: raw.map(x=>getN(x.brazoCm)),
+          pantorrillaCm: raw.map(x=>getN(x.pantorrillaCm)),
+        };
+
+        return { labels, subLabels, series, raw };
+      }
+
+      // fallback: evaluationsToChartData (si existe)
+      if(window.evaluationsToChartData){
+        const d = window.evaluationsToChartData(rut, n) || {};
+        return {
+          labels: d.labels || [],
+          subLabels: d.subLabels || [],
+          series: d.series || {},
+          raw: d.raw || []
+        };
+      }
+
+      return { labels: [], subLabels: [], series: {}, raw: [] };
+    }
+
+    // ✅ Data de BodyLog (peso/cintura)
+    function buildBodyChartData(rut, n=12){
+      const list = (getBodyLogForRut(rut) || []).slice()
+        .sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||""))); // asc
+
+      const last = list.slice(Math.max(0, list.length - n));
+      const labels = last.map((_,i)=>`C${i+1}`);
+      const subLabels = last.map(x => {
+        const ymd = extractDateYMD(x.fecha) || safe(x.fecha,"—");
+        if(ymd && ymd.includes("-")){
+          const [Y,M,D] = ymd.split("-");
+          return `${D}-${M}`;
+        }
+        return String(ymd).slice(0,10);
+      });
+
+      const getN = (v)=>{ const n = toNum(v); return (typeof n === "number" ? n : null); };
+
+      const series = {
+        pesoKg: last.map(x=>getN(x.pesoKg)),
+        cinturaCm: last.map(x=>getN(x.cinturaCm)),
+      };
+      return { labels, subLabels, series, raw:last };
+    }
+
+    // ✅ Render charts (evaluaciones)
+    function renderCharts(rut){
+      const chartsWrap = document.getElementById("chartsWrap");
+      if(!chartsWrap) return;
+
+      const data = buildEvalChartDataSmart(rut, 12);
+      chartsWrap.style.display = "block";
+
+      const bioSel = document.getElementById("bioMetric");
+      const measSel = document.getElementById("measMetric");
+      const bioCanvas = document.getElementById("bioChart");
+      const measCanvas = document.getElementById("measChart");
+
+      function plotBio(){
+        const key = bioSel.value;
+        const labels = (data.labels||[]);
+        const subLabels = (data.subLabels||[]);
+
+        if(key === "all"){
+          drawMultiLineChart(bioCanvas, labels, subLabels, [
+            { key:"grasaPct", label:"% Grasa", stroke:"rgba(0,200,255,.90)" },
+            { key:"masaMuscularPct", label:"% Masa muscular", stroke:"rgba(255,211,110,.95)" },
+            { key:"grasaVisceral", label:"Visceral", stroke:"rgba(43,213,118,.95)" }
+          ], data.series || {});
+          return;
+        }
+
+        const vals = (data.series && data.series[key]) ? data.series[key] : [];
+        drawLineChart(bioCanvas, labels, subLabels, vals, { stroke:"rgba(0,200,255,.85)", point:"rgba(0,200,255,.95)" });
+      }
+
+      function plotMeas(){
+        const key = measSel.value;
+        const labels = (data.labels||[]);
+        const subLabels = (data.subLabels||[]);
+        const vals = (data.series && data.series[key]) ? data.series[key] : [];
+        drawLineChart(measCanvas, labels, subLabels, vals, { stroke:"rgba(255,211,110,.90)", point:"rgba(255,211,110,.95)" });
+      }
+
+      plotBio();
+      plotMeas();
+
+      // evita duplicar listeners si vuelves a llamar renderCharts
+      if(!window.__mahfitSocioChartListeners){
+        bioSel.addEventListener("change", plotBio);
+        measSel.addEventListener("change", plotMeas);
+
+        let t = null;
+        window.addEventListener("resize", ()=>{
+          clearTimeout(t);
+          t = setTimeout(()=>{
+            plotBio();
+            plotMeas();
+            if(window.__mahfitBodyPlot) window.__mahfitBodyPlot();
+          }, 120);
+        });
+
+        window.__mahfitSocioChartListeners = true;
+      }
+
+      renderEvalMini(rut);
+    }
+
+    // ✅ Render body chart (peso + cintura)
+    function renderBodyChart(rut){
+      const card = document.getElementById("bodyChartCard");
+      const canvas = document.getElementById("bodyChart");
+      const sel = document.getElementById("bodyMetric");
+      if(!card || !canvas || !sel) return;
+
+      const data = buildBodyChartData(rut, 12);
+      card.style.display = "block";
+
+      function plot(){
+        const labels = data.labels || [];
+        const subLabels = data.subLabels || [];
+        const view = sel.value;
+
+        if(view === "both"){
+          drawMultiLineChart(canvas, labels, subLabels, [
+            { key:"pesoKg", label:"Peso (kg)", stroke:"rgba(255,211,110,.95)" },
+            { key:"cinturaCm", label:"Cintura (cm)", stroke:"rgba(0,200,255,.90)" }
+          ], data.series || {});
+          return;
+        }
+
+        const vals = (data.series && data.series[view]) ? data.series[view] : [];
+        const color = (view === "pesoKg") ? "rgba(255,211,110,.92)" : "rgba(0,200,255,.88)";
+        drawLineChart(canvas, labels, subLabels, vals, { stroke: color, point: color });
+      }
+
+      plot();
+      sel.addEventListener("change", plot);
+
+      // para resize
+      window.__mahfitBodyPlot = plot;
+    }
+
     document.addEventListener("DOMContentLoaded", async ()=>{
       // sincroniza cache (si falla, sigue con cache local)
       try{ await syncDown(); }catch(e){}
@@ -832,6 +1579,7 @@
         document.querySelector("#kCardio2").textContent = "—";
         document.querySelector("#todayCard").style.display = "none";
         progressCard.style.display = "none";
+        document.getElementById("chartsWrap").style.display = "none";
 
         box.innerHTML = `
           <div class="paywall">
@@ -846,6 +1594,12 @@
 
       // mostrar progreso
       progressCard.style.display = "block";
+
+      // ✅ Gráficos evaluaciones (con fechas)
+      renderCharts(user.rut);
+
+      // ✅ gráfico de progreso peso/cintura (registros del socio)
+      renderBodyChart(user.rut);
 
       // render history body log
       const today = isoLocalDate();
@@ -1070,7 +1824,6 @@
         const rpe = safe(wrap.querySelector("[data-w-rpe]").value, "");
         const notas = safe(wrap.querySelector("[data-w-notas]").value, "");
 
-        // mínimo para guardar
         if(!seriesReal && !repsReal && !cargaReal && !notas && !rir && !rpe){
           err.textContent = "❌ Completa al menos 1 dato (series/reps/carga/notas)";
           err.style.display = "inline";
@@ -1161,7 +1914,6 @@
           await saveCardioLog(payload);
           ok.style.display = "inline";
           try{ await syncDown(); }catch(e){}
-          // refresca KPI cardio
           const stats = cardioWeeklyStatsReal(rut);
           if(stats.sessions > 0){
             document.querySelector("#kCardio").textContent = `${stats.sessions} ses · ${stats.minutes} min`;
@@ -1187,3 +1939,4 @@
   </script>
 </body>
 </html>
+
