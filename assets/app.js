@@ -6,6 +6,7 @@
    - ✅ LOGS PRO: workout_log / cardio_log / body_log
    - ✅ PRO PATCH: IDs robustos + compat logId/id + fallback sync
    - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
+   - ✅ UPDATE: compat masaMuscularPct (para gráficos + socio.html)
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7lqbmRL7iTHGX7fGCsVNIGXHOrVvEivZfFci6FBAbA7gqOAA/exec";
@@ -71,6 +72,15 @@ function isoLocalDate(){
   return `${yyyy}-${mm}-${dd}`;
 }
 function safeStr(v, fb=""){ return (v===undefined || v===null) ? fb : String(v); }
+
+// ✅ Number cleaner (para gráficos / normalización)
+function toNumClean(v){
+  if(v===undefined || v===null) return null;
+  const s = String(v).replace(",", ".").trim();
+  if(!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
 
 // ---------------- DB STATUS (pelotita) ----------------
 function setDbStatus(status){
@@ -186,7 +196,6 @@ function makeBodyId({ rutSocio, fecha }){
 
 /* =========================================================
    ✅ NUEVO: EVALUATIONS ID builder
-   - Apps Script también lo genera, pero acá lo hacemos robusto
    ========================================================= */
 function makeEvalId({ rutSocio, fecha }){
   const r = normalizeRut(rutSocio);
@@ -336,39 +345,43 @@ async function syncDown(){
     entryId: String(x.entryId ?? "").trim(),
   })).filter(x=>x.entryId));
 
-  // ✅ NUEVO: EVALUATIONS
+  // ✅ NUEVO: EVALUATIONS (con compat masaMuscularPct)
   const ev = await apiGet("EVALUATIONS");
-  setEvaluations((ev.evaluations || []).map(x => ({
-    evalId: String(x.evalId ?? "").trim(),
-    rutSocio: normalizeRut(x.rutSocio ?? ""),
-    fecha: String(x.fecha ?? "").trim(),
-    hora: String(x.hora ?? "").trim(),
+  setEvaluations((ev.evaluations || []).map(x => {
+    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? ""); // 👈 compat
+    return ({
+      evalId: String(x.evalId ?? "").trim(),
+      rutSocio: normalizeRut(x.rutSocio ?? ""),
+      fecha: String(x.fecha ?? "").trim(),
+      hora: String(x.hora ?? "").trim(),
 
-    pesoKg: x.pesoKg ?? "",
-    tallaCm: x.tallaCm ?? "",
-    imc: x.imc ?? "",
+      pesoKg: x.pesoKg ?? "",
+      tallaCm: x.tallaCm ?? "",
+      imc: x.imc ?? "",
 
-    grasaPct: x.grasaPct ?? "",
-    masaMuscularKg: x.masaMuscularKg ?? "",
-    grasaVisceral: x.grasaVisceral ?? "",
-    aguaPct: x.aguaPct ?? "",
+      grasaPct: x.grasaPct ?? "",
+      masaMuscularPct: mmPct ?? "",
+      masaMuscularKg: x.masaMuscularKg ?? mmPct ?? "",
+      grasaVisceral: x.grasaVisceral ?? "",
+      aguaPct: x.aguaPct ?? "",
 
-    cinturaCm: x.cinturaCm ?? "",
-    caderaCm: x.caderaCm ?? "",
-    cuelloCm: x.cuelloCm ?? "",
-    brazoCm: x.brazoCm ?? "",
-    musloCm: x.musloCm ?? "",
-    pantorrillaCm: x.pantorrillaCm ?? "",
+      cinturaCm: x.cinturaCm ?? "",
+      caderaCm: x.caderaCm ?? "",
+      cuelloCm: x.cuelloCm ?? "",
+      brazoCm: x.brazoCm ?? "",
+      musloCm: x.musloCm ?? "",
+      pantorrillaCm: x.pantorrillaCm ?? "",
 
-    pliegues: x.pliegues ?? "",
-    observaciones: x.observaciones ?? "",
+      pliegues: x.pliegues ?? "",
+      observaciones: x.observaciones ?? "",
 
-    evaluadorRut: x.evaluadorRut ?? "",
-    evaluadorNombre: x.evaluadorNombre ?? "",
+      evaluadorRut: x.evaluadorRut ?? "",
+      evaluadorNombre: x.evaluadorNombre ?? "",
 
-    creadoEn: x.creadoEn ?? "",
-    actualizadoEn: x.actualizadoEn ?? ""
-  })).filter(x=>x.evalId && x.rutSocio));
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    });
+  }).filter(x=>x.evalId && x.rutSocio));
 }
 
 // ---------------- Auth (SINCRÓNICO) ----------------
@@ -616,8 +629,46 @@ function evaluationsForRut(rut){
 function lastEvaluationForRut(rut){
   const list = evaluationsForRut(rut)
     .slice()
-    .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+    .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")) || String(b.hora||"").localeCompare(String(a.hora||"")));
   return list[0] || null;
+}
+
+// ✅ Últimas N (para gráfico)
+function evaluationsLastN(rut, n=12){
+  return evaluationsForRut(rut)
+    .slice()
+    .sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||"")) || String(a.hora||"").localeCompare(String(b.hora||"")))
+    .slice(-Math.max(1, Number(n)||12));
+}
+
+// ✅ Armar data para gráficos (labels + series numéricas)
+function evaluationsToChartData(rut, n=12){
+  const list = evaluationsLastN(rut, n);
+
+  const labels = list.map((x, i)=>{
+    const f = String(x.fecha||"").trim();
+    // etiqueta corta: "01-01" o "Control 1"
+    if(f && /^\d{4}-\d{2}-\d{2}$/.test(f)){
+     return `${f.slice(8,10)}-${f.slice(5,7)}|${f.slice(0,4)}`;
+    }
+    return `C${i+1}`;
+  });
+
+  const series = {
+    pesoKg: list.map(x=> toNumClean(x.pesoKg)),
+    imc: list.map(x=> toNumClean(x.imc)),
+    cinturaCm: list.map(x=> toNumClean(x.cinturaCm)),
+    caderaCm: list.map(x=> toNumClean(x.caderaCm)),
+    brazoCm: list.map(x=> toNumClean(x.brazoCm)),
+    pantorrillaCm: list.map(x=> toNumClean(x.pantorrillaCm)),
+
+    grasaPct: list.map(x=> toNumClean(x.grasaPct)),
+    masaMuscularPct: list.map(x=> toNumClean(x.masaMuscularPct ?? x.masaMuscularKg)),
+    grasaVisceral: list.map(x=> toNumClean(x.grasaVisceral)),
+    aguaPct: list.map(x=> toNumClean(x.aguaPct)),
+  };
+
+  return { labels, series, raw:list };
 }
 
 async function saveEvaluation(entry){
@@ -628,7 +679,15 @@ async function saveEvaluation(entry){
 
   e.evalId = String(e.evalId ?? "").trim() || makeEvalId({ rutSocio: e.rutSocio, fecha: e.fecha });
 
-  // timestamps (Apps Script también los setea, pero acá es robusto)
+  // ✅ compat: si viene masaMuscularPct y no kg, copiamos
+  if(e.masaMuscularPct !== undefined && (e.masaMuscularKg === undefined || e.masaMuscularKg === "")){
+    e.masaMuscularKg = e.masaMuscularPct;
+  }
+  // si viene kg y no pct, copiamos
+  if(e.masaMuscularKg !== undefined && (e.masaMuscularPct === undefined || e.masaMuscularPct === "")){
+    e.masaMuscularPct = e.masaMuscularKg;
+  }
+
   e.actualizadoEn = nowISO();
   if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
 
@@ -637,44 +696,47 @@ async function saveEvaluation(entry){
   const list = upsertLocalByKey(getEvaluations(), "evalId", e);
   setEvaluations(list);
 
-  // si el backend devuelve evalId, lo retornamos
   if(res && res.evalId) return res;
   return { ok:true, evalId: e.evalId };
 }
 
 async function refreshEvaluations(){
   const ev = await apiGet("EVALUATIONS");
-  setEvaluations((ev.evaluations || []).map(x => ({
-    evalId: String(x.evalId ?? "").trim(),
-    rutSocio: normalizeRut(x.rutSocio ?? ""),
-    fecha: String(x.fecha ?? "").trim(),
-    hora: String(x.hora ?? "").trim(),
+  setEvaluations((ev.evaluations || []).map(x => {
+    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
+    return ({
+      evalId: String(x.evalId ?? "").trim(),
+      rutSocio: normalizeRut(x.rutSocio ?? ""),
+      fecha: String(x.fecha ?? "").trim(),
+      hora: String(x.hora ?? "").trim(),
 
-    pesoKg: x.pesoKg ?? "",
-    tallaCm: x.tallaCm ?? "",
-    imc: x.imc ?? "",
+      pesoKg: x.pesoKg ?? "",
+      tallaCm: x.tallaCm ?? "",
+      imc: x.imc ?? "",
 
-    grasaPct: x.grasaPct ?? "",
-    masaMuscularKg: x.masaMuscularKg ?? "",
-    grasaVisceral: x.grasaVisceral ?? "",
-    aguaPct: x.aguaPct ?? "",
+      grasaPct: x.grasaPct ?? "",
+      masaMuscularPct: mmPct ?? "",
+      masaMuscularKg: x.masaMuscularKg ?? mmPct ?? "",
+      grasaVisceral: x.grasaVisceral ?? "",
+      aguaPct: x.aguaPct ?? "",
 
-    cinturaCm: x.cinturaCm ?? "",
-    caderaCm: x.caderaCm ?? "",
-    cuelloCm: x.cuelloCm ?? "",
-    brazoCm: x.brazoCm ?? "",
-    musloCm: x.musloCm ?? "",
-    pantorrillaCm: x.pantorrillaCm ?? "",
+      cinturaCm: x.cinturaCm ?? "",
+      caderaCm: x.caderaCm ?? "",
+      cuelloCm: x.cuelloCm ?? "",
+      brazoCm: x.brazoCm ?? "",
+      musloCm: x.musloCm ?? "",
+      pantorrillaCm: x.pantorrillaCm ?? "",
 
-    pliegues: x.pliegues ?? "",
-    observaciones: x.observaciones ?? "",
+      pliegues: x.pliegues ?? "",
+      observaciones: x.observaciones ?? "",
 
-    evaluadorRut: x.evaluadorRut ?? "",
-    evaluadorNombre: x.evaluadorNombre ?? "",
+      evaluadorRut: x.evaluadorRut ?? "",
+      evaluadorNombre: x.evaluadorNombre ?? "",
 
-    creadoEn: x.creadoEn ?? "",
-    actualizadoEn: x.actualizadoEn ?? ""
-  })).filter(x=>x.evalId && x.rutSocio));
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    });
+  }).filter(x=>x.evalId && x.rutSocio));
   return true;
 }
 
@@ -779,3 +841,8 @@ window.lastEvaluationForRut = lastEvaluationForRut;
 window.saveEvaluation = saveEvaluation;
 window.refreshEvaluations = refreshEvaluations;
 window.makeEvalId = makeEvalId;
+
+// ✅ NUEVO: helpers para gráficos (socio.html / evaluacion.html)
+window.evaluationsLastN = evaluationsLastN;
+window.evaluationsToChartData = evaluationsToChartData;
+window.toNumClean = toNumClean;
