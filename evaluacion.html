@@ -247,7 +247,7 @@
       font-weight:900;
     }
 
-    /* ===== CHARTS - en recuadros aparte ===== */
+    /* ===== CHARTS - 1 COLUMNA (GRANDES) ===== */
     .chartsSection{
       margin-top: 14px;
       display:grid;
@@ -256,10 +256,9 @@
     }
     .chartsTwo{
       display:grid;
-      grid-templateTEMPLATE-columns: 1fr 1fr;
+      grid-template-columns: 1fr; /* ✅ SIEMPRE 1 columna */
       gap: 12px;
     }
-    @media (max-width: 980px){ .chartsTwo{ grid-template-columns: 1fr; } }
 
     .chartCard{
       border:1px solid rgba(255,255,255,.10);
@@ -465,11 +464,12 @@
         </div>
       </div>
 
-      <!-- ✅ SECCIÓN DE GRÁFICOS EN RECUADROS APARTE -->
+      <!-- ✅ GRÁFICOS GRANDES (UNO DEBAJO DEL OTRO) -->
       <div class="chartsSection">
         <div class="chartMsg" id="chartMsg">Selecciona un socio para ver gráficos.</div>
 
         <div class="chartsTwo">
+
           <div class="chartCard">
             <div class="chartHead">
               <div>
@@ -497,6 +497,7 @@
               <div class="chartHint">Series: % Grasa, % Masa muscular y Visceral.</div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -561,6 +562,74 @@
     el.textContent = text;
   }
 
+  /* =========================
+     ✅ FECHA/HORA BONITA + ROBUSTA (Sheets / ISO / HH:MM)
+     ========================= */
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function extractTimeHM(anyTime){
+    const s = safe(anyTime,"").trim();
+    if(!s) return "";
+    const m1 = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if(m1) return `${pad2(m1[1])}:${pad2(m1[2])}`;
+
+    if(s.includes("T")){
+      const d = new Date(s);
+      if(!isNaN(d.getTime())) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      const m2 = s.match(/T(\d{2}):(\d{2})/);
+      if(m2) return `${m2[1]}:${m2[2]}`;
+    }
+    return "";
+  }
+
+  function extractDateYMD(anyDate){
+    const s = safe(anyDate,"").trim();
+    if(!s) return "";
+    const m1 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(m1) return s;
+
+    if(s.includes("T")){
+      const d = new Date(s);
+      if(!isNaN(d.getTime())){
+        return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+      }
+      const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+      if(m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
+    }
+    return "";
+  }
+
+  function prettyDT(fecha, hora){
+    const ymd = extractDateYMD(fecha) || "";
+    const hm = extractTimeHM(hora) || "";
+
+    if(!ymd && !hm) return "—";
+
+    if(ymd){
+      const [Y,M,D] = ymd.split("-");
+      const dmy = `${D}-${M}-${Y}`;
+      return hm ? `${dmy} ${hm}` : dmy;
+    }
+    return hm;
+  }
+
+  function dtToTs(fecha, hora){
+    const ymd = extractDateYMD(fecha);
+    const hm = extractTimeHM(hora);
+    if(!ymd && !hm) return 0;
+
+    if(ymd){
+      const [Y,M,D] = ymd.split("-").map(Number);
+      let hh = 0, mm = 0;
+      if(hm){
+        const parts = hm.split(":").map(Number);
+        hh = parts[0]||0; mm = parts[1]||0;
+      }
+      return new Date(Y, (M||1)-1, D||1, hh, mm, 0, 0).getTime();
+    }
+    return 0;
+  }
+
   function getEvaluationsCached(){
     try{ return JSON.parse(localStorage.getItem("mahfit_evaluations")||"[]"); }
     catch{ return []; }
@@ -583,13 +652,17 @@
   function listForRut(rut){
     const r = normalizeRut(rut);
     const all = getEvaluationsCached();
-    return all.filter(x=>normalizeRut(x.rutSocio)===r)
-      .sort((a,b)=> safe(b.fecha,"").localeCompare(safe(a.fecha,"")) || safe(b.hora,"").localeCompare(safe(a.hora,"")));
+    return all
+      .filter(x=>normalizeRut(x.rutSocio)===r)
+      .sort((a,b)=> dtToTs(b.fecha,b.hora) - dtToTs(a.fecha,a.hora));
   }
 
   function fillForm(x){
-    document.getElementById("inpFecha").value = safe(x.fecha, nowYMD());
-    document.getElementById("inpHora").value = safe(x.hora, nowHM());
+    document.getElementById("inpFecha").value = safe(x.fecha, nowYMD()).includes("T")
+      ? (extractDateYMD(x.fecha) || nowYMD())
+      : safe(x.fecha, nowYMD());
+
+    document.getElementById("inpHora").value = extractTimeHM(x.hora) || safe(x.hora, nowHM());
 
     document.getElementById("pesoKg").value = safe(x.pesoKg, "");
     document.getElementById("tallaCm").value = safe(x.tallaCm, "");
@@ -655,12 +728,13 @@
       const mm = safe(x.masaMuscularPct, safe(x.masaMuscularKg,"—"));
       const v = safe(x.grasaVisceral,"—");
       const c = safe(x.cinturaCm,"—");
-      const f = safe(x.fecha,"—");
+
+      const when = prettyDT(x.fecha, x.hora);
 
       return `
         <div style="padding:10px 12px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);border-radius:12px;margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-            <div style="font-weight:1000;">${f} ${safe(x.hora,"")}</div>
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+            <div style="font-weight:1000;">${when}</div>
             <button class="btn small" data-load="${safe(x.evalId)}">Cargar</button>
           </div>
           <div class="muted" style="margin-top:6px;">
@@ -751,14 +825,14 @@
   }
 
   /* =========================
-     ✅ CHARTS (SVG)
+     ✅ CHARTS (SVG) + SUBLABEL (fecha/hora bajo C1)
      ========================= */
   function nOrNull(v){
     const n = Number(v);
     return (v === "" || v === null || v === undefined || isNaN(n)) ? null : n;
   }
 
-  function svgLineChart({ containerEl, legendEl, title, labels, series, yPad=0.10 }){
+  function svgLineChart({ containerEl, legendEl, title, labels, subLabels=[], series, yPad=0.10 }){
     if(!containerEl) return;
     containerEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = "";
@@ -768,7 +842,7 @@
     const PAD_L = 52;
     const PAD_R = 18;
     const PAD_T = 16;
-    const PAD_B = 48;
+    const PAD_B = 62;
 
     const plotW = W - PAD_L - PAD_R;
     const plotH = H - PAD_T - PAD_B;
@@ -852,7 +926,14 @@
         ${labels.map((lab,i)=>{
           if(i % xLabelEvery !== 0 && i !== labels.length-1) return "";
           const x = xAt(i);
-          return `<text x="${x}" y="${H-18}" fill="rgba(255,255,255,.65)" font-size="11" font-weight="900" text-anchor="middle">${lab}</text>`;
+          const sub = safe(subLabels[i]||"","");
+
+          return `
+            <text x="${x}" y="${H-30}" fill="rgba(255,255,255,.75)" font-size="11" font-weight="1000" text-anchor="middle">
+              <tspan x="${x}" dy="0">${lab}</tspan>
+              ${sub ? `<tspan x="${x}" dy="13" fill="rgba(255,255,255,.55)" font-size="9" font-weight="900">${sub}</tspan>` : ``}
+            </text>
+          `;
         }).join("")}
 
         ${series.map(s=>{
@@ -902,6 +983,7 @@
     msgEl.textContent = `Mostrando ${latest.length} evaluaciones (últimas 12).`;
 
     const labels = latest.map((x,i)=> `C${i+1}`);
+    const subLabels = latest.map(x => prettyDT(x.fecha, x.hora));
 
     const seriesA = [
       { label:"Peso (kg)", color:"rgba(255,255,255,.92)", values: latest.map(x=>nOrNull(x.pesoKg)) },
@@ -920,19 +1002,19 @@
       { label:"Pantorrilla (cm)", color:"rgba(43,213,118,.95)", values: latest.map(x=>nOrNull(x.pantorrillaCm)) },
     ];
 
-    svgLineChart({ containerEl: elA, legendEl: lgA, title:"Medidas básicas y perímetros", labels, series: seriesA });
+    svgLineChart({ containerEl: elA, legendEl: lgA, title:"Medidas básicas y perímetros", labels, subLabels, series: seriesA });
 
     const seriesB = [
       { label:"% Masa muscular", color:"rgba(43,213,118,.95)", values: latest.map(x=>{
         const mm = nOrNull(x.masaMuscularPct);
         if(mm !== null) return mm;
-        return nOrNull(x.masaMuscularKg); // compat
+        return nOrNull(x.masaMuscularKg);
       })},
       { label:"% Grasa", color:"rgba(255,90,103,.95)", values: latest.map(x=>nOrNull(x.grasaPct)) },
       { label:"Visceral", color:"rgba(35,166,255,.95)", values: latest.map(x=>nOrNull(x.grasaVisceral)) },
     ];
 
-    svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, series: seriesB });
+    svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, subLabels, series: seriesB });
   }
 
   document.addEventListener("DOMContentLoaded", async ()=>{
@@ -944,7 +1026,7 @@
 
     document.getElementById("inpFecha").value = nowYMD();
     document.getElementById("inpHora").value = nowHM();
-    document.getElementById("pNow").textContent = `${nowYMD()} ${nowHM()}`;
+    document.getElementById("pNow").textContent = `${prettyDT(nowYMD(), nowHM())}`;
 
     document.getElementById("btnBack").addEventListener("click", ()=> location.href = "funcionario.html");
     document.getElementById("btnLogout").addEventListener("click", ()=>{
