@@ -2,1883 +2,1255 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0f" />
   <title>MAH FIT | Socio</title>
   <link rel="stylesheet" href="assets/styles.css" />
+
   <style>
     /* ===========================================================================
-       ✅ SISTEMA DE DISEÑO PREMIUM MAH FIT
+       ✅ MAH FIT — UI v2 (Mobile App Premium)
+       - Mantiene TODOS los IDs y data-attributes
+       - Agrega UX tipo app: bottom nav + tabs sticky + safe area
        =========================================================================== */
-    :root {
-      /* 🌑 Fondo principal */
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #111121;
-      --bg-tertiary: #0c0c18;
 
-      /* 🪟 Superficies glassmorphism */
+    :root{
+      /* Fondos */
+      --bg-primary:#0a0a0f;
+      --bg-secondary:#111121;
+      --bg-tertiary:#0c0c18;
+
+      /* Glass */
       --surface-glass: rgba(255,255,255,.08);
-      --surface-card: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      --surface-card: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
 
-      /* 🖌️ Bordes y trazos */
+      /* Stroke */
       --stroke-regular: rgba(255,255,255,.12);
       --stroke-glow: rgba(0,200,255,.25);
 
-      /* 📝 Texto */
+      /* Texto */
       --text-primary: rgba(255,255,255,.95);
-      --text-secondary: rgba(255,255,255,.75);
-      --text-muted: rgba(255,255,255,.6);
+      --text-secondary: rgba(255,255,255,.78);
+      --text-muted: rgba(255,255,255,.58);
 
-      /* 🎨 Brand MAH FIT */
+      /* Brand */
       --brand-primary: rgba(0,200,255,.95);
-      --brand-glow: rgba(0,200,255,.15);
+      --brand-glow: rgba(0,200,255,.14);
 
-      /* 🟢 Sistema de estados */
-      --success: #2bd576;
-      --warning: #ffd36e;
-      --error: #ff5a67;
+      /* Estados */
+      --success:#2bd576;
+      --warning:#ffd36e;
+      --error:#ff5a67;
 
-      /* 🎭 Sombras */
-      --shadow-md: 0 8px 24px rgba(0,0,0,.3);
-      --shadow-glow: 0 0 20px var(--brand-glow);
-      --shadow-card-hover: 0 12px 32px rgba(0,0,0,.4);
+      /* Sombras */
+      --shadow-md: 0 10px 28px rgba(0,0,0,.35);
+      --shadow-glow: 0 0 22px var(--brand-glow);
+      --shadow-card-hover: 0 14px 36px rgba(0,0,0,.48);
 
-      /* 🔘 Radios */
+      /* Radios */
       --radius-md: 16px;
-      --radius-lg: 20px;
+      --radius-lg: 22px;
 
-      /* ⚡ Transiciones */
-      --transition-smooth: all .3s cubic-bezier(.4,0,.2,1);
+      /* Transición */
+      --transition-smooth: all .28s cubic-bezier(.4,0,.2,1);
+
+      /* Layout app */
+      --topbar-h: 64px;
+      --bnav-h: 72px; /* sin safe-area */
     }
 
-    /* ===========================================================================
-       🔥 RESET Y BASE PREMIUM
-       =========================================================================== */
-    body {
-      background: var(--bg-primary);
+    /* ===== Reset & base ===== */
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(0,200,255,.08), transparent 60%),
+                  radial-gradient(1000px 520px at 95% 10%, rgba(120,0,255,.08), transparent 62%),
+                  var(--bg-primary);
       color: var(--text-secondary);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      overflow-x:hidden;
     }
 
-    /* ===========================================================================
-       🎭 TOPBAR PREMIUM (glassmorphism + blur)
-       =========================================================================== */
-    .topbar {
-      background: rgba(10, 10, 15, 0.85);
-      backdrop-filter: blur(20px) saturate(180%);
-      border-bottom: 1px solid var(--stroke-regular);
-      box-shadow: var(--shadow-md);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      position: relative;
-      z-index: 1000;
+    /* Scrollbar suave */
+    @media (min-width: 900px){
+      ::-webkit-scrollbar{ width:10px; height:10px; }
+      ::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius: 999px; }
+      ::-webkit-scrollbar-track{ background: rgba(0,0,0,.25); }
     }
 
-    .topbar::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, 
-        rgba(0,200,255,.03) 0%,
-        transparent 20%,
-        transparent 80%,
-        rgba(0,200,255,.03) 100%);
-      pointer-events: none;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 900;
-      font-size: 22px;
-      letter-spacing: -0.02em;
-    }
-
-    .mah {
-      color: var(--brand-primary);
-      text-shadow: 0 0 10px var(--brand-glow);
-    }
-
-    .fit {
-      color: white;
-    }
-
-    /* ===========================================================================
-       🏆 COMPONENTES PREMIUM
-       =========================================================================== */
-
-    /* 🟣 Badges */
-    .db-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(17, 17, 33, 0.6);
-      color: var(--text-secondary);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.02em;
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .db-badge:hover {
-      border-color: var(--stroke-glow);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .db-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      position: relative;
-    }
-
-    .db-dot::after {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      background: var(--brand-glow);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .db-dot.ok {
-      background: var(--success);
-      box-shadow: 0 0 12px rgba(43, 213, 118, 0.3);
-    }
-
-    .db-dot.bad {
-      background: var(--error);
-      box-shadow: 0 0 12px rgba(255, 90, 103, 0.3);
-    }
-
-    .db-dot.pending {
-      background: var(--warning);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.8; }
-      50% { opacity: 1; }
-    }
-
-    /* 🟣 Spacers */
-    .sp8{height:8px;} .sp12{height:12px;} .sp16{height:16px;} .sp18{height:18px;}
-
-    /* ===========================================================================
-       🏢 DASHBOARD HEADER PREMIUM
-       =========================================================================== */
-    .dashHeader {
-      border: 1px solid var(--stroke-regular);
-      background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(0,0,0,.2));
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      overflow: hidden;
-      position: relative;
-      margin-bottom: 16px;
-      transition: var(--transition-smooth);
-    }
-
-    .dashHeader:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .dashHeader::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: 
-        radial-gradient(800px 240px at 15% 0%, rgba(0,200,255,.15), transparent 60%),
-        radial-gradient(800px 240px at 85% 100%, rgba(120,0,255,.1), transparent 60%);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .dashHeader > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .dashLeft {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 0;
-    }
-
-    .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--brand-primary);
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      color: rgba(186, 242, 255, 0.95);
-      font-weight: 900;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      user-select: none;
-      flex-shrink: 0;
-      box-shadow: 0 0 20px rgba(0,200,255,.1);
-    }
-
-    .dashTitle {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .dashTitle b {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: 0.02em;
-    }
-
-    .dashTitle small {
-      font-size: 13px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .dashRight {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    /* ===========================================================================
-       🎯 BOTONES PREMIUM
-       =========================================================================== */
-    .miniGhost {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-glass);
-      color: var(--text-secondary);
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-      transition: var(--transition-smooth);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      backdrop-filter: blur(10px);
-    }
-
-    .miniGhost:hover {
-      background: rgba(255,255,255,.12);
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .miniGhost:active {
-      transform: translateY(0);
-    }
-
-    /* ===========================================================================
-       🃏 QUICK CARD PREMIUM (Mi Plan)
-       =========================================================================== */
-    .quickCard {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-card);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 20px;
-      transition: var(--transition-smooth);
-    }
-
-    .quickCard:hover {
-      border-color: var(--stroke-glow);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .quickHead {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--stroke-regular);
-      margin-bottom: 16px;
-    }
-
-    .quickHead b {
-      font-size: 13px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 800;
-    }
-
-    .quickList {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .quickRow {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 18px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--stroke-regular);
-      background: rgba(255,255,255,.03);
-      cursor: pointer;
-      user-select: none;
-      text-decoration: none;
-      color: inherit;
-      transition: var(--transition-smooth);
-    }
-
-    .quickRow:hover {
-      background: rgba(255,255,255,.08);
-      border-color: var(--stroke-glow);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .quickRow:active {
-      transform: translateY(-2px);
-    }
-
-    .qLeft {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 0;
-    }
-
-    .qIco {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      font-size: 20px;
-      flex-shrink: 0;
-      box-shadow: 0 0 20px rgba(0,200,255,.1);
-    }
-
-    .qTxt {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .qTxt b {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .qTxt small {
-      font-size: 13px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .qAct {
-      flex-shrink: 0;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-primary);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      white-space: nowrap;
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .qDot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      position: relative;
-    }
-
-    .qOk .qDot {
-      background: var(--success);
-      box-shadow: 0 0 12px rgba(43,213,118,.3);
-    }
-
-    .qWarn .qDot {
-      background: var(--warning);
-      box-shadow: 0 0 12px rgba(255,211,110,.3);
-    }
-
-    .qBad .qDot {
-      background: var(--error);
-      box-shadow: 0 0 12px rgba(255,90,103,.3);
-    }
-
-    /* ===========================================================================
-       🏷️ STATUS PILLS PREMIUM
-       =========================================================================== */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-secondary);
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .pill:hover {
-      border-color: var(--stroke-glow);
-    }
-
-    .planPill {
-      font-weight: 800 !important;
-      border-width: 1px !important;
-    }
-
-    .planOk {
-      background: rgba(43,213,118,.12) !important;
-      border-color: rgba(43,213,118,.35) !important;
-      color: rgba(220,255,235,.95) !important;
-    }
-
-    .planWarn {
-      background: rgba(255,211,110,.12) !important;
-      border-color: rgba(255,211,110,.35) !important;
-      color: rgba(255,244,210,.95) !important;
-    }
-
-    .planBad {
-      background: rgba(255,90,103,.12) !important;
-      border-color: rgba(255,90,103,.35) !important;
-      color: rgba(255,230,233,.95) !important;
-    }
-
-    .statusPill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-primary);
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      position: relative;
-    }
-
-    .stOk {
-      border-color: rgba(43,213,118,.3);
-      background: rgba(43,213,118,.1);
-    }
-    .stOk .dot {
-      background: var(--success);
-      box-shadow: 0 0 12px rgba(43,213,118,.3);
-    }
-
-    .stWarn {
-      border-color: rgba(255,211,110,.3);
-      background: rgba(255,211,110,.1);
-    }
-    .stWarn .dot {
-      background: var(--warning);
-      box-shadow: 0 0 12px rgba(255,211,110,.3);
-    }
-
-    .stBad {
-      border-color: rgba(255,90,103,.3);
-      background: rgba(255,90,103,.1);
-    }
-    .stBad .dot {
-      background: var(--error);
-      box-shadow: 0 0 12px rgba(255,90,103,.3);
-    }
-
-    /* ===========================================================================
-       🎪 PLAN BANNER PREMIUM
-       =========================================================================== */
-    .planBanner {
-      border: 1px solid var(--stroke-regular);
-      background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(0,0,0,.2));
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      overflow: hidden;
-      position: relative;
-      transition: var(--transition-smooth);
-    }
-
-    .planBanner:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .planBanner::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: 
-        radial-gradient(800px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),
-        radial-gradient(800px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .planBanner > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .planLeft {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .planTitleRow {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .planTitle {
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .planBig {
-      font-weight: 800;
-      font-size: 22px;
-      color: var(--text-primary);
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .planSmall {
-      color: var(--text-secondary);
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .planCTA {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      min-width: 210px;
-    }
-
-    .ctaBtn {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-glass);
-      color: var(--text-primary);
-      padding: 14px 18px;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      user-select: none;
-      transition: var(--transition-smooth);
-      backdrop-filter: blur(10px);
-    }
-
-    .ctaBtn:hover {
-      background: rgba(255,255,255,.12);
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .ctaBtn:active {
-      transform: translateY(0);
-    }
-
-    /* ===========================================================================
-       📊 KPI CARDS PREMIUM
-       =========================================================================== */
-    .kpi {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .kpi .box {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-card);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      transition: var(--transition-smooth);
-    }
-
-    .kpi .box:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .kpi .box > div:first-child {
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .kpi .box b {
-      display: block;
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 12px;
-    }
-
-    .kpiSub {
-      color: var(--text-muted);
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .kpiSub .kIco {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(186, 242, 255, 0.95);
-      font-weight: 800;
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-
-    /* ===========================================================================
-       🔥 TODAY CARD PREMIUM
-       =========================================================================== */
-    .todayCard {
-      border: 1px solid rgba(0,200,255,.3);
-      background: 
-        radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.15), transparent 60%),
-        rgba(10,10,15,.4);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      overflow: hidden;
-      transition: var(--transition-smooth);
-    }
-
-    .todayCard:hover {
-      border-color: rgba(0,200,255,.5);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .todayLeft {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .todayTitle {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      font-weight: 800;
-      font-size: 15px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-primary);
-    }
-
-    .todayTitle .flame {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      background: rgba(255,120,0,.15);
-      border: 1px solid rgba(255,120,0,.3);
-    }
-
-    .todayMain {
-      font-weight: 800;
-      font-size: 20px;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .todayMeta {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .miniPill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-primary);
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .miniPill:hover {
-      border-color: var(--stroke-glow);
-    }
-
-    .miniPill .mIco {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(186, 242, 255, 0.95);
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    /* ===========================================================================
-       📅 DAY ACCORDION PREMIUM
-       =========================================================================== */
-    details.day {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-card);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      margin-top: 16px;
-      transition: var(--transition-smooth);
-    }
-
-    details.day[open] {
-      border-color: var(--stroke-glow);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    summary.daySum {
-      list-style: none;
-      cursor: pointer;
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      user-select: none;
-      transition: var(--transition-smooth);
-    }
-
-    summary.daySum::-webkit-details-marker {
-      display: none;
-    }
-
-    summary.daySum:hover {
-      background: rgba(255,255,255,.03);
-    }
-
-    .dayLeft {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .dayLeft b {
-      font-size: 15px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .dayLeft .sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chev {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-glass);
-      color: var(--text-primary);
-      font-weight: 800;
-      transition: var(--transition-smooth);
-      flex-shrink: 0;
-    }
-
-    details[open] .chev {
-      transform: rotate(180deg);
-      background: rgba(0,200,255,.1);
-      border-color: rgba(0,200,255,.3);
-    }
-
-    .dayBody {
-      padding: 20px 24px;
-      border-top: 1px solid var(--stroke-regular);
-    }
-
-    /* ===========================================================================
-       📈 PROGRESS BARS PREMIUM
-       =========================================================================== */
-    .progressRowBar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
+    /* ===== Helpers ===== */
+    .sp8{height:8px} .sp12{height:12px} .sp16{height:16px} .sp18{height:18px} .sp24{height:24px}
 
-    .bar {
-      flex: 1;
-      height: 10px;
-      border-radius: 999px;
+    /* ===== Fallbacks por si styles.css no trae clases ===== */
+    .btn, .badge{ display:inline-flex; align-items:center; justify-content:center; }
+    .btn{
+      border:1px solid var(--stroke-regular);
       background: rgba(255,255,255,.06);
-      border: 1px solid var(--stroke-regular);
-      overflow: hidden;
-      position: relative;
-    }
-
-    .bar > i {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--brand-primary), rgba(0,200,255,.7));
-      border-right: 1px solid rgba(0,200,255,.3);
-      transition: width 0.6s cubic-bezier(.4,0,.2,1);
-      position: relative;
-    }
-
-    .bar > i::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
-      animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    .progressTxt {
-      min-width: 120px;
-      text-align: right;
       color: var(--text-primary);
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    /* ===========================================================================
-       🏋️ EXERCISE CARDS PREMIUM
-       =========================================================================== */
-    .exCard {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-card);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-top: 16px;
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      transition: var(--transition-smooth);
-    }
-
-    .exCard:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .exCard:active {
-      transform: translateY(-2px);
-    }
-
-    .exMain {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .exTitle {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .muscleTag {
-      display: inline-flex;
-      gap: 10px;
-      align-items: center;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-primary);
-    }
-
-    .muscleTag .icon {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(174, 239, 255, 0.95);
-      font-weight: 800;
-    }
-
-    .exerciseName {
-      font-weight: 800;
-      font-size: 18px;
-      color: var(--text-primary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
-    }
-
-    .chips {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
       padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor:pointer;
+      user-select:none;
+      transition: var(--transition-smooth);
       backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
+      gap:10px;
     }
-
-    .chip:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-    }
-
-    .chip .cIcon {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(186, 242, 255, 0.95);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .note {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      color: var(--text-secondary);
-      font-size: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    .note .bubble {
-      width: 34px;
-      height: 34px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      background: rgba(242,196,0,.12);
-      border: 1px solid rgba(242,196,0,.3);
-      color: rgba(255, 231, 161, 0.95);
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .exDone {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      padding-top: 8px;
-    }
-
-    .exDone input {
-      width: 28px;
-      height: 28px;
-      accent-color: var(--brand-primary);
-      cursor: pointer;
-      transition: var(--transition-smooth);
-    }
-
-    .exDone input:hover {
-      transform: scale(1.1);
-    }
-
-    .exCard.done {
-      border-color: rgba(43,213,118,.4);
-      background: linear-gradient(145deg, rgba(43,213,118,.1), rgba(43,213,118,.05));
-    }
-
-    .exCard.done .exerciseName,
-    .exCard.done .muscleTag {
-      opacity: 0.95;
-    }
-
-    .exCard.done .chips,
-    .exCard.done .note {
-      opacity: 0.85;
-    }
-
-    .doneBadge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
+    .btn:hover{ border-color: var(--stroke-glow); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn.ghost{ background: rgba(255,255,255,.04); }
+    .btn.small{ padding: 9px 12px; border-radius: 12px; font-size: 13px; }
+    .badge{
+      padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(43,213,118,.4);
-      background: rgba(43,213,118,.12);
-      color: rgba(220,255,235,.95);
-      font-weight: 800;
-      font-size: 13px;
-      margin-left: auto;
-      backdrop-filter: blur(10px);
-    }
-
-    /* ===========================================================================
-       ❌ PAYWALL PREMIUM
-       =========================================================================== */
-    .paywall {
-      border: 1px solid rgba(255,90,103,.4);
-      background: linear-gradient(145deg, rgba(255,90,103,.12), rgba(255,90,103,.05));
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      margin-top: 20px;
+      border:1px solid var(--stroke-regular);
+      background: rgba(10,10,15,.55);
       color: var(--text-primary);
-      transition: var(--transition-smooth);
-    }
-
-    .paywall:hover {
-      border-color: rgba(255,90,103,.6);
-      box-shadow: 0 0 30px rgba(255,90,103,.2);
-    }
-
-    .paywall b {
-      font-size: 18px;
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    .paywall .sub {
-      margin-top: 10px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-
-    /* ===========================================================================
-       🫀 CARDIO BOX PREMIUM
-       =========================================================================== */
-    .cardioBox {
-      border: 1px solid rgba(0,200,255,.3);
-      background: 
-        radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.15), transparent 60%),
-        rgba(10,10,15,.4);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 16px;
-      transition: var(--transition-smooth);
-    }
-
-    .cardioBox:hover {
-      border-color: rgba(0,200,255,.5);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .cardioTop {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .cardioTop b {
-      letter-spacing: 0.05em;
-      color: var(--text-primary);
-    }
-
-    .cardioGrid {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .cardioPill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 13px;
-      backdrop-filter: blur(10px);
-      transition: var(--transition-smooth);
-    }
-
-    .cardioPill:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-    }
-
-    .cardioPill .ico {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(186, 242, 255, 0.95);
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .cardioNote {
-      margin-top: 14px;
-      color: var(--text-secondary);
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    /* ===========================================================================
-       📝 LOG PANELS PREMIUM
-       =========================================================================== */
-    .logBox {
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-top: 16px;
-      transition: var(--transition-smooth);
-    }
-
-    .logBox:hover {
-      border-color: var(--stroke-glow);
-    }
-
-    .logTop {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .logTop b {
-      font-size: 13px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-primary);
-      font-weight: 800;
-    }
-
-    .logHint {
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-
-    .logGrid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .field {
-      border: 1px solid var(--stroke-regular);
-      background: rgba(255,255,255,.04);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      transition: var(--transition-smooth);
-    }
-
-    .field:hover {
-      border-color: var(--stroke-glow);
-    }
-
-    .field label {
-      display: block;
+      font-weight: 900;
       font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+      letter-spacing:.05em;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ===========================================================================
+       🎭 TOPBAR (sticky app header)
+       =========================================================================== */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      height: var(--topbar-h);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(10,10,15,.80);
+      backdrop-filter: blur(18px) saturate(165%);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow-md);
+    }
+    .topbar::before{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(0,200,255,.03), transparent 35%, transparent 65%, rgba(120,0,255,.03));
+      pointer-events:none;
+      opacity:.9;
+    }
+    .topbar > *{ position:relative; z-index:1; }
+
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:6px;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+      user-select:none;
+    }
+    .brand .mah{
+      color: var(--brand-primary);
+      text-shadow: 0 0 14px var(--brand-glow);
+      font-size: 18px;
+      line-height: 1;
+    }
+    .brand .fit{
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .brand small{
+      display:block;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing:.06em;
       text-transform: uppercase;
     }
 
-    .field input,
-    .field textarea,
-    .field select {
-      width: 100%;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.8);
-      color: var(--text-primary);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      font-weight: 700;
-      outline: none;
-      transition: var(--transition-smooth);
-    }
-
-    .field input:focus,
-    .field textarea:focus,
-    .field select:focus {
-      border-color: var(--brand-primary);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .field textarea {
-      min-height: 48px;
-      resize: vertical;
-      font-weight: 600;
-    }
-
-    .logActions {
-      display: flex;
-      gap: 14px;
+    .nav-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
       flex-wrap: wrap;
-      margin-top: 20px;
-      align-items: center;
-      justify-content: flex-end;
+      justify-content:flex-end;
     }
 
-    .miniBtn {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-glass);
-      color: var(--text-primary);
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      cursor: pointer;
-      user-select: none;
-      transition: var(--transition-smooth);
-      backdrop-filter: blur(10px);
-    }
-
-    .miniBtn:hover {
-      background: rgba(255,255,255,.12);
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .miniBtn:active {
-      transform: translateY(0);
-    }
-
-    .okMsg {
-      color: rgba(220,255,235,.95);
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .errMsg {
-      color: rgba(255,190,190,.95);
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .tinyTag {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-primary);
-      backdrop-filter: blur(10px);
-    }
-
-    /* ===========================================================================
-       📊 PROGRESS CARD PREMIUM
-       =========================================================================== */
-    .progressCard {
-      border: 1px solid rgba(0,200,255,.3);
-      background: 
-        radial-gradient(700px 260px at 20% 0%, rgba(0,200,255,.15), transparent 60%),
-        rgba(10,10,15,.4);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      transition: var(--transition-smooth);
-    }
-
-    .progressCard:hover {
-      border-color: rgba(0,200,255,.5);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .progressRow {
-      display: flex;
-      gap: 14px;
+    .helloLine{
+      display:flex;
+      gap:10px;
+      align-items:center;
       flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
-
-    .progressRow .field {
-      flex: 1 1 160px;
-    }
-
-    .history {
-      margin-top: 16px;
-      border-top: 1px solid var(--stroke-regular);
-      padding-top: 16px;
       color: var(--text-secondary);
+      font-weight: 700;
       font-size: 13px;
-      line-height: 1.5;
+    }
+
+    /* DB badge */
+    .db-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border:1px solid var(--stroke-regular);
+      background: rgba(17,17,33,.55);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.04em;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .db-badge:hover{ border-color: var(--stroke-glow); box-shadow: var(--shadow-glow); }
+    .db-dot{ width:10px; height:10px; border-radius:50%; background: var(--text-muted); }
+    .db-dot.ok{ background: var(--success); box-shadow: 0 0 14px rgba(43,213,118,.35); }
+    .db-dot.bad{ background: var(--error); box-shadow: 0 0 14px rgba(255,90,103,.35); }
+    .db-dot.pending{ background: var(--warning); animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse{ 0%,100%{ opacity:.75 } 50%{ opacity:1 } }
+
+    /* ===========================================================================
+       📱 APP SHELL
+       =========================================================================== */
+    .appShell{
+      min-height: calc(100vh - var(--topbar-h));
+      padding-bottom: calc(var(--bnav-h) + env(safe-area-inset-bottom) + 18px);
+    }
+
+    .container{
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    /* Hero spacing */
+    .hero{
+      padding: 12px 0 18px;
     }
 
     /* ===========================================================================
-       📈 CHART CARDS PREMIUM
+       🧭 Sticky Quick Tabs (tipo app)
        =========================================================================== */
-    .miniChartCard,
-    .chartCard {
-      border: 1px solid var(--stroke-regular);
-      background: var(--surface-card);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      transition: var(--transition-smooth);
+    .stickyTabs{
+      position: sticky;
+      top: calc(var(--topbar-h) + 8px);
+      z-index: 900;
+      margin: 10px 0 14px;
+      padding: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(10,10,15,.55);
+      backdrop-filter: blur(14px);
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
     }
-
-    .miniChartCard:hover,
-    .chartCard:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-card-hover);
-    }
-
-    .miniChartCard::before,
-    .chartCard::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: 
-        radial-gradient(650px 220px at 15% 0%, rgba(0,200,255,.12), transparent 60%),
-        radial-gradient(650px 220px at 85% 100%, rgba(120,0,255,.09), transparent 60%);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .miniChartCard > *,
-    .chartCard > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .miniChartHead,
-    .chartHead {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .miniChartHead strong,
-    .chartHead strong {
-      font-weight: 800;
+    .tabBtn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
       color: var(--text-primary);
-      font-size: 16px;
-    }
-
-    .chartControls {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .chartSelect {
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.8);
-      color: var(--text-primary);
-      border-radius: var(--radius-md);
       padding: 10px 12px;
-      font-weight: 700;
-      outline: none;
-      cursor: pointer;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .04em;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
       transition: var(--transition-smooth);
+      user-select:none;
+      white-space: nowrap;
     }
-
-    .chartSelect:hover {
-      border-color: var(--stroke-glow);
+    .tabBtn:hover{ border-color: var(--stroke-glow); box-shadow: 0 0 0 4px rgba(0,200,255,.08); transform: translateY(-1px); }
+    .tabBtn:active{ transform: translateY(0); }
+    .tabBtn .ti{
+      width: 24px; height: 24px;
+      border-radius: 8px;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.14), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.22);
+      font-size: 13px;
     }
-
-    .chartSelect:focus {
-      border-color: var(--brand-primary);
+    .tabBtn.active{
+      border-color: rgba(0,200,255,.40);
+      background: radial-gradient(600px 220px at 15% 0%, rgba(0,200,255,.16), transparent 65%), rgba(255,255,255,.05);
       box-shadow: var(--shadow-glow);
     }
 
-    .miniChartCanvasWrap,
-    .chartCanvasWrap {
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
+    /* ===========================================================================
+       🏆 Dashboard Header (compact)
+       =========================================================================== */
+    .dashHeader{
+      border:1px solid rgba(255,255,255,.12);
+      background: radial-gradient(900px 260px at 18% 0%, rgba(0,200,255,.14), transparent 60%),
+                  radial-gradient(800px 240px at 92% 100%, rgba(120,0,255,.10), transparent 62%),
+                  rgba(255,255,255,.04);
+      backdrop-filter: blur(18px);
       border-radius: var(--radius-lg);
       padding: 16px;
-    }
-
-    canvas.miniChart,
-    canvas.chart {
-      width: 100%;
-      height: 240px;
-      display: block;
-    }
-
-    .miniChartHint,
-    .chartHint {
-      margin-top: 16px;
-      color: var(--text-muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    /* ===========================================================================
-       📊 CHARTS GRID PREMIUM
-       =========================================================================== */
-    .chartsGrid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-    }
-
-    .evalMini {
-      margin-top: 20px;
-      border-top: 1px solid var(--stroke-regular);
-      padding-top: 20px;
-      color: var(--text-secondary);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .evalRow {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-top: 16px;
-    }
-
-    .miniChip {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 13px;
-      white-space: nowrap;
-      backdrop-filter: blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
       transition: var(--transition-smooth);
+      box-shadow: 0 14px 30px rgba(0,0,0,.26);
     }
+    .dashHeader:hover{ transform: translateY(-1px); box-shadow: var(--shadow-card-hover); }
+    .dashLeft{ display:flex; align-items:center; gap:14px; min-width:0; }
+    .avatar{
+      width: 52px; height: 52px;
+      border-radius: 18px;
+      display:grid; place-items:center;
+      border: 1px solid rgba(0,200,255,.55);
+      background: linear-gradient(145deg, rgba(0,200,255,.18), rgba(0,200,255,.06));
+      color: rgba(210,250,255,.95);
+      font-weight: 950;
+      letter-spacing:.05em;
+      box-shadow: 0 0 18px rgba(0,200,255,.12);
+      flex-shrink:0;
+    }
+    .dashTitle{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .dashTitle b{ color: var(--text-primary); font-weight: 950; font-size: 16px; letter-spacing:.02em; }
+    .dashTitle small{ color: var(--text-muted); font-weight: 800; font-size: 12px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
 
-    .miniChip:hover {
-      border-color: var(--stroke-glow);
-      transform: translateY(-2px);
+    .miniGhost{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+      transition: var(--transition-smooth);
+      backdrop-filter: blur(10px);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      white-space: nowrap;
     }
-
-    .miniChip .ic {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, rgba(0,200,255,.15), rgba(0,200,255,.05));
-      border: 1px solid rgba(0,200,255,.3);
-      color: rgba(186, 242, 255, 0.95);
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    /* ===========================================================================
-       📱 RESPONSIVE PREMIUM
-       =========================================================================== */
-    @media (max-width: 1024px) {
-      .chartsGrid {
-        grid-template-columns: 1fr;
-      }
-      
-      .logGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 768px) {
-      .planCTA {
-        min-width: 0;
-        justify-content: flex-start;
-      }
-      
-      .planBanner {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 20px;
-      }
-      
-      .todayCard {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 20px;
-      }
-      
-      .progressTxt {
-        min-width: 0;
-        text-align: left;
-      }
-      
-      .exDone {
-        width: 48px;
-      }
-      
-      .exCard {
-        padding: 16px;
-      }
-      
-      .exerciseName {
-        white-space: normal;
-      }
-      
-      .chips .chip {
-        font-size: 12px;
-      }
-      
-      .logGrid {
-        grid-template-columns: 1fr;
-      }
-      
-      .dashHeader {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 20px;
-      }
-      
-      .dashRight {
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .topbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-      
-      .nav-right {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .kpi {
-        grid-template-columns: 1fr;
-      }
-      
-      .progressRow {
-        flex-direction: column;
-      }
-      
-      .progressRow .field {
-        flex: 1 1 100%;
-      }
-    }
+    .miniGhost:hover{ border-color: var(--stroke-glow); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
+    .miniGhost:active{ transform: translateY(0); }
 
     /* ===========================================================================
-       ✨ ANIMACIONES DE ENTRADA
+       🃏 Cards shared
        =========================================================================== */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .dashHeader,
+    .card,
     .quickCard,
     .planBanner,
     .todayCard,
     .progressCard,
     .chartCard,
     .miniChartCard,
-    details.day {
-      animation: fadeInUp 0.6s cubic-bezier(.4,0,.2,1) forwards;
-    }
-
-    .dashHeader { animation-delay: 0.1s; }
-    .quickCard { animation-delay: 0.2s; }
-    .planBanner { animation-delay: 0.3s; }
-    .todayCard { animation-delay: 0.4s; }
-    .progressCard { animation-delay: 0.5s; }
-    .chartCard { animation-delay: 0.6s; }
-    .miniChartCard { animation-delay: 0.7s; }
-    details.day:nth-child(1) { animation-delay: 0.8s; }
-    details.day:nth-child(2) { animation-delay: 0.9s; }
-    details.day:nth-child(3) { animation-delay: 1.0s; }
-
-    /* ===========================================================================
-       🎨 CONTENEDOR PRINCIPAL
-       =========================================================================== */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .hero {
-      min-height: calc(100vh - 80px);
-      padding: 20px 0;
-    }
-
-    .card {
-      border: 1px solid var(--stroke-regular);
+    details.day{
+      border: 1px solid rgba(255,255,255,.12);
       background: var(--surface-card);
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(18px);
       border-radius: var(--radius-lg);
-      padding: 24px;
-      margin-top: 24px;
       transition: var(--transition-smooth);
     }
-
-    .card:hover {
+    .card:hover,
+    .quickCard:hover,
+    .planBanner:hover,
+    .todayCard:hover,
+    .progressCard:hover,
+    .chartCard:hover,
+    .miniChartCard:hover{
       border-color: var(--stroke-glow);
+      transform: translateY(-1px);
       box-shadow: var(--shadow-card-hover);
     }
 
-    .card .head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--stroke-regular);
+    /* ===========================================================================
+       🎯 Quick Card
+       =========================================================================== */
+    .quickCard{ padding: 16px; margin-top: 14px; }
+    .quickHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .quickHead b{
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing:.08em;
+      font-weight: 950;
+      color: var(--text-muted);
     }
 
-    .card .head strong {
-      font-weight: 800;
-      font-size: 18px;
+    .quickList{ display:flex; flex-direction:column; gap:12px; }
+
+    .quickRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
+      color: inherit;
+      transition: var(--transition-smooth);
+    }
+    .quickRow:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(0,200,255,.25);
+      box-shadow: 0 0 0 4px rgba(0,200,255,.06);
+      transform: translateY(-1px);
+    }
+    .qLeft{ display:flex; align-items:center; gap:12px; min-width:0; }
+    .qIco{
+      width: 46px; height: 46px;
+      border-radius: 16px;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.16), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.24);
+      box-shadow: 0 0 18px rgba(0,200,255,.10);
+      font-size: 20px;
+      flex-shrink:0;
+    }
+    .qTxt{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .qTxt b{ color: var(--text-primary); font-weight: 950; font-size: 14px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .qTxt small{ color: var(--text-muted); font-weight: 800; font-size: 12px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+
+    .qAct{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 950;
+      font-size: 12px;
       color: var(--text-primary);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      backdrop-filter: blur(10px);
+      flex-shrink:0;
     }
+    .qDot{ width:10px; height:10px; border-radius:50%; }
+    .qOk .qDot{ background: var(--success); box-shadow: 0 0 12px rgba(43,213,118,.32); }
+    .qWarn .qDot{ background: var(--warning); box-shadow: 0 0 12px rgba(255,211,110,.32); }
+    .qBad .qDot{ background: var(--error); box-shadow: 0 0 12px rgba(255,90,103,.32); }
 
-    .metaLine {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: center;
+    /* ===========================================================================
+       🏷 Pills
+       =========================================================================== */
+    .pill, .statusPill, .miniPill, .tinyTag{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      backdrop-filter: blur(10px);
+      font-weight: 900;
+      font-size: 12px;
       color: var(--text-secondary);
-      font-size: 13px;
-      margin-bottom: 20px;
+      transition: var(--transition-smooth);
+      white-space: nowrap;
     }
+    .pill:hover, .statusPill:hover, .miniPill:hover, .tinyTag:hover{ border-color: var(--stroke-glow); }
 
-    .notice {
-      border: 1px solid var(--stroke-regular);
-      background: rgba(10,10,15,.6);
-      border-radius: var(--radius-lg);
-      padding: 24px;
+    .planPill{ font-weight: 950 !important; }
+    .planOk{ background: rgba(43,213,118,.12) !important; border-color: rgba(43,213,118,.35) !important; color: rgba(220,255,235,.95) !important; }
+    .planWarn{ background: rgba(255,211,110,.12) !important; border-color: rgba(255,211,110,.35) !important; color: rgba(255,244,210,.95) !important; }
+    .planBad{ background: rgba(255,90,103,.12) !important; border-color: rgba(255,90,103,.35) !important; color: rgba(255,230,233,.95) !important; }
+
+    .statusPill{ color: var(--text-primary); }
+    .dot{ width:10px; height:10px; border-radius:50%; background: var(--text-muted); }
+    .stOk{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
+    .stOk .dot{ background: var(--success); box-shadow: 0 0 12px rgba(43,213,118,.28); }
+    .stWarn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
+    .stWarn .dot{ background: var(--warning); box-shadow: 0 0 12px rgba(255,211,110,.28); }
+    .stBad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
+    .stBad .dot{ background: var(--error); box-shadow: 0 0 12px rgba(255,90,103,.28); }
+
+    /* ===========================================================================
+       🎪 Plan Banner
+       =========================================================================== */
+    .planBanner{
+      padding: 16px;
+      display:flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 14px;
+      overflow:hidden;
+      position:relative;
+      margin-top: 14px;
+    }
+    .planBanner::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(850px 220px at 15% 0%, rgba(0,200,255,.18), transparent 60%),
+        radial-gradient(850px 220px at 85% 100%, rgba(120,0,255,.12), transparent 60%);
+      opacity:.75;
+      pointer-events:none;
+    }
+    .planBanner > *{ position:relative; z-index:1; }
+
+    .planLeft{ display:flex; flex-direction:column; gap:10px; min-width:0; }
+    .planTitleRow{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .planTitle{ text-transform: uppercase; letter-spacing:.08em; font-weight: 950; font-size: 12px; color: var(--text-muted); }
+    .planBig{ font-weight: 950; font-size: 20px; color: var(--text-primary); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .planSmall{ color: var(--text-secondary); font-size: 13px; line-height: 1.4; }
+
+    .planCTA{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      min-width: 210px;
+    }
+    .ctaBtn{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
       color: var(--text-primary);
-      text-align: center;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 950;
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+      white-space: nowrap;
     }
+    .ctaBtn:hover{ border-color: var(--stroke-glow); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
+    .ctaBtn:active{ transform: translateY(0); }
 
-    .notice b {
-      display: block;
-      font-size: 16px;
+    /* ===========================================================================
+       📊 KPI
+       =========================================================================== */
+    .kpi{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .kpi .box{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 14px;
+      transition: var(--transition-smooth);
+      min-width:0;
+    }
+    .kpi .box:hover{ border-color: var(--stroke-glow); box-shadow: 0 14px 30px rgba(0,0,0,.30); transform: translateY(-1px); }
+    .kpi .box > div:first-child{
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .kpi .box b{
+      display:block;
+      font-size: 18px;
+      font-weight: 950;
+      color: var(--text-primary);
       margin-bottom: 10px;
+      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    }
+    .kpiSub{
+      color: var(--text-muted);
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .kpiSub span:last-child{ white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .kIco{
+      width: 28px; height: 28px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.16), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.22);
+      color: rgba(210,250,255,.95);
+      font-weight: 950;
+      font-size: 13px;
+      flex-shrink:0;
     }
 
     /* ===========================================================================
-       ✅ GARANTÍA DE COMPATIBILIDAD
+       🔥 Today Card
        =========================================================================== */
-    /* Se mantienen TODOS los IDs originales */
-    #avatar, #who, #roleBadge, #btnLogout,
-    #btnGoTop, #quickCard, #quickPlanPill,
-    #actCharts, #actRutina, #quickWhats, #actWhats,
-    #progressCard, #bwKg, #bwWaist, #bwNotes,
-    #bwSave, #bwHistory, #bodyChartCard, #bodyMetric,
-    #bodyChart, #chartsWrap, #bioMetric, #bioChart,
-    #measMetric, #measChart, #evalMiniDetails, #evalMiniList,
-    #planBanner, #planStatusPill, #planBig, #planSmall,
-    #btnWhats, #btnGoToday, #kPlan, #kNivelRow, #kNivel,
-    #kCardio, #kCardio2, #kDias, #todayCard, #todayMain,
-    #todayMuscle, #todayCount, #todayCardioPill, #btnOpenToday,
-    #rutinaBox {
-      /* Todos los IDs están presentes y funcionan */
+    .todayCard{
+      margin-top: 14px;
+      padding: 16px;
+      border-color: rgba(0,200,255,.28);
+      background:
+        radial-gradient(740px 260px at 20% 0%, rgba(0,200,255,.14), transparent 60%),
+        rgba(255,255,255,.04);
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .todayTitle{
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing:.08em;
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+    .todayTitle .flame{
+      width: 34px; height: 34px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      background: rgba(255,120,0,.14);
+      border:1px solid rgba(255,120,0,.28);
+    }
+    .todayMain{ font-weight: 950; font-size: 16px; color: var(--text-primary); }
+    .todayMeta{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .miniPill .mIco{
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.14), rgba(0,200,255,.06));
+      border:1px solid rgba(0,200,255,.20);
+      font-weight: 950;
+      font-size: 12px;
+      color: rgba(210,250,255,.95);
+    }
+
+    /* ===========================================================================
+       📊 Charts + wrappers
+       =========================================================================== */
+    .chartsGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .chartCard, .miniChartCard, .progressCard{ padding: 16px; }
+    .chartHead, .miniChartHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .chartHead strong, .miniChartHead strong{
+      font-weight: 950;
+      color: var(--text-primary);
+      font-size: 15px;
+    }
+    .chartControls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .chartSelect{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.70);
+      color: var(--text-primary);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+      outline:none;
+      cursor:pointer;
+      transition: var(--transition-smooth);
+    }
+    .chartSelect:hover{ border-color: var(--stroke-glow); }
+    .chartSelect:focus{ border-color: var(--brand-primary); box-shadow: var(--shadow-glow); }
+
+    .chartCanvasWrap, .miniChartCanvasWrap{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(10,10,15,.55);
+      border-radius: 18px;
+      padding: 12px;
+    }
+    canvas.chart{ width:100%; height: 240px; display:block; }
+    canvas.miniChart{ width:100%; height: 220px; display:block; }
+    .chartHint, .miniChartHint{
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    /* ===========================================================================
+       📅 Rutina (accordion day)
+       =========================================================================== */
+    .card{ padding: 16px; margin-top: 14px; }
+    .card .head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .card .head strong{ font-weight: 950; font-size: 15px; color: var(--text-primary); }
+
+    details.day{
+      overflow:hidden;
+      margin-top: 12px;
+    }
+    details.day[open]{
+      border-color: rgba(0,200,255,.28);
+      box-shadow: 0 14px 34px rgba(0,0,0,.34);
+    }
+    summary.daySum{
+      list-style:none;
+      cursor:pointer;
+      padding: 14px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      user-select:none;
+    }
+    summary.daySum::-webkit-details-marker{ display:none; }
+    summary.daySum:hover{ background: rgba(255,255,255,.03); }
+
+    .dayLeft{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .dayLeft b{
+      font-weight: 950;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      font-size: 13px;
+      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    }
+    .dayLeft .sub{
+      font-size: 12px;
+      color: var(--text-muted);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .chev{
+      width: 40px; height: 40px;
+      border-radius: 16px;
+      display:grid; place-items:center;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text-primary);
+      font-weight: 950;
+      transition: var(--transition-smooth);
+      flex-shrink:0;
+    }
+    details[open] .chev{
+      transform: rotate(180deg);
+      border-color: rgba(0,200,255,.28);
+      background: rgba(0,200,255,.08);
+    }
+    .dayBody{
+      padding: 14px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* Progreso bar */
+    .progressRowBar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    .bar{
+      flex:1;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      position:relative;
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, var(--brand-primary), rgba(0,200,255,.70));
+      transition: width .55s cubic-bezier(.4,0,.2,1);
+    }
+    .progressTxt{
+      min-width: 110px;
+      text-align:right;
+      color: var(--text-primary);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    /* Exercise card */
+    .exCard{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      margin-top: 12px;
+      transition: var(--transition-smooth);
+    }
+    .exCard:hover{
+      border-color: rgba(0,200,255,.22);
+      box-shadow: 0 0 0 4px rgba(0,200,255,.05);
+      transform: translateY(-1px);
+    }
+    .exCard.done{
+      border-color: rgba(43,213,118,.35);
+      background: linear-gradient(145deg, rgba(43,213,118,.10), rgba(255,255,255,.02));
+    }
+
+    .exMain{ flex:1; min-width:0; }
+    .exTitle{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .muscleTag{
+      display:inline-flex;
+      gap: 10px;
+      align-items:center;
+      font-weight: 950;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+    .muscleTag .icon{
+      width: 26px; height: 26px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.16), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.22);
+      color: rgba(210,250,255,.95);
+      font-weight: 950;
+    }
+    .exerciseName{
+      font-weight: 950;
+      font-size: 15px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .doneBadge{
+      margin-left:auto;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(43,213,118,.35);
+      background: rgba(43,213,118,.12);
+      color: rgba(220,255,235,.95);
+      font-weight: 950;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .chips{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      color: var(--text-primary);
+      font-weight: 900;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .chip:hover{ border-color: var(--stroke-glow); transform: translateY(-1px); }
+    .chip .cIcon{
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.14), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.20);
+      font-weight: 950;
+      color: rgba(210,250,255,.95);
+      font-size: 12px;
+    }
+
+    .note{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      margin-top: 6px;
+    }
+    .note .bubble{
+      width: 32px; height: 32px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      background: rgba(242,196,0,.12);
+      border: 1px solid rgba(242,196,0,.26);
+      color: rgba(255, 231, 161, .96);
+      font-weight: 950;
+      flex-shrink:0;
+    }
+
+    .exDone{
+      width: 54px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding-top: 6px;
+      flex-shrink:0;
+    }
+    .exDone input{
+      width: 28px; height: 28px;
+      accent-color: var(--brand-primary);
+      cursor:pointer;
+      transition: var(--transition-smooth);
+    }
+    .exDone input:hover{ transform: scale(1.08); }
+
+    /* Log boxes */
+    .logBox{
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+    }
+    .logTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+    }
+    .logTop b{
+      font-weight: 950;
+      font-size: 12px;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+    .logGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+    }
+    .field{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
+      padding: 12px;
+      transition: var(--transition-smooth);
+    }
+    .field:hover{ border-color: var(--stroke-glow); }
+    .field label{
+      display:block;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 950;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+    .field input, .field textarea, .field select{
+      width:100%;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(10,10,15,.70);
+      color: var(--text-primary);
+      border-radius: 14px;
+      padding: 10px;
+      font-weight: 900;
+      outline:none;
+      transition: var(--transition-smooth);
+    }
+    .field input:focus, .field textarea:focus, .field select:focus{
+      border-color: var(--brand-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .logActions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .miniBtn{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 950;
+      cursor:pointer;
+      user-select:none;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .miniBtn:hover{ border-color: var(--stroke-glow); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
+    .miniBtn:active{ transform: translateY(0); }
+    .okMsg{ color: rgba(220,255,235,.95); font-weight: 900; font-size: 12px; }
+    .errMsg{ color: rgba(255,190,190,.95); font-weight: 900; font-size: 12px; }
+
+    /* Cardio */
+    .cardioBox{
+      border: 1px solid rgba(0,200,255,.24);
+      background:
+        radial-gradient(700px 240px at 20% 0%, rgba(0,200,255,.14), transparent 60%),
+        rgba(10,10,15,.40);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .cardioTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .cardioTop b{ letter-spacing:.06em; font-weight: 950; font-size: 12px; color: var(--text-primary); text-transform: uppercase; }
+    .cardioGrid{ display:flex; gap:10px; flex-wrap:wrap; }
+    .cardioPill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      color: var(--text-primary);
+      font-weight: 900;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .cardioPill .ico{
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, rgba(0,200,255,.14), rgba(0,200,255,.06));
+      border: 1px solid rgba(0,200,255,.20);
+      color: rgba(210,250,255,.95);
+      font-weight: 950;
+      font-size: 12px;
+    }
+    .cardioNote{
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    /* Notices / paywall */
+    .notice{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.55);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      color: var(--text-primary);
+      text-align:center;
+    }
+    .notice b{ display:block; font-size: 14px; margin-bottom: 8px; font-weight: 950; }
+
+    .paywall{
+      border: 1px solid rgba(255,90,103,.38);
+      background: linear-gradient(145deg, rgba(255,90,103,.12), rgba(255,90,103,.05));
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-top: 12px;
+      color: var(--text-primary);
+    }
+    .paywall b{ font-size: 15px; display:block; margin-bottom: 8px; font-weight: 950; }
+    .paywall .sub{ color: var(--text-secondary); line-height:1.45; font-size: 12.5px; }
+
+    /* Meta line */
+    .metaLine{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color: var(--text-secondary);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    /* ===========================================================================
+       🧭 Bottom Nav (app)
+       =========================================================================== */
+    .bottomNav{
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      height: var(--bnav-h);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(10,10,15,.70);
+      backdrop-filter: blur(18px) saturate(165%);
+      box-shadow: 0 16px 36px rgba(0,0,0,.46);
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      gap: 8px;
+      z-index: 2000;
+      padding: 10px 12px;
+    }
+    .bnItem{
+      flex: 1 1 0;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 18px;
+      padding: 10px 8px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      cursor:pointer;
+      user-select:none;
+      transition: var(--transition-smooth);
+      min-width: 0;
+    }
+    .bnItem .bi{
+      width: 34px; height: 34px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text-secondary);
+      font-weight: 950;
+      font-size: 14px;
+    }
+    .bnItem span{
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing:.04em;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .bnItem:hover{
+      background: rgba(255,255,255,.05);
+      border-color: rgba(0,200,255,.22);
+      color: var(--text-primary);
+    }
+    .bnItem.active{
+      background: radial-gradient(650px 240px at 15% 0%, rgba(0,200,255,.18), transparent 65%), rgba(255,255,255,.05);
+      border-color: rgba(0,200,255,.35);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 4px rgba(0,200,255,.06);
+    }
+    .bnItem.active .bi{
+      background: linear-gradient(145deg, rgba(0,200,255,.18), rgba(0,200,255,.06));
+      border-color: rgba(0,200,255,.26);
+      color: rgba(210,250,255,.95);
+      box-shadow: 0 0 18px rgba(0,200,255,.10);
+    }
+
+    /* ===========================================================================
+       📱 Responsive
+       =========================================================================== */
+    @media (max-width: 1024px){
+      .chartsGrid{ grid-template-columns: 1fr; }
+      .logGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .kpi{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px){
+      .topbar{ height:auto; padding: 12px 12px; }
+      .brandWrap{ display:flex; flex-direction:column; line-height:1; }
+      .stickyTabs{ top: calc(var(--topbar-h) + 8px); }
+      .planBanner{ flex-direction:column; }
+      .planCTA{ justify-content:flex-start; min-width:0; }
+      .todayCard{ flex-direction:column; align-items: stretch; }
+      .progressTxt{ min-width: 0; text-align:left; }
+      .logGrid{ grid-template-columns: 1fr; }
+      .exDone{ width: 48px; }
+      .exerciseName{ white-space: normal; }
+    }
+
+    /* ===========================================================================
+       ✨ Entrada
+       =========================================================================== */
+    @keyframes fadeInUp{
+      from{ opacity:0; transform: translateY(14px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+    .dashHeader, .stickyTabs, .quickCard, .planBanner, .todayCard, .progressCard, .chartCard, .miniChartCard, details.day, .card{
+      animation: fadeInUp .55s cubic-bezier(.4,0,.2,1) both;
     }
   </style>
 </head>
 
 <body data-page="socio">
-  <!-- 🎯 Topbar Premium -->
+  <!-- 🎯 Topbar (App Header) -->
   <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+    <div class="brandWrap">
+      <div class="brand">
+        <span class="mah">MAH</span><span class="fit">FIT</span>
+      </div>
+      <small style="display:block;color:var(--text-muted);font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;">
+        Socio · Panel
+      </small>
+    </div>
 
-    <div class="nav-right" style="gap:12px; flex-wrap:wrap;">
+    <div class="nav-right">
       <span class="db-badge">
         <span id="dbDot" class="db-dot pending"></span>
         <span id="dbText">Conectando...</span>
       </span>
 
-      <span>Hola, <b id="who"></b></span>
-      <span id="roleBadge" class="badge"></span>
-      <button id="btnLogout" class="btn ghost small">Salir</button>
+      <div class="helloLine">
+        <span>Hola, <b id="who" style="color:var(--text-primary);font-weight:950;"></b></span>
+        <span id="roleBadge" class="badge"></span>
+        <button id="btnLogout" class="btn ghost small">Salir</button>
+      </div>
     </div>
   </header>
 
-  <!-- 🎯 Contenido Principal -->
-  <main class="hero">
+  <main class="appShell hero">
     <div class="container">
 
-      <!-- 🏆 Dashboard Header Premium -->
-      <div class="dashHeader">
+      <!-- 🏆 Header -->
+      <div class="dashHeader" id="sectionHome">
         <div class="dashLeft">
           <div class="avatar" id="avatar">MF</div>
           <div class="dashTitle">
             <b>MAH FIT</b>
-            <small>Panel del Socio</small>
+            <small>Tu progreso y rutina, todo en un lugar</small>
           </div>
         </div>
         <div class="dashRight">
@@ -1886,7 +1258,16 @@
         </div>
       </div>
 
-      <!-- 🎯 Mi Plan - Quick Access -->
+      <!-- 🧭 Sticky Tabs -->
+      <div class="stickyTabs" aria-label="Navegación rápida">
+        <button class="tabBtn active" type="button" data-jump="#quickCard"><span class="ti">⚡</span>Inicio</button>
+        <button class="tabBtn" type="button" data-jump="#progressCard"><span class="ti">📈</span>Progreso</button>
+        <button class="tabBtn" type="button" data-jump="#chartsWrap"><span class="ti">📊</span>Gráficos</button>
+        <button class="tabBtn" type="button" data-jump="#todayCard"><span class="ti">🔥</span>Hoy</button>
+        <button class="tabBtn" type="button" data-jump="#rutinaBox"><span class="ti">🏋️</span>Rutina</button>
+      </div>
+
+      <!-- 🎯 Mi Plan - Quick Access (IDs intactos) -->
       <div class="quickCard" id="quickCard">
         <div class="quickHead">
           <b>Mi plan</b>
@@ -1929,25 +1310,25 @@
         </div>
       </div>
 
-      <!-- 📊 Progreso Corporal Premium -->
+      <!-- 📊 Progreso Corporal -->
       <div class="progressCard" id="progressCard" style="display:none;">
-        <div class="head" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-          <strong>Tu progreso</strong>
+        <div class="head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <strong style="font-weight:950;color:var(--text-primary);font-size:15px;">Tu progreso</strong>
           <span class="pill">Peso corporal</span>
         </div>
 
-        <div class="progressRow">
-          <div class="field">
+        <div class="progressRow" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;">
+          <div class="field" style="flex:1 1 140px;">
             <label>Peso (kg)</label>
             <input id="bwKg" type="number" step="0.1" placeholder="Ej: 74.6">
           </div>
 
-          <div class="field">
+          <div class="field" style="flex:1 1 160px;">
             <label>Cintura (cm) (opcional)</label>
             <input id="bwWaist" type="number" step="0.1" placeholder="Ej: 86.0">
           </div>
 
-          <div class="field" style="flex: 2 1 240px;">
+          <div class="field" style="flex:2 1 220px;">
             <label>Notas (opcional)</label>
             <input id="bwNotes" type="text" placeholder="Ej: dormí poco / me sentí pesado">
           </div>
@@ -1955,10 +1336,10 @@
           <button class="ctaBtn" id="bwSave" type="button"><span>💾</span><span>Guardar</span></button>
         </div>
 
-        <div class="history" id="bwHistory">—</div>
+        <div class="history" id="bwHistory" style="margin-top:12px;border-top:1px solid rgba(255,255,255,.10);padding-top:12px;color:var(--text-secondary);font-size:12.5px;line-height:1.45;">—</div>
 
         <!-- 📈 Gráfico Progreso -->
-        <div class="miniChartCard" id="bodyChartCard" style="display:none;">
+        <div class="miniChartCard" id="bodyChartCard" style="display:none;margin-top:12px;">
           <div class="miniChartHead">
             <strong>Gráfico progreso</strong>
             <div class="chartControls">
@@ -1980,9 +1361,7 @@
         </div>
       </div>
 
-      <div class="sp16"></div>
-
-      <!-- 📊 Gráficos de Evaluaciones Premium -->
+      <!-- 📊 Gráficos Evaluaciones -->
       <div id="chartsWrap" style="display:none;">
         <div class="chartsGrid">
 
@@ -2005,21 +1384,16 @@
             </div>
 
             <div class="chartHint">
-              Muestra las <b>últimas 12 evaluaciones</b>. 
+              Muestra las <b>últimas 12 evaluaciones</b>.
             </div>
 
-            <details class="evalMini" id="evalMiniDetails">
-              <summary style="
-                cursor:pointer; user-select:none;
-                display:flex; align-items:center; justify-content:space-between; gap:14px;
-                font-weight:800;
-              ">
+            <details class="evalMini" id="evalMiniDetails" style="margin-top:12px;border-top:1px solid rgba(255,255,255,.10);padding-top:12px;">
+              <summary style="cursor:pointer; user-select:none; display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:950; color:var(--text-primary);">
                 <span>Historial últimas 6</span>
                 <span class="pill">Ver</span>
               </summary>
-
-              <div style="margin-top:16px;">
-                <div id="evalMiniList" class="evalRow"></div>
+              <div style="margin-top:12px;">
+                <div id="evalMiniList" class="evalRow" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;"></div>
               </div>
             </details>
           </div>
@@ -2044,16 +1418,14 @@
             </div>
 
             <div class="chartHint">
-              Puedes cambiar la métrica desde el selector para ver tu progreso por parámetro.
+              Cambia la métrica desde el selector para ver tu progreso por parámetro.
             </div>
           </div>
 
         </div>
-
-        <div class="sp16"></div>
       </div>
 
-      <!-- 🎪 Banner Plan Premium -->
+      <!-- 🎪 Banner Plan -->
       <div id="planBanner" class="planBanner" style="display:none;">
         <div class="planLeft">
           <div class="planTitleRow">
@@ -2065,7 +1437,7 @@
         </div>
         <div class="planCTA">
           <a id="btnWhats" class="ctaBtn" href="https://wa.me/56955245399?text=Hola profesor, le quiero hacer una consulta sobre..." target="_blank" rel="noopener">
-            <span>💬</span><span>Hablar por WhatsApp</span>
+            <span>💬</span><span>WhatsApp</span>
           </a>
           <button id="btnGoToday" class="ctaBtn" type="button" style="display:none;">
             <span>🔥</span><span>Ir a hoy</span>
@@ -2073,9 +1445,7 @@
         </div>
       </div>
 
-      <div class="sp16"></div>
-
-      <!-- 📊 KPI Cards Premium -->
+      <!-- KPI -->
       <div class="kpi">
         <div class="box">
           <div>Plan</div>
@@ -2102,11 +1472,9 @@
         </div>
       </div>
 
-      <div class="sp18"></div>
-
-      <!-- 🔥 Entrenamiento de Hoy Premium -->
+      <!-- 🔥 Hoy -->
       <div id="todayCard" class="todayCard" style="display:none;">
-        <div class="todayLeft">
+        <div class="todayLeft" style="display:flex;flex-direction:column;gap:10px;min-width:0;">
           <div class="todayTitle"><span class="flame">🔥</span> Entrenamiento de hoy</div>
           <div id="todayMain" class="todayMain">-</div>
           <div class="todayMeta">
@@ -2117,14 +1485,12 @@
             </span>
           </div>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
           <button id="btnOpenToday" class="ctaBtn" type="button"><span>✅</span><span>Ver rutina</span></button>
         </div>
       </div>
 
-      <div class="sp18"></div>
-
-      <!-- 📅 Plan de Entrenamiento Premium -->
+      <!-- 📅 Rutina -->
       <div class="card">
         <div class="head">
           <strong>Tu plan de entrenamiento</strong>
@@ -2138,13 +1504,13 @@
 
   <!-- ✅ Scripts Originales (NO MODIFICAR) -->
   <script src="assets/app.js"></script>
+
   <script>
     // ===========================================================================
-    // ✅ JAVASCRIPT ORIGINAL (100% COMPATIBLE)
+    // ✅ JS FUNCIONAL (TU CÓDIGO)
+    // - Mantengo lo que enviaste; solo agrego (al final) UX de tabs/bottom-nav
     // ===========================================================================
-    // NOTA: Todo el JavaScript funcional se mantiene intacto
-    // Solo se ha transformado la interfaz visual (HTML + CSS)
-    
+
     function safe(v, fallback="-"){
       return (v===undefined || v===null || String(v).trim()==="") ? fallback : String(v);
     }
@@ -2155,7 +1521,6 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : null;
     }
-
     function pad2(n){ return String(n).padStart(2,"0"); }
 
     function extractTimeHM(anyTime){
@@ -2163,7 +1528,6 @@
       if(!s) return "";
       const m1 = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
       if(m1) return `${pad2(m1[1])}:${pad2(m1[2])}`;
-
       if(s.includes("T")){
         const d = new Date(s);
         if(!isNaN(d.getTime())) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
@@ -2193,7 +1557,6 @@
     function prettyDT(fecha, hora){
       const ymd = extractDateYMD(fecha) || "";
       const hm = extractTimeHM(hora) || "";
-
       if(!ymd && !hm) return "—";
       if(ymd){
         const [Y,M,D] = ymd.split("-");
@@ -2255,7 +1618,6 @@
       return { total, done, pct };
     }
 
-    // ✅ últimos 7 días
     function withinLast7(isoDate){
       const d = new Date(isoDate + "T00:00:00");
       if(isNaN(d.getTime())) return false;
@@ -2307,7 +1669,6 @@
       return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
-    // ====== LOG IDs ======
     function workoutLogId(rutSocio, fecha, dayLabel, idx){
       return `WL_${normalizeRut(rutSocio)}_${fecha}_${String(dayLabel||"DIA").replace(/\s+/g,"_")}_${String(idx??0)}`;
     }
@@ -2331,9 +1692,9 @@
       return (getBodyLogForRut(rutSocio)||[]).find(x => String(x.entryId) === id) || null;
     }
 
-    // =========================
-    // ✅ CHART ENGINE (vanilla canvas) + sublabels (fecha)
-    // =========================
+    /* =========================
+       ✅ CHART ENGINE (vanilla canvas) + sublabels (fecha)
+       ========================= */
     function setupCanvas(canvas){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const rect = canvas.getBoundingClientRect();
@@ -2346,8 +1707,6 @@
       return { ctx, w, h };
     }
 
-    // compat wrapper: drawLineChart(canvas, labels, values, opts)
-    // nuevo:         drawLineChart(canvas, labels, subLabels, values, opts)
     function drawLineChart(canvas, labels, a3, a4, a5){
       let subLabels = null;
       let values = null;
@@ -2359,7 +1718,6 @@
         opts = a5 || {};
       }else{
         values = a3;
-        optsTHEN_OPTS = a4;
         opts = (typeof a4 === "object" && !Array.isArray(a4)) ? a4 : (a5 || {});
       }
 
@@ -2370,8 +1728,6 @@
       const ih = h - padT - padB;
 
       ctx.clearRect(0,0,w,h);
-      ctx.fillStyle = "rgba(0,0,0,.00)";
-      ctx.fillRect(0,0,w,h);
 
       const nums = (values||[]).filter(v => typeof v === "number" && isFinite(v));
       if(nums.length < 2){
@@ -2391,7 +1747,6 @@
       min = min - margin;
       max = max + margin;
 
-      // grid
       ctx.strokeStyle = "rgba(255,255,255,.08)";
       ctx.lineWidth = 1;
       const gridN = 4;
@@ -2403,7 +1758,6 @@
         ctx.stroke();
       }
 
-      // y labels
       ctx.fillStyle = "rgba(255,255,255,.65)";
       ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
       for(let i=0;i<=gridN;i++){
@@ -2412,7 +1766,6 @@
         ctx.fillText(String(Math.round(v*10)/10), 8, y+4);
       }
 
-      // x labels + sublabels
       ctx.fillStyle = "rgba(255,255,255,.70)";
       ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
       const step = Math.max(1, Math.floor(labels.length / 6));
@@ -2429,7 +1782,6 @@
         }
       }
 
-      // line
       ctx.strokeStyle = opts.stroke || "rgba(0,200,255,.85)";
       ctx.lineWidth = 2.5;
       ctx.lineJoin = "round";
@@ -2440,23 +1792,15 @@
       (values||[]).forEach((v,i)=>{
         const isNum = (typeof v === "number" && isFinite(v));
         const x = padL + (iw/(labels.length-1))*i;
-        if(!isNum){
-          started = false;
-          return;
-        }
+        if(!isNum){ started = false; return; }
         const t = (v - min) / (max - min);
         const y = padT + ih - (t*ih);
 
-        if(!started){
-          ctx.moveTo(x,y);
-          started = true;
-        }else{
-          ctx.lineTo(x,y);
-        }
+        if(!started){ ctx.moveTo(x,y); started = true; }
+        else ctx.lineTo(x,y);
       });
       ctx.stroke();
 
-      // points
       ctx.fillStyle = opts.point || "rgba(0,200,255,.95)";
       (values||[]).forEach((v,i)=>{
         if(!(typeof v === "number" && isFinite(v))) return;
@@ -2470,9 +1814,6 @@
     }
 
     function drawMultiLineChart(canvas, labels, subLabelsOrLines, linesOrSeriesMap, seriesMapMaybe){
-      // compat:
-      // (canvas, labels, lines, seriesMap)
-      // (canvas, labels, subLabels, lines, seriesMap)
       let subLabels = null;
       let lines = null;
       let seriesMap = null;
@@ -2497,9 +1838,7 @@
       const allNums = [];
       (lines||[]).forEach(L=>{
         const arr = seriesMap[L.key] || [];
-        arr.forEach(v=>{
-          if(typeof v === "number" && isFinite(v)) allNums.push(v);
-        });
+        arr.forEach(v=>{ if(typeof v === "number" && isFinite(v)) allNums.push(v); });
       });
 
       if(allNums.length < 2){
@@ -2518,7 +1857,6 @@
       const margin = (max - min) * 0.10;
       min -= margin; max += margin;
 
-      // grid
       ctx.strokeStyle = "rgba(255,255,255,.08)";
       ctx.lineWidth = 1;
       const gridN = 4;
@@ -2527,7 +1865,6 @@
         ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+iw, y); ctx.stroke();
       }
 
-      // y labels
       ctx.fillStyle = "rgba(255,255,255,.65)";
       ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
       for(let i=0;i<=gridN;i++){
@@ -2536,7 +1873,6 @@
         ctx.fillText(String(Math.round(v*10)/10), 8, y+4);
       }
 
-      // x labels + sublabels
       ctx.fillStyle = "rgba(255,255,255,.70)";
       ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
       const step = Math.max(1, Math.floor(labels.length / 6));
@@ -2553,7 +1889,6 @@
         }
       }
 
-      // líneas
       (lines||[]).forEach(L=>{
         const values = seriesMap[L.key] || [];
         ctx.strokeStyle = L.stroke || "rgba(0,200,255,.85)";
@@ -2574,7 +1909,6 @@
         });
         ctx.stroke();
 
-        // puntos
         ctx.fillStyle = L.stroke || "rgba(0,200,255,.95)";
         values.forEach((v,i)=>{
           if(!(typeof v === "number" && isFinite(v))) return;
@@ -2587,7 +1921,6 @@
         });
       });
 
-      // leyenda simple arriba
       ctx.font = "900 11px system-ui, -apple-system, Segoe UI, Roboto";
       let lx = padL, ly = padT + 12;
       (lines||[]).forEach(L=>{
@@ -2598,7 +1931,6 @@
       });
     }
 
-    // ====== Render cardio box (plan + real) ======
     function renderCardioBox(day, rutSocio){
       const plan = day.cardio || null;
       const fecha = isoLocalDate();
@@ -2646,15 +1978,9 @@
               <label>Tipo</label>
               <select data-c-tipo>
                 <option value="">(seleccionar)</option>
-                <option>Caminar</option>
-                <option>Trote</option>
-                <option>Correr</option>
-                <option>Bicicleta</option>
-                <option>Elíptica</option>
-                <option>Escaladora</option>
-                <option>Remo</option>
-                <option>HIIT</option>
-                <option>Otro</option>
+                <option>Caminar</option><option>Trote</option><option>Correr</option>
+                <option>Bicicleta</option><option>Elíptica</option><option>Escaladora</option>
+                <option>Remo</option><option>HIIT</option><option>Otro</option>
               </select>
             </div>
 
@@ -2680,10 +2006,7 @@
               <label>Intensidad (opcional)</label>
               <select data-c-int>
                 <option value="">(—)</option>
-                <option>Suave</option>
-                <option>Moderada</option>
-                <option>Intensa</option>
-                <option>Máxima</option>
+                <option>Suave</option><option>Moderada</option><option>Intensa</option><option>Máxima</option>
               </select>
             </div>
 
@@ -2704,31 +2027,29 @@
           </div>
 
           <div class="logActions">
-  <span class="okMsg" data-c-ok style="display:none;">✅ Cardio guardado</span>
-  <span class="errMsg" data-c-err style="display:none;">❌ Error</span>
-  
-  <!-- 🆕 BOTÓN PARA VER ÚLTIMO REGISTRO -->
-  <button class="miniBtn" type="button"
-    data-view-last-cardio="1"
-    data-rut="${safe(rutSocio)}"
-    data-fecha="${safe(fecha)}"
-    data-day="${safe(dayLabel)}">
-    📋 Ver último registro
-  </button>
-  
-  <button class="miniBtn" type="button"
-    data-save-cardio="1"
-    data-rut="${safe(rutSocio)}"
-    data-fecha="${safe(fecha)}"
-    data-day="${safe(dayLabel)}">
-    💾 Guardar cardio
-  </button>
-</div>
+            <span class="okMsg" data-c-ok style="display:none;">✅ Cardio guardado</span>
+            <span class="errMsg" data-c-err style="display:none;">❌ Error</span>
+
+            <button class="miniBtn" type="button"
+              data-view-last-cardio="1"
+              data-rut="${safe(rutSocio)}"
+              data-fecha="${safe(fecha)}"
+              data-day="${safe(dayLabel)}">
+              📋 Ver último registro
+            </button>
+
+            <button class="miniBtn" type="button"
+              data-save-cardio="1"
+              data-rut="${safe(rutSocio)}"
+              data-fecha="${safe(fecha)}"
+              data-day="${safe(dayLabel)}">
+              💾 Guardar cardio
+            </button>
+          </div>
         </div>
       `;
     }
 
-    // ====== Render ejercicio + registro fuerza real ======
     function renderExerciseCard(e, i, day, rutSocio){
       const doneKey = getDoneKey(rutSocio, day.dia, i);
       const checked = localStorage.getItem(doneKey) === "1" ? "checked" : "";
@@ -2812,28 +2133,27 @@
               </div>
 
               <div class="logActions">
-  <span class="okMsg" data-w-ok style="display:none;">✅ Fuerza guardada</span>
-  <span class="errMsg" data-w-err style="display:none;">❌ Error</span>
-  
-  <!-- 🆕 BOTÓN PARA VER ÚLTIMO REGISTRO -->
-  <button class="miniBtn" type="button"
-    data-view-last-workout="1"
-    data-rut="${safe(rutSocio)}"
-    data-fecha="${safe(fecha)}"
-    data-day="${safe(dayLabel)}"
-    data-idx="${i}">
-    📋 Ver último registro
-  </button>
-  
-  <button class="miniBtn" type="button"
-    data-save-wlog="1"
-    data-rut="${safe(rutSocio)}"
-    data-fecha="${safe(fecha)}"
-    data-day="${safe(dayLabel)}"
-    data-idx="${i}">
-    💾 Guardar fuerza
-  </button>
-</div>
+                <span class="okMsg" data-w-ok style="display:none;">✅ Fuerza guardada</span>
+                <span class="errMsg" data-w-err style="display:none;">❌ Error</span>
+
+                <button class="miniBtn" type="button"
+                  data-view-last-workout="1"
+                  data-rut="${safe(rutSocio)}"
+                  data-fecha="${safe(fecha)}"
+                  data-day="${safe(dayLabel)}"
+                  data-idx="${i}">
+                  📋 Ver último registro
+                </button>
+
+                <button class="miniBtn" type="button"
+                  data-save-wlog="1"
+                  data-rut="${safe(rutSocio)}"
+                  data-fecha="${safe(fecha)}"
+                  data-day="${safe(dayLabel)}"
+                  data-idx="${i}">
+                  💾 Guardar fuerza
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2850,7 +2170,6 @@
       const total = ejercicios.length;
 
       const prog = getDayProgress(rutSocio, day);
-
       const hasCardioPlan = !!(day.cardio && day.cardio.tipo);
       const sumCardio = hasCardioPlan ? ` · <span class="pill">🫀 ${safe(day.cardio.min,"-")} min</span>` : ``;
 
@@ -2888,7 +2207,6 @@
       `;
     }
 
-    // ✅ Render mini historial (últimas 6 evaluaciones)
     function renderEvalMini(rut){
       const box = document.getElementById("evalMiniList");
       if(!box) return;
@@ -2898,7 +2216,7 @@
         .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")) || String(b.hora||"").localeCompare(String(a.hora||"")));
 
       if(!list.length){
-        box.innerHTML = `<span class="miniChip"><span class="ic">ℹ</span>Sin evaluaciones aún</span>`;
+        box.innerHTML = `<span class="pill">ℹ Sin evaluaciones aún</span>`;
         return;
       }
 
@@ -2910,21 +2228,16 @@
         const vis = safe(x.grasaVisceral,"-");
         const cin = safe(x.cinturaCm,"-");
         return `
-          <span class="miniChip" title="${f}">
-            <span class="ic">📌</span>
-            ${f}: <b>${peso}</b>kg · <b>${grasa}</b>%G · <b>${mus}</b>%M · <b>${vis}</b>%V · <b>${cin}</b>cm
+          <span class="pill" title="${f}">
+            📌 ${f}: <b>${peso}</b>kg · <b>${grasa}</b>%G · <b>${mus}</b>%M · <b>${vis}</b>%V · <b>${cin}</b>cm
           </span>
         `;
       }).join("");
     }
 
-    // ✅ Construye data de evaluaciones (labels C#, subLabels fecha/hora) SIN depender de app.js
     function buildEvalChartDataSmart(rut, n=12){
-      // prefer: evaluationsLastN (si existe)
       if(window.evaluationsLastN){
         const raw = (window.evaluationsLastN(rut, n) || []).slice();
-
-        // ordenar por fecha/hora asc (antiguo->nuevo) robusto
         raw.sort((a,b)=>{
           const fa = String(a.fecha||"");
           const fb = String(b.fecha||"");
@@ -2934,14 +2247,12 @@
 
         const labels = raw.map((_,i)=>`C${i+1}`);
         const subLabels = raw.map(x => prettyDT(x.fecha, x.hora));
-
         const getN = (v)=>{ const n = toNum(v); return (typeof n === "number" ? n : null); };
 
         const series = {
           grasaPct: raw.map(x=>getN(x.grasaPct)),
           masaMuscularPct: raw.map(x=>getN(x.masaMuscularPct ?? x.masaMuscularKg)),
           grasaVisceral: raw.map(x=>getN(x.grasaVisceral)),
-
           pesoKg: raw.map(x=>getN(x.pesoKg)),
           cinturaCm: raw.map(x=>getN(x.cinturaCm)),
           caderaCm: raw.map(x=>getN(x.caderaCm)),
@@ -2952,7 +2263,6 @@
         return { labels, subLabels, series, raw };
       }
 
-      // fallback: evaluationsToChartData (si existe)
       if(window.evaluationsToChartData){
         const d = window.evaluationsToChartData(rut, n) || {};
         return {
@@ -2966,11 +2276,9 @@
       return { labels: [], subLabels: [], series: {}, raw: [] };
     }
 
-    // ✅ Data de BodyLog (peso/cintura)
     function buildBodyChartData(rut, n=12){
       const list = (getBodyLogForRut(rut) || []).slice()
-        .sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||""))); // asc
-
+        .sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||"")));
       const last = list.slice(Math.max(0, list.length - n));
       const labels = last.map((_,i)=>`C${i+1}`);
       const subLabels = last.map(x => {
@@ -2983,7 +2291,6 @@
       });
 
       const getN = (v)=>{ const n = toNum(v); return (typeof n === "number" ? n : null); };
-
       const series = {
         pesoKg: last.map(x=>getN(x.pesoKg)),
         cinturaCm: last.map(x=>getN(x.cinturaCm)),
@@ -2991,7 +2298,6 @@
       return { labels, subLabels, series, raw:last };
     }
 
-    // ✅ Render charts (evaluaciones)
     function renderCharts(rut){
       const chartsWrap = document.getElementById("chartsWrap");
       if(!chartsWrap) return;
@@ -3033,7 +2339,6 @@
       plotBio();
       plotMeas();
 
-      // evita duplicar listeners si vuelves a llamar renderCharts
       if(!window.__mahfitSocioChartListeners){
         bioSel.addEventListener("change", plotBio);
         measSel.addEventListener("change", plotMeas);
@@ -3054,7 +2359,6 @@
       renderEvalMini(rut);
     }
 
-    // ✅ Render body chart (peso + cintura)
     function renderBodyChart(rut){
       const card = document.getElementById("bodyChartCard");
       const canvas = document.getElementById("bodyChart");
@@ -3084,16 +2388,10 @@
 
       plot();
       sel.addEventListener("change", plot);
-
-      // para resize
       window.__mahfitBodyPlot = plot;
     }
 
-    // ===========================================================================
-    // ✅ INITIALIZATION (100% ORIGINAL)
-    // ===========================================================================
     document.addEventListener("DOMContentLoaded", async ()=>{
-      // sincroniza cache (si falla, sigue con cache local)
       try{ await syncDown(); }catch(e){}
 
       const user = requireAuth("SOCIO");
@@ -3102,7 +2400,6 @@
       document.querySelector("#who").textContent = user.nombre;
       document.querySelector("#roleBadge").textContent = "SOCIO";
 
-      // avatar iniciales
       try{
         const nm = String(user.nombre||" ").trim();
         const parts = nm.split(/\s+/).filter(Boolean);
@@ -3111,16 +2408,13 @@
         if(av) av.textContent = ini.toUpperCase();
       }catch(e){}
 
-      // WhatsApp
       const btnWhats = document.querySelector("#btnWhats");
       btnWhats.href = buildWhatsLink(user);
 
-      // ✅ PRO: quick links (Mi plan)
       const qPlan = document.getElementById("quickPlanPill");
       const qWhats = document.getElementById("quickWhats");
       if(qWhats) qWhats.href = buildWhatsLink(user);
 
-      // scroll suave
       function goTo(sel){
         const el = document.querySelector(sel);
         if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
@@ -3135,18 +2429,17 @@
           if(e.key === "Enter" || e.key === " "){ e.preventDefault(); el.click(); }
         });
       });
+
       document.getElementById("btnGoTop")?.addEventListener("click", ()=> window.scrollTo({top:0, behavior:"smooth"}));
 
       const box = document.querySelector("#rutinaBox");
       const p = planInfo(user.planFin);
 
-      // pinta pill de Mi plan
       if(qPlan){
         qPlan.textContent = (p.status === "active") ? `Activo · ${p.days} día(s)` : (p.status === "today" ? "Vence hoy" : "Inactivo");
         qPlan.classList.remove("planOk","planWarn","planBad");
         qPlan.classList.add(planClass(p.status, p.days));
       }
-
 
       const planBanner = document.querySelector("#planBanner");
       const planStatusPill = document.querySelector("#planStatusPill");
@@ -3160,28 +2453,26 @@
 
       if(p.status === "active"){
         kPlan.textContent = `Activo · ${p.days} día(s)`;
-        kPlan.style.color = (p.days <= 5) ? "var(--warn)" : "var(--ok)";
+        kPlan.style.color = (p.days <= 5) ? "var(--warning)" : "var(--success)";
         planStatusPill.querySelector("span:last-child").textContent = "ACTIVO";
         planBig.textContent = `Te quedan ${p.days} día(s)`;
         planSmall.textContent = `Vence el ${p.endTxt}. Mantén constancia y a darle 🔥`;
       }else if(p.status === "today"){
         kPlan.textContent = "Vence hoy";
-        kPlan.style.color = "var(--warn)";
+        kPlan.style.color = "var(--warning)";
         planStatusPill.querySelector("span:last-child").textContent = "ÚLTIMO DÍA";
         planBig.textContent = "Tu plan vence hoy";
         planSmall.textContent = `Vence el ${p.endTxt}. Si quieres seguir entrenando, solicita renovación ✅`;
       }else{
         kPlan.textContent = "Inactivo";
-        kPlan.style.color = "var(--bad)";
+        kPlan.style.color = "var(--error)";
         planStatusPill.querySelector("span:last-child").textContent = "INACTIVO";
         planBig.textContent = "Tu plan está inactivo 😕";
         planSmall.textContent = "Renueva tu plan para disfrutar tus entrenamientos y asesorías.";
       }
 
-      // ✅ PROGRESO corporal (solo si plan activo)
       const progressCard = document.querySelector("#progressCard");
 
-      // si plan no está activo => paywall
       if(p.status !== "active" && p.status !== "today"){
         document.querySelector("#kNivel").textContent = "Renueva tu plan";
         document.querySelector("#kDias").textContent = "0";
@@ -3202,16 +2493,10 @@
         return;
       }
 
-      // mostrar progreso
       progressCard.style.display = "block";
-
-      // ✅ Gráficos evaluaciones (con fechas)
       renderCharts(user.rut);
-
-      // ✅ gráfico de progreso peso/cintura (registros del socio)
       renderBodyChart(user.rut);
 
-      // render history body log
       const today = isoLocalDate();
       const bwHistory = document.querySelector("#bwHistory");
       const bodyList = (getBodyLogForRut(user.rut) || []).slice()
@@ -3221,14 +2506,13 @@
       if(latest){
         bwHistory.innerHTML = `
           <div><b>Último registro:</b> ${safe(latest.fecha)} · ${safe(latest.pesoKg,"-")} kg ${latest.cinturaCm ? `· cintura ${safe(latest.cinturaCm)} cm` : ""}</div>
-          ${latest.notas ? `<div style="margin-top:6px;color:rgba(255,255,255,.75);"><b>Notas:</b> ${safe(latest.notas)}</div>` : ``}
-          ${bodyList.length>1 ? `<div style="margin-top:6px;color:rgba(255,255,255,.70);">Historial: ${bodyList.slice(0,6).map(x=>`${safe(x.fecha)} (${safe(x.pesoKg)}kg)`).join(" · ")}</div>` : ``}
+          ${latest.notas ? `<div style="margin-top:8px;color:rgba(255,255,255,.75);"><b>Notas:</b> ${safe(latest.notas)}</div>` : ``}
+          ${bodyList.length>1 ? `<div style="margin-top:8px;color:rgba(255,255,255,.70);">Historial: ${bodyList.slice(0,6).map(x=>`${safe(x.fecha)} (${safe(x.pesoKg)}kg)`).join(" · ")}</div>` : ``}
         `;
       }else{
         bwHistory.textContent = "Aún no registras tu peso. Puedes guardarlo arriba ✅";
       }
 
-      // botón guardar body
       document.querySelector("#bwSave").addEventListener("click", async ()=>{
         const kg = toNum(document.querySelector("#bwKg").value);
         const waist = toNum(document.querySelector("#bwWaist").value);
@@ -3258,7 +2542,6 @@
         }
       });
 
-      // rutina
       const rv2 = rutinaV2DeSocio(user.rut);
       if(!rv2 || !rv2.routine){
         document.querySelector("#kNivel").textContent = "(sin rutina)";
@@ -3269,7 +2552,7 @@
 
         box.innerHTML = `
           <div class="notice">
-            <b>Aún no tienes rutina asignada</b><br>
+            <b>Aún no tienes rutina asignada</b>
             Tu plan está activo, pero todavía no se te asigna una rutina específica. Escríbenos y la dejamos lista 💪
           </div>
         `;
@@ -3290,7 +2573,6 @@
       const nDias = dias.length || 0;
       document.querySelector("#kDias").textContent = String(nDias);
 
-      // cardio semanal REAL (CARDIO_LOG)
       const stats = cardioWeeklyStatsReal(user.rut);
       if(stats.sessions <= 0){
         document.querySelector("#kCardio").textContent = "-";
@@ -3305,7 +2587,6 @@
         document.querySelector("#kCardio2").textContent = zonesTxt ? `${kcalTxt} · ${hrTxt} · ${zonesTxt}` : `${kcalTxt} · ${hrTxt}`;
       }
 
-      // card "hoy"
       const todayCard = document.querySelector("#todayCard");
       const idxToday = pickTodayIndex(nDias);
       const dayToday = dias[idxToday] || dias[0];
@@ -3347,22 +2628,19 @@
         document.querySelector("#todayCardioPill").style.display = "none";
       }
 
-      // render rutina
       box.innerHTML = `
         <div class="metaLine">
           <span class="pill planPill ${planClass(p.status, p.days)}">Plan: ${p.label}</span>
-          <span class="pill">Tu objetivo: ${safe(meta.objetivo,"-")}</span>
+          <span class="pill">Objetivo: ${safe(meta.objetivo,"-")}</span>
           <span class="pill">Actualizado: ${safe(meta.fecha,"-")}</span>
         </div>
         ${dias.map(d=>renderDay(d, user.rut)).join("")}
       `;
 
-      // accordion
       box.querySelectorAll("details.day").forEach(det=>{
         det.addEventListener("toggle", ()=>{ if(det.open) openOnly(det); });
       });
 
-      // check done
       box.querySelectorAll('[data-done]').forEach(chk=>{
         chk.addEventListener("change", ()=>{
           const key = chk.getAttribute("data-done");
@@ -3399,7 +2677,6 @@
         });
       });
 
-      // toggle panel fuerza
       box.addEventListener("click", (ev)=>{
         const t = ev.target.closest("[data-toggle-wlog]");
         if(!t) return;
@@ -3411,7 +2688,6 @@
         panel.style.display = (panel.style.display === "none" || !panel.style.display) ? "block" : "none";
       });
 
-      // guardar fuerza
       box.addEventListener("click", async (ev)=>{
         const btn = ev.target.closest("[data-save-wlog]");
         if(!btn) return;
@@ -3450,12 +2726,10 @@
           idx: idx,
           musculo: btn.getAttribute("data-mus") || "",
           ejercicio: btn.getAttribute("data-ej") || "",
-
           seriesPlan: btn.getAttribute("data-seriesplan") || "",
           repsPlan: btn.getAttribute("data-repsplan") || "",
           cargaPlan: btn.getAttribute("data-cargaplan") || "",
           descansoPlan: btn.getAttribute("data-descplan") || "",
-
           seriesReal: seriesReal,
           repsReal: repsReal,
           cargaReal: cargaReal,
@@ -3475,7 +2749,6 @@
         }
       });
 
-      // guardar cardio
       box.addEventListener("click", async (ev)=>{
         const btn = ev.target.closest("[data-save-cardio]");
         if(!btn) return;
@@ -3540,10 +2813,78 @@
         }
       });
 
-      // logout
       document.querySelector("#btnLogout").addEventListener("click", ()=>{
         clearSession();
         window.location.href = "index.html";
+      });
+
+      /* =========================================================
+         🧭 UX EXTRA (NO TOCA TU LÓGICA)
+         - Tabs sticky + bottom nav
+         ========================================================= */
+      const jump = (sel)=>{
+        const el = document.querySelector(sel);
+        if(!el) return;
+        el.scrollIntoView({ behavior:"smooth", block:"start" });
+      };
+
+      // Tabs click
+      document.querySelectorAll("[data-jump]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const sel = btn.getAttribute("data-jump");
+          jump(sel);
+        });
+      });
+
+      // Bottom nav (insert)
+      const bnav = document.createElement("nav");
+      bnav.className = "bottomNav";
+      bnav.innerHTML = `
+        <button class="bnItem active" type="button" data-bjump="#quickCard"><div class="bi">⚡</div><span>Inicio</span></button>
+        <button class="bnItem" type="button" data-bjump="#progressCard"><div class="bi">📈</div><span>Progreso</span></button>
+        <button class="bnItem" type="button" data-bjump="#chartsWrap"><div class="bi">📊</div><span>Gráficos</span></button>
+        <button class="bnItem" type="button" data-bjump="#todayCard"><div class="bi">🔥</div><span>Hoy</span></button>
+        <button class="bnItem" type="button" data-bjump="#rutinaBox"><div class="bi">🏋️</div><span>Rutina</span></button>
+      `;
+      document.body.appendChild(bnav);
+
+      bnav.querySelectorAll("[data-bjump]").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          const sel = b.getAttribute("data-bjump");
+          jump(sel);
+        });
+      });
+
+      // Highlight active section (simple)
+      const sections = [
+        { sel:"#quickCard", tab:0 },
+        { sel:"#progressCard", tab:1 },
+        { sel:"#chartsWrap", tab:2 },
+        { sel:"#todayCard", tab:3 },
+        { sel:"#rutinaBox", tab:4 },
+      ];
+      const bnItems = Array.from(bnav.querySelectorAll(".bnItem"));
+      const tabBtns = Array.from(document.querySelectorAll(".tabBtn"));
+
+      const setActive = (idx)=>{
+        bnItems.forEach((x,i)=>x.classList.toggle("active", i===idx));
+        tabBtns.forEach((x,i)=>x.classList.toggle("active", i===idx));
+      };
+
+      // Observa secciones visibles (solo si existen/están visibles)
+      const obs = new IntersectionObserver((entries)=>{
+        const visible = entries
+          .filter(e=>e.isIntersecting)
+          .sort((a,b)=>b.intersectionRatio - a.intersectionRatio)[0];
+        if(!visible) return;
+
+        const i = sections.findIndex(s => s.sel === "#" + visible.target.id);
+        if(i >= 0) setActive(i);
+      }, { root:null, threshold:[0.20, 0.35, 0.5] });
+
+      sections.forEach(s=>{
+        const el = document.querySelector(s.sel);
+        if(el) obs.observe(el);
       });
     });
   </script>
