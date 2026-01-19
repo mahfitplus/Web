@@ -7,9 +7,13 @@
    - ✅ PRO PATCH: IDs robustos + compat logId/id + fallback sync
    - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
    - ✅ UPDATE: compat masaMuscularPct (para gráficos + socio.html)
+   - ✅ FIX: makeEvalId() robusto (crypto safe)
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7lqbmRL7iTHGX7fGCsVNIGXHOrVvEivZfFci6FBAbA7gqOAA/exec";
+
+/* Debug opcional */
+console.log("✅ app.js cargado OK", API_URL);
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -49,6 +53,40 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7l
     queued.length = 0;
   };
 })();
+// ----------------  helpers ----------------
+
+function formatDelta(value, unit = ""){
+  if(value === null || value === undefined || !Number.isFinite(value)) return null;
+  const sign = value > 0 ? "+" : (value < 0 ? "" : "");
+  const abs = Math.abs(value);
+
+  // 1 decimal si no es entero
+  const v = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
+  return `${sign}${value < 0 ? "-" : ""}${v}${unit ? " " + unit : ""}`.replace("+-","-");
+}
+
+function buildDeltaBadge(delta, unit="", mode="normal"){
+  // mode:
+  // - "normal"   => subir = verde, bajar = rojo (peso, músculo)
+  // - "reverse"  => bajar = verde, subir = rojo (%grasa, visceral)
+
+  if(delta === null || !Number.isFinite(delta)) return "";
+
+  if(delta === 0){
+    return `<div class="kpi-delta flat"><i class="fas fa-minus"></i>0${unit ? " " + unit : ""}</div>`;
+  }
+
+  const isUp = delta > 0;
+  const isReverse = (mode === "reverse");
+
+  const cls = (isUp ^ isReverse) ? "up" : "down"; // XOR: invierte si reverse
+  const icon = isUp ? "fa-arrow-up" : "fa-arrow-down";
+  const txt = formatDelta(delta, unit);
+
+  return `<div class="kpi-delta ${cls}"><i class="fas ${icon}"></i>${txt}</div>`;
+}
+
+
 
 // ---------------- LocalStorage helpers ----------------
 const LS = {
@@ -195,12 +233,18 @@ function makeBodyId({ rutSocio, fecha }){
 }
 
 /* =========================================================
-   ✅ NUEVO: EVALUATIONS ID builder
+   ✅ NUEVO: EVALUATIONS ID builder (FIX crypto safe)
    ========================================================= */
 function makeEvalId({ rutSocio, fecha }){
   const r = normalizeRut(rutSocio);
   const f = safeStr(fecha, isoLocalDate()).trim();
-  const uid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).slice(0,8);
+
+  const uuidFn =
+    (window.crypto && typeof window.crypto.randomUUID === "function")
+      ? window.crypto.randomUUID.bind(window.crypto)
+      : () => ("00000000" + Math.floor(Math.random() * 1e16).toString(16)).slice(-8);
+
+  const uid = uuidFn().replace(/-/g, "").slice(0,8);
   return `EV_${r}_${f}_${uid}`;
 }
 
@@ -280,7 +324,7 @@ async function syncDown(){
 
   const rt = await apiGet("RUTINAS_TXT");
   setRutinas((rt.rutinas_txt || []).map(x => ({
-    id: x.id || crypto.randomUUID(),
+    id: x.id || window.crypto.randomUUID(),
     rutSocio: normalizeRut(x.rutSocio),
     titulo: x.titulo ?? "",
     detalle: x.detalle ?? "",
@@ -309,7 +353,7 @@ async function syncDown(){
     else templateObj = raw;
 
     return {
-      templateId: x.templateId || crypto.randomUUID(),
+      templateId: x.templateId || window.crypto.randomUUID(),
       nombrePlantilla: x.nombrePlantilla ?? "",
       nivel: x.nivel ?? "",
       objetivo: x.objetivo ?? "",
@@ -348,7 +392,7 @@ async function syncDown(){
   // ✅ NUEVO: EVALUATIONS (con compat masaMuscularPct)
   const ev = await apiGet("EVALUATIONS");
   setEvaluations((ev.evaluations || []).map(x => {
-    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? ""); // 👈 compat
+    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
     return ({
       evalId: String(x.evalId ?? "").trim(),
       rutSocio: normalizeRut(x.rutSocio ?? ""),
@@ -522,7 +566,7 @@ function rutinaV2DeSocio(rutSocio){
 
 function plantillasVisiblesPara(rut){
   const meRut = normalizeRut(rut);
-  return (getPlantillasV2() || []).filter(p=>{
+  return (LS.get("mahfit_plantillas_v2", []) || []).filter(p=>{
     const vis = String(p.visibility || "PRIVADA").toUpperCase().trim();
     const owner = normalizeRut(p.ownerRut || "");
     return vis === "PUBLICA" || owner === meRut;
@@ -647,9 +691,8 @@ function evaluationsToChartData(rut, n=12){
 
   const labels = list.map((x, i)=>{
     const f = String(x.fecha||"").trim();
-    // etiqueta corta: "01-01" o "Control 1"
     if(f && /^\d{4}-\d{2}-\d{2}$/.test(f)){
-     return `${f.slice(8,10)}-${f.slice(5,7)}|${f.slice(0,4)}`;
+      return `${f.slice(8,10)}-${f.slice(5,7)}|${f.slice(0,4)}`;
     }
     return `C${i+1}`;
   });
@@ -846,3 +889,4 @@ window.makeEvalId = makeEvalId;
 window.evaluationsLastN = evaluationsLastN;
 window.evaluationsToChartData = evaluationsToChartData;
 window.toNumClean = toNumClean;
+
