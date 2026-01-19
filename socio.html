@@ -8,7 +8,7 @@
   <!-- ✅ Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- ✅ Chart.js (para Gráficos) -->
+  <!-- ✅ Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -181,85 +181,81 @@
     .action-subtitle { font-size: 12px; color: var(--txt-muted); text-align: center; }
 
     /* KPIs */
-.kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-@media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+    @media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 
-.kpi-item {
-  background-color: var(--surface-2);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-  border: 1px solid var(--stroke);
-}
+    .kpi-item {
+      background-color: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--stroke);
+    }
 
-.kpi-label {
-  display: block;
-  font-size: 12px;
-  color: var(--txt-muted);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
+    .kpi-label {
+      display: block;
+      font-size: 12px;
+      color: var(--txt-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
 
-/* ✅ ahora el KPI es columna: valor grande + pill abajo */
-.kpi-value{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
+    /* ✅ KPI en columna: valor grande + pill */
+    .kpi-value{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
 
-.kpi-main{
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--txt);
-  line-height: 1.1;
-}
+    .kpi-main{
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--txt);
+      line-height: 1.1;
+    }
 
-.kpi-unit{
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--txt-muted);
-  margin-left: 4px;
-}
+    .kpi-unit{
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--txt-muted);
+      margin-left: 4px;
+    }
 
-/* ✅ pill como en tu imagen */
-.kpi-delta{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:800;
-  line-height:1;
-  border:1px solid var(--stroke);
-  background:#fff;
-}
+    /* ✅ pill */
+    .kpi-delta{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+      border:1px solid var(--stroke);
+      background:#fff;
+    }
 
-.kpi-delta i{ font-size:11px; }
+    .kpi-delta i{ font-size:11px; }
 
-.kpi-delta.up{
-  color: var(--success);
-  border-color: rgba(43,213,118,.35);
-  background: rgba(43,213,118,.08);
-}
+    .kpi-delta.up{
+      color: var(--success);
+      border-color: rgba(43,213,118,.35);
+      background: rgba(43,213,118,.08);
+    }
 
-.kpi-delta.down{
-  color: var(--danger);
-  border-color: rgba(255,107,107,.35);
-  background: rgba(255,107,107,.08);
-}
+    .kpi-delta.down{
+      color: var(--danger);
+      border-color: rgba(255,107,107,.35);
+      background: rgba(255,107,107,.08);
+    }
 
-.kpi-delta.flat{
-  color: var(--txt-muted);
-  border-color: var(--stroke);
-  background: var(--surface-3);
-}
-
-    .kpi-label { display: block; font-size: 12px; color: var(--txt-muted); margin-bottom: 6px; font-weight: 500; }
-    .kpi-value { display: block; font-size: 24px; font-weight: 700; color: var(--txt); line-height: 1.2; }
-    .kpi-value small { font-size: 14px; font-weight: 500; color: var(--txt-muted); }
+    .kpi-delta.flat{
+      color: var(--txt-muted);
+      border-color: var(--stroke);
+      background: var(--surface-3);
+    }
 
     /* ACCORDIONS */
     .accordion-section {
@@ -483,6 +479,97 @@
     .nutrition-title { font-size: 16px; font-weight: 800; color: var(--txt); }
     .nutrition-calories { font-size: 13px; color: var(--nutrition); font-weight: 800; }
     .nutrition-items { font-size: 14px; color: var(--txt-2); }
+
+    /* =========================
+       NUEVO: Analisis Músculo-Grasa (OPCION B: %)
+       ========================= */
+    .mg-grid{ display:grid; gap:12px; }
+    .mg-row{
+      display:grid;
+      grid-template-columns: 180px 1fr 120px;
+      gap:12px;
+      align-items:center;
+      padding:10px 12px;
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+    @media (max-width: 640px){
+      .mg-row{ grid-template-columns: 1fr; }
+    }
+    .mg-label b{ display:block; font-size:13px; color:var(--txt); }
+    .mg-label small{ font-size:12px; color:var(--txt-muted); }
+
+    .mg-bar{
+      position:relative;
+      height:16px;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      background:
+        linear-gradient(90deg,
+          rgba(255,107,107,.25) 0%,
+          rgba(255,107,107,.25) 33.33%,
+          rgba(43,213,118,.18) 33.33%,
+          rgba(43,213,118,.18) 66.66%,
+          rgba(255,209,102,.25) 66.66%,
+          rgba(255,209,102,.25) 100%);
+    }
+    .mg-bar::after{
+      content:"Bajo            Normal            Alto";
+      position:absolute;
+      inset:auto 0 -18px 0;
+      font-size:11px;
+      color:var(--txt-muted);
+      display:flex;
+      justify-content:space-between;
+      padding:0 8px;
+      pointer-events:none;
+    }
+    .mg-pin{
+      position:absolute;
+      top:-6px;
+      width:3px;
+      height:28px;
+      border-radius:2px;
+      background: var(--brand);
+      box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+    }
+    .mg-value{
+      text-align:right;
+      font-weight:800;
+      color:var(--txt);
+    }
+    .mg-value small{ font-weight:700; color:var(--txt-muted); }
+
+    /* =========================
+       NUEVO: Historial composición (OPCION B: %)
+       ========================= */
+    .comp-table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      background:#fff;
+    }
+    .comp-table th, .comp-table td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--stroke);
+      font-size:12px;
+      text-align:center;
+      white-space:nowrap;
+    }
+    .comp-table th{
+      background: var(--surface-2);
+      color: var(--txt-2);
+      font-weight:800;
+    }
+    .comp-table tr:last-child td{ border-bottom:none; }
+    .comp-muted{ color: var(--txt-muted); font-weight:800; }
+    .comp-scroll{ overflow:auto; border-radius: var(--radius); }
+
   </style>
 </head>
 
@@ -499,7 +586,6 @@
       </div>
 
       <div class="user-status">
-        <!-- ✅ app.js controla esto -->
         <div id="dbDot" class="db-dot pending"></div>
         <div class="user-info">
           <strong id="userName">Cargando…</strong>
@@ -538,27 +624,26 @@
 
               <!-- KPIs -->
               <div class="kpi-grid">
-  <div class="kpi-item">
-    <span class="kpi-label">Peso</span>
-    <div class="kpi-value" id="kpiPeso"></div>
-  </div>
+                <div class="kpi-item">
+                  <span class="kpi-label">Peso</span>
+                  <div class="kpi-value" id="kpiPeso"></div>
+                </div>
 
-  <div class="kpi-item">
-    <span class="kpi-label">% Grasa</span>
-    <div class="kpi-value" id="kpiGrasa"></div>
-  </div>
+                <div class="kpi-item">
+                  <span class="kpi-label">% Grasa</span>
+                  <div class="kpi-value" id="kpiGrasa"></div>
+                </div>
 
-  <div class="kpi-item">
-    <span class="kpi-label">Masa Muscular</span>
-    <div class="kpi-value" id="kpiMM"></div>
-  </div>
+                <div class="kpi-item">
+                  <span class="kpi-label">% Músculo</span>
+                  <div class="kpi-value" id="kpiMM"></div>
+                </div>
 
-  <div class="kpi-item">
-    <span class="kpi-label">Visceral</span>
-    <div class="kpi-value" id="kpiVisc"></div>
-  </div>
-</div>
-
+                <div class="kpi-item">
+                  <span class="kpi-label">Visceral</span>
+                  <div class="kpi-value" id="kpiVisc"></div>
+                </div>
+              </div>
 
               <div class="divider"></div>
 
@@ -573,7 +658,7 @@
                   <div class="accordion-chevron"><i class="fas fa-chevron-down"></i></div>
                 </button>
                 <div class="accordion-body">
-                  <p class="text-muted">Evaluación  <b>Profesional</b> </p>
+                  <p class="text-muted">Evaluación <b>Profesional</b></p>
                   <div class="btn-group">
                     <button class="btn btn-primary" id="btnVerGraficos"><i class="fas fa-chart-bar"></i> Ver gráficos</button>
                     <button class="btn btn-secondary" id="btnRefrescar"><i class="fas fa-rotate"></i> Refrescar</button>
@@ -645,6 +730,29 @@
             <p>Evolución por fecha</p>
           </div>
           <div class="card-body">
+
+            <!-- ✅ NUEVO (OPCION B): Análisis % y Historial % -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header">
+                <h2>Análisis Músculo-Grasa</h2>
+                <p>% grasa y % muscular (último registro)</p>
+              </div>
+              <div class="card-body">
+                <div id="mgAnalysisBox"></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header">
+                <h2>Historial de Composición Corporal</h2>
+                <p>Últimos registros</p>
+              </div>
+              <div class="card-body">
+                <div id="compHistoryBox"></div>
+              </div>
+            </div>
+
+            <!-- Charts -->
             <div id="chartsWrap" class="charts-grid">
               <div class="chart-card">
                 <div class="chart-title"><i class="fas fa-weight-scale"></i> Peso (kg)</div>
@@ -657,7 +765,7 @@
               </div>
 
               <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-dumbbell"></i> Masa Muscular</div>
+                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
                 <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
               </div>
 
@@ -695,13 +803,13 @@
                 </div>
 
                 <div class="field">
-                  <label for="evalGrasa">Grasa (%)</label>
+                  <label for="evalGrasa">% Grasa</label>
                   <input id="evalGrasa" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 18.2" />
                 </div>
 
                 <div class="field">
-                  <label for="evalMM">Masa muscular (kg)</label>
-                  <input id="evalMM" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 28.4" />
+                  <label for="evalMM">% Masa muscular</label>
+                  <input id="evalMM" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 41.7" />
                 </div>
 
                 <div class="field">
@@ -730,7 +838,7 @@
               </div>
 
               <div class="hint">
-                Tip: si tu evaluación usa “masaMuscularPct”, tu app.js ya la soporta (compat).
+                Tip: en esta versión, “Masa muscular” se maneja como <b>%</b>.
               </div>
             </form>
           </div>
@@ -781,7 +889,7 @@
     </div>
   </div>
 
-  <!-- MODAL NUTRICIÓN (placeholder UI) -->
+  <!-- MODAL NUTRICIÓN -->
   <div class="modal" id="nutritionModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -832,23 +940,17 @@
     </div>
   </nav>
 
-  <!-- ✅ IMPORTANTE:
-       Copia tu app.js (el que me dejaste) a: assets/app.js
-       y asegúrate que este script exista en tu repo.
-  -->
+  <!-- ✅ Tu app.js real (con API_URL, syncDown, requireAuth, saveEvaluation, refreshEvaluations, etc.) -->
   <script src="assets/app.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // DOM helpers
       const $  = (selector, el = document) => el.querySelector(selector);
       const $$ = (selector, el = document) => Array.from(el.querySelectorAll(selector));
 
-      // Estado
       let currentUser = null;
       let charts = { peso:null, grasa:null, mm:null, visc:null };
 
-      // ---- Fecha formateada: 2026-01-13 -> 13-ene-2026
       const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
       function fmtDateShort(iso) {
         const s = String(iso || "").trim();
@@ -872,15 +974,11 @@
         const pid = String(user.planId || "").trim();
         const pt  = String(user.planTipo || "").trim();
         const pfin = String(user.planFin || "").trim();
-
         let label = pid || pt || "—";
         if (pfin) label += ` · hasta ${fmtDateShort(pfin)}`;
         return label;
       }
 
-      // ------------------------------
-      // UI: Notificación
-      // ------------------------------
       function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = 'notification';
@@ -926,9 +1024,6 @@
         }, 3000);
       }
 
-      // ------------------------------
-      // Nav
-      // ------------------------------
       function navigateTo(pageId) {
         $$('.page').forEach(page => page.classList.remove('active'));
         $(`#page-${pageId}`)?.classList.add('active');
@@ -939,8 +1034,13 @@
         const titles = { home: 'Panel Socio', graphs: 'Gráficos', register: 'Registrar', profile: 'Perfil' };
         $("#subtitle").textContent = titles[pageId] || 'Panel Socio';
 
-        // Redibujar charts al entrar (Chart.js a veces necesita resize)
-        if(pageId === "graphs") setTimeout(renderCharts, 50);
+        if(pageId === "graphs") {
+          setTimeout(() => {
+            renderCharts();
+            renderMuscleFatAnalysis();
+            renderCompositionHistory();
+          }, 50);
+        }
       }
 
       function setupNavigation() {
@@ -965,13 +1065,15 @@
           await hardRefresh();
         });
 
-        $("#btnChartsReload")?.addEventListener('click', renderCharts);
+        $("#btnChartsReload")?.addEventListener('click', () => {
+          renderCharts();
+          renderMuscleFatAnalysis();
+          renderCompositionHistory();
+        });
 
-        // Quick actions
         $("#quickWorkout")?.addEventListener('click', () => openModal('workoutModal'));
         $("#quickNutrition")?.addEventListener('click', () => openModal('nutritionModal'));
 
-        // Modal close
         $("#closeWorkoutModal")?.addEventListener('click', () => closeModal('workoutModal'));
         $("#closeNutritionModal")?.addEventListener('click', () => closeModal('nutritionModal'));
 
@@ -1014,94 +1116,82 @@
         document.body.style.overflow = 'auto';
       }
 
-      // ------------------------------
-      // Data render
-      // ------------------------------
       function setUserHeader(user) {
         $("#userName").textContent = user.nombre || user.rut || "Socio/a";
         $("#userPlan").textContent = `Plan: ${planLabel(user)}`;
       }
 
       function setKPIsFromLastEval() {
-  const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
-  const last = last2.length ? last2[last2.length - 1] : null;
-  const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
+        const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
+        const last = last2.length ? last2[last2.length - 1] : null;
+        const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
 
-  const peso  = last ? numClean(last.pesoKg) : null;
-  const grasa = last ? numClean(last.grasaPct) : null;
-  const mm    = last ? numClean(last.masaMuscularKg ?? last.masaMuscularPct) : null;
-  const visc  = last ? numClean(last.grasaVisceral) : null;
+        const peso  = last ? numClean(last.pesoKg) : null;
+        const grasa = last ? numClean(last.grasaPct) : null;
+        const mm    = last ? numClean(last.masaMuscularPct) : null; // ✅ % músculo
+        const visc  = last ? numClean(last.grasaVisceral) : null;
 
-  const pesoPrev  = prev ? numClean(prev.pesoKg) : null;
-  const grasaPrev = prev ? numClean(prev.grasaPct) : null;
-  const mmPrev    = prev ? numClean(prev.masaMuscularKg ?? prev.masaMuscularPct) : null;
-  const viscPrev  = prev ? numClean(prev.grasaVisceral) : null;
+        const pesoPrev  = prev ? numClean(prev.pesoKg) : null;
+        const grasaPrev = prev ? numClean(prev.grasaPct) : null;
+        const mmPrev    = prev ? numClean(prev.masaMuscularPct) : null;
+        const viscPrev  = prev ? numClean(prev.grasaVisceral) : null;
 
-  const dPeso  = (peso !== null && pesoPrev !== null) ? (peso - pesoPrev) : null;
-  const dGrasa = (grasa !== null && grasaPrev !== null) ? (grasa - grasaPrev) : null;
-  const dMM    = (mm !== null && mmPrev !== null) ? (mm - mmPrev) : null;
-  const dVisc  = (visc !== null && viscPrev !== null) ? (visc - viscPrev) : null;
+        const dPeso  = (peso !== null && pesoPrev !== null) ? (peso - pesoPrev) : null;
+        const dGrasa = (grasa !== null && grasaPrev !== null) ? (grasa - grasaPrev) : null;
+        const dMM    = (mm !== null && mmPrev !== null) ? (mm - mmPrev) : null;
+        const dVisc  = (visc !== null && viscPrev !== null) ? (visc - viscPrev) : null;
 
-  // -------- helpers UI delta --------
-  const normalizeDelta = (n) => (Object.is(n, -0) ? 0 : n);
+        const normalizeDelta = (n) => (Object.is(n, -0) ? 0 : n);
 
-  function formatDelta(v, unit=""){
-    if(v === null || v === undefined || !Number.isFinite(v)) return "";
-    v = normalizeDelta(v);
-    const abs = Math.abs(v);
-    const num = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
-    const sign = v > 0 ? "+" : (v < 0 ? "-" : "");
-    return `${sign}${num}${unit ? " " + unit : ""}`;
-  }
+        function formatDelta(v, unit=""){
+          if(v === null || v === undefined || !Number.isFinite(v)) return "";
+          v = normalizeDelta(v);
+          const abs = Math.abs(v);
+          const num = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
+          const sign = v > 0 ? "+" : (v < 0 ? "-" : "");
+          return `${sign}${num}${unit ? " " + unit : ""}`;
+        }
 
-  // mode:
-  // - "normal"  => subir verde / bajar rojo (peso, músculo)
-  // - "reverse" => bajar verde / subir rojo (grasa, visceral)
-  function buildDeltaBadge(delta, unit="", mode="normal"){
-    if(delta === null || delta === undefined || !Number.isFinite(delta)) return "";
-    delta = normalizeDelta(delta);
+        function buildDeltaBadge(delta, unit="", mode="normal"){
+          if(delta === null || delta === undefined || !Number.isFinite(delta)) return "";
+          delta = normalizeDelta(delta);
 
-    if(delta === 0){
-      return `<div class="kpi-delta flat"><i class="fas fa-minus"></i>0${unit ? " " + unit : ""}</div>`;
-    }
+          if(delta === 0){
+            return `<div class="kpi-delta flat"><i class="fas fa-minus"></i>0${unit ? " " + unit : ""}</div>`;
+          }
 
-    const isUp = delta > 0;
-    const reverse = (mode === "reverse");
+          const isUp = delta > 0;
+          const reverse = (mode === "reverse");
 
-    const cls  = (isUp && !reverse) || (!isUp && reverse) ? "up" : "down";
-    const icon = isUp ? "fa-arrow-up" : "fa-arrow-down";
+          const cls  = (isUp && !reverse) || (!isUp && reverse) ? "up" : "down";
+          const icon = isUp ? "fa-arrow-up" : "fa-arrow-down";
 
-    return `<div class="kpi-delta ${cls}"><i class="fas ${icon}"></i>${formatDelta(delta, unit)}</div>`;
-  }
+          return `<div class="kpi-delta ${cls}"><i class="fas ${icon}"></i>${formatDelta(delta, unit)}</div>`;
+        }
 
-  // Render KPI (main + pill)
-  function renderKPI(elId, value, unit, delta, mode){
-    const el = document.getElementById(elId);
-    if(!el) return;
+        function renderKPI(elId, value, unit, delta, mode){
+          const el = document.getElementById(elId);
+          if(!el) return;
 
-    const mainVal = (value === null) ? "—" : (Number.isInteger(value) ? value : value.toFixed(1));
-    const main = `<div class="kpi-main">${mainVal}${unit ? `<span class="kpi-unit">${unit}</span>` : ""}</div>`;
+          const mainVal = (value === null) ? "—" : (Number.isInteger(value) ? value : value.toFixed(1));
+          const main = `<div class="kpi-main">${mainVal}${unit ? `<span class="kpi-unit">${unit}</span>` : ""}</div>`;
+          const pill = (delta !== null) ? buildDeltaBadge(delta, unit || "", mode) : "";
 
-    // Solo mostramos pill si existe penúltimo (delta calculado)
-    const pill = (delta !== null) ? buildDeltaBadge(delta, unit || "", mode) : "";
+          el.innerHTML = main + pill;
+        }
 
-    el.innerHTML = main + pill;
-  }
+        renderKPI("kpiPeso",  peso,  "kg", dPeso,  "normal");
+        renderKPI("kpiGrasa", grasa, "%",  dGrasa, "reverse");
+        renderKPI("kpiMM",    mm,    "%",  dMM,    "normal");   // ✅ % músculo
+        renderKPI("kpiVisc",  visc,  "",   dVisc,  "reverse");
 
-  renderKPI("kpiPeso",  peso,  "kg", dPeso,  "normal");
-  renderKPI("kpiGrasa", grasa, "%",  dGrasa, "reverse");
-  renderKPI("kpiMM",    mm,    "kg", dMM,    "normal");
-  renderKPI("kpiVisc",  visc,  "",   dVisc,  "reverse");
-
-  const hint = document.getElementById("logsHint");
-  if (hint) {
-    hint.textContent = last
-      ? `Última evaluación: ${fmtDateShort(last.fecha)}`
-      : `Aún no hay evaluaciones. Crea tu primer registro en “Registrar”.`;
-  }
-}
-
-
+        const hint = document.getElementById("logsHint");
+        if (hint) {
+          hint.textContent = last
+            ? `Última evaluación: ${fmtDateShort(last.fecha)}`
+            : `Aún no hay evaluaciones. Crea tu primer registro en “Registrar”.`;
+        }
+      }
 
       function renderRecentLogs() {
         const logsList = $("#logsList");
@@ -1128,7 +1218,7 @@
         recent.forEach(ev => {
           const w = numClean(ev.pesoKg);
           const f = numClean(ev.grasaPct);
-          const m = numClean(ev.masaMuscularKg ?? ev.masaMuscularPct);
+          const m = numClean(ev.masaMuscularPct);
           const v = numClean(ev.grasaVisceral);
 
           const el = document.createElement('div');
@@ -1141,7 +1231,7 @@
             <div class="log-metrics">
               <div class="log-metric"><i class="fas fa-weight-scale"></i> ${w ?? "—"}kg</div>
               <div class="log-metric"><i class="fas fa-percent"></i> ${f ?? "—"}%</div>
-              <div class="log-metric"><i class="fas fa-dumbbell"></i> ${m ?? "—"}kg</div>
+              <div class="log-metric"><i class="fas fa-dumbbell"></i> ${m ?? "—"}%</div>
               <div class="log-metric"><i class="fas fa-heart-pulse"></i> ${v ?? "—"}</div>
             </div>
           `;
@@ -1149,9 +1239,6 @@
         });
       }
 
-      // ------------------------------
-      // Rutina modal (desde RUTINAS_V2)
-      // ------------------------------
       function renderRoutineModal() {
         const wrap = $("#routineWrap");
         if(!wrap) return;
@@ -1169,7 +1256,6 @@
           return;
         }
 
-        // Render simple por día
         const html = routine.dias.map((d, idx) => {
           const dia = d.dia || `Día ${idx+1}`;
           const enfoque = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "");
@@ -1200,9 +1286,113 @@
         wrap.innerHTML = html;
       }
 
-      // ------------------------------
-      // Charts
-      // ------------------------------
+      /* ==============================
+         NUEVO: Analisis % + Historial %
+         ============================== */
+      function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+      function renderMuscleFatAnalysis(){
+        const box = document.getElementById("mgAnalysisBox");
+        if(!box || !currentUser) return;
+
+        const last = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 1) : [];
+        const ev = last && last.length ? last[0] : null;
+
+        if(!ev){
+          box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
+          return;
+        }
+
+        const grasaPct  = numClean(ev.grasaPct);
+        const musclePct = numClean(ev.masaMuscularPct);
+
+        // Rangos visuales genéricos (editables)
+        const ranges = {
+          grasa: { min: 5,  max: 55, lowEnd: 15, normEnd: 25, unit:"%", label:"% Grasa Corporal" },
+          musc:  { min: 20, max: 60, lowEnd: 30, normEnd: 45, unit:"%", label:"% Masa Muscular" }
+        };
+
+        function pinLeft(val, r){
+          if(val === null || val === undefined || !Number.isFinite(val)) return 0;
+          const p = (val - r.min) / (r.max - r.min);
+          return clamp(p, 0, 1) * 100;
+        }
+
+        function rowHTML(key, val){
+          const r = ranges[key];
+          const pct = pinLeft(val, r);
+          const show = (val===null) ? "—" : (Number.isInteger(val) ? val : val.toFixed(1));
+          return `
+            <div class="mg-row">
+              <div class="mg-label">
+                <b>${r.label}</b>
+                <small>Rango visual</small>
+              </div>
+              <div style="position:relative;">
+                <div class="mg-bar"></div>
+                <div class="mg-pin" style="left: calc(${pct}% - 1px);"></div>
+              </div>
+              <div class="mg-value">${show} <small>${r.unit}</small></div>
+            </div>
+          `;
+        }
+
+        box.innerHTML = `
+          <div class="mg-grid">
+            ${rowHTML("grasa", grasaPct)}
+            ${rowHTML("musc", musclePct)}
+          </div>
+          <div class="hint" style="margin-top:10px;">
+            Último registro: <b>${fmtDateShort(ev.fecha)}</b>
+          </div>
+        `;
+      }
+
+      function renderCompositionHistory(){
+        const box = document.getElementById("compHistoryBox");
+        if(!box || !currentUser) return;
+
+        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 8) : [];
+        if(!list || !list.length){
+          box.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>No hay historial todavía.</p></div>`;
+          return;
+        }
+
+        const rows = list.map(ev=>{
+          const f = fmtDateShort(ev.fecha);
+          const p = numClean(ev.pesoKg);
+          const m = numClean(ev.masaMuscularPct);
+          const g = numClean(ev.grasaPct);
+          return `
+            <tr>
+              <td class="comp-muted">${f}</td>
+              <td>${p ?? "—"}</td>
+              <td>${m ?? "—"}</td>
+              <td>${g ?? "—"}</td>
+            </tr>
+          `;
+        }).join("");
+
+        box.innerHTML = `
+          <div class="comp-scroll">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Peso (kg)</th>
+                  <th>% Músculo</th>
+                  <th>% Grasa</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      /* ==============================
+         Charts
+         ============================== */
       function destroyCharts() {
         Object.values(charts).forEach(c => { try { c && c.destroy(); } catch(_){} });
         charts = { peso:null, grasa:null, mm:null, visc:null };
@@ -1252,19 +1442,16 @@
         const labels = list.map(x => fmtDateShort(x.fecha));
         const peso  = list.map(x => numClean(x.pesoKg));
         const grasa = list.map(x => numClean(x.grasaPct));
-        const mm    = list.map(x => numClean(x.masaMuscularKg ?? x.masaMuscularPct));
+        const mmPct = list.map(x => numClean(x.masaMuscularPct)); // ✅ % músculo
         const visc  = list.map(x => numClean(x.grasaVisceral));
 
         destroyCharts();
-        charts.peso  = makeLineChart("chartPeso", labels, peso, "Peso");
+        charts.peso  = makeLineChart("chartPeso", labels, peso, "Peso (kg)");
         charts.grasa = makeLineChart("chartGrasa", labels, grasa, "% Grasa");
-        charts.mm    = makeLineChart("chartMM", labels, mm, "Masa Muscular");
+        charts.mm    = makeLineChart("chartMM", labels, mmPct, "% Músculo");
         charts.visc  = makeLineChart("chartVisc", labels, visc, "Grasa Visceral");
       }
 
-      // ------------------------------
-      // Profile page
-      // ------------------------------
       function renderProfile() {
         const body = $("#profileBody");
         if(!body || !currentUser) return;
@@ -1311,14 +1498,10 @@
         $("#btnProfileRefresh")?.addEventListener("click", hardRefresh);
       }
 
-      // ------------------------------
-      // Register: save evaluation
-      // ------------------------------
       function setupRegisterForm() {
         const form = $("#evalForm");
         if(!form) return;
 
-        // default date today (local)
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth()+1).padStart(2,'0');
@@ -1341,14 +1524,13 @@
 
               pesoKg: $("#evalPeso").value,
               grasaPct: $("#evalGrasa").value,
-              masaMuscularKg: $("#evalMM").value,
+              masaMuscularPct: $("#evalMM").value,   // ✅ % músculo
               grasaVisceral: $("#evalVisc").value,
 
               cinturaCm: $("#evalCintura").value,
               observaciones: $("#evalNotas").value
             };
 
-            // limpiar vacíos
             Object.keys(payload).forEach(k => {
               if(payload[k] === "") delete payload[k];
             });
@@ -1356,17 +1538,18 @@
             if(!window.saveEvaluation) throw new Error("saveEvaluation no disponible. Revisa que assets/app.js esté cargando.");
             await window.saveEvaluation(payload);
 
-            // refrescar cache evaluaciones desde sheets (mejor consistencia multi-dispositivo)
             if(window.refreshEvaluations) {
               try { await window.refreshEvaluations(); } catch(_) {}
             }
 
             showNotification("✅ Evaluación guardada", "success");
 
-            // update UI
             setKPIsFromLastEval();
             renderRecentLogs();
+            renderRoutineModal();
             renderCharts();
+            renderMuscleFatAnalysis();
+            renderCompositionHistory();
             renderProfile();
 
             navigateTo("home");
@@ -1379,14 +1562,11 @@
         });
       }
 
-      // ------------------------------
-      // Hard refresh (syncDown)
-      // ------------------------------
       async function hardRefresh() {
         try {
           if(window.syncDown) await window.syncDown();
           if(window.refreshEvaluations) await window.refreshEvaluations();
-          // re-pull user from cache (por si cambió plan)
+
           const users = window.getUsers ? window.getUsers() : [];
           const u = users.find(x => String(x.rut||"").toUpperCase() === String(currentUser.rut||"").toUpperCase());
           if(u) currentUser = u;
@@ -1396,7 +1576,10 @@
           renderRecentLogs();
           renderRoutineModal();
           renderCharts();
+          renderMuscleFatAnalysis();
+          renderCompositionHistory();
           renderProfile();
+
           showNotification("Datos actualizados", "success");
         } catch (e) {
           console.error(e);
@@ -1404,11 +1587,7 @@
         }
       }
 
-      // ------------------------------
-      // Init (con app.js)
-      // ------------------------------
       (function init() {
-        // auth
         if(!window.requireAuth) {
           showNotification("Falta cargar assets/app.js", "error");
           return;
@@ -1422,14 +1601,14 @@
         setupAccordions();
         setupRegisterForm();
 
-        // Cargar UI con cache actual
         setKPIsFromLastEval();
         renderRecentLogs();
         renderRoutineModal();
         renderCharts();
+        renderMuscleFatAnalysis();
+        renderCompositionHistory();
         renderProfile();
 
-        // Si app.js falló el boot y no bajó evaluaciones, intenta una vez
         setTimeout(async () => {
           try {
             const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
@@ -1438,24 +1617,25 @@
               setKPIsFromLastEval();
               renderRecentLogs();
               renderCharts();
+              renderMuscleFatAnalysis();
+              renderCompositionHistory();
             }
           } catch(_) {}
         }, 600);
 
         $("#btnViewFullRoutine")?.addEventListener("click", () => {
-  closeModal("workoutModal");
-  window.location.href = "socio_rutina.html";
-});
-
+          closeModal("workoutModal");
+          window.location.href = "socio_rutina.html";
+        });
 
         $("#btnLogMeal")?.addEventListener("click", () => {
           closeModal("nutritionModal");
           showNotification("Nutrición: lo conectamos después si lo quieres en Sheets.", "info");
         });
 
-        // Mensaje inicial
         setTimeout(() => showNotification("Sesión iniciada correctamente", "success"), 300);
       })();
+
     });
   </script>
 </body>
