@@ -255,3 +255,74 @@ a:hover{ text-decoration:underline; }
 .db-dot.connecting{ background:rgba(255,255,255,.4); }
 .db-dot.connected{ background:#2bd576; }
 .db-dot.error{ background:#ff5a67; }
+
+.kpi-delta{
+  font-size:10px;
+  padding:3px 7px;
+  gap:4px;
+}
+.kpi-delta i{ font-size:9px; }
+
+.kpi-delta.up{
+  color: var(--success);
+  border-color: rgba(43,213,118,.35);
+  background: rgba(43,213,118,.08);
+}
+
+.kpi-delta.down{
+  color: var(--danger);
+  border-color: rgba(255,107,107,.35);
+  background: rgba(255,107,107,.08);
+}
+
+.kpi-delta.flat{
+  color: var(--txt-muted);
+  border-color: var(--stroke);
+  background: var(--surface-2);
+}
+
+.kpi-delta i{ font-size:10px; }  /* ✅ ícono más pequeño */
+
+
+
+.kpi-delta.up{
+  color: var(--success);
+  border-color: rgba(43,213,118,.35);
+  background: rgba(43,213,118,.08);
+}
+
+.kpi-delta.down{
+  color: var(--danger);
+  border-color: rgba(255,107,107,.35);
+  background: rgba(255,107,107,.08);
+}
+
+.kpi-delta.flat{
+  color: var(--txt-muted);
+  border-color: var(--stroke);
+  background: var(--surface-2);
+}
+
+.kpi-delta i{ font-size:10px; }  /* ✅ ícono más pequeño */
+
+}
+
+.kpi-delta.up{
+  color: var(--success);
+  border-color: rgba(43,213,118,.35);
+  background: rgba(43,213,118,.08);
+}
+
+.kpi-delta.down{
+  color: var(--danger);
+  border-color: rgba(255,107,107,.35);
+  background: rgba(255,107,107,.08);
+}
+
+.kpi-delta.flat{
+  color: var(--txt-muted);
+  border-color: var(--stroke);
+  background: var(--surface-2);
+}
+
+.kpi-delta i{ font-size:11px; }
