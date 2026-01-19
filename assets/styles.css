@@ -326,3 +326,97 @@ a:hover{ text-decoration:underline; }
 }
 
 .kpi-delta i{ font-size:11px; }
+/* =========================
+   NUEVO: Analisis Músculo-Grasa
+   ========================= */
+.mg-grid{
+  display:grid;
+  gap:12px;
+}
+.mg-row{
+  display:grid;
+  grid-template-columns: 160px 1fr 120px;
+  gap:12px;
+  align-items:center;
+  padding:10px 12px;
+  border:1px solid var(--stroke);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+@media (max-width: 640px){
+  .mg-row{ grid-template-columns: 1fr; }
+}
+.mg-label b{ display:block; font-size:13px; color:var(--txt); }
+.mg-label small{ font-size:12px; color:var(--txt-muted); }
+
+.mg-bar{
+  position:relative;
+  height:16px;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  background:
+    linear-gradient(90deg,
+      rgba(255,107,107,.25) 0%,
+      rgba(255,107,107,.25) 33.33%,
+      rgba(43,213,118,.18) 33.33%,
+      rgba(43,213,118,.18) 66.66%,
+      rgba(255,209,102,.25) 66.66%,
+      rgba(255,209,102,.25) 100%);
+}
+.mg-bar::after{
+  content:"Bajo            Normal            Alto";
+  position:absolute;
+  inset:auto 0 -18px 0;
+  font-size:11px;
+  color:var(--txt-muted);
+  display:flex;
+  justify-content:space-between;
+  padding:0 8px;
+}
+.mg-pin{
+  position:absolute;
+  top:-6px;
+  width:3px;
+  height:28px;
+  border-radius:2px;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+}
+.mg-value{
+  text-align:right;
+  font-weight:800;
+  color:var(--txt);
+}
+.mg-value small{ font-weight:700; color:var(--txt-muted); }
+
+/* =========================
+   NUEVO: Historial composición
+   ========================= */
+.comp-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  border-radius: var(--radius);
+  background:#fff;
+}
+.comp-table th, .comp-table td{
+  padding:10px 10px;
+  border-bottom:1px solid var(--stroke);
+  font-size:12px;
+  text-align:center;
+  white-space:nowrap;
+}
+.comp-table th{
+  background: var(--surface-2);
+  color: var(--txt-2);
+  font-weight:800;
+}
+.comp-table tr:last-child td{ border-bottom:none; }
+.comp-muted{ color: var(--txt-muted); font-weight:700; }
+.comp-scroll{
+  overflow:auto;
+  border-radius: var(--radius);
+}
