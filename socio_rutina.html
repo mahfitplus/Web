@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Mi Rutina</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f8f9fa;
+      --surface-3:#f1f3f5;
+      --stroke:#e9ecef;
+      --txt:#212529;
+      --txt-2:#495057;
+      --txt-muted:#868e96;
+
+      --brand:#5a67d8;
+      --workout:#ff6b6b;
+      --success:#2bd576;
+      --danger:#ff6b6b;
+      --warning:#ffd166;
+
+      --radius:16px;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+      --transition:all .2s ease;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:20px 18px 120px;
+    }
+     .user-status {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px;
+      
+      border-radius: var(--radius-lg);
+      
+     
+      
+      justify-content: flex-end;
+    }
+
+    /* ✅ app.js usa #dbDot y #dbText */
+    .status-dot, .db-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background-color: var(--txt-muted);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .status-dot::after, .db-dot::after {
+      content: '';
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      border-radius: 50%;
+      background-color: rgba(134, 142, 150, 0.20);
+    }
+
+    .db-dot.ok { background-color: var(--success); }
+    .db-dot.ok::after { background-color: rgba(43, 213, 118, 0.20); }
+
+    .db-dot.bad { background-color: var(--danger); }
+    .db-dot.bad::after { background-color: rgba(255, 107, 107, 0.22); }
+
+    .db-dot.pending { background-color: var(--warning); }
+    .db-dot.pending::after { background-color: rgba(255, 209, 102, 0.22); }
+
+    .user-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .user-info strong { font-size: 14px; font-weight: 600; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info span { font-size: 12px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* TOP */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .back-btn{
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:var(--surface);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      cursor:pointer;
+      transition:var(--transition);
+      flex-shrink:0;
+    }
+    .back-btn:hover{background:var(--surface-2)}
+
+    .title{
+      min-width:0;
+    }
+    .title h1{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .title p{
+      font-size:13px;
+      color:var(--txt-muted);
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:var(--surface);
+      font-weight:800;
+      font-size:13px;
+      cursor:pointer;
+      transition:var(--transition);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:var(--txt-2);
+    }
+    .btn:hover{background:var(--surface-2)}
+    .btn.primary{
+      border-color: rgba(90,103,216,.25);
+      background: rgba(90,103,216,.10);
+      color: var(--brand);
+    }
+    .btn.danger{
+      border-color: rgba(255,107,107,.25);
+      background: rgba(255,107,107,.08);
+      color: var(--danger);
+    }
+
+    /* CARD */
+    .card{
+      background:var(--surface);
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-head{
+      padding:16px 16px 12px;
+      border-bottom:1px solid var(--stroke);
+      background: rgba(255,255,255,.9);
+    }
+    .card-body{
+      padding:16px;
+    }
+
+    /* WEEK TABS */
+    .weekbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+      font-size:12px;
+      font-weight:900;
+      color:var(--txt-2);
+      cursor:pointer;
+      transition:var(--transition);
+      user-select:none;
+    }
+    .chip.active{
+      background: rgba(90,103,216,.12);
+      border-color: rgba(90,103,216,.25);
+      color: var(--brand);
+    }
+
+    .meta{
+      font-size:12px;
+      color:var(--txt-muted);
+      font-weight:700;
+    }
+
+    /* DAY BLOCK */
+    .workout-day{
+      background:var(--surface-2);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:14px;
+      border-left:4px solid var(--workout);
+    }
+    .workout-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .workout-title{
+      font-size:16px;
+      font-weight:1000;
+      letter-spacing:-.2px;
+    }
+    .workout-focus{
+      font-size:12px;
+      font-weight:1000;
+      color:var(--workout);
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    /* EXERCISES */
+    .ex-list{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .ex{
+      background:var(--surface);
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .ex-left{
+      display:flex;
+      gap:10px;
+      min-width:0;
+      flex:1;
+      align-items:flex-start;
+    }
+    .check{
+      width:22px;height:22px;
+      border-radius:8px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
+      transition:var(--transition);
+      margin-top:2px;
+    }
+    .check.done{
+      background: rgba(43,213,118,.12);
+      border-color: rgba(43,213,118,.30);
+      color: var(--success);
+    }
+    .ex-info{
+      min-width:0;
+      flex:1;
+    }
+    .ex-name{
+      font-weight:1000;
+      font-size:14px;
+      color:var(--txt);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .ex-meta{
+      margin-top:6px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      color:var(--txt-muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+    }
+
+    .ex-actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .mini{
+      padding:8px 10px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+      font-size:12px;
+      font-weight:1000;
+      cursor:pointer;
+      transition:var(--transition);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+      color:var(--txt-2);
+      min-width:120px;
+    }
+    .mini:hover{ background:var(--surface-3); }
+    .mini.success{
+      background: rgba(43,213,118,.10);
+      border-color: rgba(43,213,118,.28);
+      color: var(--success);
+    }
+    .mini.warning{
+      background: rgba(255,209,102,.14);
+      border-color: rgba(255,209,102,.35);
+      color: #7a5b00;
+    }
+
+    .empty-state{
+      text-align:center;
+      padding:44px 18px;
+      color:var(--txt-muted);
+    }
+    .empty-state i{
+      font-size:48px;
+      margin-bottom:14px;
+      opacity:.35;
+    }
+
+    /* TIMER MODAL */
+    .modal{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:999;
+    }
+    .modal.active{ display:flex; }
+    .modal-box{
+      width:100%;
+      max-width:420px;
+      border-radius:22px;
+      background:var(--surface);
+      border:1px solid var(--stroke);
+      box-shadow: 0 20px 50px rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .modal-head strong{
+      font-size:14px;
+      font-weight:1000;
+      color:var(--txt);
+    }
+    .close{
+      width:40px;height:40px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-body{
+      padding:18px 16px 16px;
+      text-align:center;
+    }
+    .timer{
+      font-size:44px;
+      font-weight:1000;
+      letter-spacing:-1px;
+      margin:6px 0 10px;
+    }
+    .timer-sub{
+      font-size:12px;
+      color:var(--txt-muted);
+      font-weight:800;
+      margin-bottom:14px;
+    }
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      padding:0 16px 16px;
+    }
+
+    /* FEEDBACK */
+    .feedback{
+      margin-top:14px;
+      border-top:1px solid var(--stroke);
+      padding-top:14px;
+    }
+    .fb-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .fb-title strong{
+      font-size:13px;
+      font-weight:1000;
+      color:var(--txt);
+    }
+    .stars{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .star{
+      width:36px;height:36px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:var(--surface-2);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:var(--transition);
+      color: var(--txt-muted);
+    }
+    .star.active{
+      background: rgba(255,209,102,.20);
+      border-color: rgba(255,209,102,.45);
+      color:#7a5b00;
+    }
+    .fb-area{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    textarea{
+      width:100%;
+      min-height:84px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background:var(--surface);
+      resize:vertical;
+      outline:none;
+      font-size:13px;
+      color:var(--txt);
+    }
+    textarea:focus{
+      border-color: rgba(90,103,216,.45);
+      box-shadow: 0 0 0 3px rgba(90,103,216,.10);
+    }
+
+    /* PRINT (PDF) */
+    @media print{
+      .topbar, .weekbar, .feedback, .ex-actions, .check, .modal{ display:none !important; }
+      body{ background:#fff; }
+      .wrap{ padding:0; max-width:unset; }
+      .card{ box-shadow:none; border:none; }
+      .workout-day{ break-inside:avoid; }
+      .ex{ break-inside:avoid; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      
+
+      <div class="user-status">
+        <!-- ✅ app.js controla esto -->
+        <div id="dbDot" class="db-dot pending"></div>
+        <div class="user-info">
+          
+          <span id="dbText">Conectando…</span>
+        </div>
+      </div>
+    </header>
+    <div class="topbar">
+      <div class="left">
+        <button class="back-btn" id="btnBack" title="Volver">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="title">
+          <h1 id="pageTitle">Mi Rutina</h1>
+          <p id="pageSub">Entrenamiento asignado</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnPrint">
+          <i class="fas fa-file-arrow-down"></i> PDF
+        </button>
+        <button class="btn" id="btnReset">
+          <i class="fas fa-rotate-left"></i> Reset semana
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="weekbar">
+          <div class="chips" id="weekChips"></div>
+          <div class="meta" id="metaInfo">—</div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div id="routineWrap">
+          <div class="empty-state">
+            <i class="fas fa-dumbbell"></i>
+            <p>Cargando rutina…</p>
+          </div>
+        </div>
+
+        <div class="feedback" id="feedbackBox" style="display:none;">
+          <div class="fb-title">
+            <strong>Feedback de tu rutina</strong>
+            <div class="stars" id="stars"></div>
+          </div>
+          <div class="fb-area">
+            <textarea id="fbText" placeholder="¿Cómo te sentiste? (dolor, energía, dificultad, etc.)"></textarea>
+            <button class="btn primary" id="btnSaveFeedback">
+              <i class="fas fa-paper-plane"></i> Guardar feedback
+            </button>
+            <div class="meta" id="fbSavedMsg" style="display:none;">✅ Feedback guardado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TIMER MODAL -->
+  <div class="modal" id="timerModal" aria-hidden="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <strong id="timerTitle">Descanso</strong>
+        <button class="close" id="timerClose" title="Cerrar"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="timer" id="timerDisplay">01:00</div>
+        <div class="timer-sub" id="timerSub">Listo para iniciar</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="timerMinus"><i class="fas fa-minus"></i> 10s</button>
+        <button class="btn" id="timerPlus"><i class="fas fa-plus"></i> 10s</button>
+        <button class="btn primary" id="timerStart"><i class="fas fa-play"></i> Iniciar</button>
+        <button class="btn danger" id="timerStop"><i class="fas fa-stop"></i> Parar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- app.js -->
+  <script src="assets/app.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const $ = (s, el=document) => el.querySelector(s);
+
+      // auth
+      if(!window.requireAuth){
+        alert("Error: app.js no cargó");
+        return;
+      }
+      const user = window.requireAuth("SOCIO");
+      if(!user) return;
+
+      // Back
+      $("#btnBack").addEventListener("click", () => {
+        window.location.href = "socio.html";
+      });
+
+      // Print PDF
+      $("#btnPrint").addEventListener("click", () => {
+        // abre diálogo (Guardar como PDF en Chrome)
+        window.print();
+      });
+
+      // Data
+      const row = window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null;
+      const routine = row?.routine;
+
+      // Week logic (Lun-Dom)
+      const DAYS = [
+        {k:"LUN", t:"Lun"},
+        {k:"MAR", t:"Mar"},
+        {k:"MIE", t:"Mié"},
+        {k:"JUE", t:"Jue"},
+        {k:"VIE", t:"Vie"},
+        {k:"SAB", t:"Sáb"},
+        {k:"DOM", t:"Dom"},
+      ];
+
+      const todayKey = (()=>{
+        const d = new Date().getDay(); // 0=Dom
+        if(d===0) return "DOM";
+        return ["LUN","MAR","MIE","JUE","VIE","SAB"][d-1];
+      })();
+
+      const stateKey = (suffix)=> `mahfit_routine_${suffix}_${String(user.rut||"").toUpperCase()}`;
+      const weekStamp = getWeekStamp();
+      const doneKey = stateKey(`done_${weekStamp}`);
+      const fbKey = stateKey(`feedback_${weekStamp}`);
+
+      let activeDay = todayKey;
+
+      function getWeekStamp(){
+        // semana ISO simple: YYYY-WW (aprox)
+        const d = new Date();
+        const oneJan = new Date(d.getFullYear(),0,1);
+        const dayOfYear = Math.floor((d - oneJan) / 86400000) + 1;
+        const week = Math.ceil(dayOfYear / 7);
+        return `${d.getFullYear()}_W${String(week).padStart(2,"0")}`;
+      }
+
+      function lsGet(key, fb){
+        try{ return JSON.parse(localStorage.getItem(key)) ?? fb; }catch{ return fb; }
+      }
+      function lsSet(key, val){
+        localStorage.setItem(key, JSON.stringify(val));
+      }
+
+      // Done store: { "<exerciseId>": true/false }
+      let doneMap = lsGet(doneKey, {});
+      // Feedback store: { rating: 0..5, text:"" }
+      let feedback = lsGet(fbKey, { rating: 0, text: "" });
+
+      // Render week chips
+      function renderWeekChips(){
+        const box = $("#weekChips");
+        box.innerHTML = DAYS.map(d => {
+          const cls = d.k === activeDay ? "chip active" : "chip";
+          return `<div class="${cls}" data-day="${d.k}">${d.t}</div>`;
+        }).join("");
+
+        box.querySelectorAll(".chip").forEach(ch=>{
+          ch.addEventListener("click", ()=>{
+            activeDay = ch.dataset.day;
+            renderWeekChips();
+            renderRoutine();
+          });
+        });
+      }
+
+      // Reset week
+      $("#btnReset").addEventListener("click", ()=>{
+        if(!confirm("¿Resetear checks de esta semana?")) return;
+        doneMap = {};
+        lsSet(doneKey, doneMap);
+        renderRoutine();
+      });
+
+      // Title meta
+      $("#pageTitle").textContent = "Mi Rutina";
+      $("#pageSub").textContent = `${user.nombre || user.rut || "Socio"} · Semana ${weekStamp.replace("_"," ")}`;
+
+      // Timer
+      const timerModal = $("#timerModal");
+      const timerDisplay = $("#timerDisplay");
+      const timerSub = $("#timerSub");
+      const timerTitle = $("#timerTitle");
+
+      let timerSecs = 60;
+      let timerInt = null;
+
+      function fmtMMSS(sec){
+        sec = Math.max(0, Math.floor(sec));
+        const m = String(Math.floor(sec/60)).padStart(2,"0");
+        const s = String(sec%60).padStart(2,"0");
+        return `${m}:${s}`;
+      }
+      function openTimer(title, secs){
+        timerTitle.textContent = title || "Descanso";
+        timerSecs = Number(secs)||60;
+        timerDisplay.textContent = fmtMMSS(timerSecs);
+        timerSub.textContent = "Listo para iniciar";
+        timerModal.classList.add("active");
+        document.body.style.overflow="hidden";
+      }
+      function closeTimer(){
+        stopTimer();
+        timerModal.classList.remove("active");
+        document.body.style.overflow="auto";
+      }
+      function startTimer(){
+        stopTimer();
+        timerSub.textContent = "Contando…";
+        timerInt = setInterval(()=>{
+          timerSecs -= 1;
+          timerDisplay.textContent = fmtMMSS(timerSecs);
+          if(timerSecs <= 0){
+            stopTimer();
+            timerSub.textContent = "✅ Descanso terminado";
+            // beep simple
+            try{
+              const ctx = new (window.AudioContext || window.webkitAudioContext)();
+              const o = ctx.createOscillator();
+              const g = ctx.createGain();
+              o.connect(g); g.connect(ctx.destination);
+              o.frequency.value = 880; o.type = "sine";
+              g.gain.value = 0.05;
+              o.start();
+              setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
+            }catch(_){}
+          }
+        }, 1000);
+      }
+      function stopTimer(){
+        if(timerInt){ clearInterval(timerInt); timerInt = null; }
+      }
+
+      $("#timerClose").addEventListener("click", closeTimer);
+      timerModal.addEventListener("click", (e)=>{ if(e.target===timerModal) closeTimer(); });
+      document.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && timerModal.classList.contains("active")) closeTimer(); });
+
+      $("#timerMinus").addEventListener("click", ()=>{
+        timerSecs = Math.max(0, timerSecs - 10);
+        timerDisplay.textContent = fmtMMSS(timerSecs);
+      });
+      $("#timerPlus").addEventListener("click", ()=>{
+        timerSecs = Math.min(60*10, timerSecs + 10);
+        timerDisplay.textContent = fmtMMSS(timerSecs);
+      });
+      $("#timerStart").addEventListener("click", startTimer);
+      $("#timerStop").addEventListener("click", ()=>{
+        stopTimer();
+        timerSub.textContent = "Detenido";
+      });
+
+      // Feedback UI
+      function renderFeedback(){
+        const fbBox = $("#feedbackBox");
+        const stars = $("#stars");
+        const fbText = $("#fbText");
+        const savedMsg = $("#fbSavedMsg");
+
+        fbBox.style.display = "block";
+        stars.innerHTML = Array.from({length:5}).map((_,i)=>{
+          const v = i+1;
+          const active = (feedback.rating||0) >= v ? "star active" : "star";
+          return `<div class="${active}" data-v="${v}" title="${v}/5"><i class="fas fa-star"></i></div>`;
+        }).join("");
+
+        stars.querySelectorAll(".star").forEach(st=>{
+          st.addEventListener("click", ()=>{
+            feedback.rating = Number(st.dataset.v)||0;
+            lsSet(fbKey, feedback);
+            renderFeedback();
+            savedMsg.style.display="none";
+          });
+        });
+
+        fbText.value = feedback.text || "";
+
+        $("#btnSaveFeedback").onclick = ()=>{
+          feedback.text = fbText.value || "";
+          lsSet(fbKey, feedback);
+          savedMsg.style.display="block";
+          setTimeout(()=> savedMsg.style.display="none", 1800);
+        };
+      }
+
+      // Routine render
+      function normalizeDayLabel(s){
+        s = String(s||"").trim().toUpperCase();
+        // acepta "LUNES", "LUN", etc
+        if(s.startsWith("LUN")) return "LUN";
+        if(s.startsWith("MAR")) return "MAR";
+        if(s.startsWith("MI"))  return "MIE";
+        if(s.startsWith("JUE")) return "JUE";
+        if(s.startsWith("VIE")) return "VIE";
+        if(s.startsWith("SAB")) return "SAB";
+        if(s.startsWith("DOM")) return "DOM";
+        return "";
+      }
+
+      function exId(dayIdx, exIdx, exName){
+        const base = `${user.rut}_${weekStamp}_${dayIdx}_${exIdx}_${String(exName||"").toLowerCase().replace(/\s+/g,"_")}`;
+        return base;
+      }
+
+      function renderRoutine(){
+        const wrap = $("#routineWrap");
+
+        if(!routine || !Array.isArray(routine.dias) || !routine.dias.length){
+          wrap.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-dumbbell"></i>
+              <p>No hay rutina asignada todavía.</p>
+            </div>
+          `;
+          $("#metaInfo").textContent = "—";
+          $("#feedbackBox").style.display = "none";
+          return;
+        }
+
+        // Filtrar por día si coincide
+        const dias = routine.dias.slice();
+        const filtered = dias.filter(d=>{
+          const key = normalizeDayLabel(d.dia || d.dayLabel || "");
+          return key ? key === activeDay : true; // si no hay día, lo mostramos igual
+        });
+
+        const listToShow = filtered.length ? filtered : dias;
+
+        // meta
+        const totalDays = dias.length;
+        const showing = listToShow.length;
+        const doneCount = Object.values(doneMap || {}).filter(Boolean).length;
+        $("#metaInfo").textContent = `${showing}/${totalDays} día(s) · ✅ ${doneCount} realizados`;
+
+        wrap.innerHTML = listToShow.map((d, dayIdx) => {
+          const dia = d.dia || `Día ${dayIdx+1}`;
+          const enfoque = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "");
+          const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
+
+          const exHtml = ejercicios.map((e, exIdx)=>{
+            const name = e.ejercicio || "Ejercicio";
+            const id = exId(dayIdx, exIdx, name);
+            const isDone = !!doneMap[id];
+
+            const series = e.series ? `${e.series}x` : "";
+            const reps = e.reps ? `${e.reps}` : "";
+            const carga = e.carga ? `${e.carga}` : "";
+            const descanso = e.descanso ? String(e.descanso) : "";
+            const obs = e.obs ? String(e.obs) : "";
+
+            // descanso: si trae "60s" o "1:30"
+            const restSecs = parseRestToSecs(descanso) ?? 60;
+
+            return `
+              <div class="ex" data-exid="${id}">
+                <div class="ex-left">
+                  <div class="check ${isDone ? "done":""}" title="Marcar realizado">
+                    <i class="fas ${isDone ? "fa-check" : "fa-minus"}"></i>
+                  </div>
+
+                  <div class="ex-info">
+                    <div class="ex-name">${escapeHtml(name)}</div>
+                    <div class="ex-meta">
+                      ${series || reps ? `<span class="tag"><i class="fas fa-layer-group"></i>${escapeHtml(series)}${escapeHtml(reps)}</span>` : ""}
+                      ${carga ? `<span class="tag"><i class="fas fa-weight-hanging"></i>${escapeHtml(carga)}</span>` : ""}
+                      ${descanso ? `<span class="tag"><i class="fas fa-stopwatch"></i>${escapeHtml(descanso)}</span>` : ""}
+                      ${obs ? `<span class="tag"><i class="fas fa-note-sticky"></i>${escapeHtml(obs)}</span>` : ""}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ex-actions">
+                  <button class="mini warning" data-rest="${restSecs}" data-name="${escapeAttr(name)}">
+                    <i class="fas fa-stopwatch"></i> Descanso
+                  </button>
+                  <button class="mini success" data-toggle>
+                    <i class="fas fa-check"></i> Hecho
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("");
+
+          return `
+            <div class="workout-day">
+              <div class="workout-header">
+                <div>
+                  <div class="workout-title">${escapeHtml(dia)}</div>
+                  <div style="font-size:12px;color:var(--txt-muted);font-weight:800;margin-top:4px;">
+                    ${enfoque ? `Enfoque: ${escapeHtml(enfoque)}` : "Enfoque: —"}
+                  </div>
+                </div>
+                <div class="workout-focus">${enfoque ? escapeHtml(enfoque) : "—"}</div>
+              </div>
+
+              ${ejercicios.length ? `<div class="ex-list">${exHtml}</div>` : `<div class="empty-state" style="padding:22px 12px;"><p>Sin ejercicios.</p></div>`}
+            </div>
+          `;
+        }).join("");
+
+        // bind events
+        wrap.querySelectorAll(".ex").forEach(card=>{
+          const id = card.getAttribute("data-exid");
+
+          // check click
+          const check = card.querySelector(".check");
+          const toggleBtn = card.querySelector("[data-toggle]");
+          const restBtn = card.querySelector("[data-rest]");
+
+          function setDone(next){
+            doneMap[id] = !!next;
+            lsSet(doneKey, doneMap);
+            renderRoutine();
+          }
+
+          check?.addEventListener("click", ()=> setDone(!doneMap[id]));
+          toggleBtn?.addEventListener("click", ()=> setDone(!doneMap[id]));
+
+          restBtn?.addEventListener("click", ()=>{
+            const secs = Number(restBtn.dataset.rest)||60;
+            const name = restBtn.dataset.name || "Descanso";
+            openTimer(`Descanso · ${name}`, secs);
+          });
+        });
+
+        // feedback always visible when routine exists
+        renderFeedback();
+      }
+
+      function parseRestToSecs(s){
+        s = String(s||"").trim();
+        if(!s) return null;
+
+        // "60", "60s"
+        if(/^\d+(\.\d+)?\s*s?$/.test(s)){
+          const n = Number(s.replace(/[^\d.]/g,""));
+          return Number.isFinite(n) ? Math.round(n) : null;
+        }
+
+        // "1:30"
+        const m = s.match(/^(\d+)\s*:\s*(\d{1,2})$/);
+        if(m){
+          const mm = Number(m[1]);
+          const ss = Number(m[2]);
+          if(Number.isFinite(mm) && Number.isFinite(ss)) return mm*60 + ss;
+        }
+
+        return null;
+      }
+
+      function escapeHtml(str){
+        return String(str ?? "")
+          .replace(/&/g,"&amp;")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;")
+          .replace(/'/g,"&#039;");
+      }
+      function escapeAttr(str){
+        return escapeHtml(str).replace(/"/g,"&quot;");
+      }
+
+      // init
+      renderWeekChips();
+      renderRoutine();
+    });
+  </script>
+</body>
+</html>
