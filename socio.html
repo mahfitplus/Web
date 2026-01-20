@@ -483,6 +483,70 @@
     /* =========================
        NUEVO: Analisis Músculo-Grasa (OPCION B: %)
        ========================= */
+
+/* === pins múltiples: anterior vs actual === */
+/* === pins tipo línea (anterior vs actual) === */
+/* === pins tipo línea (anterior vs actual) === */
+.mg-pin-line{
+  position:absolute;
+  top:-6px;
+  width:3px;
+  height:28px;
+  border-radius:2px;
+}
+
+.mg-pin-line.current{
+  background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+}
+
+.mg-pin-line.prev{
+  background: var(--txt-muted);
+  opacity:.9;
+}
+
+/* mini leyenda */
+.mg-legend{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:10px;
+  font-size:12px;
+  color: var(--txt-muted);
+}
+.mg-legend .item{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-weight:800;
+}
+.mg-legend .swatch{
+  width:10px;height:10px;border-radius:999px;
+  border:2px solid #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+}
+.mg-legend .swatch.current{ background: var(--brand); }
+.mg-legend .swatch.prev{ background: var(--txt-muted); }
+
+/* etiqueta de estado */
+.mg-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  border:1px solid var(--stroke);
+  background:#fff;
+}
+.mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
+.mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
+.mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
+.mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
+
+
     .mg-grid{ display:grid; gap:12px; }
     .mg-row{
       display:grid;
@@ -1289,64 +1353,231 @@
       /* ==============================
          NUEVO: Analisis % + Historial %
          ============================== */
-      function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+         
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const toNum=v=>{const n=Number(String(v).replace(",","."));return isFinite(n)?n:null};
 
-      function renderMuscleFatAnalysis(){
-        const box = document.getElementById("mgAnalysisBox");
-        if(!box || !currentUser) return;
+function calcBMI(peso,talla){
+  if(!peso||!talla)return null;
+  const m=talla/100;
+  return peso/(m*m);
+}
+function bmiLabel(bmi){
+  if(bmi<18.5)return"low";
+  if(bmi<25)return"normal";
+  if(bmi<30)return"high";
+  return"veryHigh";
+}
+function visceralLabel(v){
+  if(v<=9)return"normal";
+  if(v<=14)return"high";
+  return"veryHigh";
+}
+function labelClass(c){
+  return c==="low"?"Bajo":c==="normal"?"Normal":c==="high"?"Alto":"Muy alto";
+}
 
-        const last = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 1) : [];
-        const ev = last && last.length ? last[0] : null;
+/* ===============================
+   RENDER PESO + VISCERAL
+=============================== */
+function renderPesoYVisceral(box,actual,prev,talla){
+  const peso=toNum(actual.pesoKg);
+  const pesoPrev=prev?toNum(prev.pesoKg):null;
+  const visc=toNum(actual.grasaVisceral);
+  const viscPrev=prev?toNum(prev.grasaVisceral):null;
 
-        if(!ev){
-          box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
-          return;
-        }
+  const bmi=calcBMI(peso,talla);
 
-        const grasaPct  = numClean(ev.grasaPct);
-        const musclePct = numClean(ev.masaMuscularPct);
+  function row(label,val,prevVal,max,unit,cls){
+    const l=val!=null?clamp(val/max*100,0,100):null;
+    const lp=prevVal!=null?clamp(prevVal/max*100,0,100):null;
 
-        // Rangos visuales genéricos (editables)
-        const ranges = {
-          grasa: { min: 5,  max: 55, lowEnd: 15, normEnd: 25, unit:"%", label:"% Grasa Corporal" },
-          musc:  { min: 20, max: 60, lowEnd: 30, normEnd: 45, unit:"%", label:"% Masa Muscular" }
-        };
+    return `
+    <div class="mg-row">
+      <div class="mg-label">
+        <b>${label}</b>
+        <small>${unit}</small>
+      </div>
+      <div style="position:relative">
+        <div class="mg-bar"></div>
+        ${lp!=null?`<span class="mg-pin-line prev" style="left:${lp}%"></span>`:""}
+        ${l!=null?`<span class="mg-pin-line current" style="left:${l}%"></span>`:""}
+      </div>
+      <div class="mg-value">
+        ${val??"—"} <small>${unit}</small>
+        <span class="mg-tag ${cls}">${labelClass(cls)}</span>
+      </div>
+    </div>`;
+  }
 
-        function pinLeft(val, r){
-          if(val === null || val === undefined || !Number.isFinite(val)) return 0;
-          const p = (val - r.min) / (r.max - r.min);
-          return clamp(p, 0, 1) * 100;
-        }
+  box.innerHTML+=`
+    ${row("Peso corporal",peso,pesoPrev,150,"kg",bmiLabel(bmi))}
+    ${row("Grasa visceral",visc,viscPrev,20,"nivel",visceralLabel(visc))}
+  `;
+}
 
-        function rowHTML(key, val){
-          const r = ranges[key];
-          const pct = pinLeft(val, r);
-          const show = (val===null) ? "—" : (Number.isInteger(val) ? val : val.toFixed(1));
-          return `
-            <div class="mg-row">
-              <div class="mg-label">
-                <b>${r.label}</b>
-                <small>Rango visual</small>
-              </div>
-              <div style="position:relative;">
-                <div class="mg-bar"></div>
-                <div class="mg-pin" style="left: calc(${pct}% - 1px);"></div>
-              </div>
-              <div class="mg-value">${show} <small>${r.unit}</small></div>
-            </div>
-          `;
-        }
+/* ===============================
+   MAIN
+=============================== */
+const user=requireAuth("SOCIO");
+if(!user)return;
 
-        box.innerHTML = `
-          <div class="mg-grid">
-            ${rowHTML("grasa", grasaPct)}
-            ${rowHTML("musc", musclePct)}
+const list=evaluationsLastN(user.rut,2);
+const prev=list.length>1?list[0]:null;
+const curr=list.length?list[list.length-1]:null;
+
+const box=document.getElementById("mgAnalysisBox");
+
+if(!curr){
+  box.innerHTML="<p>No hay evaluaciones</p>";
+  return;
+}
+
+box.innerHTML="";
+
+renderPesoYVisceral(box,curr,prev,user.tallaCm);
+
+box.innerHTML+=`
+  <div class="mg-legend">
+    <span><span class="swatch prev"></span>Anterior</span>
+    <span><span class="swatch current"></span>Actual</span>
+  </div>
+`
+
+function renderMuscleFatAnalysis(){
+  const box = document.getElementById("mgAnalysisBox");
+  if(!box || !currentUser) return;
+
+  const sex = normSexHM(currentUser.sexo);                 // HOMBRE/MUJER -> M/F
+  const age = calcAge(currentUser.fechaNacimiento);
+
+  const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
+  const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
+  const currEv = last2.length ? last2[last2.length - 1] : null;
+
+  if(!currEv){
+    box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
+    return;
+  }
+
+  const grasaCurr  = numClean(currEv.grasaPct);
+  const muscCurr   = numClean(currEv.masaMuscularPct); // % músculo (si no existe, ver nota al final)
+
+  const grasaPrev  = prevEv ? numClean(prevEv.grasaPct) : null;
+  const muscPrev   = prevEv ? numClean(prevEv.masaMuscularPct) : null;
+
+  const fatBand = omronAgeBandFat(age);
+  const musBand = omronAgeBandMuscle(age);
+
+  // si falta sexo, cae a M por defecto (puedes cambiar a F)
+  const sexKey = sex || "M";
+
+  const fatCuts = (OMRON_FAT[sexKey] && OMRON_FAT[sexKey][fatBand]) ? OMRON_FAT[sexKey][fatBand] : OMRON_FAT["M"]["20-39"];
+  const musCuts = (OMRON_MUSCLE[sexKey] && OMRON_MUSCLE[sexKey][musBand]) ? OMRON_MUSCLE[sexKey][musBand] : OMRON_MUSCLE["M"]["18-39"];
+
+  // Mapeo de barra: min..max
+  // Usamos min como un poco debajo del lowMax, y max como un poco arriba del highMax para que se vea aire.
+  function scaleRange(cuts){
+    const min = Math.max(0, cuts.lowMax - (cuts.normalMax - cuts.lowMax)); // aire hacia abajo
+    const max = cuts.highMax + (cuts.highMax - cuts.normalMax) + 5;        // aire hacia arriba
+    return { min, max };
+  }
+
+  function leftPct(val, min, max){
+    if(val == null || !Number.isFinite(val)) return null;
+    const p = (val - min) / (max - min);
+    return clamp(p, 0, 1) * 100;
+  }
+
+  function fmtVal(v){
+    if(v == null || !Number.isFinite(v)) return "—";
+    return Number.isInteger(v) ? String(v) : v.toFixed(1);
+  }
+
+  // Construye una barra segmentada según cortes (low/normal/high/veryHigh)
+  function barBackground(cuts, min, max){
+    const toPct = (x)=> clamp((x - min) / (max - min), 0, 1) * 100;
+
+    const pLowEnd   = toPct(cuts.lowMax);
+    const pNormEnd  = toPct(cuts.normalMax);
+    const pHighEnd  = toPct(cuts.highMax);
+
+    return `
+      linear-gradient(90deg,
+        rgba(9,132,227,.18) 0%,
+        rgba(9,132,227,.18) ${pLowEnd}%,
+        rgba(43,213,118,.18) ${pLowEnd}%,
+        rgba(43,213,118,.18) ${pNormEnd}%,
+        rgba(255,209,102,.22) ${pNormEnd}%,
+        rgba(255,209,102,.22) ${pHighEnd}%,
+        rgba(255,107,107,.20) ${pHighEnd}%,
+        rgba(255,107,107,.20) 100%
+      )
+    `;
+  }
+
+  function rowHTML(label, currVal, prevVal, cuts, bandLabel){
+    const {min, max} = scaleRange(cuts);
+    const currLeft = leftPct(currVal, min, max);
+    const prevLeft = leftPct(prevVal, min, max);
+
+    const clsNow = classifyOmron(currVal, cuts);
+
+    const bg = barBackground(cuts, min, max);
+
+    return `
+      <div class="mg-row">
+        <div class="mg-label">
+          <b>${label}</b>
+          <small>Rango OMRON (${sexKey === "M" ? "HOMBRE" : "MUJER"} · ${bandLabel})</small>
+        </div>
+
+        <div style="position:relative;">
+          <div class="mg-bar" style="background:${bg};"></div>
+
+          ${prevLeft === null ? "" : `
+            <span class="mg-pin-line prev"
+              title="Anterior: ${fmtVal(prevVal)}%"
+              style="left: calc(${prevLeft}% - 1px);"></span>
+          `}
+
+          ${currLeft === null ? "" : `
+            <span class="mg-pin-line current"
+              title="Actual: ${fmtVal(currVal)}%"
+              style="left: calc(${currLeft}% - 1px);"></span>
+          `}
+        </div>
+
+        <div class="mg-value">
+          ${fmtVal(currVal)} <small>%</small>
+          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+            <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
           </div>
-          <div class="hint" style="margin-top:10px;">
-            Último registro: <b>${fmtDateShort(ev.fecha)}</b>
-          </div>
-        `;
-      }
+        </div>
+      </div>
+    `;
+  }
+
+  box.innerHTML = `
+    <div class="mg-grid">
+      ${rowHTML("% Grasa Corporal", grasaCurr, grasaPrev, fatCuts, fatBand)}
+      ${rowHTML("% Masa Muscular", muscCurr, muscPrev, musCuts, musBand)}
+    </div>
+
+    <div class="mg-legend">
+      <span class="item"><span class="swatch prev"></span> Anterior</span>
+      <span class="item"><span class="swatch current"></span> Actual</span>
+    </div>
+
+    <div class="hint" style="margin-top:10px;">
+      Último registro: <b>${fmtDateShort(currEv.fecha)}</b>
+      ${prevEv?.fecha ? ` · Anterior: <b>${fmtDateShort(prevEv.fecha)}</b>` : ``}
+      ${age != null ? ` · Edad: <b>${age}</b>` : ``}
+      ${currentUser.sexo ? ` · Sexo: <b>${currentUser.sexo}</b>` : ``}
+    </div>
+  `;
+}
+
 
       function renderCompositionHistory(){
         const box = document.getElementById("compHistoryBox");
