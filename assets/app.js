@@ -1,1892 +1,944 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAH FIT | Socio</title>
+/* =========================================================
+   MAH FIT - app.js (ESTABLE / LISTO PARA REEMPLAZAR)
+   - Backend Google Sheets Apps Script (resource-based)
+   - Cache local: users / planes / rutinas / rutinas_v2 / plantillas_v2
+   - ✅ Perfil syncDown completo
+   - ✅ LOGS PRO: workout_log / cardio_log / body_log
+   - ✅ PRO PATCH: IDs robustos + compat logId/id + fallback sync
+   - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
+   - ✅ UPDATE: compat masaMuscularPct (para gráficos + socio.html)
+   ========================================================= */
 
-  <!-- ✅ Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7lqbmRL7iTHGX7fGCsVNIGXHOrVvEivZfFci6FBAbA7gqOAA/exec";
 
-  <!-- ✅ Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+/* ---------------- small compat ---------------- */
+(function ensureUUID(){
+  if(!window.crypto) window.crypto = {};
+  if(typeof window.crypto.randomUUID !== "function"){
+    window.crypto.randomUUID = function(){
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{
+        const r = Math.random()*16|0;
+        const v = (c==="x") ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
+    };
+  }
+})();
 
-  <style>
-    :root {
-      --bg: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #f8f9fa;
-      --surface-3: #f1f3f5;
-      --stroke: #e9ecef;
-      --stroke-2: #dee2e6;
-      --txt: #212529;
-      --txt-2: #495057;
-      --txt-muted: #868e96;
-      --brand: #5a67d8;
-      --brand-light: #7c5cff;
-      --brand-gradient: linear-gradient(135deg, #5a67d8, #7c5cff);
-      --accent: #00b894;
-      --accent-2: #0984e3;
-      --danger: #ff6b6b;
-      --success: #2bd576;
-      --warning: #ffd166;
-      --nutrition: #00b894;
-      --workout: #ff6b6b;
+// ---------------- DOMContentLoaded GATE ----------------
+(function(){
+  const origAdd = document.addEventListener.bind(document);
+  const queued = [];
+  let ready = false;
 
-      --radius: 16px;
-      --radius-sm: 12px;
-      --radius-lg: 20px;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
-      --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.1);
-      --max-width: 1200px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-top: env(safe-area-inset-top, 0px);
-
-      --transition: all 0.2s ease;
+  document.addEventListener = function(type, listener, options){
+    if(type === "DOMContentLoaded"){
+      if(ready){
+        try{ listener(); }catch(e){ console.error(e); }
+      } else {
+        queued.push(listener);
+      }
+      return;
     }
+    return origAdd(type, listener, options);
+  };
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Helvetica Neue', sans-serif;
-      background-color: var(--bg);
-      color: var(--txt);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    a { color: inherit; text-decoration: none; }
-    button { font: inherit; cursor: pointer; border: none; background: none; }
+  window.__mahfitReleaseDOMContentLoaded = function(){
+    ready = true;
+    queued.forEach(fn=>{ try{ fn(); }catch(e){ console.error(e); } });
+    queued.length = 0;
+  };
+})();
 
-    .wrap {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      padding: calc(20px + var(--safe-top)) 20px calc(100px + var(--safe-bottom));
-    }
+// ---------------- LocalStorage helpers ----------------
+const LS = {
+  get(key, fallback){
+    try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch{ return fallback; }
+  },
+  set(key, val){ localStorage.setItem(key, JSON.stringify(val)); },
+  del(key){ localStorage.removeItem(key); }
+};
 
-    /* TOPBAR */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 12px 0;
-      margin-bottom: 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background-color: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
+function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
+function nowISO(){ return new Date().toISOString(); }
 
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 48px; height: 48px; border-radius: 14px;
-      background: var(--brand-gradient);
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-weight: bold; font-size: 18px;
-      box-shadow: 0 6px 16px rgba(90, 103, 216, 0.25);
-      flex-shrink: 0;
-    }
-    .brand-text { display: flex; flex-direction: column; gap: 4px; }
-    .brand-text h1 { font-size: 20px; font-weight: 700; color: var(--txt); letter-spacing: -0.3px; }
-    .brand-text p { font-size: 13px; color: var(--txt-muted); }
+// ✅ Helpers fecha / ids (PRO)
+function isoLocalDate(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function safeStr(v, fb=""){ return (v===undefined || v===null) ? fb : String(v); }
 
-    .user-status {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px;
-      background-color: var(--surface-2);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      min-width: 220px;
-      justify-content: flex-end;
-    }
-
-    /* ✅ app.js usa #dbDot y #dbText */
-    .status-dot, .db-dot {
-      width: 12px; height: 12px; border-radius: 50%;
-      background-color: var(--txt-muted);
-      position: relative;
-      flex-shrink: 0;
-    }
-    .status-dot::after, .db-dot::after {
-      content: '';
-      position: absolute;
-      top: -3px; left: -3px; right: -3px; bottom: -3px;
-      border-radius: 50%;
-      background-color: rgba(134, 142, 150, 0.20);
-    }
-
-    .db-dot.ok { background-color: var(--success); }
-    .db-dot.ok::after { background-color: rgba(43, 213, 118, 0.20); }
-
-    .db-dot.bad { background-color: var(--danger); }
-    .db-dot.bad::after { background-color: rgba(255, 107, 107, 0.22); }
-
-    .db-dot.pending { background-color: var(--warning); }
-    .db-dot.pending::after { background-color: rgba(255, 209, 102, 0.22); }
-
-    .user-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .user-info strong { font-size: 14px; font-weight: 600; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-info span { font-size: 12px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* MAIN LAYOUT */
-    .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 992px) { .main-grid { grid-template-columns: 1.3fr 0.7fr; } }
-
-    /* CARDS */
-    .card {
-      background-color: var(--surface);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      transition: var(--transition);
-    }
-    .card:hover { box-shadow: var(--shadow-lg); }
-    .card-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--stroke); }
-    .card-header h2 { font-size: 18px; font-weight: 600; color: var(--txt); margin-bottom: 4px; }
-    .card-header p { font-size: 13px; color: var(--txt-muted); }
-    .card-body { padding: 20px; }
-
-    /* QUICK ACTIONS */
-    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-    .quick-action {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px 12px;
-      border-radius: var(--radius-lg);
-      background: var(--surface);
-      border: 1px solid var(--stroke);
-      transition: var(--transition);
-      cursor: pointer;
-    }
-    .quick-action:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-    .quick-action.workout { border-top: 4px solid var(--workout); }
-    .quick-action.nutrition { border-top: 4px solid var(--nutrition); }
-
-    .action-icon {
-      width: 50px; height: 50px;
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      margin-bottom: 12px;
-      color: white;
-    }
-    .action-icon.workout { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); }
-    .action-icon.nutrition { background: linear-gradient(135deg, #00b894, #00d4a7); }
-    .action-title { font-size: 15px; font-weight: 600; color: var(--txt); margin-bottom: 4px; text-align: center; }
-    .action-subtitle { font-size: 12px; color: var(--txt-muted); text-align: center; }
-
-    /* KPIs */
-    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-    @media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
-
-    .kpi-item {
-      background-color: var(--surface-2);
-      border-radius: var(--radius);
-      padding: 16px;
-      text-align: center;
-      border: 1px solid var(--stroke);
-    }
-
-    .kpi-label {
-      display: block;
-      font-size: 12px;
-      color: var(--txt-muted);
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
-
-    /* ✅ KPI en columna: valor grande + pill */
-    .kpi-value{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-    }
-
-    .kpi-main{
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--txt);
-      line-height: 1.1;
-    }
-
-    .kpi-unit{
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--txt-muted);
-      margin-left: 4px;
-    }
-
-    /* ✅ pill */
-    .kpi-delta{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      line-height:1;
-      border:1px solid var(--stroke);
-      background:#fff;
-    }
-
-    .kpi-delta i{ font-size:11px; }
-
-    .kpi-delta.up{
-      color: var(--success);
-      border-color: rgba(43,213,118,.35);
-      background: rgba(43,213,118,.08);
-    }
-
-    .kpi-delta.down{
-      color: var(--danger);
-      border-color: rgba(255,107,107,.35);
-      background: rgba(255,107,107,.08);
-    }
-
-    .kpi-delta.flat{
-      color: var(--txt-muted);
-      border-color: var(--stroke);
-      background: var(--surface-3);
-    }
-
-    /* ACCORDIONS */
-    .accordion-section {
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 12px;
-      background-color: var(--surface);
-    }
-    .accordion-section.active { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
-    .accordion-header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      text-align: left;
-      background-color: transparent;
-      gap: 12px;
-    }
-    .accordion-icon {
-      width: 40px; height: 40px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      background-color: var(--surface-3);
-      color: var(--brand);
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-    .accordion-content { flex: 1; min-width: 0; }
-    .accordion-title { display: block; font-size: 15px; font-weight: 600; color: var(--txt); margin-bottom: 4px; }
-    .accordion-subtitle { display: block; font-size: 13px; color: var(--txt-muted); }
-    .accordion-chevron {
-      width: 32px; height: 32px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--txt-muted);
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-    }
-    .accordion-section.active .accordion-chevron { transform: rotate(180deg); color: var(--brand); }
-    .accordion-body { display: none; padding: 0 16px 16px; }
-    .accordion-section.active .accordion-body { display: block; }
-
-    /* BUTTONS */
-    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-    .btn {
-      padding: 10px 18px;
-      border-radius: var(--radius);
-      font-size: 14px;
-      font-weight: 500;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-primary { background: var(--brand-gradient); color: white; box-shadow: 0 4px 12px rgba(90, 103, 216, 0.25); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(90, 103, 216, 0.35); }
-    .btn-secondary { background-color: var(--surface-2); color: var(--txt); border: 1px solid var(--stroke); }
-    .btn-secondary:hover { background-color: var(--surface-3); }
-    .btn-outline { background-color: transparent; color: var(--txt); border: 1px solid var(--stroke-2); }
-    .btn-outline:hover { background-color: var(--surface-2); }
-
-    /* RECENT LOGS */
-    .logs-list { display: flex; flex-direction: column; gap: 12px; }
-    .log-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px;
-      background-color: var(--surface-2);
-      border-radius: var(--radius);
-      border: 1px solid var(--stroke);
-    }
-    .log-date { font-size: 14px; font-weight: 700; color: var(--txt); }
-    .log-metrics { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-    .log-metric { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--txt-2); }
-    .log-metric i { color: var(--txt-muted); font-size: 12px; }
-
-    /* MODALS */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal.active { display: flex; animation: fadeIn 0.3s ease; }
-    .modal-content {
-      background-color: var(--surface);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 560px;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-xl);
-      animation: slideUp 0.3s ease;
-    }
-    .modal-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--stroke);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    .modal-header h3 { font-size: 18px; font-weight: 600; color: var(--txt); display: flex; align-items: center; gap: 10px; }
-    .modal-header .close { font-size: 24px; color: var(--txt-muted); cursor: pointer; transition: var(--transition); }
-    .modal-header .close:hover { color: var(--txt); }
-    .modal-body { padding: 20px; }
-
-    /* BOTTOM NAV */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      padding: 12px 20px calc(12px + var(--safe-bottom));
-      background-color: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid var(--stroke);
-      z-index: 100;
-    }
-    .nav-container {
-      max-width: var(--max-width);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .nav-item {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 6px;
-      padding: 12px 8px;
-      border-radius: var(--radius);
-      color: var(--txt-muted);
-      transition: var(--transition);
-      font-size: 12px;
-    }
-    .nav-item.active { color: var(--brand); background-color: rgba(90, 103, 216, 0.08); font-weight: 500; }
-    .nav-icon { font-size: 20px; }
-    .nav-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* PAGES */
-    .page { display: none; animation: fadeIn 0.3s ease; }
-    .page.active { display: block; }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .text-muted { color: var(--txt-muted); font-size: 14px; }
-    .divider { height: 1px; background-color: var(--stroke); margin: 20px 0; }
-
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--txt-muted);
-    }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state p { font-size: 14px; max-width: 360px; margin: 0 auto; }
-
-    /* FORMS */
-    .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width: 768px){ .form-grid { grid-template-columns: repeat(2, 1fr); } }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label { font-size: 12px; color: var(--txt-muted); font-weight: 600; }
-    .field input, .field textarea {
-      width: 100%;
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke-2);
-      background: #fff;
-      outline: none;
-      transition: var(--transition);
-      font-size: 14px;
-      color: var(--txt);
-    }
-    .field input:focus, .field textarea:focus { border-color: rgba(90,103,216,.55); box-shadow: 0 0 0 3px rgba(90,103,216,.12); }
-    .field textarea { min-height: 92px; resize: vertical; grid-column: 1 / -1; }
-    .hint { font-size: 12px; color: var(--txt-muted); margin-top: 4px; }
-
-    /* CHARTS */
-    .charts-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 992px){ .charts-grid { grid-template-columns: repeat(2, 1fr); } }
-    .chart-card {
-      background: var(--surface-2);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      padding: 12px 12px 6px;
-    }
-    .chart-title { font-size: 13px; font-weight: 800; color: var(--txt-2); margin-bottom: 10px; display:flex; align-items:center; gap:8px; }
-    .chart-wrap { height: 220px; }
-    .chart-wrap canvas { width: 100% !important; height: 220px !important; }
-
-    /* RUTINA (modal) */
-    .workout-day {
-      background-color: var(--surface-2);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      border-left: 4px solid var(--workout);
-    }
-    .workout-header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-    .workout-title { font-size: 16px; font-weight: 800; color: var(--txt); }
-    .workout-duration { font-size: 13px; color: var(--workout); font-weight: 800; }
-    .workout-exercises { font-size: 14px; color: var(--txt-2); }
-
-    /* NUTRICION */
-    .nutrition-plan {
-      background-color: var(--surface-2);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      border-left: 4px solid var(--nutrition);
-    }
-    .nutrition-header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-    .nutrition-title { font-size: 16px; font-weight: 800; color: var(--txt); }
-    .nutrition-calories { font-size: 13px; color: var(--nutrition); font-weight: 800; }
-    .nutrition-items { font-size: 14px; color: var(--txt-2); }
-
-    /* =========================
-       NUEVO: Analisis Músculo-Grasa (OPCION B: %)
-       ========================= */
-
-/* === pins múltiples: anterior vs actual === */
-/* === pins tipo línea (anterior vs actual) === */
-/* === pins tipo línea (anterior vs actual) === */
-.mg-pin-line{
-  position:absolute;
-  top:-6px;
-  width:3px;
-  height:28px;
-  border-radius:2px;
+// ✅ Number cleaner (para gráficos / normalización)
+function toNumClean(v){
+  if(v===undefined || v===null) return null;
+  const s = String(v).replace(",", ".").trim();
+  if(!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
 }
 
-.mg-pin-line.current{
-  background: var(--brand);
-  box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+// ---------------- DB STATUS (pelotita) ----------------
+function setDbStatus(status){
+  const dot  = document.getElementById("dbDot");
+  const text = document.getElementById("dbText");
+  if(!dot) return;
+
+  dot.className = "db-dot";
+
+  if(status === "connected"){
+    dot.classList.add("ok", "connected");
+    if(text) text.textContent = "Conectado";
+  }else if(status === "error"){
+    dot.classList.add("bad", "error");
+    if(text) text.textContent = "Sin conexión";
+  }else{
+    dot.classList.add("pending", "connecting");
+    if(text) text.textContent = "Conectando…";
+  }
 }
 
-.mg-pin-line.prev{
-  background: var(--txt-muted);
-  opacity:.9;
+// ---------------- API helpers ----------------
+
+
+function parseISODate(d){
+  const s = String(d || "").trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return null;
+  const yyyy = Number(m[1]), mm = Number(m[2]), dd = Number(m[3]);
+  const dt = new Date(yyyy, mm - 1, dd);
+  return Number.isFinite(dt.getTime()) ? dt : null;
 }
 
-/* mini leyenda */
-.mg-legend{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  flex-wrap:wrap;
-  margin-top:10px;
-  font-size:12px;
-  color: var(--txt-muted);
+function calcAge(fechaNacimiento){
+  const dob = parseISODate(fechaNacimiento);
+  if(!dob) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
 }
-.mg-legend .item{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-weight:800;
+
+function normSexHM(sexo){
+  const s = String(sexo || "").trim().toUpperCase();
+  if(s === "HOMBRE") return "M";
+  if(s === "MUJER") return "F";
+  return null;
 }
-.mg-legend .swatch{
-  width:10px;height:10px;border-radius:999px;
-  border:2px solid #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+
+function omronAgeBandFat(age){
+  if(age == null) return "20-39";
+  if(age >= 60) return "60-79";
+  if(age >= 40) return "40-59";
+  return "20-39";
 }
-.mg-legend .swatch.current{ background: var(--brand); }
-.mg-legend .swatch.prev{ background: var(--txt-muted); }
-
-/* etiqueta de estado */
-.mg-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:900;
-  border:1px solid var(--stroke);
-  background:#fff;
+function omronAgeBandMuscle(age){
+  if(age == null) return "18-39";
+  if(age >= 60) return "60-80";
+  if(age >= 40) return "40-59";
+  return "18-39";
 }
-.mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
-.mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
-.mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
-.mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
 
-
-    .mg-grid{ display:grid; gap:12px; }
-    .mg-row{
-      display:grid;
-      grid-template-columns: 180px 1fr 120px;
-      gap:12px;
-      align-items:center;
-      padding:10px 12px;
-      border:1px solid var(--stroke);
-      border-radius: var(--radius);
-      background: var(--surface-2);
-    }
-    @media (max-width: 640px){
-      .mg-row{ grid-template-columns: 1fr; }
-    }
-    .mg-label b{ display:block; font-size:13px; color:var(--txt); }
-    .mg-label small{ font-size:12px; color:var(--txt-muted); }
-
-    .mg-bar{
-      position:relative;
-      height:16px;
-      border-radius:999px;
-      overflow:hidden;
-      border:1px solid var(--stroke);
-      background:
-        linear-gradient(90deg,
-          rgba(255,107,107,.25) 0%,
-          rgba(255,107,107,.25) 33.33%,
-          rgba(43,213,118,.18) 33.33%,
-          rgba(43,213,118,.18) 66.66%,
-          rgba(255,209,102,.25) 66.66%,
-          rgba(255,209,102,.25) 100%);
-    }
-    .mg-bar::after{
-      content:"Bajo            Normal            Alto";
-      position:absolute;
-      inset:auto 0 -18px 0;
-      font-size:11px;
-      color:var(--txt-muted);
-      display:flex;
-      justify-content:space-between;
-      padding:0 8px;
-      pointer-events:none;
-    }
-    .mg-pin{
-      position:absolute;
-      top:-6px;
-      width:3px;
-      height:28px;
-      border-radius:2px;
-      background: var(--brand);
-      box-shadow: 0 0 0 3px rgba(90,103,216,.15);
-    }
-    .mg-value{
-      text-align:right;
-      font-weight:800;
-      color:var(--txt);
-    }
-    .mg-value small{ font-weight:700; color:var(--txt-muted); }
-
-    /* =========================
-       NUEVO: Historial composición (OPCION B: %)
-       ========================= */
-    .comp-table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      overflow:hidden;
-      border:1px solid var(--stroke);
-      border-radius: var(--radius);
-      background:#fff;
-    }
-    .comp-table th, .comp-table td{
-      padding:10px 10px;
-      border-bottom:1px solid var(--stroke);
-      font-size:12px;
-      text-align:center;
-      white-space:nowrap;
-    }
-    .comp-table th{
-      background: var(--surface-2);
-      color: var(--txt-2);
-      font-weight:800;
-    }
-    .comp-table tr:last-child td{ border-bottom:none; }
-    .comp-muted{ color: var(--txt-muted); font-weight:800; }
-    .comp-scroll{ overflow:auto; border-radius: var(--radius); }
-
-  </style>
-</head>
-
-<body>
-  <div class="wrap">
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">MF</div>
-        <div class="brand-text">
-          <h1>MAH FIT</h1>
-          <p id="subtitle">Panel Socio</p>
-        </div>
-      </div>
-
-      <div class="user-status">
-        <div id="dbDot" class="db-dot pending"></div>
-        <div class="user-info">
-          <strong id="userName">Cargando…</strong>
-          <span id="userPlan">Plan: —</span>
-          <span id="dbText">Conectando…</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <main>
-      <!-- HOME PAGE -->
-      <section id="page-home" class="page active">
-        <div class="main-grid">
-          <div class="card">
-            <div class="card-header">
-              <h2>Resumen</h2>
-              <p>Tu progreso, registros y métricas en un solo lugar</p>
-            </div>
-
-            <div class="card-body">
-              <!-- Acciones rápidas -->
-              <div class="quick-actions">
-                <div class="quick-action workout" id="quickWorkout">
-                  <div class="action-icon workout"><i class="fas fa-dumbbell"></i></div>
-                  <div class="action-title">Mi Rutina</div>
-                  <div class="action-subtitle">Ver entrenamiento actual</div>
-                </div>
-
-                <div class="quick-action nutrition" id="quickNutrition">
-                  <div class="action-icon nutrition"><i class="fas fa-apple-alt"></i></div>
-                  <div class="action-title">Mi Nutrición</div>
-                  <div class="action-subtitle">Plan alimenticio</div>
-                </div>
-              </div>
-
-              <!-- KPIs -->
-              <div class="kpi-grid">
-                <div class="kpi-item">
-                  <span class="kpi-label">Peso</span>
-                  <div class="kpi-value" id="kpiPeso"></div>
-                </div>
-
-                <div class="kpi-item">
-                  <span class="kpi-label">% Grasa</span>
-                  <div class="kpi-value" id="kpiGrasa"></div>
-                </div>
-
-                <div class="kpi-item">
-                  <span class="kpi-label">% Músculo</span>
-                  <div class="kpi-value" id="kpiMM"></div>
-                </div>
-
-                <div class="kpi-item">
-                  <span class="kpi-label">Visceral</span>
-                  <div class="kpi-value" id="kpiVisc"></div>
-                </div>
-              </div>
-
-              <div class="divider"></div>
-
-              <!-- Accordions -->
-              <div class="accordion-section active">
-                <button class="accordion-header" data-accordion="home">
-                  <div class="accordion-icon"><i class="fas fa-chart-line"></i></div>
-                  <div class="accordion-content">
-                    <span class="accordion-title">Gráficos</span>
-                    <span class="accordion-subtitle">Evolución por fecha (13-ene-2026)</span>
-                  </div>
-                  <div class="accordion-chevron"><i class="fas fa-chevron-down"></i></div>
-                </button>
-                <div class="accordion-body">
-                  <p class="text-muted">Evaluación <b>Profesional</b></p>
-                  <div class="btn-group">
-                    <button class="btn btn-primary" id="btnVerGraficos"><i class="fas fa-chart-bar"></i> Ver gráficos</button>
-                    <button class="btn btn-secondary" id="btnRefrescar"><i class="fas fa-rotate"></i> Refrescar</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="accordion-section">
-                <button class="accordion-header" data-accordion="home">
-                  <div class="accordion-icon"><i class="fas fa-plus-circle"></i></div>
-                  <div class="accordion-content">
-                    <span class="accordion-title">Registrar</span>
-                    <span class="accordion-subtitle">Nueva evaluación corporal</span>
-                  </div>
-                  <div class="accordion-chevron"><i class="fas fa-chevron-down"></i></div>
-                </button>
-                <div class="accordion-body">
-                  <p class="text-muted">Guarda en <b>EVALUATIONS</b> y actualiza KPIs + lista + gráficos.</p>
-                  <div class="btn-group">
-                    <button class="btn btn-primary" id="btnRegistrar"><i class="fas fa-plus"></i> Crear registro</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="accordion-section">
-                <button class="accordion-header" data-accordion="home">
-                  <div class="accordion-icon"><i class="fas fa-cog"></i></div>
-                  <div class="accordion-content">
-                    <span class="accordion-title">Ajustes</span>
-                    <span class="accordion-subtitle">Cuenta, sesión y soporte</span>
-                  </div>
-                  <div class="accordion-chevron"><i class="fas fa-chevron-down"></i></div>
-                </button>
-                <div class="accordion-body">
-                  <div class="btn-group">
-                    <button class="btn btn-secondary" id="btnPerfil"><i class="fas fa-user"></i> Mi perfil</button>
-                    <button class="btn btn-outline" id="btnSalir"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- SIDEBAR -->
-          <div class="card">
-            <div class="card-header">
-              <h2>Últimos registros</h2>
-              <p>Evaluaciones más recientes</p>
-            </div>
-            <div class="card-body">
-              <div id="logsList">
-                <div class="empty-state">
-                  <i class="fas fa-clipboard-list"></i>
-                  <p>No hay registros disponibles</p>
-                </div>
-              </div>
-              <div class="hint" id="logsHint"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- GRAPHS PAGE -->
-      <section id="page-graphs" class="page">
-        <div class="card">
-          <div class="card-header">
-            <h2>Gráficos</h2>
-            <p>Evolución por fecha</p>
-          </div>
-          <div class="card-body">
-
-            <!-- ✅ NUEVO (OPCION B): Análisis % y Historial % -->
-            <div class="card" style="margin-bottom:16px;">
-              <div class="card-header">
-                <h2>Análisis Músculo-Grasa</h2>
-                <p>% grasa y % muscular (último registro)</p>
-              </div>
-              <div class="card-body">
-                <div id="mgAnalysisBox"></div>
-              </div>
-            </div>
-
-            <div class="card" style="margin-bottom:16px;">
-              <div class="card-header">
-                <h2>Historial de Composición Corporal</h2>
-                <p>Últimos registros</p>
-              </div>
-              <div class="card-body">
-                <div id="compHistoryBox"></div>
-              </div>
-            </div>
-
-            <!-- Charts -->
-            <div id="chartsWrap" class="charts-grid">
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-weight-scale"></i> Peso (kg)</div>
-                <div class="chart-wrap"><canvas id="chartPeso"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-percent"></i> % Grasa</div>
-                <div class="chart-wrap"><canvas id="chartGrasa"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
-                <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-heart-pulse"></i> Grasa Visceral</div>
-                <div class="chart-wrap"><canvas id="chartVisc"></canvas></div>
-              </div>
-            </div>
-
-            <div class="btn-group" style="margin-top:16px;">
-              <button class="btn btn-secondary" id="btnChartsReload"><i class="fas fa-rotate"></i> Recargar gráficos</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- REGISTER PAGE -->
-      <section id="page-register" class="page">
-        <div class="card">
-          <div class="card-header">
-            <h2>Registrar</h2>
-            <p>Nueva evaluación corporal (se guarda en <b>EVALUATIONS</b>)</p>
-          </div>
-          <div class="card-body">
-            <form id="evalForm">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="evalFecha">Fecha</label>
-                  <input id="evalFecha" type="date" required />
-                </div>
-
-                <div class="field">
-                  <label for="evalPeso">Peso (kg)</label>
-                  <input id="evalPeso" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 72.5" />
-                </div>
-
-                <div class="field">
-                  <label for="evalGrasa">% Grasa</label>
-                  <input id="evalGrasa" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 18.2" />
-                </div>
-
-                <div class="field">
-                  <label for="evalMM">% Masa muscular</label>
-                  <input id="evalMM" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 41.7" />
-                </div>
-
-                <div class="field">
-                  <label for="evalVisc">Grasa visceral</label>
-                  <input id="evalVisc" type="number" step="1" inputmode="numeric" placeholder="Ej: 6" />
-                </div>
-
-                <div class="field">
-                  <label for="evalCintura">Cintura (cm) (opcional)</label>
-                  <input id="evalCintura" type="number" step="0.1" inputmode="decimal" placeholder="Ej: 82.0" />
-                </div>
-
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label for="evalNotas">Observaciones (opcional)</label>
-                  <textarea id="evalNotas" placeholder="Notas / observaciones"></textarea>
-                </div>
-              </div>
-
-              <div class="btn-group">
-                <button class="btn btn-primary" type="submit" id="btnGuardarEval">
-                  <i class="fas fa-save"></i> Guardar evaluación
-                </button>
-                <button class="btn btn-outline" type="button" id="btnCancelarEval">
-                  <i class="fas fa-xmark"></i> Cancelar
-                </button>
-              </div>
-
-              <div class="hint">
-                Tip: en esta versión, “Masa muscular” se maneja como <b>%</b>.
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <!-- PROFILE PAGE -->
-      <section id="page-profile" class="page">
-        <div class="card">
-          <div class="card-header">
-            <h2>Perfil</h2>
-            <p>Datos de tu cuenta y plan</p>
-          </div>
-          <div class="card-body" id="profileBody">
-            <div class="empty-state">
-              <i class="fas fa-user-circle"></i>
-              <p>Cargando perfil…</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- MODAL RUTINA -->
-  <div class="modal" id="workoutModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3><i class="fas fa-dumbbell" style="color: var(--workout);"></i> Mi Rutina</h3>
-        <div class="close" id="closeWorkoutModal">&times;</div>
-      </div>
-      <div class="modal-body">
-        <div id="routineWrap">
-          <div class="empty-state">
-            <i class="fas fa-dumbbell"></i>
-            <p>No hay rutina asignada todavía.</p>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="btn-group">
-          <button class="btn btn-outline" id="btnViewFullRoutine">
-            <i class="fas fa-calendar-alt"></i> Ver Rutina Completa
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL NUTRICIÓN -->
-  <div class="modal" id="nutritionModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3><i class="fas fa-apple-alt" style="color: var(--nutrition);"></i> Mi Nutrición</h3>
-        <div class="close" id="closeNutritionModal">&times;</div>
-      </div>
-      <div class="modal-body">
-        <div class="nutrition-plan">
-          <div class="nutrition-header">
-            <div class="nutrition-title">Plan Alimenticio</div>
-            <div class="nutrition-calories">—</div>
-          </div>
-          <div class="nutrition-items">
-            <p class="text-muted">Este módulo lo conectamos después (si lo quieres en Sheets también).</p>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="btn-group">
-          <button class="btn btn-outline" id="btnLogMeal">
-            <i class="fas fa-utensils"></i> Registrar comida (próx.)
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <div class="nav-container">
-      <button class="nav-item active" data-go="home">
-        <div class="nav-icon"><i class="fas fa-home"></i></div>
-        <div class="nav-label">Inicio</div>
-      </button>
-      <button class="nav-item" data-go="graphs">
-        <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
-        <div class="nav-label">Gráficos</div>
-      </button>
-      <button class="nav-item" data-go="register">
-        <div class="nav-icon"><i class="fas fa-plus-circle"></i></div>
-        <div class="nav-label">Registrar</div>
-      </button>
-      <button class="nav-item" data-go="profile">
-        <div class="nav-icon"><i class="fas fa-user"></i></div>
-        <div class="nav-label">Perfil</div>
-      </button>
-    </div>
-  </nav>
-
-  <!-- ✅ Tu app.js real (con API_URL, syncDown, requireAuth, saveEvaluation, refreshEvaluations, etc.) -->
-  <script src="assets/app.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const $  = (selector, el = document) => el.querySelector(selector);
-      const $$ = (selector, el = document) => Array.from(el.querySelectorAll(selector));
-
-      let currentUser = null;
-      let charts = { peso:null, grasa:null, mm:null, visc:null };
-
-      const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-      function fmtDateShort(iso) {
-        const s = String(iso || "").trim();
-        const d = s.slice(0,10);
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return s || "—";
-        const yyyy = d.slice(0,4);
-        const mm = Number(d.slice(5,7));
-        const dd = d.slice(8,10);
-        const m = MONTHS[Math.max(1, Math.min(12, mm)) - 1];
-        return `${dd}-${m}-${yyyy}`;
-      }
-
-      function numClean(v) {
-        if (window.toNumClean) return window.toNumClean(v);
-        const s = String(v ?? "").replace(",", ".").trim();
-        const n = Number(s);
-        return Number.isFinite(n) ? n : null;
-      }
-
-      function planLabel(user) {
-        const pid = String(user.planId || "").trim();
-        const pt  = String(user.planTipo || "").trim();
-        const pfin = String(user.planFin || "").trim();
-        let label = pid || pt || "—";
-        if (pfin) label += ` · hasta ${fmtDateShort(pfin)}`;
-        return label;
-      }
-
-      function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.textContent = message;
-
-        let bgColor = 'var(--brand)';
-        if (type === 'success') bgColor = 'var(--success)';
-        if (type === 'error') bgColor = 'var(--danger)';
-
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: ${bgColor};
-          color: white;
-          padding: 12px 20px;
-          border-radius: var(--radius);
-          box-shadow: var(--shadow-xl);
-          z-index: 1000;
-          animation: slideIn 0.3s ease;
-          font-size: 14px;
-          max-width: 340px;
-        `;
-
-        const style = document.createElement('style');
-        style.textContent = `
-          @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-          }
-          @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-          }
-        `;
-        document.head.appendChild(style);
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          notification.style.animation = 'slideOut 0.3s ease';
-          setTimeout(() => notification.remove(), 300);
-        }, 3000);
-      }
-
-      function navigateTo(pageId) {
-        $$('.page').forEach(page => page.classList.remove('active'));
-        $(`#page-${pageId}`)?.classList.add('active');
-
-        $$('.nav-item').forEach(item => item.classList.remove('active'));
-        $(`.nav-item[data-go="${pageId}"]`)?.classList.add('active');
-
-        const titles = { home: 'Panel Socio', graphs: 'Gráficos', register: 'Registrar', profile: 'Perfil' };
-        $("#subtitle").textContent = titles[pageId] || 'Panel Socio';
-
-        if(pageId === "graphs") {
-          setTimeout(() => {
-            renderCharts();
-            renderMuscleFatAnalysis();
-            renderCompositionHistory();
-          }, 50);
-        }
-      }
-
-      function setupNavigation() {
-        $$('.nav-item').forEach(item => {
-          item.addEventListener('click', function() {
-            navigateTo(this.dataset.go);
-          });
-        });
-
-        $("#btnVerGraficos")?.addEventListener('click', () => navigateTo('graphs'));
-        $("#btnRegistrar")?.addEventListener('click', () => navigateTo('register'));
-        $("#btnPerfil")?.addEventListener('click', () => navigateTo('profile'));
-
-        $("#btnSalir")?.addEventListener('click', () => {
-          if (confirm("¿Estás seguro de que quieres cerrar sesión?")) {
-            if (window.clearSession) window.clearSession();
-            window.location.href = "index.html";
-          }
-        });
-
-        $("#btnRefrescar")?.addEventListener('click', async () => {
-          await hardRefresh();
-        });
-
-        $("#btnChartsReload")?.addEventListener('click', () => {
-          renderCharts();
-          renderMuscleFatAnalysis();
-          renderCompositionHistory();
-        });
-
-        $("#quickWorkout")?.addEventListener('click', () => openModal('workoutModal'));
-        $("#quickNutrition")?.addEventListener('click', () => openModal('nutritionModal'));
-
-        $("#closeWorkoutModal")?.addEventListener('click', () => closeModal('workoutModal'));
-        $("#closeNutritionModal")?.addEventListener('click', () => closeModal('nutritionModal'));
-
-        $$('.modal').forEach(modal => {
-          modal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal(this.id);
-          });
-        });
-
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') {
-            $$('.modal.active').forEach(m => closeModal(m.id));
-          }
-        });
-      }
-
-      function setupAccordions() {
-        $$('.accordion-header').forEach(header => {
-          header.addEventListener('click', function() {
-            const section = this.closest('.accordion-section');
-            const group = this.dataset.accordion;
-
-            if (group) {
-              $$(`[data-accordion="${group}"]`).forEach(other => {
-                const otherSection = other.closest('.accordion-section');
-                if (otherSection && otherSection !== section) otherSection.classList.remove('active');
-              });
-            }
-            section.classList.toggle('active');
-          });
-        });
-      }
-
-      function openModal(modalId) {
-        $(`#${modalId}`)?.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
-      function closeModal(modalId) {
-        $(`#${modalId}`)?.classList.remove('active');
-        document.body.style.overflow = 'auto';
-      }
-
-      function setUserHeader(user) {
-        $("#userName").textContent = user.nombre || user.rut || "Socio/a";
-        $("#userPlan").textContent = `Plan: ${planLabel(user)}`;
-      }
-
-      function setKPIsFromLastEval() {
-        const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
-        const last = last2.length ? last2[last2.length - 1] : null;
-        const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
-
-        const peso  = last ? numClean(last.pesoKg) : null;
-        const grasa = last ? numClean(last.grasaPct) : null;
-        const mm    = last ? numClean(last.masaMuscularPct) : null; // ✅ % músculo
-        const visc  = last ? numClean(last.grasaVisceral) : null;
-
-        const pesoPrev  = prev ? numClean(prev.pesoKg) : null;
-        const grasaPrev = prev ? numClean(prev.grasaPct) : null;
-        const mmPrev    = prev ? numClean(prev.masaMuscularPct) : null;
-        const viscPrev  = prev ? numClean(prev.grasaVisceral) : null;
-
-        const dPeso  = (peso !== null && pesoPrev !== null) ? (peso - pesoPrev) : null;
-        const dGrasa = (grasa !== null && grasaPrev !== null) ? (grasa - grasaPrev) : null;
-        const dMM    = (mm !== null && mmPrev !== null) ? (mm - mmPrev) : null;
-        const dVisc  = (visc !== null && viscPrev !== null) ? (visc - viscPrev) : null;
-
-        const normalizeDelta = (n) => (Object.is(n, -0) ? 0 : n);
-
-        function formatDelta(v, unit=""){
-          if(v === null || v === undefined || !Number.isFinite(v)) return "";
-          v = normalizeDelta(v);
-          const abs = Math.abs(v);
-          const num = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
-          const sign = v > 0 ? "+" : (v < 0 ? "-" : "");
-          return `${sign}${num}${unit ? " " + unit : ""}`;
-        }
-
-        function buildDeltaBadge(delta, unit="", mode="normal"){
-          if(delta === null || delta === undefined || !Number.isFinite(delta)) return "";
-          delta = normalizeDelta(delta);
-
-          if(delta === 0){
-            return `<div class="kpi-delta flat"><i class="fas fa-minus"></i>0${unit ? " " + unit : ""}</div>`;
-          }
-
-          const isUp = delta > 0;
-          const reverse = (mode === "reverse");
-
-          const cls  = (isUp && !reverse) || (!isUp && reverse) ? "up" : "down";
-          const icon = isUp ? "fa-arrow-up" : "fa-arrow-down";
-
-          return `<div class="kpi-delta ${cls}"><i class="fas ${icon}"></i>${formatDelta(delta, unit)}</div>`;
-        }
-
-        function renderKPI(elId, value, unit, delta, mode){
-          const el = document.getElementById(elId);
-          if(!el) return;
-
-          const mainVal = (value === null) ? "—" : (Number.isInteger(value) ? value : value.toFixed(1));
-          const main = `<div class="kpi-main">${mainVal}${unit ? `<span class="kpi-unit">${unit}</span>` : ""}</div>`;
-          const pill = (delta !== null) ? buildDeltaBadge(delta, unit || "", mode) : "";
-
-          el.innerHTML = main + pill;
-        }
-
-        renderKPI("kpiPeso",  peso,  "kg", dPeso,  "normal");
-        renderKPI("kpiGrasa", grasa, "%",  dGrasa, "reverse");
-        renderKPI("kpiMM",    mm,    "%",  dMM,    "normal");   // ✅ % músculo
-        renderKPI("kpiVisc",  visc,  "",   dVisc,  "reverse");
-
-        const hint = document.getElementById("logsHint");
-        if (hint) {
-          hint.textContent = last
-            ? `Última evaluación: ${fmtDateShort(last.fecha)}`
-            : `Aún no hay evaluaciones. Crea tu primer registro en “Registrar”.`;
-        }
-      }
-
-      function renderRecentLogs() {
-        const logsList = $("#logsList");
-        if (!logsList) return;
-
-        const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
-        const sorted = (list || []).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
-
-        const recent = sorted.slice(0, 8);
-
-        if (!recent.length) {
-          logsList.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-clipboard-list"></i>
-              <p>No hay registros disponibles</p>
-            </div>
-          `;
-          return;
-        }
-
-        logsList.innerHTML = '<div class="logs-list"></div>';
-        const logsContainer = logsList.querySelector('.logs-list');
-
-        recent.forEach(ev => {
-          const w = numClean(ev.pesoKg);
-          const f = numClean(ev.grasaPct);
-          const m = numClean(ev.masaMuscularPct);
-          const v = numClean(ev.grasaVisceral);
-
-          const el = document.createElement('div');
-          el.className = 'log-item';
-          el.innerHTML = `
-            <div>
-              <div class="log-date">${fmtDateShort(ev.fecha)}</div>
-              <div class="hint">${ev.observaciones ? String(ev.observaciones).slice(0,70) : ""}</div>
-            </div>
-            <div class="log-metrics">
-              <div class="log-metric"><i class="fas fa-weight-scale"></i> ${w ?? "—"}kg</div>
-              <div class="log-metric"><i class="fas fa-percent"></i> ${f ?? "—"}%</div>
-              <div class="log-metric"><i class="fas fa-dumbbell"></i> ${m ?? "—"}%</div>
-              <div class="log-metric"><i class="fas fa-heart-pulse"></i> ${v ?? "—"}</div>
-            </div>
-          `;
-          logsContainer.appendChild(el);
-        });
-      }
-
-      function renderRoutineModal() {
-        const wrap = $("#routineWrap");
-        if(!wrap) return;
-
-        const row = window.rutinaV2DeSocio ? window.rutinaV2DeSocio(currentUser.rut) : null;
-        const routine = row?.routine;
-
-        if(!routine || !Array.isArray(routine.dias) || !routine.dias.length){
-          wrap.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-dumbbell"></i>
-              <p>No hay rutina asignada todavía.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const html = routine.dias.map((d, idx) => {
-          const dia = d.dia || `Día ${idx+1}`;
-          const enfoque = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "");
-          const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
-          const lines = ejercicios.map(e => {
-            const ex = e.ejercicio || "Ejercicio";
-            const s = e.series ? `${e.series}x` : "";
-            const r = e.reps ? `${e.reps}` : "";
-            const c = e.carga ? ` · ${e.carga}` : "";
-            const desc = e.descanso ? ` · desc ${e.descanso}` : "";
-            const obs = e.obs ? ` <span class="text-muted">(${e.obs})</span>` : "";
-            return `<li><b>${ex}</b> ${s}${r}${c}${desc}${obs}</li>`;
-          }).join("");
-
-          return `
-            <div class="workout-day">
-              <div class="workout-header">
-                <div class="workout-title">${dia}</div>
-                <div class="workout-duration">${enfoque || "—"}</div>
-              </div>
-              <div class="workout-exercises">
-                ${ejercicios.length ? `<ul style="margin-left:18px;">${lines}</ul>` : `<p class="text-muted">Sin ejercicios.</p>`}
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        wrap.innerHTML = html;
-      }
-
-      /* ==============================
-         NUEVO: Analisis % + Historial %
-         ============================== */
-         
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const toNum=v=>{const n=Number(String(v).replace(",","."));return isFinite(n)?n:null};
-
-function calcBMI(peso,talla){
-  if(!peso||!talla)return null;
-  const m=talla/100;
-  return peso/(m*m);
+// OMRON - % grasa (bajo/normal/alto/muy alto)
+const OMRON_FAT = {
+  F: {
+    "20-39": { lowMax: 20.9, normalMax: 32.9, highMax: 38.9 },
+    "40-59": { lowMax: 22.9, normalMax: 33.9, highMax: 39.9 },
+    "60-79": { lowMax: 23.9, normalMax: 35.9, highMax: 41.9 }
+  },
+  M: {
+    "20-39": { lowMax: 7.9,  normalMax: 19.9, highMax: 24.9 },
+    "40-59": { lowMax: 10.9, normalMax: 21.9, highMax: 27.9 },
+    "60-79": { lowMax: 12.9, normalMax: 24.9, highMax: 29.9 }
+  }
+};
+
+// OMRON - % músculo esquelético (bajo/normal/alto/muy alto)
+const OMRON_MUSCLE = {
+  F: {
+    "18-39": { lowMax: 24.2, normalMax: 30.3, highMax: 35.3 },
+    "40-59": { lowMax: 24.0, normalMax: 30.1, highMax: 35.1 },
+    "60-80": { lowMax: 23.8, normalMax: 29.9, highMax: 34.9 }
+  },
+  M: {
+    "18-39": { lowMax: 33.2, normalMax: 39.3, highMax: 44.0 },
+    "40-59": { lowMax: 33.0, normalMax: 39.1, highMax: 43.8 },
+    "60-80": { lowMax: 32.8, normalMax: 38.9, highMax: 43.6 }
+  }
+};
+
+function classifyOmron(value, cuts){
+  if(value == null || !Number.isFinite(value)) return "normal";
+  if(value <= cuts.lowMax) return "low";
+  if(value <= cuts.normalMax) return "normal";
+  if(value <= cuts.highMax) return "high";
+  return "veryHigh";
 }
+
+function labelClass(cls){
+  if(cls === "low") return "Bajo";
+  if(cls === "normal") return "Normal";
+  if(cls === "high") return "Alto";
+  return "Muy alto";
+}
+
+
+function calcBMI(pesoKg, tallaCm){
+  const w = Number(pesoKg);
+  const h = Number(tallaCm);
+  if(!w || !h) return null;
+  const m = h / 100;
+  return +(w / (m*m)).toFixed(1);
+}
+
 function bmiLabel(bmi){
-  if(bmi<18.5)return"low";
-  if(bmi<25)return"normal";
-  if(bmi<30)return"high";
-  return"veryHigh";
+  if(bmi < 18.5) return "Bajo peso";
+  if(bmi < 25) return "Normal";
+  if(bmi < 30) return "Sobrepeso";
+  return "Obesidad";
 }
+
 function visceralLabel(v){
-  if(v<=9)return"normal";
-  if(v<=14)return"high";
-  return"veryHigh";
-}
-function labelClass(c){
-  return c==="low"?"Bajo":c==="normal"?"Normal":c==="high"?"Alto":"Muy alto";
-}
-
-function renderMuscleFatAnalysis(){
-  const box = document.getElementById("mgAnalysisBox");
-  if(!box || !currentUser) return;
-
-  const sex = normSexHM(currentUser.sexo);                 // HOMBRE/MUJER -> M/F
-  const age = calcAge(currentUser.fechaNacimiento);
-
-  const tallaCm = numClean(currentUser.tallaCm);           // si existe
-  const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
-  const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
-  const currEv = last2.length ? last2[last2.length - 1] : null;
-
-  if(!currEv){
-    box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
-    return;
-  }
-
-  // ---- valores actuales/anterior ----
-  const grasaCurr  = numClean(currEv.grasaPct);
-  const muscCurr   = numClean(currEv.masaMuscularPct);
-
-  const grasaPrev  = prevEv ? numClean(prevEv.grasaPct) : null;
-  const muscPrev   = prevEv ? numClean(prevEv.masaMuscularPct) : null;
-
-  const pesoCurr   = numClean(currEv.pesoKg);
-  const pesoPrev   = prevEv ? numClean(prevEv.pesoKg) : null;
-
-  const viscCurr   = numClean(currEv.grasaVisceral);
-  const viscPrev   = prevEv ? numClean(prevEv.grasaVisceral) : null;
-
-  // ---- OMRON bandas/cortes ----
-  const fatBand = omronAgeBandFat(age);
-  const musBand = omronAgeBandMuscle(age);
-  const sexKey = sex || "M";
-
-  const fatCuts = (OMRON_FAT[sexKey] && OMRON_FAT[sexKey][fatBand]) ? OMRON_FAT[sexKey][fatBand] : OMRON_FAT["M"]["20-39"];
-  const musCuts = (OMRON_MUSCLE[sexKey] && OMRON_MUSCLE[sexKey][musBand]) ? OMRON_MUSCLE[sexKey][musBand] : OMRON_MUSCLE["M"]["18-39"];
-
-  // ---- helpers ----
-  const clamp01 = (x)=> Math.max(0, Math.min(1, x));
-  function scaleRange(cuts){
-    const min = Math.max(0, cuts.lowMax - (cuts.normalMax - cuts.lowMax));
-    const max = cuts.highMax + (cuts.highMax - cuts.normalMax) + 5;
-    return { min, max };
-  }
-  function leftPct(val, min, max){
-    if(val == null || !Number.isFinite(val)) return null;
-    return clamp01((val - min) / (max - min)) * 100;
-  }
-  function fmtVal(v, digits=1){
-    if(v == null || !Number.isFinite(v)) return "—";
-    return Number.isInteger(v) ? String(v) : v.toFixed(digits);
-  }
-  function barBackground(cuts, min, max){
-    const toPct = (x)=> clamp01((x - min) / (max - min)) * 100;
-    const pLowEnd  = toPct(cuts.lowMax);
-    const pNormEnd = toPct(cuts.normalMax);
-    const pHighEnd = toPct(cuts.highMax);
-
-    return `
-      linear-gradient(90deg,
-        rgba(9,132,227,.18) 0%,
-        rgba(9,132,227,.18) ${pLowEnd}%,
-        rgba(43,213,118,.18) ${pLowEnd}%,
-        rgba(43,213,118,.18) ${pNormEnd}%,
-        rgba(255,209,102,.22) ${pNormEnd}%,
-        rgba(255,209,102,.22) ${pHighEnd}%,
-        rgba(255,107,107,.20) ${pHighEnd}%,
-        rgba(255,107,107,.20) 100%
-      )
-    `;
-  }
-
-  // ---- clasificaciones ----
-  function imcFrom(peso, tallaCm){
-    if(peso == null || !Number.isFinite(peso)) return null;
-    if(tallaCm == null || !Number.isFinite(tallaCm) || tallaCm <= 0) return null;
-    const m = tallaCm / 100;
-    return peso / (m*m);
-  }
-  function imcClass(imc){
-    if(imc == null || !Number.isFinite(imc)) return "normal";
-    if(imc < 18.5) return "low";
-    if(imc < 25) return "normal";
-    if(imc < 30) return "high";
-    return "veryHigh";
-  }
-  function visceralClass(v){
-    if(v == null || !Number.isFinite(v)) return "normal";
-    if(v <= 9)  return "normal";
-    if(v <= 14) return "high";
-    return "veryHigh";
-  }
-
-  // ---- fila OMRON (%): usa cortes reales ----
-  function rowOmronPct(label, currVal, prevVal, cuts, bandLabel){
-    const {min, max} = scaleRange(cuts);
-    const currLeft = leftPct(currVal, min, max);
-    const prevLeft = leftPct(prevVal, min, max);
-
-    const clsNow = classifyOmron(currVal, cuts);
-    const bg = barBackground(cuts, min, max);
-
-    return `
-      <div class="mg-row">
-        <div class="mg-label">
-          <b>${label}</b>
-          <small>Rango OMRON (${sexKey === "M" ? "HOMBRE" : "MUJER"} · ${bandLabel})</small>
-        </div>
-
-        <div style="position:relative;">
-          <div class="mg-bar" style="background:${bg};"></div>
-
-          ${prevLeft === null ? "" : `
-            <span class="mg-pin-line prev"
-              title="Anterior: ${fmtVal(prevVal)}%"
-              style="left: calc(${prevLeft}% - 1px);"></span>
-          `}
-          ${currLeft === null ? "" : `
-            <span class="mg-pin-line current"
-              title="Actual: ${fmtVal(currVal)}%"
-              style="left: calc(${currLeft}% - 1px);"></span>
-          `}
-        </div>
-
-        <div class="mg-value">
-          ${fmtVal(currVal)} <small>%</small>
-          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
-            <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // ---- fila genérica: Peso / Visceral ----
-  // Peso: barra 40..150kg (ajustable)
-  // Visceral: barra 0..20 (estándar “nivel”)
-  function rowGeneric(label, currVal, prevVal, min, max, unit, clsNow, subtitle){
-    const currLeft = leftPct(currVal, min, max);
-    const prevLeft = leftPct(prevVal, min, max);
-
-    // fondo suave (normal al centro)
-    const mid1 = 33.33, mid2 = 66.66;
-    const bg = `
-      linear-gradient(90deg,
-        rgba(9,132,227,.14) 0%,
-        rgba(9,132,227,.14) ${mid1}%,
-        rgba(43,213,118,.14) ${mid1}%,
-        rgba(43,213,118,.14) ${mid2}%,
-        rgba(255,107,107,.12) ${mid2}%,
-        rgba(255,107,107,.12) 100%
-      )
-    `;
-
-    return `
-      <div class="mg-row">
-        <div class="mg-label">
-          <b>${label}</b>
-          <small>${subtitle || ""}</small>
-        </div>
-
-        <div style="position:relative;">
-          <div class="mg-bar" style="background:${bg};"></div>
-
-          ${prevLeft === null ? "" : `
-            <span class="mg-pin-line prev"
-              title="Anterior: ${fmtVal(prevVal)}${unit ? " " + unit : ""}"
-              style="left: calc(${prevLeft}% - 1px);"></span>
-          `}
-          ${currLeft === null ? "" : `
-            <span class="mg-pin-line current"
-              title="Actual: ${fmtVal(currVal)}${unit ? " " + unit : ""}"
-              style="left: calc(${currLeft}% - 1px);"></span>
-          `}
-        </div>
-
-        <div class="mg-value">
-          ${fmtVal(currVal)} <small>${unit || ""}</small>
-          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
-            <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // ---- arma HTML ----
-  const imc = imcFrom(pesoCurr, tallaCm);
-  const pesoCls = imcClass(imc);
-  const pesoSub = (imc != null)
-    ? `IMC aprox: ${fmtVal(imc,1)}`
-    : `Peso corporal (sin talla registrada)`;
-
-  const viscCls = visceralClass(viscCurr);
-
-  box.innerHTML = `
-    <div class="mg-grid">
-      ${rowOmronPct("% Grasa Corporal", grasaCurr, grasaPrev, fatCuts, fatBand)}
-      ${rowOmronPct("% Masa Muscular",  muscCurr,  muscPrev,  musCuts, musBand)}
-
-      ${rowGeneric("Peso corporal", pesoCurr, pesoPrev, 40, 150, "kg", pesoCls, pesoSub)}
-      ${rowGeneric("Grasa visceral", viscCurr, viscPrev, 0, 20, "nivel", viscCls, "Escala 0–20 (referencial)")}
-    </div>
-
-    <div class="mg-legend">
-      <span class="item"><span class="swatch prev"></span> Anterior</span>
-      <span class="item"><span class="swatch current"></span> Actual</span>
-    </div>
-
-    <div class="hint" style="margin-top:10px;">
-      Último registro: <b>${fmtDateShort(currEv.fecha)}</b>
-      ${prevEv?.fecha ? ` · Anterior: <b>${fmtDateShort(prevEv.fecha)}</b>` : ``}
-      ${age != null ? ` · Edad: <b>${age}</b>` : ``}
-      ${currentUser.sexo ? ` · Sexo: <b>${currentUser.sexo}</b>` : ``}
-    </div>
-  `;
+  if(v <= 9) return "Normal";
+  if(v <= 14) return "Alto";
+  return "Muy alto";
 }
 
 
 
-      function renderCompositionHistory(){
-        const box = document.getElementById("compHistoryBox");
-        if(!box || !currentUser) return;
 
-        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 8) : [];
-        if(!list || !list.length){
-          box.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>No hay historial todavía.</p></div>`;
-          return;
-        }
+function renderPesoYVisceral(actual, anterior, tallaCm){
+  // ===== PESO / IMC =====
+  const bmiAct = calcBMI(actual.pesoKg, tallaCm);
+  const bmiAnt = anterior ? calcBMI(anterior.pesoKg, tallaCm) : null;
 
-        const rows = list.map(ev=>{
-          const f = fmtDateShort(ev.fecha);
-          const p = numClean(ev.pesoKg);
-          const m = numClean(ev.masaMuscularPct);
-          const g = numClean(ev.grasaPct);
-          return `
-            <tr>
-              <td class="comp-muted">${f}</td>
-              <td>${p ?? "—"}</td>
-              <td>${m ?? "—"}</td>
-              <td>${g ?? "—"}</td>
-            </tr>
-          `;
-        }).join("");
+  document.getElementById("pesoVal").textContent = `${actual.pesoKg} kg`;
+  document.getElementById("pesoBadge").textContent =
+    `IMC ${bmiAct} · ${bmiLabel(bmiAct)}`;
 
-        box.innerHTML = `
-          <div class="comp-scroll">
-            <table class="comp-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Peso (kg)</th>
-                  <th>% Músculo</th>
-                  <th>% Grasa</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        `;
-      }
+  document.getElementById("pesoCurr").style.left =
+    Math.min(100, (actual.pesoKg / 150) * 100) + "%";
 
-      /* ==============================
-         Charts
-         ============================== */
-      function destroyCharts() {
-        Object.values(charts).forEach(c => { try { c && c.destroy(); } catch(_){} });
-        charts = { peso:null, grasa:null, mm:null, visc:null };
-      }
+  if(anterior){
+    document.getElementById("pesoPrev").style.left =
+      Math.min(100, (anterior.pesoKg / 150) * 100) + "%";
+  }
 
-      function makeLineChart(canvasId, labels, data, label) {
-        const ctx = document.getElementById(canvasId);
-        if(!ctx || !window.Chart) return null;
+  // ===== GRASA VISCERAL =====
+  document.getElementById("visVal").textContent = actual.grasaVisceral;
+  document.getElementById("visBadge").textContent =
+    visceralLabel(actual.grasaVisceral);
 
-        return new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              label,
-              data,
-              tension: 0.25,
-              fill: false,
-              borderWidth: 2,
-              pointRadius: 3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { intersect: false, mode: 'index' }
-            },
-            scales: {
-              x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
-              y: { beginAtZero: false }
-            }
-          }
-        });
-      }
+  document.getElementById("visCurr").style.left =
+    Math.min(100, (actual.grasaVisceral / 20) * 100) + "%";
 
-      function renderCharts() {
-        if(!currentUser) return;
+  if(anterior){
+    document.getElementById("visPrev").style.left =
+      Math.min(100, (anterior.grasaVisceral / 20) * 100) + "%";
+  }
+}
 
-        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 12) : [];
-        if(!list.length) {
-          destroyCharts();
-          return;
-        }
 
-        const labels = list.map(x => fmtDateShort(x.fecha));
-        const peso  = list.map(x => numClean(x.pesoKg));
-        const grasa = list.map(x => numClean(x.grasaPct));
-        const mmPct = list.map(x => numClean(x.masaMuscularPct)); // ✅ % músculo
-        const visc  = list.map(x => numClean(x.grasaVisceral));
 
-        destroyCharts();
-        charts.peso  = makeLineChart("chartPeso", labels, peso, "Peso (kg)");
-        charts.grasa = makeLineChart("chartGrasa", labels, grasa, "% Grasa");
-        charts.mm    = makeLineChart("chartMM", labels, mmPct, "% Músculo");
-        charts.visc  = makeLineChart("chartVisc", labels, visc, "Grasa Visceral");
-      }
 
-      function renderProfile() {
-        const body = $("#profileBody");
-        if(!body || !currentUser) return;
 
-        body.innerHTML = `
-          <div class="form-grid">
-            <div class="field">
-              <label>RUT</label>
-              <input value="${currentUser.rut || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Nombre</label>
-              <input value="${currentUser.nombre || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input value="${currentUser.email || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Teléfono</label>
-              <input value="${currentUser.telefono || ""}" disabled />
-            </div>
 
-            <div class="field">
-              <label>Plan</label>
-              <input value="${String(currentUser.planId || currentUser.planTipo || "—")}" disabled />
-            </div>
-            <div class="field">
-              <label>Vencimiento</label>
-              <input value="${currentUser.planFin ? fmtDateShort(currentUser.planFin) : "—"}" disabled />
-            </div>
 
-            <div class="field" style="grid-column: 1 / -1;">
-              <label>Objetivo</label>
-              <input value="${currentUser.objetivo || ""}" disabled />
-            </div>
-          </div>
-          <div class="divider"></div>
-          <div class="btn-group">
-            <button class="btn btn-secondary" id="btnProfileRefresh"><i class="fas fa-rotate"></i> Refrescar datos</button>
-          </div>
-        `;
 
-        $("#btnProfileRefresh")?.addEventListener("click", hardRefresh);
-      }
 
-      function setupRegisterForm() {
-        const form = $("#evalForm");
-        if(!form) return;
 
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth()+1).padStart(2,'0');
-        const dd = String(today.getDate()).padStart(2,'0');
-        $("#evalFecha").value = `${yyyy}-${mm}-${dd}`;
+// ---------------- API helpers ----------------
 
-        $("#btnCancelarEval")?.addEventListener("click", () => navigateTo("home"));
+async function apiGet(resource){
+  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
+  const r = await fetch(url, { method:"GET", cache:"no-store" });
+  const t = await r.text();
+  let j = null;
+  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  if(j && j.ok === false) throw new Error(j.error || "API error");
+  return j;
+}
 
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          if(!currentUser) return;
+async function apiPost(resource, data){
+  const payload = { resource, data };
+  const r = await fetch(API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // ✅ compat
+    body: JSON.stringify(payload),
+  });
+  const t = await r.text();
+  let j = null;
+  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  if(j && j.ok === false) throw new Error(j.error || "API error");
+  return j;
+}
 
-          const btn = $("#btnGuardarEval");
-          btn.disabled = true;
+// ---------------- Cache local ----------------
+function getUsers(){ return LS.get("mahfit_users", []); }
+function setUsers(v){ LS.set("mahfit_users", v); }
 
-          try {
-            const payload = {
-              rutSocio: currentUser.rut,
-              fecha: $("#evalFecha").value,
+function getPlanes(){ return LS.get("mahfit_planes", []); }
+function setPlanes(v){ LS.set("mahfit_planes", v); }
 
-              pesoKg: $("#evalPeso").value,
-              grasaPct: $("#evalGrasa").value,
-              masaMuscularPct: $("#evalMM").value,   // ✅ % músculo
-              grasaVisceral: $("#evalVisc").value,
+function getPlanesActivos(){
+  return getPlanes()
+    .filter(p => Number(p.activo ?? p.Activo ?? 1) === 1)
+    .sort((a,b)=> Number(a.orden ?? a.Orden ?? 999) - Number(b.orden ?? b.Orden ?? 999));
+}
 
-              cinturaCm: $("#evalCintura").value,
-              observaciones: $("#evalNotas").value
-            };
+function getRutinas(){ return LS.get("mahfit_rutinas", []); }
+function setRutinas(v){ LS.set("mahfit_rutinas", v); }
 
-            Object.keys(payload).forEach(k => {
-              if(payload[k] === "") delete payload[k];
-            });
+function getRutinasV2(){ return LS.get("mahfit_rutinas_v2", []); }
+function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 
-            if(!window.saveEvaluation) throw new Error("saveEvaluation no disponible. Revisa que assets/app.js esté cargando.");
-            await window.saveEvaluation(payload);
+function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
+function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
-            if(window.refreshEvaluations) {
-              try { await window.refreshEvaluations(); } catch(_) {}
-            }
+// ✅ LOGS PRO caches
+function getWorkoutLog(){ return LS.get("mahfit_workout_log", []); }
+function setWorkoutLog(v){ LS.set("mahfit_workout_log", v); }
 
-            showNotification("✅ Evaluación guardada", "success");
+function getCardioLog(){ return LS.get("mahfit_cardio_log", []); }
+function setCardioLog(v){ LS.set("mahfit_cardio_log", v); }
 
-            setKPIsFromLastEval();
-            renderRecentLogs();
-            renderRoutineModal();
-            renderCharts();
-            renderMuscleFatAnalysis();
-            renderCompositionHistory();
-            renderProfile();
+function getBodyLog(){ return LS.get("mahfit_body_log", []); }
+function setBodyLog(v){ LS.set("mahfit_body_log", v); }
 
-            navigateTo("home");
-          } catch(err) {
-            console.error(err);
-            showNotification(`❌ ${err.message || err}`, "error");
-          } finally {
-            btn.disabled = false;
-          }
-        });
-      }
+// ✅ NUEVO: EVALUATIONS cache
+function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
+function setEvaluations(v){ LS.set("mahfit_evaluations", v); }
 
-      async function hardRefresh() {
-        try {
-          if(window.syncDown) await window.syncDown();
-          if(window.refreshEvaluations) await window.refreshEvaluations();
+// ---------------- Session ----------------
+function setSession(user){
+  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
+}
+function getSession(){ return LS.get("mahfit_session", null); }
+function clearSession(){ LS.del("mahfit_session"); }
 
-          const users = window.getUsers ? window.getUsers() : [];
-          const u = users.find(x => String(x.rut||"").toUpperCase() === String(currentUser.rut||"").toUpperCase());
-          if(u) currentUser = u;
+/* =========================================================
+   ✅ LOGS PRO: ID builders (robustos)
+   ========================================================= */
+function makeWorkoutLogId({ rutSocio, fecha, dayLabel, idx }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const d = safeStr(dayLabel, "DIA").trim().replace(/\s+/g,"_");
+  const i = String(idx ?? 0).trim();
+  return `WL_${r}_${f}_${d}_${i}`;
+}
+function makeCardioId({ rutSocio, fecha, dayLabel }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const d = safeStr(dayLabel, "DIA").trim().replace(/\s+/g,"_");
+  return `CL_${r}_${f}_${d}`;
+}
+function makeBodyId({ rutSocio, fecha }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  return `BL_${r}_${f}`;
+}
 
-          setUserHeader(currentUser);
-          setKPIsFromLastEval();
-          renderRecentLogs();
-          renderRoutineModal();
-          renderCharts();
-          renderMuscleFatAnalysis();
-          renderCompositionHistory();
-          renderProfile();
+/* =========================================================
+   ✅ NUEVO: EVALUATIONS ID builder
+   ========================================================= */
+function makeEvalId({ rutSocio, fecha }){
+  const r = normalizeRut(rutSocio);
+  const f = safeStr(fecha, isoLocalDate()).trim();
+  const uid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).slice(0,8);
+  return `EV_${r}_${f}_${uid}`;
+}
 
-          showNotification("Datos actualizados", "success");
-        } catch (e) {
-          console.error(e);
-          showNotification("No se pudo refrescar (sin conexión).", "error");
-        }
-      }
+/* =========================================================
+   ✅ Helpers internos (local upsert)
+   ========================================================= */
+function upsertLocalByKey(list, keyName, obj){
+  const key = String(obj?.[keyName] ?? "").trim();
+  if(!key) return list;
+  const next = (list || []).slice();
+  const idx = next.findIndex(x => String(x?.[keyName] ?? "").trim() === key);
+  if(idx >= 0) next[idx] = { ...next[idx], ...obj };
+  else next.push(obj);
+  return next;
+}
 
-      (function init() {
-        if(!window.requireAuth) {
-          showNotification("Falta cargar assets/app.js", "error");
-          return;
-        }
+function getWorkoutLogById(logId){
+  const id = String(logId||"").trim();
+  if(!id) return null;
+  return (getWorkoutLog() || []).find(x => String(x.logId||x.id||"").trim() === id) || null;
+}
 
-        currentUser = window.requireAuth("SOCIO");
-        if(!currentUser) return;
+// ---------------- Sync DOWN (Sheets -> cache) ----------------
+async function syncDown(){
+  const u = await apiGet("USERS");
 
-        setUserHeader(currentUser);
-        setupNavigation();
-        setupAccordions();
-        setupRegisterForm();
+  const users = (u.users || []).map(x => ({
+    rut: normalizeRut(x.rut),
+    nombre: x.nombre ?? "",
+    email: x.email ?? "",
+    pass: String(x.pass ?? ""),
+    rol: (x.rol ?? x.role ?? "SOCIO"),
+    activo: (x.activo === false || x.activo === 0 || String(x.activo) === "0") ? false : true,
 
-        setKPIsFromLastEval();
-        renderRecentLogs();
-        renderRoutineModal();
-        renderCharts();
-        renderMuscleFatAnalysis();
-        renderCompositionHistory();
-        renderProfile();
+    planTipo: x.planTipo ?? "",
+    planInicio: x.planInicio ?? "",
+    planFin: x.planFin ?? "",
 
-        setTimeout(async () => {
-          try {
-            const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
-            if(!list || !list.length) {
-              if(window.refreshEvaluations) await window.refreshEvaluations();
-              setKPIsFromLastEval();
-              renderRecentLogs();
-              renderCharts();
-              renderMuscleFatAnalysis();
-              renderCompositionHistory();
-            }
-          } catch(_) {}
-        }, 600);
+    planId: (x.planId ?? x.planID ?? "").toString().trim().toUpperCase(),
+    planPrecioBase: Number(x.planPrecioBase ?? 0),
+    planDescPct: Number(x.planDescPct ?? 0),
+    planPrecioFinal: Number(x.planPrecioFinal ?? 0),
+    planPagado: Number(x.planPagado ?? 0),
 
-        $("#btnViewFullRoutine")?.addEventListener("click", () => {
-          closeModal("workoutModal");
-          window.location.href = "socio_rutina.html";
-        });
+    // ✅ PERFIL
+    telefono: x.telefono ?? "",
+    fechaNacimiento: x.fechaNacimiento ?? "",
+    sexo: (x.sexo ?? "").toString().trim().toUpperCase(),
+    direccion: x.direccion ?? "",
+    emergenciaNom: x.emergenciaNom ?? "",
+    emergenciaTelef: x.emergenciaTelef ?? "",
+    objetivo: x.objetivo ?? "",
+    nivel: (x.nivel ?? "").toString().trim().toUpperCase(),
+    lesiones: x.lesiones ?? "",
+    patologias: x.patologias ?? "",
+    medicamentos: x.medicamentos ?? "",
+    alergias: x.alergias ?? "",
+    notas: x.notas ?? "",
 
-        $("#btnLogMeal")?.addEventListener("click", () => {
-          closeModal("nutritionModal");
-          showNotification("Nutrición: lo conectamos después si lo quieres en Sheets.", "info");
-        });
+    creadoEn: x.creadoEn ?? ""
+  }));
 
-        setTimeout(() => showNotification("Sesión iniciada correctamente", "success"), 300);
-      })();
+  setUsers(users);
 
+  const p = await apiGet("PLANES");
+  const planes = (p.planes || []).map(x => ({
+    planId: String(x.PlanId ?? x.planId ?? "").trim().toUpperCase(),
+    nombre: x.Nombre ?? x.nombre ?? "",
+    tipo: String(x.Tipo ?? x.tipo ?? "").trim().toUpperCase(),
+    dias: Number(x.Dias ?? x.dias ?? 0),
+    precioCLP: Number(x.PrecioCLP ?? x.precioCLP ?? 0),
+    activo: Number(x.Activo ?? x.activo ?? 1),
+    orden: Number(x.Orden ?? x.orden ?? 999),
+    actualizadoEn: x.ActualizadoEn ?? x.actualizadoEn ?? ""
+  })).filter(p=>p.planId);
+  setPlanes(planes);
+
+  const rt = await apiGet("RUTINAS_TXT");
+  setRutinas((rt.rutinas_txt || []).map(x => ({
+    id: x.id || crypto.randomUUID(),
+    rutSocio: normalizeRut(x.rutSocio),
+    titulo: x.titulo ?? "",
+    detalle: x.detalle ?? "",
+    creadoEn: x.creadoEn ?? "",
+    creadoPorRut: x.creadoPorRut ?? ""
+  })));
+
+  const rv2 = await apiGet("RUTINAS_V2");
+  setRutinasV2((rv2.rutinas_v2 || []).map(x => {
+    let routine = null;
+    try{ routine = JSON.parse(x.routine_json || "null"); }catch{}
+    return {
+      rutSocio: normalizeRut(x.rutSocio),
+      routine,
+      routine_json: x.routine_json ?? null,
+      creadoPorRut: x.creadoPorRut ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  }));
+
+  const pv2 = await apiGet("PLANTILLAS_V2");
+  setPlantillasV2((pv2.plantillas_v2 || []).map(x => {
+    let templateObj = null;
+    const raw = x.template_json ?? null;
+    if(typeof raw === "string"){ try{ templateObj = JSON.parse(raw); }catch{} }
+    else templateObj = raw;
+
+    return {
+      templateId: x.templateId || crypto.randomUUID(),
+      nombrePlantilla: x.nombrePlantilla ?? "",
+      nivel: x.nivel ?? "",
+      objetivo: x.objetivo ?? "",
+      dias: Number(x.dias ?? 0),
+      visibility: (x.visibility ?? "PRIVADA"),
+      ownerRut: normalizeRut(x.ownerRut ?? ""),
+      ownerNombre: x.ownerNombre ?? "",
+      template_json: templateObj,
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  }));
+
+  // ✅ LOGS PRO (con fallback logId/id)
+  const wl = await apiGet("WORKOUT_LOG");
+  setWorkoutLog((wl.workout_log || []).map(x => {
+    const rutSocio = normalizeRut(x.rutSocio);
+    const logId = String(x.logId ?? x.id ?? "").trim();
+    return { ...x, rutSocio, logId, id: String(x.id ?? logId ?? "").trim() };
+  }).filter(x=>x.logId));
+
+  const cl = await apiGet("CARDIO_LOG");
+  setCardioLog((cl.cardio_log || []).map(x => ({
+    ...x,
+    rutSocio: normalizeRut(x.rutSocio),
+    cardioId: String(x.cardioId ?? "").trim(),
+  })).filter(x=>x.cardioId));
+
+  const bl = await apiGet("BODY_LOG");
+  setBodyLog((bl.body_log || []).map(x => ({
+    ...x,
+    rutSocio: normalizeRut(x.rutSocio),
+    entryId: String(x.entryId ?? "").trim(),
+  })).filter(x=>x.entryId));
+
+  // ✅ NUEVO: EVALUATIONS (con compat masaMuscularPct)
+  const ev = await apiGet("EVALUATIONS");
+  setEvaluations((ev.evaluations || []).map(x => {
+    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
+    return ({
+      evalId: String(x.evalId ?? "").trim(),
+      rutSocio: normalizeRut(x.rutSocio ?? ""),
+      fecha: String(x.fecha ?? "").trim(),
+      hora: String(x.hora ?? "").trim(),
+
+      pesoKg: x.pesoKg ?? "",
+      tallaCm: x.tallaCm ?? "",
+      imc: x.imc ?? "",
+
+      grasaPct: x.grasaPct ?? "",
+      masaMuscularPct: mmPct ?? "",
+      masaMuscularKg: x.masaMuscularKg ?? mmPct ?? "",
+      grasaVisceral: x.grasaVisceral ?? "",
+      aguaPct: x.aguaPct ?? "",
+
+      cinturaCm: x.cinturaCm ?? "",
+      caderaCm: x.caderaCm ?? "",
+      cuelloCm: x.cuelloCm ?? "",
+      brazoCm: x.brazoCm ?? "",
+      musloCm: x.musloCm ?? "",
+      pantorrillaCm: x.pantorrillaCm ?? "",
+
+      pliegues: x.pliegues ?? "",
+      observaciones: x.observaciones ?? "",
+
+      evaluadorRut: x.evaluadorRut ?? "",
+      evaluadorNombre: x.evaluadorNombre ?? "",
+
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
     });
-  </script>
-</body>
-</html>
+  }).filter(x=>x.evalId && x.rutSocio));
+}
+
+// ---------------- Auth (SINCRÓNICO) ----------------
+function requireAuth(expectedRole){
+  const s = getSession();
+  if(!s){ window.location.href = "index.html"; return null; }
+
+  const user = getUsers().find(u => normalizeRut(u.rut) === normalizeRut(s.rut));
+  if(!user || user.activo === false){
+    clearSession();
+    window.location.href = "index.html";
+    return null;
+  }
+
+  if(expectedRole){
+    const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
+    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      return null;
+    }
+  }
+  return user;
+}
+
+// ---------------- Login/Register ----------------
+function registerUser({rut, nombre, email, pass, rol}){
+  rut = normalizeRut(rut);
+  if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
+
+  const users = getUsers();
+  if(users.some(u => u.rut === rut)) throw new Error("Ese Usuario/RUT ya existe.");
+
+  const user = {
+    rut,
+    nombre: String(nombre).trim(),
+    email: String(email||"").trim(),
+    pass: String(pass),
+    rol,
+    activo: true,
+
+    planTipo: "",
+    planInicio: "",
+    planFin: "",
+
+    planId: "",
+    planPrecioBase: 0,
+    planDescPct: 0,
+    planPrecioFinal: 0,
+    planPagado: 0,
+
+    telefono: "",
+    fechaNacimiento: "",
+    sexo: "",
+    direccion: "",
+    emergenciaNom: "",
+    emergenciaTelef: "",
+    objetivo: "",
+    nivel: "",
+    lesiones: "",
+    patologias: "",
+    medicamentos: "",
+    alergias: "",
+    notas: "",
+
+    creadoEn: nowISO()
+  };
+
+  users.push(user);
+  setUsers(users);
+
+  apiPost("USERS", user).catch(console.error);
+  return user;
+}
+
+function login({rut, pass}){
+  rut = normalizeRut(rut);
+  const user = getUsers().find(u => u.rut === rut && String(u.pass) === String(pass));
+  if(!user) throw new Error("Usuario/RUT o clave incorrecta.");
+  if(user.activo === false) throw new Error("Usuario inactivo. Contacta a administración.");
+  setSession(user);
+  return user;
+}
+
+// ---------------- INIT INDEX ----------------
+function initIndex(){
+  const loginForm = document.getElementById("loginForm");
+  const msgLogin  = document.getElementById("msgLogin");
+
+  function showMsg(txt, ok=false){
+    if(!msgLogin) return;
+    msgLogin.textContent = txt;
+    msgLogin.style.color = ok ? "#2bd576" : "#ff6b6b";
+  }
+
+  const s = getSession();
+  if(s){
+    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
+    if(u){
+      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      return;
+    }
+  }
+
+  loginForm?.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    try{
+      const rut = document.getElementById("loginRut")?.value || "";
+      const pass = document.getElementById("loginPass")?.value || "";
+      const user = login({ rut, pass });
+      showMsg("Ingreso correcto…", true);
+      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    }catch(err){
+      showMsg(err.message, false);
+    }
+  });
+}
+
+// ---------------- INIT AUTO POR ELEMENTOS ----------------
+document.addEventListener("DOMContentLoaded", ()=>{
+  if(document.getElementById("loginForm")) initIndex();
+});
+
+/* =========================================================
+   ✅ FIX GLOBAL: rutinaV2DeSocio()
+   ========================================================= */
+function rutinaV2DeSocio(rutSocio){
+  const rut = normalizeRut(rutSocio);
+  const list = getRutinasV2() || [];
+  const row = list.find(x => normalizeRut(x.rutSocio) === rut) || null;
+  if(!row) return null;
+
+  let routine = row.routine || null;
+  if(!routine && row.routine_json){
+    try{ routine = JSON.parse(row.routine_json); }catch(e){ routine = null; }
+  }
+  return { ...row, routine };
+}
+
+/* =========================================================
+   ✅ LOGS PRO: helpers públicos (solo lectura)
+   ========================================================= */
+function logsForRut(list, rut){
+  const r = normalizeRut(rut);
+  return (list || []).filter(x => normalizeRut(x.rutSocio) === r);
+}
+function getWorkoutLogForRut(rut){ return logsForRut(getWorkoutLog(), rut); }
+function getCardioLogForRut(rut){ return logsForRut(getCardioLog(), rut); }
+function getBodyLogForRut(rut){ return logsForRut(getBodyLog(), rut); }
+
+/* =========================================================
+   ✅ LOGS PRO: save* robustos
+   ========================================================= */
+async function saveWorkoutLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+  e.dayLabel = e.dayLabel ?? e.dia ?? "DIA";
+
+  e.logId = String(e.logId ?? "").trim() || makeWorkoutLogId({
+    rutSocio: e.rutSocio, fecha: e.fecha, dayLabel: e.dayLabel, idx: e.idx ?? 0
+  });
+  e.id = String(e.id ?? "").trim() || e.logId;
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("WORKOUT_LOG", e);
+
+  const list = upsertLocalByKey(getWorkoutLog(), "logId", e);
+  setWorkoutLog(list);
+  return res;
+}
+
+async function saveCardioLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+  e.dayLabel = e.dayLabel ?? e.dia ?? "DIA";
+
+  e.cardioId = String(e.cardioId ?? "").trim() || makeCardioId({
+    rutSocio: e.rutSocio, fecha: e.fecha, dayLabel: e.dayLabel
+  });
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("CARDIO_LOG", e);
+
+  const list = upsertLocalByKey(getCardioLog(), "cardioId", e);
+  setCardioLog(list);
+  return res;
+}
+
+async function saveBodyLog(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+
+  e.entryId = String(e.entryId ?? "").trim() || makeBodyId({
+    rutSocio: e.rutSocio, fecha: e.fecha
+  });
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("BODY_LOG", e);
+
+  const list = upsertLocalByKey(getBodyLog(), "entryId", e);
+  setBodyLog(list);
+  return res;
+}
+
+/* =========================================================
+   ✅ EVALUATIONS helpers
+   ========================================================= */
+function evaluationsForRut(rut){
+  const r = normalizeRut(rut);
+  return (getEvaluations() || []).filter(x => normalizeRut(x.rutSocio) === r);
+}
+
+function lastEvaluationForRut(rut){
+  const list = evaluationsForRut(rut)
+    .slice()
+    .sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")) || String(b.hora||"").localeCompare(String(a.hora||"")));
+  return list[0] || null;
+}
+
+function evaluationsLastN(rut, n=12){
+  return evaluationsForRut(rut)
+    .slice()
+    .sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||"")) || String(a.hora||"").localeCompare(String(b.hora||"")))
+    .slice(-Math.max(1, Number(n)||12));
+}
+
+async function saveEvaluation(entry){
+  const e = { ...(entry || {}) };
+
+  e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
+  e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
+
+  e.evalId = String(e.evalId ?? "").trim() || makeEvalId({ rutSocio: e.rutSocio, fecha: e.fecha });
+
+  // ✅ compat: si viene masaMuscularPct y no kg, copiamos
+  if(e.masaMuscularPct !== undefined && (e.masaMuscularKg === undefined || e.masaMuscularKg === "")){
+    e.masaMuscularKg = e.masaMuscularPct;
+  }
+  // si viene kg y no pct, copiamos
+  if(e.masaMuscularKg !== undefined && (e.masaMuscularPct === undefined || e.masaMuscularPct === "")){
+    e.masaMuscularPct = e.masaMuscularKg;
+  }
+
+  e.actualizadoEn = nowISO();
+  if(!e.creadoEn) e.creadoEn = e.actualizadoEn;
+
+  const res = await apiPost("EVALUATIONS", e);
+
+  const list = upsertLocalByKey(getEvaluations(), "evalId", e);
+  setEvaluations(list);
+
+  if(res && res.evalId) return res;
+  return { ok:true, evalId: e.evalId };
+}
+
+async function refreshEvaluations(){
+  const ev = await apiGet("EVALUATIONS");
+  setEvaluations((ev.evaluations || []).map(x => {
+    const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
+    return ({
+      evalId: String(x.evalId ?? "").trim(),
+      rutSocio: normalizeRut(x.rutSocio ?? ""),
+      fecha: String(x.fecha ?? "").trim(),
+      hora: String(x.hora ?? "").trim(),
+
+      pesoKg: x.pesoKg ?? "",
+      tallaCm: x.tallaCm ?? "",
+      imc: x.imc ?? "",
+
+      grasaPct: x.grasaPct ?? "",
+      masaMuscularPct: mmPct ?? "",
+      masaMuscularKg: x.masaMuscularKg ?? mmPct ?? "",
+      grasaVisceral: x.grasaVisceral ?? "",
+      aguaPct: x.aguaPct ?? "",
+
+      cinturaCm: x.cinturaCm ?? "",
+      caderaCm: x.caderaCm ?? "",
+      cuelloCm: x.cuelloCm ?? "",
+      brazoCm: x.brazoCm ?? "",
+      musloCm: x.musloCm ?? "",
+      pantorrillaCm: x.pantorrillaCm ?? "",
+
+      pliegues: x.pliegues ?? "",
+      observaciones: x.observaciones ?? "",
+
+      evaluadorRut: x.evaluadorRut ?? "",
+      evaluadorNombre: x.evaluadorNombre ?? "",
+
+      creadoEn: x.creadoEn ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    });
+  }).filter(x=>x.evalId && x.rutSocio));
+  return true;
+}
+
+/* =========================================================
+   ✅ (Opcional) refreshLogs(): baja SOLO logs sin bajar todo
+   ========================================================= */
+async function refreshLogs(){
+  const [wl,cl,bl] = await Promise.all([
+    apiGet("WORKOUT_LOG"),
+    apiGet("CARDIO_LOG"),
+    apiGet("BODY_LOG"),
+  ]);
+
+  setWorkoutLog((wl.workout_log || []).map(x => {
+    const rutSocio = normalizeRut(x.rutSocio);
+    const logId = String(x.logId ?? x.id ?? "").trim();
+    return { ...x, rutSocio, logId, id: String(x.id ?? logId ?? "").trim() };
+  }).filter(x=>x.logId));
+
+  setCardioLog((cl.cardio_log || []).map(x => ({
+    ...x, rutSocio: normalizeRut(x.rutSocio), cardioId: String(x.cardioId ?? "").trim()
+  })).filter(x=>x.cardioId));
+
+  setBodyLog((bl.body_log || []).map(x => ({
+    ...x, rutSocio: normalizeRut(x.rutSocio), entryId: String(x.entryId ?? "").trim()
+  })).filter(x=>x.entryId));
+
+  return true;
+}
+
+// ---------------- BOOT ----------------
+(async function boot(){
+  setDbStatus("connecting");
+  try{
+    await syncDown();
+    setDbStatus("connected");
+  }catch(e){
+    console.error("BOOT ERROR:", e);
+    setDbStatus("error");
+  }finally{
+    if(window.__mahfitReleaseDOMContentLoaded) window.__mahfitReleaseDOMContentLoaded();
+  }
+})();
+
+// ---------------- Exponer helpers globales ----------------
+window.API_URL = API_URL;
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+
+window.getUsers = getUsers;
+window.setUsers = setUsers;
+
+window.getPlanes = getPlanes;
+window.setPlanes = setPlanes;
+window.getPlanesActivos = getPlanesActivos;
+
+window.getRutinas = getRutinas;
+window.setRutinas = setRutinas;
+
+window.getRutinasV2 = getRutinasV2;
+window.setRutinasV2 = setRutinasV2;
+
+window.getPlantillasV2 = getPlantillasV2;
+window.setPlantillasV2 = setPlantillasV2;
+
+window.requireAuth = requireAuth;
+window.syncDown = syncDown;
+window.clearSession = clearSession;
+window.login = login;
+window.registerUser = registerUser;
+window.setDbStatus = setDbStatus;
+
+window.rutinaV2DeSocio = rutinaV2DeSocio;
+
+// ✅ LOGS PRO exposed
+window.getWorkoutLog = getWorkoutLog;
+window.getCardioLog = getCardioLog;
+window.getBodyLog = getBodyLog;
+
+window.getWorkoutLogForRut = getWorkoutLogForRut;
+window.getCardioLogForRut = getCardioLogForRut;
+window.getBodyLogForRut = getBodyLogForRut;
+
+window.getWorkoutLogById = getWorkoutLogById;
+
+window.saveWorkoutLog = saveWorkoutLog;
+window.saveCardioLog = saveCardioLog;
+window.saveBodyLog = saveBodyLog;
+
+window.refreshLogs = refreshLogs;
+window.makeWorkoutLogId = makeWorkoutLogId;
+window.makeCardioId = makeCardioId;
+window.makeBodyId = makeBodyId;
+
+// ✅ EVALUATIONS exposed
+window.getEvaluations = getEvaluations;
+window.setEvaluations = setEvaluations;
+window.getEvaluationsForRut = evaluationsForRut;
+window.lastEvaluationForRut = lastEvaluationForRut;
+window.saveEvaluation = saveEvaluation;
+window.refreshEvaluations = refreshEvaluations;
+window.makeEvalId = makeEvalId;
+
+// ✅ helpers para gráficos
+window.evaluationsLastN = evaluationsLastN;
+window.toNumClean = toNumClean;
