@@ -106,13 +106,13 @@
     }
 
     /* ✅ app.js usa #dbDot y #dbText */
-    .status-dot, .db-dot {
+    .db-dot {
       width: 12px; height: 12px; border-radius: 50%;
       background-color: var(--txt-muted);
       position: relative;
       flex-shrink: 0;
     }
-    .status-dot::after, .db-dot::after {
+    .db-dot::after {
       content: '';
       position: absolute;
       top: -3px; left: -3px; right: -3px; bottom: -3px;
@@ -200,7 +200,6 @@
       font-weight: 500;
     }
 
-    /* ✅ KPI en columna: valor grande + pill */
     .kpi-value{
       display:flex;
       flex-direction:column;
@@ -223,7 +222,6 @@
       margin-left: 4px;
     }
 
-    /* ✅ pill */
     .kpi-delta{
       display:inline-flex;
       align-items:center;
@@ -236,7 +234,6 @@
       border:1px solid var(--stroke);
       background:#fff;
     }
-
     .kpi-delta i{ font-size:11px; }
 
     .kpi-delta.up{
@@ -481,72 +478,8 @@
     .nutrition-items { font-size: 14px; color: var(--txt-2); }
 
     /* =========================
-       NUEVO: Analisis Músculo-Grasa (OPCION B: %)
+       Analisis Músculo-Grasa (barras)
        ========================= */
-
-/* === pins múltiples: anterior vs actual === */
-/* === pins tipo línea (anterior vs actual) === */
-/* === pins tipo línea (anterior vs actual) === */
-.mg-pin-line{
-  position:absolute;
-  top:-6px;
-  width:3px;
-  height:28px;
-  border-radius:2px;
-}
-
-.mg-pin-line.current{
-  background: var(--brand);
-  box-shadow: 0 0 0 3px rgba(90,103,216,.15);
-}
-
-.mg-pin-line.prev{
-  background: var(--txt-muted);
-  opacity:.9;
-}
-
-/* mini leyenda */
-.mg-legend{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  flex-wrap:wrap;
-  margin-top:10px;
-  font-size:12px;
-  color: var(--txt-muted);
-}
-.mg-legend .item{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-weight:800;
-}
-.mg-legend .swatch{
-  width:10px;height:10px;border-radius:999px;
-  border:2px solid #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.10);
-}
-.mg-legend .swatch.current{ background: var(--brand); }
-.mg-legend .swatch.prev{ background: var(--txt-muted); }
-
-/* etiqueta de estado */
-.mg-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:900;
-  border:1px solid var(--stroke);
-  background:#fff;
-}
-.mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
-.mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
-.mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
-.mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
-
-
     .mg-grid{ display:grid; gap:12px; }
     .mg-row{
       display:grid;
@@ -572,8 +505,8 @@
       border:1px solid var(--stroke);
       background:
         linear-gradient(90deg,
-          rgba(255,107,107,.25) 0%,
-          rgba(255,107,107,.25) 33.33%,
+          rgba(9,132,227,.18) 0%,
+          rgba(9,132,227,.18) 33.33%,
           rgba(43,213,118,.18) 33.33%,
           rgba(43,213,118,.18) 66.66%,
           rgba(255,209,102,.25) 66.66%,
@@ -590,24 +523,72 @@
       padding:0 8px;
       pointer-events:none;
     }
-    .mg-pin{
+    .mg-pin-line{
       position:absolute;
       top:-6px;
       width:3px;
       height:28px;
       border-radius:2px;
+    }
+    .mg-pin-line.current{
       background: var(--brand);
       box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+    }
+    .mg-pin-line.prev{
+      background: var(--txt-muted);
+      opacity:.9;
     }
     .mg-value{
       text-align:right;
       font-weight:800;
       color:var(--txt);
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:flex-end;
     }
-    .mg-value small{ font-weight:700; color:var(--txt-muted); }
+    .mg-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid var(--stroke);
+      background:#fff;
+      width:max-content;
+    }
+    .mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
+    .mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
+    .mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
+    .mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
+
+    .mg-legend{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+      font-size:12px;
+      color: var(--txt-muted);
+    }
+    .mg-legend .item{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-weight:800;
+    }
+    .mg-legend .swatch{
+      width:10px;height:10px;border-radius:999px;
+      border:2px solid #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,.10);
+    }
+    .mg-legend .swatch.current{ background: var(--brand); }
+    .mg-legend .swatch.prev{ background: var(--txt-muted); }
 
     /* =========================
-       NUEVO: Historial composición (OPCION B: %)
+       Historial composición (tabla)
        ========================= */
     .comp-table{
       width:100%;
@@ -634,6 +615,81 @@
     .comp-muted{ color: var(--txt-muted); font-weight:800; }
     .comp-scroll{ overflow:auto; border-radius: var(--radius); }
 
+    /* =========================
+       PERÍMETROS CHART (SOCIO)
+       ========================= */
+    .periCard{
+      background: var(--surface-2);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 14px 14px 10px;
+      margin-bottom: 14px;
+    }
+    .periTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .periTitle{
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--txt-2);
+    }
+    .periSub{
+      font-size: 12px;
+      color: var(--txt-muted);
+      margin-top: 2px;
+      font-weight: 700;
+    }
+    .periPills{
+      display:flex;
+      gap:8px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .periPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: #fff;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--txt-2);
+      transition: var(--transition);
+      user-select:none;
+    }
+    .periPill:hover{ transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .periPill.active{
+      border-color: rgba(90,103,216,.35);
+      background: rgba(90,103,216,.08);
+      color: var(--txt);
+    }
+    .periDot{
+      width:10px; height:10px; border-radius: 50%;
+      background: var(--txt-muted);
+      box-shadow: 0 0 0 3px rgba(0,0,0,.03);
+    }
+    .periCanvasWrap{
+      height: 300px;
+      margin-top: 8px;
+    }
+    .periCanvasWrap canvas{
+      width: 100% !important;
+      height: 300px !important;
+    }
+    .periFoot{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--txt-muted);
+      font-weight: 700;
+    }
   </style>
 </head>
 
@@ -795,28 +851,28 @@
           </div>
           <div class="card-body">
 
-            <!-- ✅ NUEVO (OPCION B): Análisis % y Historial % -->
+
+            <!-- ✅ Análisis + Historial -->
             <div class="card" style="margin-bottom:16px;">
               <div class="card-header">
                 <h2>Análisis Músculo-Grasa</h2>
-                <p>% grasa y % muscular (último registro)</p>
+                <p>% grasa, % muscular, peso y visceral (último registro)</p>
               </div>
               <div class="card-body">
                 <div id="mgAnalysisBox"></div>
               </div>
             </div>
 
-            <div class="card" style="margin-bottom:16px;">
-              <div class="card-header">
-                <h2>Historial de Composición Corporal</h2>
-                <p>Últimos registros</p>
-              </div>
-              <div class="card-body">
-                <div id="compHistoryBox"></div>
-              </div>
-            </div>
 
-            <!-- Charts -->
+
+
+
+
+
+
+
+
+            <!-- ✅ Charts principales ARRIBA (orden: Peso → Músculo → Grasa → Visceral) -->
             <div id="chartsWrap" class="charts-grid">
               <div class="chart-card">
                 <div class="chart-title"><i class="fas fa-weight-scale"></i> Peso (kg)</div>
@@ -824,13 +880,13 @@
               </div>
 
               <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-percent"></i> % Grasa</div>
-                <div class="chart-wrap"><canvas id="chartGrasa"></canvas></div>
+                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
+                <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
               </div>
 
               <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
-                <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
+                <div class="chart-title"><i class="fas fa-percent"></i> % Grasa</div>
+                <div class="chart-wrap"><canvas id="chartGrasa"></canvas></div>
               </div>
 
               <div class="chart-card">
@@ -842,6 +898,53 @@
             <div class="btn-group" style="margin-top:16px;">
               <button class="btn btn-secondary" id="btnChartsReload"><i class="fas fa-rotate"></i> Recargar gráficos</button>
             </div>
+
+            <div class="divider"></div>
+
+            
+
+            
+
+            <!-- ✅ Perímetros -->
+            <div class="periCard">
+              <div class="periTop">
+                <div>
+                  <div class="periTitle">Medidas básicas y perímetros</div>
+                  <div class="periSub">Últimas 12 evaluaciones (vacíos no se dibujan)</div>
+                </div>
+                <div class="periPills" id="periPills"></div>
+              </div>
+
+              <div class="periCanvasWrap">
+                <canvas id="chartPerimetros"></canvas>
+              </div>
+
+              <div class="periFoot" id="periFoot">
+                Se grafican las últimas 12 evaluaciones (de más antigua a más reciente).
+              </div>
+            </div>
+
+
+
+
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header">
+                <h2>Historial de Composición Corporal</h2>
+                <p>Últimos registros</p>
+              </div>
+              <div class="card-body">
+                <div id="compHistoryBox"></div>
+              </div>
+            </div>
+
+
+
+
+
+
+
+
+
           </div>
         </div>
       </section>
@@ -1004,7 +1107,7 @@
     </div>
   </nav>
 
-  <!-- ✅ Tu app.js real (con API_URL, syncDown, requireAuth, saveEvaluation, refreshEvaluations, etc.) -->
+  <!-- ✅ Tu app.js real -->
   <script src="assets/app.js"></script>
 
   <script>
@@ -1013,7 +1116,12 @@
       const $$ = (selector, el = document) => Array.from(el.querySelectorAll(selector));
 
       let currentUser = null;
-      let charts = { peso:null, grasa:null, mm:null, visc:null };
+
+      // charts base
+      let charts = { peso:null, mm:null, grasa:null, visc:null };
+
+      // perimetros chart
+      let perimChart = null;
 
       const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
       function fmtDateShort(iso) {
@@ -1103,7 +1211,11 @@
             renderCharts();
             renderMuscleFatAnalysis();
             renderCompositionHistory();
+            renderPerimetersChart();
           }, 50);
+        }
+        if(pageId === "profile") {
+          setTimeout(() => renderProfile(), 30);
         }
       }
 
@@ -1133,6 +1245,7 @@
           renderCharts();
           renderMuscleFatAnalysis();
           renderCompositionHistory();
+          renderPerimetersChart();
         });
 
         $("#quickWorkout")?.addEventListener('click', () => openModal('workoutModal'));
@@ -1152,6 +1265,8 @@
             $$('.modal.active').forEach(m => closeModal(m.id));
           }
         });
+
+        $("#btnCancelarEval")?.addEventListener("click", () => navigateTo("home"));
       }
 
       function setupAccordions() {
@@ -1174,6 +1289,7 @@
       function openModal(modalId) {
         $(`#${modalId}`)?.classList.add('active');
         document.body.style.overflow = 'hidden';
+        if(modalId === "workoutModal") renderRoutineModal();
       }
       function closeModal(modalId) {
         $(`#${modalId}`)?.classList.remove('active');
@@ -1185,14 +1301,31 @@
         $("#userPlan").textContent = `Plan: ${planLabel(user)}`;
       }
 
+      function getEvaluationsSafe(rut) {
+        // Usa tu app.js si existe
+        if (window.getEvaluationsForRut) return window.getEvaluationsForRut(rut) || [];
+        // fallback local
+        try {
+          const all = JSON.parse(localStorage.getItem("mahfit_evals") || "[]");
+          return all.filter(x => String(x.rut||"").toUpperCase() === String(rut||"").toUpperCase());
+        } catch(_) { return []; }
+      }
+
+      function evaluationsLastN(rut, n) {
+        if (window.evaluationsLastN) return window.evaluationsLastN(rut, n) || [];
+        const list = getEvaluationsSafe(rut);
+        const sorted = (list||[]).slice().sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||"")));
+        return sorted.slice(Math.max(0, sorted.length - n));
+      }
+
       function setKPIsFromLastEval() {
-        const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
+        const last2 = evaluationsLastN(currentUser.rut, 2);
         const last = last2.length ? last2[last2.length - 1] : null;
         const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
 
         const peso  = last ? numClean(last.pesoKg) : null;
         const grasa = last ? numClean(last.grasaPct) : null;
-        const mm    = last ? numClean(last.masaMuscularPct) : null; // ✅ % músculo
+        const mm    = last ? numClean(last.masaMuscularPct) : null;
         const visc  = last ? numClean(last.grasaVisceral) : null;
 
         const pesoPrev  = prev ? numClean(prev.pesoKg) : null;
@@ -1246,7 +1379,7 @@
 
         renderKPI("kpiPeso",  peso,  "kg", dPeso,  "normal");
         renderKPI("kpiGrasa", grasa, "%",  dGrasa, "reverse");
-        renderKPI("kpiMM",    mm,    "%",  dMM,    "normal");   // ✅ % músculo
+        renderKPI("kpiMM",    mm,    "%",  dMM,    "normal");
         renderKPI("kpiVisc",  visc,  "",   dVisc,  "reverse");
 
         const hint = document.getElementById("logsHint");
@@ -1261,9 +1394,8 @@
         const logsList = $("#logsList");
         if (!logsList) return;
 
-        const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
+        const list = getEvaluationsSafe(currentUser.rut);
         const sorted = (list || []).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
-
         const recent = sorted.slice(0, 8);
 
         if (!recent.length) {
@@ -1351,301 +1483,11 @@
       }
 
       /* ==============================
-         NUEVO: Analisis % + Historial %
-         ============================== */
-         
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const toNum=v=>{const n=Number(String(v).replace(",","."));return isFinite(n)?n:null};
-
-function calcBMI(peso,talla){
-  if(!peso||!talla)return null;
-  const m=talla/100;
-  return peso/(m*m);
-}
-function bmiLabel(bmi){
-  if(bmi<18.5)return"low";
-  if(bmi<25)return"normal";
-  if(bmi<30)return"high";
-  return"veryHigh";
-}
-function visceralLabel(v){
-  if(v<=9)return"normal";
-  if(v<=14)return"high";
-  return"veryHigh";
-}
-function labelClass(c){
-  return c==="low"?"Bajo":c==="normal"?"Normal":c==="high"?"Alto":"Muy alto";
-}
-
-function renderMuscleFatAnalysis(){
-  const box = document.getElementById("mgAnalysisBox");
-  if(!box || !currentUser) return;
-
-  const sex = normSexHM(currentUser.sexo);                 // HOMBRE/MUJER -> M/F
-  const age = calcAge(currentUser.fechaNacimiento);
-
-  const tallaCm = numClean(currentUser.tallaCm);           // si existe
-  const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
-  const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
-  const currEv = last2.length ? last2[last2.length - 1] : null;
-
-  if(!currEv){
-    box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
-    return;
-  }
-
-  // ---- valores actuales/anterior ----
-  const grasaCurr  = numClean(currEv.grasaPct);
-  const muscCurr   = numClean(currEv.masaMuscularPct);
-
-  const grasaPrev  = prevEv ? numClean(prevEv.grasaPct) : null;
-  const muscPrev   = prevEv ? numClean(prevEv.masaMuscularPct) : null;
-
-  const pesoCurr   = numClean(currEv.pesoKg);
-  const pesoPrev   = prevEv ? numClean(prevEv.pesoKg) : null;
-
-  const viscCurr   = numClean(currEv.grasaVisceral);
-  const viscPrev   = prevEv ? numClean(prevEv.grasaVisceral) : null;
-
-  // ---- OMRON bandas/cortes ----
-  const fatBand = omronAgeBandFat(age);
-  const musBand = omronAgeBandMuscle(age);
-  const sexKey = sex || "M";
-
-  const fatCuts = (OMRON_FAT[sexKey] && OMRON_FAT[sexKey][fatBand]) ? OMRON_FAT[sexKey][fatBand] : OMRON_FAT["M"]["20-39"];
-  const musCuts = (OMRON_MUSCLE[sexKey] && OMRON_MUSCLE[sexKey][musBand]) ? OMRON_MUSCLE[sexKey][musBand] : OMRON_MUSCLE["M"]["18-39"];
-
-  // ---- helpers ----
-  const clamp01 = (x)=> Math.max(0, Math.min(1, x));
-  function scaleRange(cuts){
-    const min = Math.max(0, cuts.lowMax - (cuts.normalMax - cuts.lowMax));
-    const max = cuts.highMax + (cuts.highMax - cuts.normalMax) + 5;
-    return { min, max };
-  }
-  function leftPct(val, min, max){
-    if(val == null || !Number.isFinite(val)) return null;
-    return clamp01((val - min) / (max - min)) * 100;
-  }
-  function fmtVal(v, digits=1){
-    if(v == null || !Number.isFinite(v)) return "—";
-    return Number.isInteger(v) ? String(v) : v.toFixed(digits);
-  }
-  function barBackground(cuts, min, max){
-    const toPct = (x)=> clamp01((x - min) / (max - min)) * 100;
-    const pLowEnd  = toPct(cuts.lowMax);
-    const pNormEnd = toPct(cuts.normalMax);
-    const pHighEnd = toPct(cuts.highMax);
-
-    return `
-      linear-gradient(90deg,
-        rgba(9,132,227,.18) 0%,
-        rgba(9,132,227,.18) ${pLowEnd}%,
-        rgba(43,213,118,.18) ${pLowEnd}%,
-        rgba(43,213,118,.18) ${pNormEnd}%,
-        rgba(255,209,102,.22) ${pNormEnd}%,
-        rgba(255,209,102,.22) ${pHighEnd}%,
-        rgba(255,107,107,.20) ${pHighEnd}%,
-        rgba(255,107,107,.20) 100%
-      )
-    `;
-  }
-
-  // ---- clasificaciones ----
-  function imcFrom(peso, tallaCm){
-    if(peso == null || !Number.isFinite(peso)) return null;
-    if(tallaCm == null || !Number.isFinite(tallaCm) || tallaCm <= 0) return null;
-    const m = tallaCm / 100;
-    return peso / (m*m);
-  }
-  function imcClass(imc){
-    if(imc == null || !Number.isFinite(imc)) return "normal";
-    if(imc < 18.5) return "low";
-    if(imc < 25) return "normal";
-    if(imc < 30) return "high";
-    return "veryHigh";
-  }
-  function visceralClass(v){
-    if(v == null || !Number.isFinite(v)) return "normal";
-    if(v <= 9)  return "normal";
-    if(v <= 14) return "high";
-    return "veryHigh";
-  }
-
-  // ---- fila OMRON (%): usa cortes reales ----
-  function rowOmronPct(label, currVal, prevVal, cuts, bandLabel){
-    const {min, max} = scaleRange(cuts);
-    const currLeft = leftPct(currVal, min, max);
-    const prevLeft = leftPct(prevVal, min, max);
-
-    const clsNow = classifyOmron(currVal, cuts);
-    const bg = barBackground(cuts, min, max);
-
-    return `
-      <div class="mg-row">
-        <div class="mg-label">
-          <b>${label}</b>
-          <small>Rango OMRON (${sexKey === "M" ? "HOMBRE" : "MUJER"} · ${bandLabel})</small>
-        </div>
-
-        <div style="position:relative;">
-          <div class="mg-bar" style="background:${bg};"></div>
-
-          ${prevLeft === null ? "" : `
-            <span class="mg-pin-line prev"
-              title="Anterior: ${fmtVal(prevVal)}%"
-              style="left: calc(${prevLeft}% - 1px);"></span>
-          `}
-          ${currLeft === null ? "" : `
-            <span class="mg-pin-line current"
-              title="Actual: ${fmtVal(currVal)}%"
-              style="left: calc(${currLeft}% - 1px);"></span>
-          `}
-        </div>
-
-        <div class="mg-value">
-          ${fmtVal(currVal)} <small>%</small>
-          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
-            <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // ---- fila genérica: Peso / Visceral ----
-  // Peso: barra 40..150kg (ajustable)
-  // Visceral: barra 0..20 (estándar “nivel”)
-  function rowGeneric(label, currVal, prevVal, min, max, unit, clsNow, subtitle){
-    const currLeft = leftPct(currVal, min, max);
-    const prevLeft = leftPct(prevVal, min, max);
-
-    // fondo suave (normal al centro)
-    const mid1 = 33.33, mid2 = 66.66;
-    const bg = `
-      linear-gradient(90deg,
-        rgba(9,132,227,.14) 0%,
-        rgba(9,132,227,.14) ${mid1}%,
-        rgba(43,213,118,.14) ${mid1}%,
-        rgba(43,213,118,.14) ${mid2}%,
-        rgba(255,107,107,.12) ${mid2}%,
-        rgba(255,107,107,.12) 100%
-      )
-    `;
-
-    return `
-      <div class="mg-row">
-        <div class="mg-label">
-          <b>${label}</b>
-          <small>${subtitle || ""}</small>
-        </div>
-
-        <div style="position:relative;">
-          <div class="mg-bar" style="background:${bg};"></div>
-
-          ${prevLeft === null ? "" : `
-            <span class="mg-pin-line prev"
-              title="Anterior: ${fmtVal(prevVal)}${unit ? " " + unit : ""}"
-              style="left: calc(${prevLeft}% - 1px);"></span>
-          `}
-          ${currLeft === null ? "" : `
-            <span class="mg-pin-line current"
-              title="Actual: ${fmtVal(currVal)}${unit ? " " + unit : ""}"
-              style="left: calc(${currLeft}% - 1px);"></span>
-          `}
-        </div>
-
-        <div class="mg-value">
-          ${fmtVal(currVal)} <small>${unit || ""}</small>
-          <div style="margin-top:8px; display:flex; justify-content:flex-end;">
-            <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // ---- arma HTML ----
-  const imc = imcFrom(pesoCurr, tallaCm);
-  const pesoCls = imcClass(imc);
-  const pesoSub = (imc != null)
-    ? `IMC aprox: ${fmtVal(imc,1)}`
-    : `Peso corporal (sin talla registrada)`;
-
-  const viscCls = visceralClass(viscCurr);
-
-  box.innerHTML = `
-    <div class="mg-grid">
-      ${rowOmronPct("% Grasa Corporal", grasaCurr, grasaPrev, fatCuts, fatBand)}
-      ${rowOmronPct("% Masa Muscular",  muscCurr,  muscPrev,  musCuts, musBand)}
-
-      ${rowGeneric("Peso corporal", pesoCurr, pesoPrev, 40, 150, "kg", pesoCls, pesoSub)}
-      ${rowGeneric("Grasa visceral", viscCurr, viscPrev, 0, 20, "nivel", viscCls, "Escala 0–20 (referencial)")}
-    </div>
-
-    <div class="mg-legend">
-      <span class="item"><span class="swatch prev"></span> Anterior</span>
-      <span class="item"><span class="swatch current"></span> Actual</span>
-    </div>
-
-    <div class="hint" style="margin-top:10px;">
-      Último registro: <b>${fmtDateShort(currEv.fecha)}</b>
-      ${prevEv?.fecha ? ` · Anterior: <b>${fmtDateShort(prevEv.fecha)}</b>` : ``}
-      ${age != null ? ` · Edad: <b>${age}</b>` : ``}
-      ${currentUser.sexo ? ` · Sexo: <b>${currentUser.sexo}</b>` : ``}
-    </div>
-  `;
-}
-
-
-
-      function renderCompositionHistory(){
-        const box = document.getElementById("compHistoryBox");
-        if(!box || !currentUser) return;
-
-        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 8) : [];
-        if(!list || !list.length){
-          box.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>No hay historial todavía.</p></div>`;
-          return;
-        }
-
-        const rows = list.map(ev=>{
-          const f = fmtDateShort(ev.fecha);
-          const p = numClean(ev.pesoKg);
-          const m = numClean(ev.masaMuscularPct);
-          const g = numClean(ev.grasaPct);
-          return `
-            <tr>
-              <td class="comp-muted">${f}</td>
-              <td>${p ?? "—"}</td>
-              <td>${m ?? "—"}</td>
-              <td>${g ?? "—"}</td>
-            </tr>
-          `;
-        }).join("");
-
-        box.innerHTML = `
-          <div class="comp-scroll">
-            <table class="comp-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Peso (kg)</th>
-                  <th>% Músculo</th>
-                  <th>% Grasa</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        `;
-      }
-
-      /* ==============================
-         Charts
+         Charts base (4) - orden: Peso, Músculo, Grasa, Visceral
          ============================== */
       function destroyCharts() {
         Object.values(charts).forEach(c => { try { c && c.destroy(); } catch(_){} });
-        charts = { peso:null, grasa:null, mm:null, visc:null };
+        charts = { peso:null, mm:null, grasa:null, visc:null };
       }
 
       function makeLineChart(canvasId, labels, data, label) {
@@ -1683,7 +1525,7 @@ function renderMuscleFatAnalysis(){
       function renderCharts() {
         if(!currentUser) return;
 
-        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 12) : [];
+        const list = evaluationsLastN(currentUser.rut, 12);
         if(!list.length) {
           destroyCharts();
           return;
@@ -1691,127 +1533,465 @@ function renderMuscleFatAnalysis(){
 
         const labels = list.map(x => fmtDateShort(x.fecha));
         const peso  = list.map(x => numClean(x.pesoKg));
+        const mmPct = list.map(x => numClean(x.masaMuscularPct));
         const grasa = list.map(x => numClean(x.grasaPct));
-        const mmPct = list.map(x => numClean(x.masaMuscularPct)); // ✅ % músculo
         const visc  = list.map(x => numClean(x.grasaVisceral));
 
         destroyCharts();
-        charts.peso  = makeLineChart("chartPeso", labels, peso, "Peso (kg)");
+        charts.peso  = makeLineChart("chartPeso",  labels, peso,  "Peso (kg)");
+        charts.mm    = makeLineChart("chartMM",    labels, mmPct, "% Músculo");
         charts.grasa = makeLineChart("chartGrasa", labels, grasa, "% Grasa");
-        charts.mm    = makeLineChart("chartMM", labels, mmPct, "% Músculo");
-        charts.visc  = makeLineChart("chartVisc", labels, visc, "Grasa Visceral");
+        charts.visc  = makeLineChart("chartVisc",  labels, visc,  "Grasa Visceral");
       }
 
-      function renderProfile() {
-        const body = $("#profileBody");
-        if(!body || !currentUser) return;
+      /* ==============================
+         Perímetros + IMC (IMC requiere tallaCm)
+         ============================== */
+      function destroyPerimChart(){
+        try{ perimChart && perimChart.destroy(); }catch(_){}
+        perimChart = null;
+      }
 
-        body.innerHTML = `
-          <div class="form-grid">
-            <div class="field">
-              <label>RUT</label>
-              <input value="${currentUser.rut || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Nombre</label>
-              <input value="${currentUser.nombre || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input value="${currentUser.email || ""}" disabled />
-            </div>
-            <div class="field">
-              <label>Teléfono</label>
-              <input value="${currentUser.telefono || ""}" disabled />
-            </div>
+      function renderPerimetersChart(){
+        if(!currentUser || !window.Chart) return;
 
-            <div class="field">
-              <label>Plan</label>
-              <input value="${String(currentUser.planId || currentUser.planTipo || "—")}" disabled />
-            </div>
-            <div class="field">
-              <label>Vencimiento</label>
-              <input value="${currentUser.planFin ? fmtDateShort(currentUser.planFin) : "—"}" disabled />
-            </div>
+        const canvas = document.getElementById("chartPerimetros");
+        const pillsWrap = document.getElementById("periPills");
+        const foot = document.getElementById("periFoot");
+        if(!canvas || !pillsWrap) return;
 
-            <div class="field" style="grid-column: 1 / -1;">
-              <label>Objetivo</label>
-              <input value="${currentUser.objetivo || ""}" disabled />
+        const list = evaluationsLastN(currentUser.rut, 12);
+        if(!list || !list.length){
+          destroyPerimChart();
+          pillsWrap.innerHTML = "";
+          if(foot) foot.textContent = "No hay evaluaciones para graficar perímetros.";
+          return;
+        }
+
+        const labels = list.map(x => fmtDateShort(x.fecha));
+        const get = (ev, key) => numClean(ev?.[key]);
+
+         const tallaPerfil = numClean(currentUser?.tallaCm);
+
+function calcIMC(pesoKg, tallaCm){
+  if(pesoKg == null || !Number.isFinite(pesoKg)) return null;
+  if(tallaCm == null || !Number.isFinite(tallaCm) || tallaCm <= 0) return null;
+  const m = tallaCm / 100;
+  return pesoKg / (m * m);
+}
+
+const pesoArr = list.map(ev => get(ev, "pesoKg"));
+
+const imcArr = list.map(ev => {
+  // 1) si viene IMC desde Sheets, úsalo
+  const imcSheet = numClean(ev?.imc);
+  if(imcSheet != null) return imcSheet;
+
+  // 2) si no viene, calcúlalo con tallaCm del registro
+  const peso = get(ev, "pesoKg");
+  const tallaEval = numClean(ev?.tallaCm);
+
+  // 3) fallback: talla del perfil
+  return calcIMC(peso, tallaEval ?? tallaPerfil);
+});
+
+
+        const series = [
+          { key:"peso",         label:"Peso (kg)",         data:pesoArr },
+          { key:"imc",          label:"IMC",               data:imcArr  },
+          { key:"brazoCm",      label:"Brazo (cm)",        data:list.map(ev=>get(ev,"brazoCm")) },
+          { key:"cinturaCm",    label:"Cintura (cm)",      data:list.map(ev=>get(ev,"cinturaCm")) },
+          { key:"caderaCm",     label:"Cadera (cm)",       data:list.map(ev=>get(ev,"caderaCm")) },
+          { key:"musloCm",     label:"Muslo (cm)",       data:list.map(ev=>get(ev,"musloCm")) },
+          { key:"pantorrillaCm",label:"Pantorrilla (cm)",  data:list.map(ev=>get(ev,"pantorrillaCm")) },
+        ];
+
+        if(tallaPerfil == null){
+  if(foot) foot.textContent = "IMC: se usa el valor guardado en la evaluación (columna imc). Si no existe, requiere talla (tallaCm) en evaluación o en perfil.";
+}else{
+  if(foot) foot.textContent = "Se grafican las últimas 12 evaluaciones (de más antigua a más reciente).";
+}
+
+
+        const datasets = series.map((s, idx) => ({
+          label: s.label,
+          data: s.data,
+          tension: 0.25,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 3,
+          spanGaps: false,
+          hidden: idx > 0, // default: solo Peso
+        }));
+
+        destroyPerimChart();
+        perimChart = new Chart(canvas, {
+          type: "line",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { intersect:false, mode:"index" }
+            },
+            scales: {
+              x: { ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit: 8 } },
+              y: { beginAtZero:false }
+            }
+          }
+        });
+
+        pillsWrap.innerHTML = series.map((s, idx) => `
+          <button class="periPill ${idx===0?"active":""}" type="button" data-ds="${idx}">
+            <span class="periDot"></span>
+            ${s.label}
+          </button>
+        `).join("");
+
+        // Solo para que se vea “dot”, sin depender de colores fijos
+        // (Chart.js elige color por defecto; el dot es estético)
+        pillsWrap.querySelectorAll(".periPill .periDot").forEach((dot, i)=>{
+          dot.style.background = (i===0) ? "var(--txt)" : "var(--txt-muted)";
+        });
+
+        pillsWrap.querySelectorAll(".periPill").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const i = Number(btn.getAttribute("data-ds"));
+            if(!Number.isFinite(i) || !perimChart) return;
+
+            perimChart.data.datasets.forEach((ds, idx)=> ds.hidden = (idx !== i));
+            perimChart.update();
+
+            pillsWrap.querySelectorAll(".periPill").forEach(b=> b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+        });
+      }
+
+      /* ==============================
+         Análisis Músculo-Grasa (barras con actual + anterior)
+         - % grasa, % músculo, peso, visceral
+         ============================== */
+      function classifyMetric(kind, v){
+        // Clasificación simple (referencial). Si quieres tus rangos exactos, me los pasas y lo dejo calcado.
+        if(v == null || !Number.isFinite(v)) return { cls:"", label:"—" };
+
+        if(kind === "grasaPct"){
+          if(v < 10) return { cls:"low", label:"Bajo" };
+          if(v < 20) return { cls:"normal", label:"Normal" };
+          if(v < 25) return { cls:"high", label:"Alto" };
+          return { cls:"veryHigh", label:"Muy alto" };
+        }
+        if(kind === "masaMuscularPct"){
+          if(v < 30) return { cls:"low", label:"Bajo" };
+          if(v < 45) return { cls:"normal", label:"Normal" };
+          if(v < 55) return { cls:"high", label:"Alto" };
+          return { cls:"veryHigh", label:"Muy alto" };
+        }
+        if(kind === "pesoKg"){
+          // Sin talla no hay “normal” real. Mostramos “referencial”.
+          return { cls:"normal", label:"Referencial" };
+        }
+        if(kind === "grasaVisceral"){
+          if(v < 10) return { cls:"normal", label:"Normal" };
+          if(v < 15) return { cls:"high", label:"Alto" };
+          return { cls:"veryHigh", label:"Muy alto" };
+        }
+        return { cls:"", label:"—" };
+      }
+
+      function pinPos(kind, v){
+        // Mapea el valor a 0..100 para pin. Mapa simple.
+        if(v == null || !Number.isFinite(v)) return null;
+
+        let min=0, max=100;
+        if(kind === "grasaPct"){ min=0; max=45; }
+        if(kind === "masaMuscularPct"){ min=0; max=70; }
+        if(kind === "pesoKg"){ min=30; max=180; }
+        if(kind === "grasaVisceral"){ min=0; max=25; }
+
+        const pct = ( (v - min) / (max - min) ) * 100;
+        return Math.max(0, Math.min(100, pct));
+      }
+
+      function pesoIdealByTalla(tallaCm){
+  const t = numClean(tallaCm);
+  if(t == null || !Number.isFinite(t) || t <= 0) return null;
+  const m = t / 100;
+  return 21.7 * (m * m);
+}
+
+
+
+
+      function renderMuscleFatAnalysis(){
+        const box = document.getElementById("mgAnalysisBox");
+        if(!box) return;
+
+        const last2 = evaluationsLastN(currentUser?.rut, 2);
+        const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
+        const last = last2.length ? last2[last2.length - 1] : null;
+        const pesoIdeal = pesoIdealByTalla(currentUser?.tallaCm);
+
+
+        if(!last){
+          box.innerHTML = `
+            <div class="empty-state" style="padding:24px 16px;">
+              <i class="fas fa-chart-line"></i>
+              <p>No hay evaluaciones aún.</p>
             </div>
-          </div>
-          <div class="divider"></div>
-          <div class="btn-group">
-            <button class="btn btn-secondary" id="btnProfileRefresh"><i class="fas fa-rotate"></i> Refrescar datos</button>
+          `;
+          return;
+        }
+
+        const rows = [
+          {
+            kind:"grasaPct",
+            title:"% Grasa Corporal",
+            sub:"Rango referencial",
+            value:numClean(last.grasaPct),
+            prev:numClean(prev?.grasaPct),
+            unit:"%"
+          },
+          {
+            kind:"masaMuscularPct",
+            title:"% Masa Muscular",
+            sub:"Rango referencial",
+            value:numClean(last.masaMuscularPct),
+            prev:numClean(prev?.masaMuscularPct),
+            unit:"%"
+          },
+          {
+  kind:"pesoKg",
+  title:"Peso corporal",
+  sub: pesoIdeal == null
+    ? "Peso ideal: requiere talla"
+    : `Peso ideal: ${pesoIdeal.toFixed(1)} kg`,
+  value: numClean(last.pesoKg),
+  prev: numClean(prev?.pesoKg),
+  unit:"kg"
+},
+
+          {
+            kind:"grasaVisceral",
+            title:"Grasa visceral",
+            sub:"Escala 0–20 (referencial)",
+            value:numClean(last.grasaVisceral),
+            prev:numClean(prev?.grasaVisceral),
+            unit:"nivel"
+          },
+        ];
+
+        const html = `
+          <div class="mg-grid">
+            ${rows.map(r=>{
+              const cls = classifyMetric(r.kind, r.value);
+              const p = pinPos(r.kind, r.value);
+              const pp = pinPos(r.kind, r.prev);
+              const vtxt = (r.value==null) ? "—" : (Number.isInteger(r.value) ? r.value : r.value.toFixed(1));
+              return `
+                <div class="mg-row">
+                  <div class="mg-label">
+                    <b>${r.title}</b>
+                    <small>${r.sub}</small>
+                  </div>
+
+                  <div class="mg-bar">
+                    ${pp==null ? "" : `<span class="mg-pin-line prev" style="left: calc(${pp}% - 1px)"></span>`}
+                    ${p==null ? "" : `<span class="mg-pin-line current" style="left: calc(${p}% - 1px)"></span>`}
+                  </div>
+
+                  <div class="mg-value">
+                    <div>${vtxt} <small>${r.unit}</small></div>
+                    <div class="mg-tag ${cls.cls || "normal"}">${cls.label}</div>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+
+            <div class="mg-legend">
+              <span class="item"><span class="swatch prev"></span>Anterior</span>
+              <span class="item"><span class="swatch current"></span>Actual</span>
+              <span class="comp-muted">Último registro: ${fmtDateShort(last.fecha)} · Anterior: ${prev ? fmtDateShort(prev.fecha) : "—"}</span>
+            </div>
           </div>
         `;
-
-        $("#btnProfileRefresh")?.addEventListener("click", hardRefresh);
+        box.innerHTML = html;
       }
 
-      function setupRegisterForm() {
-        const form = $("#evalForm");
+      /* ==============================
+         Historial de composición (tabla)
+         ============================== */
+      function renderCompositionHistory(){
+        const box = document.getElementById("compHistoryBox");
+        if(!box) return;
+
+        const list = getEvaluationsSafe(currentUser?.rut);
+        const sorted = (list||[]).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+        const recent = sorted.slice(0, 12);
+
+        if(!recent.length){
+          box.innerHTML = `
+            <div class="empty-state" style="padding:24px 16px;">
+              <i class="fas fa-table"></i>
+              <p>No hay registros para mostrar.</p>
+            </div>
+          `;
+          return;
+        }
+
+        box.innerHTML = `
+          <div class="comp-scroll">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Peso (kg)</th>
+                  <th>% Músculo</th>
+                  <th>% Grasa</th>
+                  <th>Visceral</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${recent.map(ev=>{
+                  const w = numClean(ev.pesoKg);
+                  const m = numClean(ev.masaMuscularPct);
+                  const g = numClean(ev.grasaPct);
+                  const v = numClean(ev.grasaVisceral);
+                  const f = fmtDateShort(ev.fecha);
+                  const fmt = (x)=> x==null ? "—" : (Number.isInteger(x) ? x : x.toFixed(1));
+                  return `
+                    <tr>
+                      <td>${f}</td>
+                      <td>${fmt(w)}</td>
+                      <td>${fmt(m)}</td>
+                      <td>${fmt(g)}</td>
+                      <td>${fmt(v)}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      /* ==============================
+         Perfil
+         ============================== */
+      function renderProfile(){
+        const body = document.getElementById("profileBody");
+        if(!body) return;
+        if(!currentUser){
+          body.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-user-circle"></i>
+              <p>No se pudo cargar el perfil.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const talla = numClean(currentUser.tallaCm);
+        body.innerHTML = `
+          <div class="mg-grid">
+            <div class="mg-row">
+              <div class="mg-label"><b>Nombre</b><small>Cuenta</small></div>
+              <div></div>
+              <div class="mg-value">${currentUser.nombre || "—"}</div>
+            </div>
+
+            <div class="mg-row">
+              <div class="mg-label"><b>RUT</b><small>Identificador</small></div>
+              <div></div>
+              <div class="mg-value">${currentUser.rut || "—"}</div>
+            </div>
+
+            <div class="mg-row">
+              <div class="mg-label"><b>Plan</b><small>Vigencia</small></div>
+              <div></div>
+              <div class="mg-value">${planLabel(currentUser)}</div>
+            </div>
+
+            <div class="mg-row">
+              <div class="mg-label"><b>Talla</b><small>Para IMC (solo tallaCm)</small></div>
+              <div></div>
+              <div class="mg-value">${talla == null ? "—" : `${talla} cm`}</div>
+            </div>
+
+            <div class="hint">Si falta talla, edítala en tu ficha (Users) para habilitar IMC en el gráfico de perímetros.</div>
+          </div>
+        `;
+      }
+
+      /* ==============================
+         Registrar evaluación (usa app.js si existe; fallback localStorage)
+         ============================== */
+      async function saveEvaluation(ev){
+        // Preferido: tu app.js
+        if (window.createEvaluation) return window.createEvaluation(ev);
+        if (window.upsertEvaluation) return window.upsertEvaluation(ev);
+
+        // fallback local
+        const key = "mahfit_evals";
+        let all = [];
+        try{ all = JSON.parse(localStorage.getItem(key) || "[]"); }catch(_){}
+        // id simple
+        ev.id = ev.id || (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()));
+        all.push(ev);
+        localStorage.setItem(key, JSON.stringify(all));
+        return { ok:true };
+      }
+
+      function setupRegisterForm(){
+        const form = document.getElementById("evalForm");
         if(!form) return;
 
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth()+1).padStart(2,'0');
-        const dd = String(today.getDate()).padStart(2,'0');
-        $("#evalFecha").value = `${yyyy}-${mm}-${dd}`;
+        // default fecha hoy
+        const f = document.getElementById("evalFecha");
+        if(f && !f.value){
+          const d = new Date();
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth()+1).padStart(2,"0");
+          const dd = String(d.getDate()).padStart(2,"0");
+          f.value = `${yyyy}-${mm}-${dd}`;
+        }
 
-        $("#btnCancelarEval")?.addEventListener("click", () => navigateTo("home"));
-
-        form.addEventListener("submit", async (e) => {
+        form.addEventListener("submit", async (e)=>{
           e.preventDefault();
           if(!currentUser) return;
 
-          const btn = $("#btnGuardarEval");
-          btn.disabled = true;
+          const payload = {
+            rut: currentUser.rut,
+            fecha: document.getElementById("evalFecha")?.value || "",
+            pesoKg: numClean(document.getElementById("evalPeso")?.value),
+            grasaPct: numClean(document.getElementById("evalGrasa")?.value),
+            masaMuscularPct: numClean(document.getElementById("evalMM")?.value),
+            grasaVisceral: numClean(document.getElementById("evalVisc")?.value),
+            cinturaCm: numClean(document.getElementById("evalCintura")?.value),
+            observaciones: String(document.getElementById("evalNotas")?.value || "").trim()
+          };
 
-          try {
-            const payload = {
-              rutSocio: currentUser.rut,
-              fecha: $("#evalFecha").value,
+          try{
+            await saveEvaluation(payload);
 
-              pesoKg: $("#evalPeso").value,
-              grasaPct: $("#evalGrasa").value,
-              masaMuscularPct: $("#evalMM").value,   // ✅ % músculo
-              grasaVisceral: $("#evalVisc").value,
+            // refrescar desde backend si existe
+            if(window.refreshEvaluations) await window.refreshEvaluations();
 
-              cinturaCm: $("#evalCintura").value,
-              observaciones: $("#evalNotas").value
-            };
-
-            Object.keys(payload).forEach(k => {
-              if(payload[k] === "") delete payload[k];
-            });
-
-            if(!window.saveEvaluation) throw new Error("saveEvaluation no disponible. Revisa que assets/app.js esté cargando.");
-            await window.saveEvaluation(payload);
-
-            if(window.refreshEvaluations) {
-              try { await window.refreshEvaluations(); } catch(_) {}
-            }
-
-            showNotification("✅ Evaluación guardada", "success");
-
-            setKPIsFromLastEval();
-            renderRecentLogs();
-            renderRoutineModal();
-            renderCharts();
-            renderMuscleFatAnalysis();
-            renderCompositionHistory();
-            renderProfile();
-
+            showNotification("Evaluación guardada", "success");
+            await hardRefresh();
             navigateTo("home");
-          } catch(err) {
+          }catch(err){
             console.error(err);
-            showNotification(`❌ ${err.message || err}`, "error");
-          } finally {
-            btn.disabled = false;
+            showNotification("No se pudo guardar la evaluación.", "error");
           }
         });
       }
 
+      /* ==============================
+         Refrescar duro
+         ============================== */
       async function hardRefresh() {
         try {
           if(window.syncDown) await window.syncDown();
@@ -1825,9 +2005,11 @@ function renderMuscleFatAnalysis(){
           setKPIsFromLastEval();
           renderRecentLogs();
           renderRoutineModal();
+
           renderCharts();
           renderMuscleFatAnalysis();
           renderCompositionHistory();
+          renderPerimetersChart();
           renderProfile();
 
           showNotification("Datos actualizados", "success");
@@ -1837,6 +2019,9 @@ function renderMuscleFatAnalysis(){
         }
       }
 
+      /* ==============================
+         Init
+         ============================== */
       (function init() {
         if(!window.requireAuth) {
           showNotification("Falta cargar assets/app.js", "error");
@@ -1854,34 +2039,11 @@ function renderMuscleFatAnalysis(){
         setKPIsFromLastEval();
         renderRecentLogs();
         renderRoutineModal();
+
         renderCharts();
         renderMuscleFatAnalysis();
         renderCompositionHistory();
-        renderProfile();
-
-        setTimeout(async () => {
-          try {
-            const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
-            if(!list || !list.length) {
-              if(window.refreshEvaluations) await window.refreshEvaluations();
-              setKPIsFromLastEval();
-              renderRecentLogs();
-              renderCharts();
-              renderMuscleFatAnalysis();
-              renderCompositionHistory();
-            }
-          } catch(_) {}
-        }, 600);
-
-        $("#btnViewFullRoutine")?.addEventListener("click", () => {
-          closeModal("workoutModal");
-          window.location.href = "socio_rutina.html";
-        });
-
-        $("#btnLogMeal")?.addEventListener("click", () => {
-          closeModal("nutritionModal");
-          showNotification("Nutrición: lo conectamos después si lo quieres en Sheets.", "info");
-        });
+        renderPerimetersChart();
 
         setTimeout(() => showNotification("Sesión iniciada correctamente", "success"), 300);
       })();
