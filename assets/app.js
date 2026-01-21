@@ -7,9 +7,11 @@
    - ✅ PRO PATCH: IDs robustos + compat logId/id + fallback sync
    - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
    - ✅ UPDATE: compat masaMuscularPct (para gráficos + socio.html)
+   - ✅ NUEVO: EVALUATION PHOTOS (Drive upload + URLs en EVALUATIONS)
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwI_Q9fB1MiaKFaly7LEw7lqbmRL7iTHGX7fGCsVNIGXHOrVvEivZfFci6FBAbA7gqOAA/exec";
+// ✅ NUEVO API_URL (tu implementación actual)
+const API_URL = "https://script.google.com/macros/s/AKfycbzT4u_F1ImrLCp2Pi-_42qsKeA-gAgykwoNsaMRMeQ6peN3qB5u-IpgNtYjnisiofKeDQ/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -104,7 +106,6 @@ function setDbStatus(status){
 
 // ---------------- API helpers ----------------
 
-
 function parseISODate(d){
   const s = String(d || "").trim();
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -187,7 +188,6 @@ function labelClass(cls){
   return "Muy alto";
 }
 
-
 function calcBMI(pesoKg, tallaCm){
   const w = Number(pesoKg);
   const h = Number(tallaCm);
@@ -208,9 +208,6 @@ function visceralLabel(v){
   if(v <= 14) return "Alto";
   return "Muy alto";
 }
-
-
-
 
 function renderPesoYVisceral(actual, anterior, tallaCm){
   // ===== PESO / IMC =====
@@ -243,17 +240,7 @@ function renderPesoYVisceral(actual, anterior, tallaCm){
   }
 }
 
-
-
-
-
-
-
-
-
-
-// ---------------- API helpers ----------------
-
+// ---------------- API helpers (GET/POST) ----------------
 async function apiGet(resource){
   const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
   const r = await fetch(url, { method:"GET", cache:"no-store" });
@@ -372,6 +359,121 @@ function getWorkoutLogById(logId){
   const id = String(logId||"").trim();
   if(!id) return null;
   return (getWorkoutLog() || []).find(x => String(x.logId||x.id||"").trim() === id) || null;
+}
+
+/* =========================================================
+   === MAH FIT | EVALUATION PHOTOS ===
+   - Convierte <input type=file> a base64
+   - (Opcional) comprime a JPG (más liviano)
+   - Sube a Drive vía resource: EVALUATIONS_PHOTO_UPLOAD
+   ========================================================= */
+
+function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(String(fr.result||""));
+    fr.onerror = ()=> reject(new Error("No se pudo leer el archivo"));
+    fr.readAsDataURL(file);
+  });
+}
+
+// ✅ compresión simple (sin librerías). Si algo falla, cae al dataURL original.
+async function compressImageDataURL(dataURL, { maxW=1080, quality=0.82 } = {}){
+  try{
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    await new Promise((res, rej)=>{
+      img.onload = ()=> res(true);
+      img.onerror = ()=> rej(new Error("Imagen inválida"));
+      img.src = dataURL;
+    });
+
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+
+    const scale = (w > maxW) ? (maxW / w) : 1;
+    const nw = Math.round(w * scale);
+    const nh = Math.round(h * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = nw; canvas.height = nh;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, nw, nh);
+
+    // force jpg para peso
+    const out = canvas.toDataURL("image/jpeg", quality);
+    return out;
+  }catch(e){
+    return dataURL;
+  }
+}
+
+function inferMimeFromDataURL(dataURL){
+  const m = String(dataURL||"").match(/^data:([^;]+);base64,/i);
+  return (m && m[1]) ? m[1] : "image/jpeg";
+}
+
+/**
+ * Sube UNA foto (frente/perfil/espalda) y actualiza EVALUATIONS en Sheets
+ * @param {Object} params
+ *  - rutSocio (obligatorio)
+ *  - evalId (obligatorio)
+ *  - fecha (yyyy-mm-dd) (opcional)
+ *  - slot: "frente"|"perfil"|"espalda" (obligatorio)
+ *  - file: File (desde input) (obligatorio)
+ *  - compress: boolean (default true)
+ */
+async function uploadEvaluationPhoto({ rutSocio, evalId, fecha, slot, file, compress=true }){
+  if(!rutSocio) throw new Error("Falta rutSocio");
+  if(!evalId) throw new Error("Falta evalId");
+  if(!slot || !["frente","perfil","espalda"].includes(String(slot).toLowerCase())) throw new Error("slot inválido");
+  if(!file) throw new Error("Falta file");
+  const f = safeStr(fecha, isoLocalDate()).trim();
+
+  // 1) file -> dataURL
+  let dataURL = await fileToDataURL(file);
+
+  // 2) (opcional) comprimir
+  if(compress){
+    dataURL = await compressImageDataURL(dataURL, { maxW: 1080, quality: 0.82 });
+  }
+
+  // 3) post
+  const mimeType = inferMimeFromDataURL(dataURL);
+
+  const res = await apiPost("EVALUATIONS_PHOTO_UPLOAD", {
+    rutSocio: normalizeRut(rutSocio),
+    evalId: String(evalId).trim(),
+    fecha: f,
+    slot: String(slot).toLowerCase(),
+    mimeType,
+    fileBase64: dataURL
+  });
+
+  // 4) refrescar cache (para tener URLs)
+  //    (barato y te asegura que se vea en UI)
+  await refreshEvaluations().catch(()=>{});
+
+  return res;
+}
+
+/**
+ * Sube hasta 3 fotos en orden (frente/perfil/espalda)
+ * files: { frente?:File, perfil?:File, espalda?:File }
+ */
+async function uploadEvaluationPhotos3({ rutSocio, evalId, fecha, files, compress=true, onProgress }){
+  const slots = ["frente","perfil","espalda"];
+  const out = [];
+  for(const s of slots){
+    const file = files?.[s];
+    if(!file) continue;
+    if(typeof onProgress === "function") onProgress({ slot:s, status:"uploading" });
+    const r = await uploadEvaluationPhoto({ rutSocio, evalId, fecha, slot:s, file, compress });
+    out.push(r);
+    if(typeof onProgress === "function") onProgress({ slot:s, status:"done", result:r });
+  }
+  return out;
 }
 
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
@@ -496,7 +598,7 @@ async function syncDown(){
     entryId: String(x.entryId ?? "").trim(),
   })).filter(x=>x.entryId));
 
-  // ✅ NUEVO: EVALUATIONS (con compat masaMuscularPct)
+  // ✅ EVALUATIONS (incluye compat + trae URLs si existen)
   const ev = await apiGet("EVALUATIONS");
   setEvaluations((ev.evaluations || []).map(x => {
     const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
@@ -530,7 +632,16 @@ async function syncDown(){
       evaluadorNombre: x.evaluadorNombre ?? "",
 
       creadoEn: x.creadoEn ?? "",
-      actualizadoEn: x.actualizadoEn ?? ""
+      actualizadoEn: x.actualizadoEn ?? "",
+
+      // ✅ fotos (si tu sheet ya tiene esas columnas)
+      photoFolderId: x.photoFolderId ?? "",
+      fotoFrenteId: x.fotoFrenteId ?? "",
+      fotoPerfilId: x.fotoPerfilId ?? "",
+      fotoEspaldaId: x.fotoEspaldaId ?? "",
+      fotoFrenteUrl: x.fotoFrenteUrl ?? "",
+      fotoPerfilUrl: x.fotoPerfilUrl ?? "",
+      fotoEspaldaUrl: x.fotoEspaldaUrl ?? "",
     });
   }).filter(x=>x.evalId && x.rutSocio));
 }
@@ -833,7 +944,16 @@ async function refreshEvaluations(){
       evaluadorNombre: x.evaluadorNombre ?? "",
 
       creadoEn: x.creadoEn ?? "",
-      actualizadoEn: x.actualizadoEn ?? ""
+      actualizadoEn: x.actualizadoEn ?? "",
+
+      // ✅ fotos
+      photoFolderId: x.photoFolderId ?? "",
+      fotoFrenteId: x.fotoFrenteId ?? "",
+      fotoPerfilId: x.fotoPerfilId ?? "",
+      fotoEspaldaId: x.fotoEspaldaId ?? "",
+      fotoFrenteUrl: x.fotoFrenteUrl ?? "",
+      fotoPerfilUrl: x.fotoPerfilUrl ?? "",
+      fotoEspaldaUrl: x.fotoEspaldaUrl ?? "",
     });
   }).filter(x=>x.evalId && x.rutSocio));
   return true;
@@ -942,3 +1062,7 @@ window.makeEvalId = makeEvalId;
 // ✅ helpers para gráficos
 window.evaluationsLastN = evaluationsLastN;
 window.toNumClean = toNumClean;
+
+// === MAH FIT | EVALUATION PHOTOS exposed ===
+window.uploadEvaluationPhoto = uploadEvaluationPhoto;
+window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
