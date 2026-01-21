@@ -328,6 +328,83 @@
       font-weight:900;
       font-size:12px;
     }
+
+    /* ===== FOTO UI ===== */
+    .photoGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (max-width: 860px){ .photoGrid{ grid-template-columns: 1fr; } }
+
+    .photoBox{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .photoLabel{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 11px;
+      color: rgba(255,255,255,.78);
+      margin-bottom: 8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .photoPrev{
+      width:100%;
+      aspect-ratio: 4/5;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(255,255,255,.45);
+      font-weight:900;
+      font-size:12px;
+      margin-top: 10px;
+    }
+    .photoPrev img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .rowActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+      margin-top: 10px;
+    }
+    .miniOk{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(170,255,200,.95);
+    }
+    .miniBad{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(255,180,186,.95);
+    }
+    .linkPills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .linkPills a{
+      text-decoration:none;
+      color: rgba(255,255,255,.88);
+    }
   </style>
 </head>
 
@@ -454,6 +531,59 @@
             </div>
           </div>
 
+          <!-- ✅ A) REGISTRO FOTOGRÁFICO (DENTRO DE EVALUACIÓN) -->
+          <div class="block" style="margin-top:12px;">
+            <div class="blockHead">
+              <div class="h">Registro fotográfico</div>
+              <div class="pill" id="pEvalId">EvalId: —</div>
+            </div>
+            <div class="blockBody">
+
+              <div class="hint">
+                Primero guarda la evaluación. Luego sube las fotos (frente/perfil/espalda).
+              </div>
+
+              <div class="photoGrid">
+
+                <div class="photoBox">
+                  <div class="photoLabel">
+                    <span>Frente</span>
+                    <button class="btn small ghost" id="btnClearFront" type="button">Quitar</button>
+                  </div>
+                  <input id="fileFront" type="file" accept="image/*" />
+                  <div class="photoPrev" id="prevFront">Sin foto</div>
+                </div>
+
+                <div class="photoBox">
+                  <div class="photoLabel">
+                    <span>Perfil</span>
+                    <button class="btn small ghost" id="btnClearProfile" type="button">Quitar</button>
+                  </div>
+                  <input id="fileProfile" type="file" accept="image/*" />
+                  <div class="photoPrev" id="prevProfile">Sin foto</div>
+                </div>
+
+                <div class="photoBox">
+                  <div class="photoLabel">
+                    <span>Espalda</span>
+                    <button class="btn small ghost" id="btnClearBack" type="button">Quitar</button>
+                  </div>
+                  <input id="fileBack" type="file" accept="image/*" />
+                  <div class="photoPrev" id="prevBack">Sin foto</div>
+                </div>
+
+              </div>
+
+              <div class="rowActions">
+                <button id="btnUploadPhotos" class="btn primary" type="button">Subir fotos</button>
+                <span id="photoStatus" class="muted">—</span>
+              </div>
+
+              <div class="linkPills" id="photoLinks"></div>
+
+            </div>
+          </div>
+
           <div class="block" style="margin-top:12px;">
             <div class="blockHead"><div class="h">Historial (últimas 6)</div></div>
             <div class="blockBody" id="histBox">
@@ -510,6 +640,10 @@
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
   function normalizeRut(r){ return String(r||"").trim().toUpperCase(); }
+
+  // ===== estado actual =====
+  let CURRENT_EVAL_ID = "";
+  let CURRENT_RUT = "";
 
   function nowYMD(){
     const d = new Date();
@@ -657,6 +791,34 @@
       .sort((a,b)=> dtToTs(b.fecha,b.hora) - dtToTs(a.fecha,a.hora));
   }
 
+  function setEvalIdUI(evalId){
+    CURRENT_EVAL_ID = String(evalId||"").trim();
+    const pill = document.getElementById("pEvalId");
+    if(pill) pill.textContent = CURRENT_EVAL_ID ? `EvalId: ${CURRENT_EVAL_ID}` : "EvalId: —";
+  }
+
+  function setPhotoStatus(text, ok=null){
+    const el = document.getElementById("photoStatus");
+    if(!el) return;
+    el.textContent = text;
+    el.className = ok === true ? "miniOk" : (ok === false ? "miniBad" : "muted");
+  }
+
+  function renderPhotoLinksFromRow(row){
+    const box = document.getElementById("photoLinks");
+    if(!box) return;
+
+    const f = safe(row?.fotoFrenteUrl,"").trim();
+    const p = safe(row?.fotoPerfilUrl,"").trim();
+    const e = safe(row?.fotoEspaldaUrl,"").trim();
+
+    const mk = (url, label) => url
+      ? `<span class="pill"><a href="${url}" target="_blank" rel="noopener">${label}</a></span>`
+      : "";
+
+    box.innerHTML = (mk(f,"Ver frente") + mk(p,"Ver perfil") + mk(e,"Ver espalda")) || "";
+  }
+
   function fillForm(x){
     document.getElementById("inpFecha").value = safe(x.fecha, nowYMD()).includes("T")
       ? (extractDateYMD(x.fecha) || nowYMD())
@@ -681,6 +843,10 @@
     document.getElementById("pliegues").value = safe(x.pliegues, "");
     document.getElementById("observaciones").value = safe(x.observaciones, "");
 
+    // ✅ tomar evalId si viene desde historial
+    setEvalIdUI(safe(x.evalId,"").trim());
+    renderPhotoLinksFromRow(x);
+
     updateIMC();
     msg(document.getElementById("msg"), "✅ Evaluación cargada", true);
   }
@@ -694,6 +860,8 @@
       const el = document.getElementById(id);
       if(el) el.value = "";
     });
+    setEvalIdUI("");
+    renderPhotoLinksFromRow(null);
     updateIMC();
   }
 
@@ -761,7 +929,15 @@
 
     const masaPct = toNum(document.getElementById("masaMuscularPct").value);
 
+    // ✅ evalId fijo: si no hay, lo generamos con makeEvalId del app.js
+    let evalId = CURRENT_EVAL_ID;
+    if(!evalId && typeof window.makeEvalId === "function"){
+      evalId = window.makeEvalId({ rutSocio, fecha });
+      setEvalIdUI(evalId);
+    }
+
     return {
+      evalId,
       rutSocio,
       fecha,
       hora,
@@ -1017,6 +1193,22 @@
     svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, subLabels, series: seriesB });
   }
 
+  // ===== previews fotos =====
+  function setPreview(file, prevEl){
+    if(!prevEl) return;
+    if(!file){
+      prevEl.innerHTML = "Sin foto";
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    prevEl.innerHTML = `<img src="${url}" alt="preview">`;
+  }
+
+  function clearFile(inputEl, prevEl){
+    if(inputEl) inputEl.value = "";
+    if(prevEl) prevEl.innerHTML = "Sin foto";
+  }
+
   document.addEventListener("DOMContentLoaded", async ()=>{
     const me = requireAuth(["FUNCIONARIO"]);
     if(!me) return;
@@ -1044,10 +1236,17 @@
 
     function updateSubtitle(){
       const rut = sel.value;
+      CURRENT_RUT = rut ? normalizeRut(rut) : "";
       const u = (getUsers()||[]).find(x=>normalizeRut(x.rut)===normalizeRut(rut));
       document.getElementById("subTitle").textContent = rut ? `${safe(u?.nombre,"Socio")} · ${rut}` : "Selecciona un socio para comenzar";
       renderHistory(rut);
       renderCharts(rut);
+
+      // al cambiar socio: limpiar evalId si aún no hay uno cargado
+      if(!CURRENT_EVAL_ID){
+        setEvalIdUI("");
+        renderPhotoLinksFromRow(null);
+      }
     }
 
     search.addEventListener("input", ()=>{
@@ -1056,13 +1255,41 @@
       if(keep) sel.value = keep;
     });
 
-    sel.addEventListener("change", updateSubtitle);
+    sel.addEventListener("change", ()=>{
+      // si cambias de socio, por defecto reseteamos evalId (para no subir a otro)
+      setEvalIdUI("");
+      renderPhotoLinksFromRow(null);
+      setPhotoStatus("—", null);
+      updateSubtitle();
+    });
 
     document.getElementById("pesoKg").addEventListener("input", updateIMC);
     document.getElementById("tallaCm").addEventListener("input", updateIMC);
 
+    // ===== fotos inputs =====
+    const fileFront = document.getElementById("fileFront");
+    const fileProfile = document.getElementById("fileProfile");
+    const fileBack = document.getElementById("fileBack");
+
+    const prevFront = document.getElementById("prevFront");
+    const prevProfile = document.getElementById("prevProfile");
+    const prevBack = document.getElementById("prevBack");
+
+    fileFront.addEventListener("change", ()=> setPreview(fileFront.files?.[0], prevFront));
+    fileProfile.addEventListener("change", ()=> setPreview(fileProfile.files?.[0], prevProfile));
+    fileBack.addEventListener("change", ()=> setPreview(fileBack.files?.[0], prevBack));
+
+    document.getElementById("btnClearFront").addEventListener("click", ()=> clearFile(fileFront, prevFront));
+    document.getElementById("btnClearProfile").addEventListener("click", ()=> clearFile(fileProfile, prevProfile));
+    document.getElementById("btnClearBack").addEventListener("click", ()=> clearFile(fileBack, prevBack));
+
     document.getElementById("btnClear").addEventListener("click", ()=>{
       clearForm();
+      // limpiar fotos
+      clearFile(fileFront, prevFront);
+      clearFile(fileProfile, prevProfile);
+      clearFile(fileBack, prevBack);
+      setPhotoStatus("—", null);
       msg(document.getElementById("msg"), "Formulario limpio.", true);
     });
 
@@ -1083,6 +1310,7 @@
       }
     });
 
+    // ✅ Guardar evaluación (crea evalId fijo)
     document.getElementById("btnSave").addEventListener("click", async ()=>{
       const rut = sel.value;
       if(!rut){
@@ -1095,18 +1323,85 @@
         msg(document.getElementById("msg"), "Falta fecha.", false);
         return;
       }
+      if(!payload.evalId){
+        msg(document.getElementById("msg"), "No se pudo generar evalId. Revisa assets/app.js", false);
+        return;
+      }
 
       try{
         msg(document.getElementById("msg"), "Guardando…", true);
-        await apiPost("EVALUATIONS", payload);
+        const res = await apiPost("EVALUATIONS", payload);
+
+        // mantener evalId actual (por si API devuelve otro, priorizamos el payload.evalId)
+        setEvalIdUI(payload.evalId);
 
         await syncEvaluationsDown();
         renderHistory(rut);
         renderCharts(rut);
 
+        // si ya quedó con URLs, mostrarlas
+        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === payload.evalId);
+        renderPhotoLinksFromRow(row);
+
         msg(document.getElementById("msg"), "✅ Evaluación guardada", true);
+        setPhotoStatus("Evaluación lista para fotos ✅", true);
       }catch(e){
         msg(document.getElementById("msg"), "❌ No se pudo guardar: " + (e.message||e), false);
+        setPhotoStatus("Error guardando evaluación", false);
+      }
+    });
+
+    // ✅ Subir fotos (usa uploadEvaluationPhotos3 del app.js)
+    document.getElementById("btnUploadPhotos").addEventListener("click", async ()=>{
+      const rut = sel.value;
+      if(!rut){
+        setPhotoStatus("Selecciona un socio.", false);
+        return;
+      }
+      if(!CURRENT_EVAL_ID){
+        setPhotoStatus("Primero guarda la evaluación (necesitamos evalId).", false);
+        return;
+      }
+
+      const fFront = fileFront.files?.[0] || null;
+      const fProfile = fileProfile.files?.[0] || null;
+      const fBack = fileBack.files?.[0] || null;
+
+      if(!fFront && !fProfile && !fBack){
+        setPhotoStatus("Selecciona al menos 1 foto.", false);
+        return;
+      }
+      if(typeof window.uploadEvaluationPhotos3 !== "function"){
+        setPhotoStatus("Falta uploadEvaluationPhotos3 en assets/app.js", false);
+        return;
+      }
+
+      const fecha = document.getElementById("inpFecha").value || nowYMD();
+
+      try{
+        setPhotoStatus("Subiendo fotos…", null);
+
+        await window.uploadEvaluationPhotos3({
+          rutSocio: rut,
+          evalId: CURRENT_EVAL_ID,
+          fecha,
+          files: { frente: fFront, perfil: fProfile, espalda: fBack },
+          compress: true,
+          onProgress: (p)=>{
+            if(p?.status === "uploading") setPhotoStatus(`Subiendo: ${p.slot}…`, null);
+            if(p?.status === "done") setPhotoStatus(`Listo: ${p.slot} ✅`, true);
+          }
+        });
+
+        // refrescar evaluaciones para traer URLs
+        await syncEvaluationsDown();
+        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === CURRENT_EVAL_ID);
+        renderPhotoLinksFromRow(row);
+
+        setPhotoStatus("Fotos subidas ✅", true);
+      }catch(e){
+        console.error(e);
+        setPhotoStatus("Error subiendo fotos: " + (e.message||e), false);
       }
     });
 
@@ -1114,6 +1409,11 @@
 
     updateSubtitle();
     updateIMC();
+
+    // si venía rut por URL, mantener
+    if(rutUrl){
+      CURRENT_RUT = rutUrl;
+    }
   });
 </script>
 </body>
