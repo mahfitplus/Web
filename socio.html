@@ -851,7 +851,6 @@
           </div>
           <div class="card-body">
 
-
             <!-- ✅ Análisis + Historial -->
             <div class="card" style="margin-bottom:16px;">
               <div class="card-header">
@@ -862,15 +861,6 @@
                 <div id="mgAnalysisBox"></div>
               </div>
             </div>
-
-
-
-
-
-
-
-
-
 
             <!-- ✅ Charts principales ARRIBA (orden: Peso → Músculo → Grasa → Visceral) -->
             <div id="chartsWrap" class="charts-grid">
@@ -901,10 +891,6 @@
 
             <div class="divider"></div>
 
-            
-
-            
-
             <!-- ✅ Perímetros -->
             <div class="periCard">
               <div class="periTop">
@@ -924,9 +910,6 @@
               </div>
             </div>
 
-
-
-
             <div class="card" style="margin-bottom:16px;">
               <div class="card-header">
                 <h2>Historial de Composición Corporal</h2>
@@ -936,14 +919,6 @@
                 <div id="compHistoryBox"></div>
               </div>
             </div>
-
-
-
-
-
-
-
-
 
           </div>
         </div>
@@ -1140,6 +1115,11 @@
         const s = String(v ?? "").replace(",", ".").trim();
         const n = Number(s);
         return Number.isFinite(n) ? n : null;
+      }
+
+      function fmt1(n){
+        if(n == null || !Number.isFinite(n)) return "—";
+        return (Number.isInteger(n) ? String(n) : n.toFixed(1));
       }
 
       function planLabel(user) {
