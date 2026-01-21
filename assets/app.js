@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbzi0yNNh0PBDO69icIOyeu-g-jI-GI2pHjI_ia3pOFV8WQ5sSi7vVCADEqCMWU_DWqyjA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNP9abTgngzg-_HfWPQvW0NKfcQm59cwhDWfWBwMDbNg7tyw3tZToTumIaJdEm54Os7Q/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -882,6 +882,41 @@ function evaluationsLastN(rut, n=12){
 }
 
 async function saveEvaluation(entry){
+
+  /* =========================================================
+   ✅ EVALUATIONS: guardar comentario (registro fotográfico)
+   - Guarda en Sheets (columna observaciones) por evalId
+   - Actualiza cache local para que se vea altiro
+   ========================================================= */
+async function saveEvaluationComment({ evalId, rutSocio, comentario }){
+  const id = String(evalId || "").trim();
+  const rut = normalizeRut(rutSocio || "");
+  const text = String(comentario ?? "").trim();
+
+  if(!id) throw new Error("Falta evalId");
+  if(!rut) throw new Error("Falta rutSocio");
+
+  // ✅ Usa el mismo endpoint EVALUATIONS (upsert/merge por evalId)
+  const patch = {
+    evalId: id,
+    rutSocio: rut,
+    observaciones: text,   // ✅ aquí queda el comentario
+    actualizadoEn: nowISO()
+  };
+
+  const res = await apiPost("EVALUATIONS", patch);
+
+  // ✅ Actualiza cache local (para que la UI refleje altiro)
+  const list = upsertLocalByKey(getEvaluations(), "evalId", patch);
+  setEvaluations(list);
+
+  return res;
+}
+
+
+
+
+
   const e = { ...(entry || {}) };
 
   e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
@@ -908,7 +943,42 @@ async function saveEvaluation(entry){
 
   if(res && res.evalId) return res;
   return { ok:true, evalId: e.evalId };
+
+
+
+
 }
+
+
+/* =========================================================
+   ✅ EVALUATIONS: guardar comentario por control (evalId)
+   ========================================================= */
+async function saveEvaluationComment({ evalId, rutSocio, comentario }){
+  const id = String(evalId || "").trim();
+  const rut = normalizeRut(rutSocio || "");
+  const text = String(comentario ?? "").trim();
+
+  if(!id) throw new Error("Falta evalId");
+  if(!rut) throw new Error("Falta rutSocio");
+
+  // patch mínimo (upsert por evalId)
+  const patch = {
+    evalId: id,
+    rutSocio: rut,
+    observaciones: text,
+    actualizadoEn: nowISO()
+  };
+
+  // usa el resource estándar
+  const res = await apiPost("EVALUATIONS", patch);
+
+  // refresca cache local altiro
+  const list = upsertLocalByKey(getEvaluations(), "evalId", patch);
+  setEvaluations(list);
+
+  return res;
+}
+
 
 async function refreshEvaluations(){
   const ev = await apiGet("EVALUATIONS");
@@ -1055,7 +1125,10 @@ window.getEvaluations = getEvaluations;
 window.setEvaluations = setEvaluations;
 window.getEvaluationsForRut = evaluationsForRut;
 window.lastEvaluationForRut = lastEvaluationForRut;
-window.saveEvaluation = saveEvaluation;
+
+
+window.saveEvaluationComment = saveEvaluationComment;
+
 window.refreshEvaluations = refreshEvaluations;
 window.makeEvalId = makeEvalId;
 
@@ -1066,4 +1139,3 @@ window.toNumClean = toNumClean;
 // === MAH FIT | EVALUATION PHOTOS exposed ===
 window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
-
