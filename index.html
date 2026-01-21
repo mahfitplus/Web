@@ -5,326 +5,581 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAH FIT | Acceso</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     :root{
-      --bg0:#0a0e14;
-      --bg1:#0f1623;
-      --card: rgba(18,27,42,.78);
-      --line: rgba(255,255,255,.10);
-      --txt: rgba(255,255,255,.90);
-      --mut: rgba(255,255,255,.65);
-      --pri2:#23a6ff;
-      --pri:#7c5cff;
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f8f9fa;
+      --surface-3:#f1f3f5;
+      --stroke:#e9ecef;
+      --stroke-2:#dee2e6;
+
+      --txt:#212529;
+      --txt-2:#495057;
+      --mut:#868e96;
+
+      --brand:#5a67d8;
+      --brand2:#7c5cff;
+      --brand-grad: linear-gradient(135deg, #5a67d8, #7c5cff);
+
       --ok:#2bd576;
-      --bad:#ff5a67;
-      --warn:#ffd36e;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --bad:#ff6b6b;
+      --warn:#ffd166;
+
       --radius:16px;
+      --radius-lg:20px;
+      --shadow:0 4px 12px rgba(0,0,0,.05);
+      --shadow-lg:0 8px 24px rgba(0,0,0,.08);
+      --shadow-xl:0 12px 32px rgba(0,0,0,.10);
+
+      --max:1150px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --transition: all .2s ease;
     }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      height:100%;
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height:1.5;
+    }
+    a{ color:inherit; text-decoration:none; }
+    button{ font:inherit; cursor:pointer; border:none; background:none; }
 
     body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: var(--txt);
-      min-height:100vh;
       background:
-        radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.20), transparent 60%),
-        radial-gradient(900px 700px at 100% 0%, rgba(35,166,255,.18), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
+        radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.10), transparent 60%),
+        radial-gradient(900px 700px at 100% 0%, rgba(90,103,216,.10), transparent 55%),
+        linear-gradient(180deg, #fff, #fbfcff);
     }
 
-    .topbar{
-      position: sticky;
-      top:0;
-      z-index: 5;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 18px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(10,14,20,.75);
-      backdrop-filter: blur(12px);
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: calc(14px + var(--safe-top)) 18px calc(26px + var(--safe-bottom));
     }
 
-    .brand{
-      display:flex; gap:8px; align-items:baseline;
-      letter-spacing:.7px; font-weight: 1000; user-select:none;
-    }
-    .brand .mah{ color:#fff; }
-    .brand .fit{ color: var(--pri2); }
+    /* =========================
+   TOPBAR PRO
+   ========================= */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 10px 0;
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
 
-    .nav-right{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-      color: var(--mut); font-weight: 900; font-size: 13px;
-    }
-    .badge{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:rgba(255,255,255,.90);
-      line-height:1; white-space:nowrap;
-    }
+.topbar-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
 
-    .db-badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.22);
-      color:rgba(255,255,255,.90);
-      font-size:12px; line-height:1; white-space:nowrap;
-    }
+/* Logo left */
+.brand{
+  display:flex;
+  align-items:baseline;
+  gap: 10px;
+  min-width: 220px;
+}
+.brandLogo{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.brandLogo .mah{ color:#111827; font-size:20px; padding-left: 5px; }
+.brandLogo .fit{ color:#23a6ff; font-size:20px; padding-left: 5px; }
+
+.brandText span{
+  display:block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.45);
+  margin-left: 2px;
+}
+
+/* Right side chips */
+.topRight{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+.statusChip,
+.sectionChip{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.85);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 8px 22px rgba(0,0,0,.06);
+  color: rgba(0,0,0,.72);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sectionChip{
+  background: rgba(90,103,216,.10);
+  border-color: rgba(90,103,216,.18);
+  color: rgba(60,65,190,.92);
+}
+.sectionChip i{
+  font-size: 13px;
+}
+
+/* DB DOT (compatible con app.js) */
+.db-dot{
+  width:10px; height:10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.30);
+  box-shadow: 0 0 0 4px rgba(0,0,0,.06);
+}
+.db-dot.connecting{
+  background: #ffd166;
+  box-shadow: 0 0 0 4px rgba(255,209,102,.28);
+  animation: dbPulse 1.0s ease-in-out infinite;
+}
+.db-dot.connected{
+  background: #2bd576;
+  box-shadow: 0 0 0 4px rgba(43,213,118,.25);
+  animation:none;
+}
+.db-dot.error{
+  background: #ff6b6b;
+  box-shadow: 0 0 0 4px rgba(255,107,107,.22);
+  animation:none;
+}
+@keyframes dbPulse{
+  0%,100%{ transform:scale(1); opacity:.75; }
+  50%{ transform:scale(1.25); opacity:1; }
+}
+
+.statusText{
+  font-weight: 900;
+  letter-spacing: .1px;
+}
+
+/* Mobile tweak */
+@media(max-width:520px){
+  .brand{ min-width:auto; }
+  .brandText{ display:none; }   /* deja solo MAH FIT en móvil */
+  .statusChip, .sectionChip{ padding: 7px 10px; }
+}
+
+
+    /* app.js usa #dbDot y #dbText */
     .db-dot{
-      width:10px;height:10px;border-radius:999px;
-      background:rgba(255,255,255,.40);
-      box-shadow:0 0 0 3px rgba(255,255,255,.06);
+      width: 10px; height: 10px; border-radius: 999px;
+      background: var(--mut);
+      position: relative;
+      flex-shrink: 0;
     }
-    .db-dot.connecting{
-      background:rgba(255,255,255,.40);
+    .db-dot::after{
+      content:"";
+      position:absolute;
+      inset:-3px;
+      border-radius:999px;
+      background: rgba(134,142,150,.18);
+    }
+    .db-dot.connecting{ background: var(--warn); }
+    .db-dot.connecting::after{
+      background: rgba(255,209,102,.22);
       animation: dbPulse 1.0s ease-in-out infinite;
     }
     .db-dot.connected{ background: var(--ok); }
+    .db-dot.connected::after{ background: rgba(43,213,118,.20); animation:none; }
     .db-dot.error{ background: var(--bad); }
+    .db-dot.error::after{ background: rgba(255,107,107,.22); animation:none; }
+
     @keyframes dbPulse{
       0%,100%{ transform:scale(1); opacity:.75; }
       50%{ transform:scale(1.25); opacity:1; }
     }
 
-    .wrap{
-      max-width: 1150px;
-      margin: 22px auto 70px;
-      padding: 0 18px;
+    .badge{
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--surface-2);
+      color: var(--txt-2);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
     }
 
-    .heroTitle{
-      display:flex; flex-direction:column; gap:6px;
-      margin: 14px 0 16px;
-    }
-    .heroTitle h1{
-      margin:0;
-      font-size: 28px;
-      letter-spacing:.2px;
-    }
-    .heroTitle p{
-      margin:0;
-      color: var(--mut);
-      font-weight: 800;
-      line-height: 1.35;
-      max-width: 70ch;
-    }
-
-    .grid-3{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr .85fr;
-      gap: 14px;
-      align-items: start;
-    }
-    @media(max-width: 980px){
-      .grid-3{ grid-template-columns: 1fr; }
-    }
+    /* CONTENIDO */
+    .heroTitle{ display:flex; flex-direction:column; gap:8px; margin: 10px 0 16px; }
+    .heroTitle h1{ font-size: 28px; letter-spacing: -0.3px; line-height:1.1; }
+    .heroTitle p{ color: var(--mut); font-weight: 650; max-width: 72ch; }
 
     .card{
-      background: var(--card);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
       overflow:hidden;
+      transition: var(--transition);
     }
+    .card:hover{ box-shadow: var(--shadow-lg); }
 
     .head{
-      padding: 14px 14px 10px;
-      display:flex; align-items:flex-start; justify-content:space-between;
+      padding: 16px 16px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
       gap: 12px;
-      border-bottom:1px solid rgba(255,255,255,.06);
+      border-bottom: 1px solid var(--stroke);
     }
-    .head strong{
-      font-weight: 1000;
-      letter-spacing:.3px;
-    }
+    .head strong{ font-weight: 1000; letter-spacing: -0.2px; color: var(--txt); }
     .pill{
-      display:inline-flex; align-items:center; justify-content:center;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
       padding: 6px 10px;
       border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.86);
+      border: 1px solid var(--stroke);
+      background: var(--surface-2);
+      color: var(--txt-2);
       font-weight: 900;
       font-size: 12px;
       white-space: nowrap;
     }
-    .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
-    .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
-    .pill.bad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
+    .body{ padding: 16px; }
 
-    .body{ padding: 14px; }
-
-    .h2{
-      margin:0 0 10px;
-      font-size: 12px;
-      color: rgba(255,255,255,.86);
-      letter-spacing:.6px;
-      text-transform: uppercase;
-      font-weight: 1000;
-    }
+    .loginOnly{ max-width: 760px; }
 
     .form label{
       display:block;
       margin: 10px 0 6px;
-      color: rgba(255,255,255,.78);
+      color: var(--mut);
       font-weight: 900;
       font-size: 12px;
-      letter-spacing: .2px;
+      letter-spacing:.2px;
     }
-
     .input{
       width:100%;
-      padding: 11px 12px;
+      padding: 12px 12px;
       border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.28);
-      color: rgba(255,255,255,.92);
+      border: 1px solid var(--stroke-2);
+      background: #fff;
+      color: var(--txt);
       outline:none;
-      font-weight: 900;
+      font-weight: 750;
+      transition: var(--transition);
     }
-    .input::placeholder{ color: rgba(255,255,255,.42); font-weight: 900; }
+    .input:focus{
+      border-color: rgba(90,103,216,.55);
+      box-shadow: 0 0 0 3px rgba(90,103,216,.12);
+    }
+    .input::placeholder{ color: rgba(134,142,150,.85); font-weight: 650; }
 
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media(max-width:520px){
-      .row{ grid-template-columns: 1fr; }
-    }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media(max-width:520px){ .row{ grid-template-columns: 1fr; } }
 
     .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.88);
+      border: 1px solid var(--stroke-2);
+      background: var(--surface-2);
+      color: var(--txt);
       padding: 10px 12px;
       border-radius: 12px;
-      cursor:pointer;
-      font-weight: 1000;
-      letter-spacing:.2px;
-      transition: transform .08s ease, background .12s ease, border .12s ease;
+      font-weight: 950;
+      letter-spacing:.1px;
+      transition: var(--transition);
       user-select:none;
       text-decoration:none;
       display:inline-flex;
       justify-content:center;
       align-items:center;
-      gap:8px;
+      gap: 8px;
     }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+      background: var(--surface-3);
+    }
     .btn:active{ transform: translateY(0px); }
-    .btn.primary{ border-color: rgba(35,166,255,.35); background: rgba(35,166,255,.14); }
-    .btn.ghost{ background: transparent; }
+
+    .btn.primary{
+      border-color: rgba(90,103,216,.35);
+      background: var(--brand-grad);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(90,103,216,.25);
+    }
+    .btn.primary:hover{ box-shadow: 0 6px 16px rgba(90,103,216,.35); }
+
+    .btn.ghost{
+      background: #fff;
+      color: var(--txt-2);
+      border-color: var(--stroke-2);
+    }
+    .btn.ghost:hover{
+      background: var(--surface-2);
+      border-color: rgba(90,103,216,.25);
+    }
     .btn.block{ width:100%; }
 
-    .hr{
-      height:1px;
-      background: rgba(255,255,255,.08);
-      margin: 14px 0;
-    }
-
-    .notice{
-      padding: 10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.78);
-      font-size: 13px;
-      line-height: 1.45;
-      font-weight: 800;
-    }
-
-    .msg{
-      margin-top:10px;
-      font-size: 13px;
-      font-weight: 900;
-    }
-    .msg.ok{ color: rgba(170,255,200,.95); }
-    .msg.bad{ color: rgba(255,180,186,.95); }
-
     .miniActions{
-      display:flex; gap:10px; flex-wrap:wrap;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
       margin-top: 10px;
     }
     .miniActions .btn{ flex: 1; min-width: 190px; }
 
-    .footerHint{
-      margin-top: 16px;
-      color: rgba(255,255,255,.55);
-      font-weight: 800;
-      font-size: 12px;
-      line-height: 1.4;
+    .hr{ height:1px; background: var(--stroke); margin: 14px 0; }
+
+    .notice{
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: var(--surface-2);
+      color: var(--txt-2);
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 650;
     }
 
-    /* Modal */
+    .msg{ margin-top: 10px; font-size: 13px; font-weight: 950; }
+    .msg.ok{ color: #1f7a49; }
+    .msg.bad{ color: #8a2a2a; }
+
+    .footerHint{ margin-top: 12px; color: var(--mut); font-weight: 650; font-size: 12px; line-height: 1.4; }
+
+    /* botón reset discreto */
+    .supportLinkWrap{ margin-top: 10px; display:flex; justify-content:center; }
+    .supportLink{
+      background: transparent;
+      border:none;
+      color: var(--mut);
+      font-weight: 800;
+      font-size: 12px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      transition: var(--transition);
+    }
+    .supportLink:hover{
+      background: var(--surface-2);
+      color: var(--txt-2);
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .supportLink i{ color: var(--brand); }
+
+    /* =========================
+       MODALS (como tu captura)
+       ========================= */
     .modalBack{
       position:fixed; inset:0;
-      background: rgba(0,0,0,.55);
+      background: rgba(0,0,0,.45);
       display:none;
       align-items:center;
       justify-content:center;
-      padding:18px;
-      z-index:50;
+      padding: 18px;
+      z-index: 50;
     }
+    .modalBack.show{ display:flex; }
     .modal{
-      width:min(560px, 100%);
-      background: rgba(18,27,42,.92);
-      border:1px solid rgba(255,255,255,.12);
+      width: min(620px, 100%);
+      background: #fff;
+      border: 1px solid var(--stroke);
       border-radius: 18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      box-shadow: var(--shadow-xl);
       overflow:hidden;
+      animation: slideUp .2s ease;
+    }
+    @keyframes slideUp{
+      from{ transform: translateY(12px); opacity: 0; }
+      to{ transform: translateY(0); opacity: 1; }
     }
     .modalHead{
-      padding: 14px 14px 10px;
+      padding: 16px 16px 12px;
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      gap:12px;
+      border-bottom: 1px solid var(--stroke);
+      gap: 12px;
     }
-    .modalHead strong{ font-weight:1000; letter-spacing:.3px; }
-    .modalBody{ padding: 14px; }
+    .modalHead strong{ font-weight: 1000; letter-spacing: -0.2px; }
+    .modalSub{
+      color: var(--mut);
+      font-weight: 650;
+      font-size: 13px;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+    .modalBody{ padding: 16px; }
     .modalFoot{
-      padding: 12px 14px 14px;
+      padding: 12px 16px 16px;
       display:flex;
       justify-content:flex-end;
-      gap:10px;
-      border-top:1px solid rgba(255,255,255,.08);
-      flex-wrap:wrap;
+      gap: 10px;
+      border-top: 1px solid var(--stroke);
+      flex-wrap: wrap;
+    }
+    .closeBtn{
+      width: 38px;height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: var(--surface-2);
+      display:flex;align-items:center;justify-content:center;
+      font-size: 18px;
+      color: var(--txt-2);
+      transition: var(--transition);
+    }
+    .closeBtn:hover{
+      background: var(--surface-3);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    /* ====== Password modal extras (del pw.html) ====== */
+    .pw-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px){ .pw-grid{ grid-template-columns: 1fr; } }
+
+    .field{ display:flex; flex-direction:column; gap:8px; }
+    .hint{
+      font-size: 12px;
+      color: var(--mut);
+      margin-top: 2px;
+      line-height: 1.35;
+      font-weight: 650;
+    }
+    .inputWrap{ position: relative; display:flex; align-items:center; }
+    .inputWrap input{
+      width: 100%;
+      padding: 12px 42px 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke-2);
+      background: #fff;
+      color: var(--txt);
+      outline: none;
+      font-weight: 750;
+      transition: var(--transition);
+    }
+    .inputWrap input:focus{
+      border-color: rgba(90,103,216,.55);
+      box-shadow: 0 0 0 3px rgba(90,103,216,.12);
+    }
+
+    .toggleBtn{
+      position:absolute;
+      right: 8px;
+      height: 34px;
+      width: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--stroke-2);
+      background: var(--surface-2);
+      color: var(--txt-2);
+      display:grid;
+      place-items:center;
+      cursor: pointer;
+      user-select:none;
+      transition: var(--transition);
+    }
+    .toggleBtn:hover{
+      background: var(--surface-3);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    /* Mensaje pw estilo “cajita” como tu pw.html */
+    #pwMsg.msg{
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--stroke);
+      background: var(--surface-2);
+      color: var(--txt-2);
+    }
+    #pwMsg.msg.ok{
+      border-color: rgba(43,213,118,.35);
+      background: rgba(43,213,118,.10);
+      color: #1f7a49;
+    }
+    #pwMsg.msg.bad{
+      border-color: rgba(255,107,107,.35);
+      background: rgba(255,107,107,.10);
+      color: #8a2a2a;
     }
   </style>
 </head>
 
 <body data-page="index">
-  <header class="topbar">
-    <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+  <div class="wrap">
+    <!-- TOPBAR -->
+   <header class="topbar">
+  <div class="topbar-row">
 
-    <div class="nav-right">
-      <span class="db-badge" title="Estado de conexión">
+    <div class="brand">
+      <div class="brandLogo" aria-label="MAH FIT">
+        <span class="mah">MAH</span><span class="fit">FIT</span>
+      </div>
+      <div class="brandText">
+        <span>Acceso</span>
+      </div>
+    </div>
+
+    <div class="topRight">
+      <!-- ✅ Estado conexión (no tocar IDs) -->
+      <div class="statusChip" title="Estado de conexión">
         <span id="dbDot" class="db-dot connecting"></span>
-        <span id="dbText">Conectando…</span>
-      </span>
-      <span class="badge">Acceso</span>
-    </div>
-  </header>
+        <span id="dbText" class="statusText">Conectando…</span>
+      </div>
 
-  <main class="wrap">
-    <div class="heroTitle">
-      <h1>Tu plataforma de entrenamiento</h1>
-      <p>
-        Ingresa con tu <b>RUT/Usuario</b> y tu contraseña.
-        Si no puedes acceder, puedes cambiar tu contraseña o recuperar tu acceso.
-      </p>
+      <!-- ✅ Sección actual -->
+      <div class="sectionChip">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span>Acceso</span>
+      </div>
     </div>
 
-    <div class="grid-3">
+  </div>
+</header>
 
-      <!-- LOGIN -->
+
+    <!-- CONTENIDO -->
+    <main class="loginOnly">
+      <div class="heroTitle">
+        <h1>Tu plataforma de entrenamiento</h1>
+        <p>
+          Ingresa con tu <b>RUT/Usuario</b> y tu contraseña.
+          Si no puedes acceder, puedes cambiar tu contraseña o recuperar tu acceso.
+        </p>
+      </div>
+
       <section>
-        <div class="h2">Usuario registrado</div>
         <div class="card">
           <div class="head">
             <strong>Login</strong>
@@ -344,24 +599,33 @@
                 </div>
               </div>
 
-              <button class="btn primary block" type="submit" style="margin-top:14px;">Ingresar</button>
+              <button class="btn primary block" type="submit" style="margin-top:14px;">
+                <i class="fas fa-right-to-bracket"></i> Ingresar
+              </button>
 
               <div class="miniActions">
-                <a class="btn ghost" href="pw.html">Cambiar contraseña</a>
-                <button id="btnForgot" class="btn ghost" type="button">Olvidé mi contraseña</button>
+                <button id="btnPwModal" class="btn ghost" type="button">
+                  <i class="fas fa-key"></i> Cambiar contraseña
+                </button>
+                <button id="btnForgot" class="btn ghost" type="button">
+                  <i class="fas fa-envelope"></i> Olvidé mi contraseña
+                </button>
               </div>
 
               <div id="msgLogin" class="msg"></div>
 
               <div class="hr"></div>
+
               <div class="notice">
                 <b>Registro:</b> Tu cuenta la crea administración (funcionario).<br/>
                 Si aún no tienes acceso, solicita tu registro.
               </div>
 
-              <button id="resetBtn" class="btn ghost block" type="button" style="margin-top:10px;">
-                Reiniciar datos (si no carga)
-              </button>
+              <div class="supportLinkWrap">
+                <button id="resetBtn" class="supportLink" type="button">
+                  <i class="fas fa-rotate"></i> ¿No carga? Reiniciar datos
+                </button>
+              </div>
 
               <div class="footerHint">
                 Tip: si cambiaste tu contraseña recientemente, vuelve a ingresar con la nueva clave.
@@ -370,74 +634,20 @@
           </div>
         </div>
       </section>
+    </main>
+  </div>
 
-      <!-- NUEVO USUARIO -->
-      <section>
-        <div class="h2">Nuevo usuario</div>
-        <div class="card">
-          <div class="head">
-            <strong>Solicitud de alta</strong>
-            <span class="pill ok">Simple</span>
-          </div>
-          <div class="body">
-            <p style="margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.5;font-weight:800;">
-              Para crear tu cuenta, solicita al gimnasio que te registre.
-              Luego ingresas con tu RUT y contraseña.
-            </p>
-
-            <div class="hr"></div>
-            <button class="btn ghost block" type="button"
-              onclick="alert('Aquí puedes conectar WhatsApp, formulario o correo de administración.');">
-              Contactar administración
-            </button>
-
-            <div class="footerHint">
-              Recomendado: pedir a administración que verifique tu correo para enviarte tu acceso y comprobantes.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- PLANES -->
-      <section>
-        <div class="h2">Planes</div>
-        <div class="card">
-          <div class="head">
-            <strong>Comprar / Renovar</strong>
-            <span class="pill warn">Link externo</span>
-          </div>
-          <div class="body">
-            <p style="margin:0 0 12px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.45;font-weight:800;">
-              Redirecciona a tu página de venta (Webpay/TiendaUp/etc.).
-              Si ya compraste, tu plan se activará por administración.
-            </p>
-
-            <button class="btn primary block" type="button"
-              onclick="alert('Luego conectamos este botón a tu página real de venta de planes.');">
-              Ver planes
-            </button>
-
-            <div class="footerHint">
-              Si tu plan no se refleja, pide a administración que lo renueve y te envíe el comprobante.
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- Modal: Olvidé mi contraseña -->
+  <!-- Modal: Recuperar acceso -->
   <div id="forgotBack" class="modalBack" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
       <div class="modalHead">
         <div>
           <strong id="forgotTitle">Recuperar acceso</strong>
-          <div style="color:rgba(255,255,255,.65);font-weight:800;font-size:13px;margin-top:4px;">
+          <div class="modalSub">
             Ingresa tu RUT y el correo asociado a tu cuenta. Si coinciden, te enviaremos tu usuario y contraseña.
           </div>
         </div>
-        <button id="forgotClose" class="btn" type="button" style="padding:8px 10px;border-radius:10px;">✕</button>
+        <button id="forgotClose" class="closeBtn" type="button" aria-label="Cerrar">✕</button>
       </div>
 
       <div class="modalBody">
@@ -447,12 +657,12 @@
 
         <div class="hr"></div>
 
-        <label style="display:block;margin:10px 0 6px;color:rgba(255,255,255,.78);font-weight:900;font-size:12px;">
+        <label style="display:block;margin:10px 0 6px;color:var(--mut);font-weight:900;font-size:12px;">
           Tu RUT/Usuario
         </label>
         <input id="forgotRut" class="input" placeholder="Ej: 12345678-9" />
 
-        <label style="display:block;margin:10px 0 6px;color:rgba(255,255,255,.78);font-weight:900;font-size:12px;">
+        <label style="display:block;margin:10px 0 6px;color:var(--mut);font-weight:900;font-size:12px;">
           Correo asociado
         </label>
         <input id="forgotEmail" class="input" placeholder="Ej: ma*****@gmail.com" />
@@ -462,12 +672,85 @@
       </div>
 
       <div class="modalFoot">
-        <button id="forgotSend" class="btn primary" type="button">Enviar acceso</button>
-        <a class="btn ghost" href="pw.html">Cambiar contraseña</a>
+        <button id="forgotSend" class="btn primary" type="button">
+          <i class="fas fa-paper-plane"></i> Enviar acceso
+        </button>
+        <button id="goPwFromForgot" class="btn ghost" type="button">
+          <i class="fas fa-key"></i> Cambiar contraseña
+        </button>
       </div>
     </div>
   </div>
 
+  <!-- Modal: Cambiar contraseña (lógica igual a tu pw.html) -->
+  <div id="pwBack" class="modalBack" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+      <div class="modalHead">
+        <div>
+          <strong id="pwTitle">Cambiar contraseña</strong>
+          <div class="modalSub">Ingresa tu RUT/Usuario, tu contraseña actual y define una nueva.</div>
+        </div>
+        <button id="pwClose" class="closeBtn" type="button" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="notice">
+          <b>Consejo:</b> usa 8+ caracteres y evita 1234/rut. Si olvidaste tu clave, usa “Recuperar acceso”.
+        </div>
+
+        <form id="pwForm" autocomplete="off">
+          <div class="pw-grid">
+            <div class="field">
+              <label>RUT / Usuario</label>
+              <div class="inputWrap">
+                <input id="pwRut" placeholder="Ej: 12345678-9" required />
+              </div>
+              <div class="hint">Debe coincidir con tu cuenta registrada.</div>
+            </div>
+
+            <div class="field">
+              <label>Contraseña actual</label>
+              <div class="inputWrap">
+                <input id="pwOld" placeholder="Tu contraseña actual" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwOld" aria-label="Mostrar/Ocultar">👁</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Nueva contraseña</label>
+              <div class="inputWrap">
+                <input id="pwNew" placeholder="Mín. 4 caracteres" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwNew" aria-label="Mostrar/Ocultar">👁</button>
+              </div>
+              <div class="hint" id="pwStrength">Tip: mezcla letras y números para mayor seguridad.</div>
+            </div>
+
+            <div class="field">
+              <label>Repetir nueva contraseña</label>
+              <div class="inputWrap">
+                <input id="pwNew2" placeholder="Repite la nueva contraseña" type="password" required />
+                <button class="toggleBtn" type="button" data-toggle="pwNew2" aria-label="Mostrar/Ocultar">👁</button>
+              </div>
+              <div class="hint" id="pwMatchHint">Asegúrate que coincidan.</div>
+            </div>
+          </div>
+
+          <div id="pwMsg" class="msg" style="display:none;"></div>
+
+          <div class="modalFoot" style="padding-left:0; padding-right:0; border-top:none; margin-top: 12px;">
+            <button id="pwGoForgot" class="btn ghost" type="button">
+              <i class="fas fa-envelope"></i> Recuperar acceso
+            </button>
+            <button class="btn primary" id="pwSave" type="submit">
+              <i class="fas fa-floppy-disk"></i> Guardar nueva contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- app.js -->
   <script src="assets/app.js"></script>
 
   <script>
@@ -496,15 +779,30 @@
         }
       });
 
-      // Modal
-      const back = document.getElementById("forgotBack");
-      const open = document.getElementById("btnForgot");
-      const close = document.getElementById("forgotClose");
+      // Helpers modal
+      function show(backEl){
+        backEl.classList.add("show");
+        backEl.style.display = "flex";
+        backEl.setAttribute("aria-hidden","false");
+        document.body.style.overflow = "hidden";
+      }
+      function hide(backEl){
+        backEl.classList.remove("show");
+        backEl.style.display = "none";
+        backEl.setAttribute("aria-hidden","true");
+        document.body.style.overflow = "auto";
+      }
 
-      const rutInp = document.getElementById("forgotRut");
-      const emailInp = document.getElementById("forgotEmail");
-      const sendBtn = document.getElementById("forgotSend");
-      const hint = document.getElementById("forgotHint");
+      // ==========================
+      // MODAL: RECUPERAR ACCESO
+      // ==========================
+      const forgotBack = document.getElementById("forgotBack");
+      const btnForgot = document.getElementById("btnForgot");
+      const forgotClose = document.getElementById("forgotClose");
+      const forgotRut = document.getElementById("forgotRut");
+      const forgotEmail = document.getElementById("forgotEmail");
+      const forgotSend = document.getElementById("forgotSend");
+      const forgotHint = document.getElementById("forgotHint");
       const forgotMsg = document.getElementById("forgotMsg");
 
       function setForgot(text, ok){
@@ -512,65 +810,52 @@
         forgotMsg.textContent = text;
       }
 
-      function openModal(){
-        back.style.display = "flex";
-        back.setAttribute("aria-hidden","false");
+      function openForgot(){
+        show(forgotBack);
 
         const preRut = (document.getElementById("loginRut")?.value || "").trim();
-        if(preRut) rutInp.value = preRut;
+        if(preRut) forgotRut.value = preRut;
 
-        hint.textContent = "";
+        forgotHint.textContent = "";
         forgotMsg.textContent = "";
-        setTimeout(()=> rutInp.focus(), 50);
+        setTimeout(()=> forgotRut.focus(), 50);
 
-        // Si tenemos cache de usuarios, damos “pista” del correo
         try{
           const users = window.getUsers ? window.getUsers() : [];
-          const u = users.find(x => String(x.rut||"").trim().toUpperCase() === String(rutInp.value||"").trim().toUpperCase());
+          const u = users.find(x => String(x.rut||"").trim().toUpperCase() === String(forgotRut.value||"").trim().toUpperCase());
           if(u && u.email){
             const em = String(u.email).trim();
             const at = em.indexOf("@");
             let masked = em;
-            if(at > 2){
-              masked = em.slice(0,2) + "***" + em.slice(at);
-            }
-            hint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
+            if(at > 2) masked = em.slice(0,2) + "***" + em.slice(at);
+            forgotHint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
           }
         }catch(e){}
       }
 
-      function closeModal(){
-        back.style.display = "none";
-        back.setAttribute("aria-hidden","true");
-      }
+      btnForgot?.addEventListener("click", openForgot);
+      forgotClose?.addEventListener("click", ()=> hide(forgotBack));
+      forgotBack?.addEventListener("click", (e)=>{ if(e.target === forgotBack) hide(forgotBack); });
 
-      open?.addEventListener("click", openModal);
-      close?.addEventListener("click", closeModal);
-      back?.addEventListener("click", (e)=>{ if(e.target === back) closeModal(); });
-
-      // Actualizar pista al cambiar RUT
-      rutInp?.addEventListener("input", ()=>{
-        hint.textContent = "";
+      forgotRut?.addEventListener("input", ()=>{
+        forgotHint.textContent = "";
         try{
-          const rut = String(rutInp.value||"").trim().toUpperCase();
+          const rut = String(forgotRut.value||"").trim().toUpperCase();
           const users = window.getUsers ? window.getUsers() : [];
           const u = users.find(x => String(x.rut||"").trim().toUpperCase() === rut);
           if(u && u.email){
             const em = String(u.email).trim();
             const at = em.indexOf("@");
             let masked = em;
-            if(at > 2){
-              masked = em.slice(0,2) + "***" + em.slice(at);
-            }
-            hint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
+            if(at > 2) masked = em.slice(0,2) + "***" + em.slice(at);
+            forgotHint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
           }
         }catch(e){}
       });
 
-      // Enviar acceso por correo (API)
-      sendBtn?.addEventListener("click", async ()=>{
-        const rut = String(rutInp.value||"").trim();
-        const email = String(emailInp.value||"").trim();
+      forgotSend?.addEventListener("click", async ()=>{
+        const rut = String(forgotRut.value||"").trim();
+        const email = String(forgotEmail.value||"").trim();
 
         if(!rut){ setForgot("❌ Debes ingresar tu RUT/Usuario.", false); return; }
         if(!email){ setForgot("❌ Debes ingresar el correo asociado.", false); return; }
@@ -580,8 +865,8 @@
           return;
         }
 
-        sendBtn.disabled = true;
-        sendBtn.textContent = "Enviando…";
+        forgotSend.disabled = true;
+        forgotSend.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
 
         try{
           await window.apiPost("send_access_email", { rut, email });
@@ -589,14 +874,158 @@
         }catch(err){
           setForgot("❌ " + (err?.message || "No se pudo enviar. Verifica tus datos."), false);
         }finally{
-          sendBtn.disabled = false;
-          sendBtn.textContent = "Enviar acceso";
+          forgotSend.disabled = false;
+          forgotSend.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar acceso';
+        }
+      });
+
+      // ==========================
+      // MODAL: CAMBIAR CONTRASEÑA (MISMA LÓGICA QUE TU pw.html)
+      // ==========================
+      const pwBack = document.getElementById("pwBack");
+      const btnPwModal = document.getElementById("btnPwModal");
+      const pwClose = document.getElementById("pwClose");
+
+      const pwForm = document.getElementById("pwForm");
+      const pwMsg  = document.getElementById("pwMsg");
+      const pwSave = document.getElementById("pwSave");
+
+      const pwRut  = document.getElementById("pwRut");
+      const pwOld  = document.getElementById("pwOld");
+      const pwNew  = document.getElementById("pwNew");
+      const pwNew2 = document.getElementById("pwNew2");
+
+      const pwStrength = document.getElementById("pwStrength");
+      const pwMatchHint = document.getElementById("pwMatchHint");
+
+      function showPwMsg(text, ok){
+        pwMsg.style.display = "block";
+        pwMsg.className = "msg " + (ok ? "ok" : "bad");
+        pwMsg.textContent = text;
+      }
+
+      function openPw(){
+        show(pwBack);
+
+        // Prellenar rut desde login
+        const preRut = (document.getElementById("loginRut")?.value || "").trim();
+        if(preRut) pwRut.value = preRut;
+
+        pwMsg.style.display = "none";
+        pwOld.value = "";
+        pwNew.value = "";
+        pwNew2.value = "";
+        pwStrength.textContent = "Tip: mezcla letras y números para mayor seguridad.";
+        pwMatchHint.textContent = "Asegúrate que coincidan.";
+
+        setTimeout(()=> pwOld.focus(), 80);
+      }
+
+      btnPwModal?.addEventListener("click", openPw);
+      pwClose?.addEventListener("click", ()=> hide(pwBack));
+      pwBack?.addEventListener("click", (e)=>{ if(e.target === pwBack) hide(pwBack); });
+
+      // botones cruzados
+      document.getElementById("goPwFromForgot")?.addEventListener("click", ()=>{
+        hide(forgotBack);
+        openPw();
+      });
+      document.getElementById("pwGoForgot")?.addEventListener("click", ()=>{
+        hide(pwBack);
+        openForgot();
+      });
+
+      // 👁 Toggle mostrar/ocultar (igual a tu pw.html)
+      document.querySelectorAll("[data-toggle]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-toggle");
+          const input = document.getElementById(id);
+          if(!input) return;
+          input.type = (input.type === "password") ? "text" : "password";
+          btn.textContent = (input.type === "password") ? "👁" : "🙈";
+        });
+      });
+
+      // Hints fuerza/coinicidencia (igual a tu pw.html)
+      function updateHints(){
+        const v = pwNew.value || "";
+        let score = 0;
+        if(v.length >= 8) score++;
+        if(/[A-Z]/.test(v)) score++;
+        if(/[0-9]/.test(v)) score++;
+        if(/[^a-zA-Z0-9]/.test(v)) score++;
+
+        const labels = [
+          "Tip: mezcla letras y números para mayor seguridad.",
+          "Bien: considera 8+ caracteres.",
+          "Mejor: agrega una MAYÚSCULA o símbolo.",
+          "Muy bien: buena combinación.",
+          "Excelente: contraseña fuerte."
+        ];
+        pwStrength.textContent = labels[Math.min(score, 4)];
+
+        const v2 = pwNew2.value || "";
+        if(!v && !v2){
+          pwMatchHint.textContent = "Asegúrate que coincidan.";
+          return;
+        }
+        if(v2.length === 0){
+          pwMatchHint.textContent = "Repítela para confirmar.";
+          return;
+        }
+        pwMatchHint.textContent = (v === v2) ? "✅ Coinciden." : "❌ No coinciden.";
+      }
+      pwNew.addEventListener("input", updateHints);
+      pwNew2.addEventListener("input", updateHints);
+
+      // Submit (MISMO endpoint y payload)
+      pwForm?.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        pwMsg.style.display = "none";
+
+        try{
+          const rut = (pwRut.value || "").trim();
+          const oldPass = pwOld.value || "";
+          const newPass = pwNew.value || "";
+          const newPass2 = pwNew2.value || "";
+
+          if(!rut) throw new Error("Debes ingresar tu RUT/Usuario.");
+          if(!oldPass) throw new Error("Debes ingresar tu contraseña actual.");
+          if(newPass !== newPass2) throw new Error("Las nuevas contraseñas no coinciden.");
+          if(newPass.length < 4) throw new Error("La nueva contraseña debe tener al menos 4 caracteres.");
+
+          if(!window.apiPost) throw new Error("Sin conexión con el servidor (apiPost no disponible).");
+
+          pwSave.disabled = true;
+          pwSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
+
+          await window.apiPost("change_password", { rut, oldPass, newPass });
+
+          showPwMsg("✅ Contraseña actualizada. Ya puedes ingresar.", true);
+
+          // Opcional: cerrar modal tras 900ms y enfocar login
+          setTimeout(()=>{
+            hide(pwBack);
+            const lp = document.getElementById("loginPass");
+            if(lp) lp.focus();
+          }, 900);
+
+        }catch(err){
+          showPwMsg("❌ " + (err?.message || err), false);
+        }finally{
+          pwSave.disabled = false;
+          pwSave.innerHTML = '<i class="fas fa-floppy-disk"></i> Guardar nueva contraseña';
+        }
+      });
+
+      // ESC para cerrar
+      document.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape"){
+          if(forgotBack?.classList.contains("show")) hide(forgotBack);
+          if(pwBack?.classList.contains("show")) hide(pwBack);
         }
       });
     })();
   </script>
 </body>
 </html>
-
-
-
