@@ -420,3 +420,246 @@ a:hover{ text-decoration:underline; }
   overflow:auto;
   border-radius: var(--radius);
 }
+/* =========================
+   LOGO MAH FIT (FINAL PRO)
+   ========================= */
+.brandLogo{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  font-weight:1000;
+  letter-spacing: 1px;
+  user-select:none;
+  line-height:1;
+}
+
+.brandLogo .mah{
+  color:#1f2937; /* gris oscuro pro */
+  font-size:20px;
+}
+
+.brandLogo .fit{
+  color:#23a6ff; /* celeste fitness */
+  font-size:20px;
+}
+
+/* subtítulo ACCESO */
+.brandText span{
+  margin-top:2px;
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--mut);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ===========================
+   FUNCIONARIO UI PRO (OVERRIDE)
+   Pegar al FINAL del <style>
+   =========================== */
+
+:root{
+  --glass: rgba(18,27,42,.72);
+  --glass2: rgba(18,27,42,.88);
+  --stroke: rgba(255,255,255,.10);
+  --stroke2: rgba(255,255,255,.14);
+  --shadow2: 0 18px 60px rgba(0,0,0,.45);
+}
+
+/* Topbar pro */
+.topbar{
+  padding: 12px 18px;
+  background: rgba(10,14,20,.62);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 14px 50px rgba(0,0,0,.35);
+  backdrop-filter: blur(14px);
+}
+.topbar-row{
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.brand{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+}
+.brand .mah, .brand .fit{
+  font-size: 18px;
+  letter-spacing: .8px;
+}
+.badge.soft{
+  border-color: rgba(35,166,255,.28);
+  background: rgba(35,166,255,.10);
+  color: rgba(255,255,255,.88);
+}
+
+/* Right layout */
+.nav-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+.userChip{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.86);
+  font-weight: 900;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+}
+.userChip i{
+  opacity:.9;
+  color: rgba(255,255,255,.78);
+}
+
+.nav-actions{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Chips conexión más premium */
+.db-indicator{
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+/* Cards mejor profundidad */
+.card{
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow2);
+  backdrop-filter: blur(12px);
+}
+.cardHead{
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.cardBody{ padding: 16px; }
+
+.cardTitle{
+  font-size: 12px;
+  letter-spacing: .9px;
+}
+
+/* Inputs mejor contraste */
+input, select{
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+}
+input:focus, select:focus{
+  border-color: rgba(35,166,255,.40);
+  box-shadow: 0 0 0 3px rgba(35,166,255,.14);
+}
+
+/* Botones: más pro + coherentes */
+.btn{
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.btn:hover{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.16);
+}
+.btn.primary{
+  border-color: rgba(35,166,255,.35);
+  background: linear-gradient(135deg, rgba(35,166,255,.18), rgba(124,92,255,.16));
+}
+.btn.danger{
+  background: rgba(255,90,103,.14);
+  border-color: rgba(255,90,103,.35);
+}
+.btn.ok{
+  background: rgba(43,213,118,.14);
+  border-color: rgba(43,213,118,.35);
+}
+.btn.small{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Tabs más “app” */
+.tabs{ gap: 8px; }
+.tab{
+  background: rgba(0,0,0,.18);
+  border-color: rgba(255,255,255,.10);
+}
+.tab.active{
+  background: linear-gradient(135deg, rgba(35,166,255,.20), rgba(124,92,255,.18));
+  border-color: rgba(35,166,255,.35);
+  box-shadow: 0 12px 26px rgba(0,0,0,.22);
+}
+.tab .count{
+  background: rgba(255,255,255,.08);
+}
+
+/* Tabla más legible + headers más nítidos */
+.tableWrap{
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+table{ min-width: 980px; }
+th{
+  background: rgba(18,27,42,.98);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+tbody tr:hover td{
+  background: rgba(255,255,255,.03);
+}
+
+/* Modal más premium */
+.modal{
+  background: rgba(18,27,42,.96);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.modalHead{
+  background: rgba(0,0,0,.18);
+}
+.modalBack{
+  background: rgba(0,0,0,.62);
+  backdrop-filter: blur(6px);
+}
+
+/* Responsive: topbar ordenada en móvil */
+@media(max-width: 720px){
+  .topbar-row{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .nav-right{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .nav-actions{
+    width: 100%;
+    justify-content: space-between;
+  }
+}
