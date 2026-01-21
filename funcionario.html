@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT | Evaluación</title>
+  <title>MAH FIT | Funcionario</title>
   <link rel="stylesheet" href="assets/styles.css"/>
 
   <style>
@@ -45,7 +45,14 @@
       background: rgba(10,14,20,.75);
       backdrop-filter: blur(12px);
     }
-    .brand{ display:flex; gap:8px; align-items:baseline; letter-spacing:.7px; font-weight: 1000; user-select:none; }
+    .brand{
+      display:flex;
+      gap:8px;
+      align-items:baseline;
+      letter-spacing:.7px;
+      font-weight: 1000;
+      user-select:none;
+    }
     .brand .mah{ color:#fff; }
     .brand .fit{ color: var(--pri2); }
 
@@ -56,8 +63,6 @@
       color: var(--mut);
       font-weight: 800;
       font-size: 13px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
     }
     .badge{
       padding:6px 10px;
@@ -80,7 +85,9 @@
       backdrop-filter: blur(10px);
     }
     .db-dot{
-      width:10px; height:10px; border-radius:999px;
+      width:10px;
+      height:10px;
+      border-radius:999px;
       background: rgba(255,255,255,.45);
       box-shadow: 0 0 0 3px rgba(255,255,255,.06);
     }
@@ -91,10 +98,30 @@
       box-shadow:0 0 0 3px rgba(255,255,255,.08);
       animation: dbPulse 1.0s ease-in-out infinite;
     }
-    @keyframes dbPulse{ 0%,100%{ transform:scale(1); opacity:.75; } 50%{ transform:scale(1.25); opacity:1; } }
-    .db-text{ font-size:12px; font-weight:900; color: rgba(255,255,255,.85); letter-spacing:.3px; white-space:nowrap; }
+    @keyframes dbPulse{
+      0%,100%{ transform:scale(1); opacity:.75; }
+      50%{ transform:scale(1.25); opacity:1; }
+    }
+    .db-text{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(255,255,255,.85);
+      letter-spacing:.3px;
+      white-space:nowrap;
+    }
 
-    .wrap{ max-width: 1200px; margin: 18px auto 60px; padding: 0 18px; }
+    .wrap{
+      max-width: 1200px;
+      margin: 18px auto 60px;
+      padding: 0 18px;
+    }
+
+    .col{
+      display:flex;
+      flex-direction:column;
+      gap: 16px;
+      min-width: 0;
+    }
 
     .card{
       background: rgba(18,27,42,.75);
@@ -121,7 +148,15 @@
     .muted{ color: var(--mut); font-size: 13px; font-weight:700; }
     .cardBody{ padding: 14px; }
 
-    input, select, textarea{
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (max-width: 520px){ .row{ grid-template-columns: 1fr; } }
+
+    input, select{
       width:100%;
       padding: 10px 12px;
       border-radius: 12px;
@@ -130,10 +165,9 @@
       color: rgba(255,255,255,.92);
       outline:none;
       font-weight:800;
-      box-sizing:border-box;
     }
-    textarea{ min-height: 110px; resize: vertical; font-weight:800; line-height:1.35; }
-    input::placeholder, textarea::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
+    input::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
+    input:disabled, select:disabled{ opacity:.65; cursor:not-allowed; }
 
     .btn{
       border:1px solid rgba(255,255,255,.12);
@@ -146,81 +180,17 @@
       letter-spacing:.2px;
       transition: transform .08s ease, background .12s ease, border .12s ease;
       user-select:none;
-      white-space:nowrap;
     }
     .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
     .btn:active{ transform: translateY(0px); }
-    .btn.primary{ border-color: rgba(35,166,255,.35); background: rgba(35,166,255,.14); }
-    .btn.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.12); }
-    .btn.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.12); }
+    .btn.primary{
+      border-color: rgba(35,166,255,.35);
+      background: rgba(35,166,255,.14);
+    }
     .btn.ghost{ background: transparent; }
     .btn.small{ padding: 8px 10px; border-radius: 10px; font-size: 12px; }
-
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    .msg{ margin-top: 10px; font-weight: 900; font-size: 13px; }
-    .msg.ok{ color: rgba(170,255,200,.95); }
-    .msg.bad{ color: rgba(255,180,186,.95); }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
-
-    .blockGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    @media (max-width: 720px){ .blockGrid{ grid-template-columns: 1fr; } }
-
-    .block{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      border-radius: 14px;
-      overflow:hidden;
-    }
-    .blockHead{
-      padding:10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .blockHead .h{
-      font-weight:1000;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      font-size: 11px;
-      color: rgba(255,255,255,.78);
-    }
-    .blockBody{ padding: 12px; }
-
-    .two{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 520px){ .two{ grid-template-columns: 1fr; } }
-
-    .kv{
-      display:grid;
-      grid-template-columns: 1fr 140px;
-      gap:10px;
-      align-items:center;
-      margin-bottom: 10px;
-    }
-    @media (max-width:520px){ .kv{ grid-template-columns: 1fr; } }
-
-    .kv label{ font-size:12px; color: rgba(255,255,255,.70); font-weight: 900; }
-    .hint{ font-size:12px; color: rgba(255,255,255,.55); font-weight:800; margin-top:6px; }
+    .btn.danger{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.12); }
+    .btn.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.12); }
 
     .pill{
       display:inline-flex;
@@ -237,178 +207,197 @@
     }
     .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
     .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
+    .pill.bad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
 
-    .miniSearch{
-      padding: 9px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.24);
-      color: rgba(255,255,255,.92);
-      font-weight:900;
-    }
-
-    /* ===== CHARTS - 1 COLUMNA (GRANDES) ===== */
-    .chartsSection{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .chartsTwo{
-      display:grid;
-      grid-template-columns: 1fr; /* ✅ SIEMPRE 1 columna */
-      gap: 12px;
-    }
-
-    .chartCard{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(18,27,42,.60);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .chartHead{
-      padding:12px 12px 10px;
-      border-bottom:1px solid rgba(255,255,255,.06);
+    .filters{
       display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
+      gap: 10px;
       flex-wrap:wrap;
-    }
-    .chartTitle{
-      font-weight:1000;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      font-size: 12px;
-      color: rgba(255,255,255,.90);
-    }
-    .legend{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+      margin-top: 10px;
       align-items:center;
-      justify-content:flex-end;
     }
-    .lg{
+    .filters input{ flex: 1; min-width: 220px; }
+    .filters select{ width: 220px; }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .tab{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 999px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.86);
-      font-weight: 900;
-      font-size: 12px;
-      white-space:nowrap;
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.88);
+      font-weight: 1000;
+      cursor:pointer;
+      user-select:none;
     }
-    .dot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      box-shadow:0 0 0 3px rgba(255,255,255,.06);
+    .tab.active{
+      border-color: rgba(35,166,255,.40);
+      background: rgba(35,166,255,.18);
     }
-    .chartBody{ padding:12px; }
-    .svgWrap{
-      width:100%;
-      overflow:hidden;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-    }
-    .svgWrap svg{ display:block; width:100%; height:auto; }
-    .chartHint{ margin-top:8px; font-size:12px; color: rgba(255,255,255,.55); font-weight:800; }
-    .chartMsg{
-      padding:10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.75);
-      font-weight:900;
-      font-size:12px;
-    }
-
-    /* ===== FOTO UI ===== */
-    .photoGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 860px){ .photoGrid{ grid-template-columns: 1fr; } }
-
-    .photoBox{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      border-radius: 14px;
-      padding: 10px;
-    }
-    .photoLabel{
-      font-weight:1000;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      font-size: 11px;
-      color: rgba(255,255,255,.78);
-      margin-bottom: 8px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-    }
-    .photoPrev{
-      width:100%;
-      aspect-ratio: 4/5;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      overflow:hidden;
-      display:flex;
+    .tab .count{
+      min-width: 22px;
+      height: 22px;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      color: rgba(255,255,255,.45);
-      font-weight:900;
-      font-size:12px;
-      margin-top: 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
     }
-    .photoPrev img{
+
+    .tableWrap{
+      max-height: 520px;
+      overflow: auto;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    table{
       width:100%;
-      height:100%;
-      object-fit: cover;
-      display:block;
+      border-collapse: collapse;
+      min-width: 1040px;
     }
-    .rowActions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
+    th, td{
+      text-align:left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      font-weight: 800;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    th{
+      position: sticky;
+      top:0;
+      background: rgba(18,27,42,.92);
+      z-index: 1;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.78);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .msg{ margin-top: 10px; font-weight: 900; font-size: 13px; }
+    .msg.ok{ color: rgba(170,255,200,.95); }
+    .msg.bad{ color: rgba(255,180,186,.95); }
+
+    .modalBack{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
       align-items:center;
-      justify-content:flex-end;
-      margin-top: 10px;
+      justify-content:center;
+      padding: 18px;
+      z-index: 20;
     }
-    .miniOk{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(170,255,200,.95);
+    .modal{
+      width: min(740px, 100%);
+      background: rgba(18,27,42,.92);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      overflow:hidden;
     }
-    .miniBad{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(255,180,186,.95);
-    }
-    .linkPills{
+    .modalHead{
+      padding: 14px 14px 10px;
       display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .modalHead strong{ font-weight: 1000; letter-spacing:.4px; }
+    .modalBody{ padding: 14px; }
+    .modalFoot{
+      padding: 12px 14px 14px;
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .miniTableWrap{
+      margin-top: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      overflow:auto;
+      max-height: 360px;
+    }
+    .miniTableWrap table{ min-width: 860px; }
+    .miniTableWrap th{ background: rgba(18,27,42,.96); }
+    .miniInp{
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      outline:none;
+    }
+
+    .checkRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+    }
+    .checkRow input{ width:auto; }
+
+    /* ✅ Perfil summary */
+    .summaryGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr; /* ✅ ahora 4 columnas */
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 980px){ .summaryGrid{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 620px){ .summaryGrid{ grid-template-columns: 1fr; } }
+
+    .sumCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .sumLabel{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      color: rgba(255,255,255,.62);
+      font-weight: 1000;
+    }
+    .sumValue{
+      margin-top: 6px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.90);
+      display:flex;
+      align-items:center;
       gap:8px;
       flex-wrap:wrap;
-      margin-top: 10px;
+      word-break: break-word;
     }
-    .linkPills a{
-      text-decoration:none;
-      color: rgba(255,255,255,.88);
+    .divider{
+      margin: 12px 0;
+      height:1px;
+      background: rgba(255,255,255,.08);
     }
   </style>
 </head>
 
-<body data-page="evaluacion">
+<body data-page="funcionario">
 
 <header class="topbar">
   <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
@@ -422,272 +411,387 @@
     <span>Hola, <b id="who"></b></span>
     <span id="roleBadge" class="badge"></span>
 
-    <button id="btnBack" class="btn ghost small">Volver</button>
+    <button id="btnRutinas" class="btn ghost small">Rutinas</button>
+
+    <!-- ✅ NUEVO BOTÓN -->
+    <button id="btnEvaluaciones" class="btn ghost small">Evaluaciones</button>
+
+    <button id="btnPlanes" class="btn ghost small">Planes</button>
     <button id="btnLogout" class="btn ghost small">Salir</button>
   </div>
 </header>
 
 <div class="wrap">
+  <div class="col">
 
-  <div class="card">
-    <div class="cardHead">
-      <div>
-        <div class="cardTitle">Evaluación corporal</div>
-        <div class="muted" id="subTitle">Selecciona un socio para comenzar</div>
+    <!-- CREAR -->
+    <div class="card">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Crear Usuario</div>
+          <div class="muted">Socios y funcionarios</div>
+        </div>
+        <span class="pill">Alta rápida</span>
       </div>
 
-      <div class="toolbar">
-        <button id="btnLoadLast" class="btn">Cargar última</button>
-        <button id="btnClear" class="btn warn">Limpiar</button>
-        <button id="btnSave" class="btn ok">Guardar evaluación</button>
+      <div class="cardBody">
+        <form id="createUserForm">
+          <div class="row">
+            <input id="newNombre" placeholder="Nombre" required />
+            <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
+          </div>
+
+          <div class="row">
+            <input id="newEmail" placeholder="Email (opcional)" />
+            <input id="newPass" placeholder="Clave" required />
+          </div>
+
+          <div class="row">
+            <select id="newRol">
+              <option value="SOCIO">SOCIO</option>
+              <option value="FUNCIONARIO">FUNCIONARIO</option>
+            </select>
+            <button class="btn primary" type="submit">Crear</button>
+          </div>
+        </form>
+
+        <div id="msgUser" class="msg"></div>
       </div>
     </div>
 
-    <div class="cardBody">
-
-      <div class="grid">
-        <!-- IZQ -->
+    <!-- CRM -->
+    <div class="card">
+      <div class="cardHead">
         <div>
-          <div class="block">
-            <div class="blockHead">
-              <div class="h">Datos del socio</div>
-              <div class="pill" id="pNow">—</div>
-            </div>
-            <div class="blockBody">
-              <div class="two">
-                <div>
-                  <div class="muted" style="margin-bottom:6px;">Socio</div>
-                  <input id="socioSearch" class="miniSearch" placeholder="Buscar socio por nombre o RUT…" />
-                </div>
-                <div>
-                  <div class="muted" style="margin-bottom:6px;">Selecciona socio</div>
-                  <select id="selSocio">
-                    <option value="">(Selecciona socio)</option>
-                  </select>
-                </div>
-              </div>
+          <div class="cardTitle">CRM Usuarios</div>
+          <div class="muted">Activa/desactiva, perfil y renueva membresías</div>
 
-              <div class="two" style="margin-top:10px;">
-                <input id="inpFecha" type="date"/>
-                <input id="inpHora" type="time"/>
-              </div>
-
-              <div class="hint">Tip: puedes abrir esto directo con <b>evaluacion.html?rut=...</b></div>
-            </div>
+          <div class="filters">
+            <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
+            <select id="roleFilter">
+              <option value="ALL">Todos</option>
+              <option value="SOCIO">Solo socios</option>
+              <option value="FUNCIONARIO">Solo funcionarios</option>
+            </select>
           </div>
 
-          <div class="blockGrid">
-
-            <div class="block">
-              <div class="blockHead"><div class="h">Medidas básicas</div></div>
-              <div class="blockBody">
-                <div class="kv"><label>Peso (kg)</label><input id="pesoKg" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Talla (cm)</label><input id="tallaCm" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>IMC</label><input id="imc" type="number" step="0.01" min="0" disabled/></div>
-                <div class="hint">IMC se calcula automático con peso y talla.</div>
-              </div>
-            </div>
-
-            <div class="block">
-              <div class="blockHead"><div class="h">Bioimpedancia</div></div>
-              <div class="blockBody">
-                <div class="kv"><label>% Grasa</label><input id="grasaPct" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>% Masa muscular</label><input id="masaMuscularPct" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Grasa visceral</label><input id="grasaVisceral" type="number" step="1" min="0"/></div>
-              </div>
-            </div>
-
-            <div class="block">
-              <div class="blockHead"><div class="h">Perímetros</div></div>
-              <div class="blockBody">
-                <div class="kv"><label>Brazo (cm)</label><input id="brazoCm" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Cintura (cm)</label><input id="cinturaCm" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Cadera (cm)</label><input id="caderaCm" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Muslo (cm)</label><input id="musloCm" type="number" step="0.1" min="0"/></div>
-                <div class="kv"><label>Pantorrilla (cm)</label><input id="pantorrillaCm" type="number" step="0.1" min="0"/></div>
-              </div>
-            </div>
-
-            <div class="block">
-              <div class="blockHead"><div class="h">Pliegues</div></div>
-              <div class="blockBody">
-                <textarea id="pliegues" placeholder="Ej: Tricipital 12mm · Subescapular 10mm · Suprailiaco 14mm ..."></textarea>
-              </div>
-            </div>
-
+          <div class="tabs">
+            <div class="tab active" data-tab="ALL">Todos <span class="count" id="cAll">0</span></div>
+            <div class="tab" data-tab="ACTIVE">Activos <span class="count" id="cActive">0</span></div>
+            <div class="tab" data-tab="EXPIRED">Vencidos <span class="count" id="cExpired">0</span></div>
+            <div class="tab" data-tab="INACTIVE">Inactivos <span class="count" id="cInactive">0</span></div>
           </div>
         </div>
 
-        <!-- DER -->
-        <div>
-          <div class="block">
-            <div class="blockHead">
-              <div class="h">Observaciones</div>
-              <div class="pill" id="pImcLabel">IMC: —</div>
-            </div>
-            <div class="blockBody">
-              <textarea id="observaciones" placeholder="Notas, resumen, recomendaciones..."></textarea>
-              <div id="msg" class="msg"></div>
-            </div>
-          </div>
-
-          <!-- ✅ A) REGISTRO FOTOGRÁFICO (DENTRO DE EVALUACIÓN) -->
-          <div class="block" style="margin-top:12px;">
-            <div class="blockHead">
-              <div class="h">Registro fotográfico</div>
-              <div class="pill" id="pEvalId">EvalId: —</div>
-            </div>
-            <div class="blockBody">
-
-              <div class="hint">
-                Primero guarda la evaluación. Luego sube las fotos (frente/perfil/espalda).
-              </div>
-
-              <div class="photoGrid">
-
-                <div class="photoBox">
-                  <div class="photoLabel">
-                    <span>Frente</span>
-                    <button class="btn small ghost" id="btnClearFront" type="button">Quitar</button>
-                  </div>
-                  <input id="fileFront" type="file" accept="image/*" />
-                  <div class="photoPrev" id="prevFront">Sin foto</div>
-                </div>
-
-                <div class="photoBox">
-                  <div class="photoLabel">
-                    <span>Perfil</span>
-                    <button class="btn small ghost" id="btnClearProfile" type="button">Quitar</button>
-                  </div>
-                  <input id="fileProfile" type="file" accept="image/*" />
-                  <div class="photoPrev" id="prevProfile">Sin foto</div>
-                </div>
-
-                <div class="photoBox">
-                  <div class="photoLabel">
-                    <span>Espalda</span>
-                    <button class="btn small ghost" id="btnClearBack" type="button">Quitar</button>
-                  </div>
-                  <input id="fileBack" type="file" accept="image/*" />
-                  <div class="photoPrev" id="prevBack">Sin foto</div>
-                </div>
-
-              </div>
-
-              <div class="rowActions">
-                <button id="btnUploadPhotos" class="btn primary" type="button">Subir fotos</button>
-                <span id="photoStatus" class="muted">—</span>
-              </div>
-
-              <div class="linkPills" id="photoLinks"></div>
-
-            </div>
-          </div>
-
-          <div class="block" style="margin-top:12px;">
-            <div class="blockHead"><div class="h">Historial (últimas 6)</div></div>
-            <div class="blockBody" id="histBox">
-              <div class="muted">Selecciona un socio para ver historial.</div>
-            </div>
-          </div>
-
-        </div>
+        <span class="pill">Lista</span>
       </div>
 
-      <!-- ✅ GRÁFICOS GRANDES (UNO DEBAJO DEL OTRO) -->
-      <div class="chartsSection">
-        <div class="chartMsg" id="chartMsg">Selecciona un socio para ver gráficos.</div>
-
-        <div class="chartsTwo">
-
-          <div class="chartCard">
-            <div class="chartHead">
-              <div>
-                <div class="chartTitle">Gráfico</div>
-                <div class="muted">Medidas básicas y perímetros (últimas 12)</div>
-              </div>
-              <div class="legend" id="legendA"></div>
-            </div>
-            <div class="chartBody">
-              <div class="svgWrap" id="chartA"></div>
-              <div class="chartHint">Se grafican las últimas 12 evaluaciones (de más antigua a más reciente). Valores vacíos no se dibujan.</div>
-            </div>
-          </div>
-
-          <div class="chartCard">
-            <div class="chartHead">
-              <div>
-                <div class="chartTitle">Gráfico</div>
-                <div class="muted">Bioimpedancia (últimas 12)</div>
-              </div>
-              <div class="legend" id="legendB"></div>
-            </div>
-            <div class="chartBody">
-              <div class="svgWrap" id="chartB"></div>
-              <div class="chartHint">Series: % Grasa, % Masa muscular y Visceral.</div>
-            </div>
-          </div>
-
-        </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>RUT/USUARIO</th>
+              <th>ROL</th>
+              <th>ESTADO</th>
+              <th>PLAN</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
       </div>
 
+      <div class="cardBody">
+        <div class="muted">Tip: “Inactivo” es desactivado manual. “Vencido” es plan vencido.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL RENOVAR -->
+<div id="modalBack" class="modalBack">
+  <div class="modal">
+    <div class="modalHead">
+      <div>
+        <strong>Renovar plan</strong>
+        <div class="muted" id="mSub">—</div>
+      </div>
+      <button id="mClose" class="btn small ghost">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="row">
+        <select id="mPlanId">
+          <option value="">(sin plan)</option>
+        </select>
+
+        <select id="mActivar">
+          <option value="1">Activar</option>
+          <option value="0">No activar</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <input id="mInicio" type="date" />
+        <select id="mDias">
+          <option value="1">+ 1 día</option>
+          <option value="7">+ 7 días</option>
+          <option value="30">+ 30 días (Mensual)</option>
+          <option value="90">+ 90 días (Trimestral)</option>
+          <option value="180">+ 180 días (Semestral)</option>
+          <option value="365">+ 365 días (Anual)</option>
+          <option value="0">Personalizado…</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <input id="mFin" type="date" />
+        <div class="pill" id="mPreview" style="justify-content:center;">—</div>
+      </div>
+
+      <div class="row">
+        <input id="mPrecioBase" type="number" min="0" step="1" placeholder="Precio base (CLP)" disabled />
+        <input id="mDescPct" type="number" min="0" max="100" step="1" placeholder="Descuento % (0-100)" />
+      </div>
+
+      <div class="row">
+        <input id="mPrecioFinal" type="number" min="0" step="1" placeholder="Precio final (CLP)" disabled />
+        <input id="mPagado" type="number" min="0" step="1" placeholder="Monto pagado (CLP)" />
+      </div>
+
+      <div class="row">
+        <div class="pill" id="mPrecioSug" style="justify-content:center;">Base: —</div>
+        <div class="pill" id="mPrecioResumen" style="justify-content:center;">Final: —</div>
+      </div>
+
+      <div class="checkRow">
+        <input type="checkbox" id="mSendReceipt" />
+        <label for="mSendReceipt" style="cursor:pointer;font-weight:900;color:rgba(255,255,255,.88);">
+          Enviar comprobante al correo
+        </label>
+      </div>
+
+      <div class="row">
+        <input id="mReceiptEmail" type="email" placeholder="Correo destino (ej: socio@gmail.com)" />
+        <button id="mSendNow" class="btn ok" type="button">Enviar comprobante</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Consejo: elige inicio + duración y el fin se calcula solo.
+      </div>
+
+      <div id="mMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="mCancel" class="btn">Cancelar</button>
+      <button id="mSave" class="btn primary">Guardar renovación</button>
     </div>
   </div>
+</div>
 
+<!-- MODAL PLANES -->
+<div id="plansBack" class="modalBack">
+  <div class="modal" style="width:min(980px,100%);">
+    <div class="modalHead">
+      <div>
+        <strong>Gestión de Planes</strong>
+        <div class="muted">Edita precios/días y guarda directo en la sheet <b>PLANES</b></div>
+      </div>
+      <button id="pClose" class="btn small ghost">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="row">
+        <button id="pAdd" class="btn ok">+ Agregar plan</button>
+        <button id="pReload" class="btn">Recargar</button>
+      </div>
+
+      <div class="miniTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>PLAN ID</th>
+              <th>NOMBRE</th>
+              <th>TIPO</th>
+              <th>DÍAS</th>
+              <th>PRECIO CLP</th>
+              <th>ACTIVO</th>
+              <th>ORDEN</th>
+              <th>GUARDAR</th>
+            </tr>
+          </thead>
+          <tbody id="plansTbody"></tbody>
+        </table>
+      </div>
+
+      <div id="pMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="pDone" class="btn primary">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PERFIL -->
+<div id="profileBack" class="modalBack">
+  <div class="modal" style="width:min(980px,100%);">
+    <div class="modalHead">
+      <div>
+        <strong id="prTitle">Perfil</strong>
+        <div class="muted" id="prSub">—</div>
+      </div>
+      <button id="prClose" class="btn small ghost">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <!-- ✅ Resumen arriba -->
+      <div class="summaryGrid">
+        <div class="sumCard">
+          <div class="sumLabel">Estado</div>
+          <div class="sumValue" id="prSumEstado">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Plan</div>
+          <div class="sumValue" id="prSumPlan">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Vencimiento</div>
+          <div class="sumValue" id="prSumVence">—</div>
+        </div>
+        <div class="sumCard">
+          <div class="sumLabel">Correo registrado</div>
+          <div class="sumValue" id="prSumEmail">—</div>
+        </div>
+      </div>
+
+      <!-- ✅ Acciones de perfil -->
+      <div class="row" style="grid-template-columns: 1fr 1fr 1fr; align-items:center;">
+        <button id="prLoad" class="btn">Cargar perfil</button>
+        <button id="prEdit" class="btn primary">Modificar</button>
+        <button id="prSave" class="btn ok" disabled>Guardar</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ✅ Email editable (nuevo) -->
+      <div class="row">
+        <input id="prEmail" type="email" placeholder="Correo (ej: socio@gmail.com)" />
+        <input id="prTelefono" placeholder="Teléfono (ej: +56 9 1234 5678)" />
+      </div>
+
+      <div class="row">
+        <input id="prNacimiento" type="date" />
+        <select id="prSexo">
+          <option value="">Sexo (opcional)</option>
+          <option value="HOMBRE">HOMBRE</option>
+          <option value="MUJER">MUJER</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <input id="prDireccion" placeholder="Dirección (opcional)" />
+        <input id="prEmergNombre" placeholder="Contacto emergencia (nombre)" />
+      </div>
+
+      <div class="row">
+        <input id="prEmergTel" placeholder="Contacto emergencia (teléfono)" />
+        <input id="prObjetivo" placeholder="Objetivo (ej: bajar grasa, ganar masa)" />
+      </div>
+
+      <div class="row">
+        <select id="prNivel">
+          <option value="">Nivel (opcional)</option>
+          <option value="PRINCIPIANTE">PRINCIPIANTE</option>
+          <option value="INTERMEDIO">INTERMEDIO</option>
+          <option value="AVANZADO">AVANZADO</option>
+        </select>
+        <input id="prLesiones" placeholder="Lesiones / limitaciones (texto corto)" />
+      </div>
+
+      <div class="row">
+        <input id="prPatologias" placeholder="Patologías (ej: HTA, DM2) (opcional)" />
+        <input id="prMedicamentos" placeholder="Medicamentos (opcional)" />
+      </div>
+
+      <div class="row">
+        <input id="prAlergias" placeholder="Alergias (opcional)" />
+        <input id="prNotas" placeholder="Notas internas (observaciones)" />
+      </div>
+
+      <div id="prMsg" class="msg"></div>
+    </div>
+
+    <div class="modalFoot">
+      <button id="prCancel" class="btn">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <script src="assets/app.js"></script>
+
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
-  function normalizeRut(r){ return String(r||"").trim().toUpperCase(); }
 
-  // ===== estado actual =====
-  let CURRENT_EVAL_ID = "";
-  let CURRENT_RUT = "";
+  function moneyCLP(n){
+    n = Number(n||0);
+    return n.toLocaleString("es-CL", { style:"currency", currency:"CLP", maximumFractionDigits:0 });
+  }
+  function clamp(n, a, b){ n = Number(n||0); return Math.max(a, Math.min(b, n)); }
 
-  function nowYMD(){
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const da = String(d.getDate()).padStart(2,"0");
+  function ymdFromAny(d){
+    if(!d) return "";
+    const dt = new Date(d);
+    if(isNaN(dt.getTime())) return "";
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,"0");
+    const da = String(dt.getDate()).padStart(2,"0");
     return `${y}-${m}-${da}`;
   }
-  function nowHM(){
-    const d = new Date();
-    const h = String(d.getHours()).padStart(2,"0");
-    const m = String(d.getMinutes()).padStart(2,"0");
-    return `${h}:${m}`;
+
+  function addDaysToYMD(ymd, days){
+    if(!ymd) return "";
+    const dt = new Date(ymd + "T00:00:00");
+    if(isNaN(dt.getTime())) return "";
+    dt.setDate(dt.getDate() + Number(days||0));
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,"0");
+    const d = String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
   }
 
-  function parseRutFromUrl(){
-    const sp = new URLSearchParams(location.search);
-    return sp.get("rut") ? normalizeRut(sp.get("rut")) : "";
+  function diffDays(fromYMD, toYMD){
+    if(!fromYMD || !toYMD) return null;
+    const a = new Date(fromYMD + "T00:00:00");
+    const b = new Date(toYMD + "T00:00:00");
+    if(isNaN(a.getTime()) || isNaN(b.getTime())) return null;
+    return Math.ceil((b.getTime()-a.getTime())/(1000*60*60*24));
   }
 
-  function toNum(v){
-    const n = Number(String(v||"").replace(",",".")); // admite coma
-    return isNaN(n) ? "" : n;
+  function planInfo(planFin){
+    if(!planFin) return {status:"none", label:"Sin plan"};
+    const end = new Date(planFin);
+    if(isNaN(end.getTime())) return {status:"none", label:"Sin plan"};
+    end.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.ceil((end.getTime()-today.getTime())/(1000*60*60*24));
+    const endTxt = end.toLocaleDateString("es-CL");
+
+    if(diff < 0) return {status:"expired", label:`Vencido (${endTxt})`, diff};
+    if(diff === 0) return {status:"today", label:`Vence hoy (${endTxt})`, diff};
+    if(diff <= 5) return {status:"soon", label:`Quedan ${diff} días (${endTxt})`, diff};
+    return {status:"active", label:`Quedan ${diff} días (${endTxt})`, diff};
   }
 
-  function calcIMC(pesoKg, tallaCm){
-    const p = Number(pesoKg||0);
-    const t = Number(tallaCm||0);
-    if(p<=0 || t<=0) return "";
-    const m = t/100;
-    const imc = p/(m*m);
-    return Math.round(imc*100)/100;
-  }
-
-  function imcLabel(imc){
-    if(imc === "" || imc === null || imc === undefined) return {txt:"IMC: —", cls:"pill"};
-    const v = Number(imc);
-    let txt = `IMC: ${v}`;
-    let cls = "pill ok";
-    if(v < 18.5){ txt += " (Bajo)"; cls = "pill warn"; }
-    else if(v < 25){ txt += " (Normal)"; cls = "pill ok"; }
-    else if(v < 30){ txt += " (Sobrepeso)"; cls = "pill warn"; }
-    else { txt += " (Obesidad)"; cls = "pill warn"; }
-    return {txt, cls};
+  function planPill(p){
+    if(p.status==="active") return `<span class="pill ok">${p.label}</span>`;
+    if(p.status==="soon" || p.status==="today") return `<span class="pill warn">${p.label}</span>`;
+    if(p.status==="expired") return `<span class="pill bad">${p.label}</span>`;
+    return `<span class="pill">${p.label}</span>`;
   }
 
   function msg(el, text, ok){
@@ -696,725 +800,833 @@
     el.textContent = text;
   }
 
-  /* =========================
-     ✅ FECHA/HORA BONITA + ROBUSTA (Sheets / ISO / HH:MM)
-     ========================= */
-  function pad2(n){ return String(n).padStart(2,"0"); }
-
-  function extractTimeHM(anyTime){
-    const s = safe(anyTime,"").trim();
-    if(!s) return "";
-    const m1 = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-    if(m1) return `${pad2(m1[1])}:${pad2(m1[2])}`;
-
-    if(s.includes("T")){
-      const d = new Date(s);
-      if(!isNaN(d.getTime())) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-      const m2 = s.match(/T(\d{2}):(\d{2})/);
-      if(m2) return `${m2[1]}:${m2[2]}`;
-    }
-    return "";
-  }
-
-  function extractDateYMD(anyDate){
-    const s = safe(anyDate,"").trim();
-    if(!s) return "";
-    const m1 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(m1) return s;
-
-    if(s.includes("T")){
-      const d = new Date(s);
-      if(!isNaN(d.getTime())){
-        return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-      }
-      const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-      if(m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
-    }
-    return "";
-  }
-
-  function prettyDT(fecha, hora){
-    const ymd = extractDateYMD(fecha) || "";
-    const hm = extractTimeHM(hora) || "";
-
-    if(!ymd && !hm) return "—";
-
-    if(ymd){
-      const [Y,M,D] = ymd.split("-");
-      const dmy = `${D}-${M}-${Y}`;
-      return hm ? `${dmy} ${hm}` : dmy;
-    }
-    return hm;
-  }
-
-  function dtToTs(fecha, hora){
-    const ymd = extractDateYMD(fecha);
-    const hm = extractTimeHM(hora);
-    if(!ymd && !hm) return 0;
-
-    if(ymd){
-      const [Y,M,D] = ymd.split("-").map(Number);
-      let hh = 0, mm = 0;
-      if(hm){
-        const parts = hm.split(":").map(Number);
-        hh = parts[0]||0; mm = parts[1]||0;
-      }
-      return new Date(Y, (M||1)-1, D||1, hh, mm, 0, 0).getTime();
-    }
-    return 0;
-  }
-
-  function getEvaluationsCached(){
-    try{ return JSON.parse(localStorage.getItem("mahfit_evaluations")||"[]"); }
-    catch{ return []; }
-  }
-  function setEvaluationsCached(v){
-    localStorage.setItem("mahfit_evaluations", JSON.stringify(v||[]));
-  }
-
-  async function syncEvaluationsDown(){
-    const j = await apiGet("EVALUATIONS");
-    const list = (j.evaluations || []).map(x=>({
-      ...x,
-      rutSocio: normalizeRut(x.rutSocio),
-      evalId: safe(x.evalId,"").trim()
-    })).filter(x=>x.evalId && x.rutSocio);
-    setEvaluationsCached(list);
-    return list;
-  }
-
-  function listForRut(rut){
-    const r = normalizeRut(rut);
-    const all = getEvaluationsCached();
-    return all
-      .filter(x=>normalizeRut(x.rutSocio)===r)
-      .sort((a,b)=> dtToTs(b.fecha,b.hora) - dtToTs(a.fecha,a.hora));
-  }
-
-  function setEvalIdUI(evalId){
-    CURRENT_EVAL_ID = String(evalId||"").trim();
-    const pill = document.getElementById("pEvalId");
-    if(pill) pill.textContent = CURRENT_EVAL_ID ? `EvalId: ${CURRENT_EVAL_ID}` : "EvalId: —";
-  }
-
-  function setPhotoStatus(text, ok=null){
-    const el = document.getElementById("photoStatus");
-    if(!el) return;
-    el.textContent = text;
-    el.className = ok === true ? "miniOk" : (ok === false ? "miniBad" : "muted");
-  }
-
-  function renderPhotoLinksFromRow(row){
-    const box = document.getElementById("photoLinks");
-    if(!box) return;
-
-    const f = safe(row?.fotoFrenteUrl,"").trim();
-    const p = safe(row?.fotoPerfilUrl,"").trim();
-    const e = safe(row?.fotoEspaldaUrl,"").trim();
-
-    const mk = (url, label) => url
-      ? `<span class="pill"><a href="${url}" target="_blank" rel="noopener">${label}</a></span>`
-      : "";
-
-    box.innerHTML = (mk(f,"Ver frente") + mk(p,"Ver perfil") + mk(e,"Ver espalda")) || "";
-  }
-
-  function fillForm(x){
-    document.getElementById("inpFecha").value = safe(x.fecha, nowYMD()).includes("T")
-      ? (extractDateYMD(x.fecha) || nowYMD())
-      : safe(x.fecha, nowYMD());
-
-    document.getElementById("inpHora").value = extractTimeHM(x.hora) || safe(x.hora, nowHM());
-
-    document.getElementById("pesoKg").value = safe(x.pesoKg, "");
-    document.getElementById("tallaCm").value = safe(x.tallaCm, "");
-    document.getElementById("imc").value = safe(x.imc, "");
-
-    document.getElementById("grasaPct").value = safe(x.grasaPct, "");
-    document.getElementById("masaMuscularPct").value = safe(x.masaMuscularPct, safe(x.masaMuscularKg,""));
-    document.getElementById("grasaVisceral").value = safe(x.grasaVisceral, "");
-
-    document.getElementById("brazoCm").value = safe(x.brazoCm, "");
-    document.getElementById("cinturaCm").value = safe(x.cinturaCm, "");
-    document.getElementById("caderaCm").value = safe(x.caderaCm, "");
-    document.getElementById("musloCm").value = safe(x.musloCm, "");
-    document.getElementById("pantorrillaCm").value = safe(x.pantorrillaCm, "");
-
-    document.getElementById("pliegues").value = safe(x.pliegues, "");
-    document.getElementById("observaciones").value = safe(x.observaciones, "");
-
-    // ✅ tomar evalId si viene desde historial
-    setEvalIdUI(safe(x.evalId,"").trim());
-    renderPhotoLinksFromRow(x);
-
-    updateIMC();
-    msg(document.getElementById("msg"), "✅ Evaluación cargada", true);
-  }
-
-  function clearForm(){
-    ["pesoKg","tallaCm","imc",
-     "grasaPct","masaMuscularPct","grasaVisceral",
-     "brazoCm","cinturaCm","caderaCm","musloCm","pantorrillaCm",
-     "pliegues","observaciones"
-    ].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.value = "";
-    });
-    setEvalIdUI("");
-    renderPhotoLinksFromRow(null);
-    updateIMC();
-  }
-
-  function updateIMC(){
-    const p = document.getElementById("pesoKg").value;
-    const t = document.getElementById("tallaCm").value;
-    const imc = calcIMC(p, t);
-    document.getElementById("imc").value = (imc==="" ? "" : imc);
-
-    const lab = imcLabel(imc);
-    const pill = document.getElementById("pImcLabel");
-    pill.textContent = lab.txt;
-    pill.className = lab.cls;
-  }
-
-  function renderHistory(rut){
-    const box = document.getElementById("histBox");
-    const list = listForRut(rut).slice(0,6);
-
-    if(!rut){
-      box.innerHTML = `<div class="muted">Selecciona un socio para ver historial.</div>`;
+  function setBadge(state, text){
+    if(typeof window.setDbStatus === "function"){
+      window.setDbStatus(state, text);
       return;
     }
-    if(list.length === 0){
-      box.innerHTML = `<div class="muted">Sin evaluaciones registradas.</div>`;
-      return;
-    }
-
-    box.innerHTML = list.map(x=>{
-      const p = safe(x.pesoKg,"—");
-      const g = safe(x.grasaPct,"—");
-      const mm = safe(x.masaMuscularPct, safe(x.masaMuscularKg,"—"));
-      const v = safe(x.grasaVisceral,"—");
-      const c = safe(x.cinturaCm,"—");
-
-      const when = prettyDT(x.fecha, x.hora);
-
-      return `
-        <div style="padding:10px 12px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);border-radius:12px;margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
-            <div style="font-weight:1000;">${when}</div>
-            <button class="btn small" data-load="${safe(x.evalId)}">Cargar</button>
-          </div>
-          <div class="muted" style="margin-top:6px;">
-            Peso: <b>${p}</b> kg · % Grasa: <b>${g}</b> % · % Masa muscular: <b>${mm}</b> % · % Visceral: <b>${v}</b> · Cintura: <b>${c}</b> cm
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    box.querySelectorAll("[data-load]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-load");
-        const all = getEvaluationsCached();
-        const row = all.find(x=>safe(x.evalId)===id);
-        if(row) fillForm(row);
-      });
-    });
+    const dot = document.getElementById("dbDot");
+    const label = document.getElementById("dbText");
+    if(!dot || !label) return;
+    dot.classList.remove("connected","error","connecting");
+    dot.classList.add(state);
+    label.textContent = text;
   }
+  const markConnecting = ()=>setBadge("connecting","Conectando…");
+  const markConnected  = ()=>setBadge("connected","Conectado");
+  const markError      = ()=>setBadge("error","Sin conexión");
 
-  function buildPayload(me){
-    const rutSocio = document.getElementById("selSocio").value;
-    const fecha = document.getElementById("inpFecha").value;
-    const hora = document.getElementById("inpHora").value;
-
-    const masaPct = toNum(document.getElementById("masaMuscularPct").value);
-
-    // ✅ evalId fijo: si no hay, lo generamos con makeEvalId del app.js
-    let evalId = CURRENT_EVAL_ID;
-    if(!evalId && typeof window.makeEvalId === "function"){
-      evalId = window.makeEvalId({ rutSocio, fecha });
-      setEvalIdUI(evalId);
-    }
-
-    return {
-      evalId,
-      rutSocio,
-      fecha,
-      hora,
-
-      pesoKg: toNum(document.getElementById("pesoKg").value),
-      tallaCm: toNum(document.getElementById("tallaCm").value),
-      imc: toNum(document.getElementById("imc").value),
-
-      grasaPct: toNum(document.getElementById("grasaPct").value),
-      masaMuscularPct: masaPct,
-      masaMuscularKg: masaPct,
-
-      grasaVisceral: toNum(document.getElementById("grasaVisceral").value),
-
-      brazoCm: toNum(document.getElementById("brazoCm").value),
-      cinturaCm: toNum(document.getElementById("cinturaCm").value),
-      caderaCm: toNum(document.getElementById("caderaCm").value),
-      musloCm: toNum(document.getElementById("musloCm").value),
-      pantorrillaCm: toNum(document.getElementById("pantorrillaCm").value),
-
-      pliegues: safe(document.getElementById("pliegues").value, "").trim(),
-      observaciones: safe(document.getElementById("observaciones").value, "").trim(),
-
-      evaluadorRut: safe(me?.rut, ""),
-      evaluadorNombre: safe(me?.nombre, "")
-    };
-  }
-
-  async function loadLastForRut(rut){
-    const list = listForRut(rut);
-    if(list.length === 0){
-      msg(document.getElementById("msg"), "No hay evaluaciones previas.", false);
-      return;
-    }
-    fillForm(list[0]);
-  }
-
-  function buildSocioOptions(users, query, keepRut){
-    const q = String(query||"").toLowerCase().trim();
-    let list = (users||[]).slice();
-
-    if(q){
-      list = list.filter(u=>{
-        const hay = `${safe(u.nombre,"")} ${safe(u.rut,"")}`.toLowerCase();
-        return hay.includes(q);
-      });
-    }
-
-    if(keepRut){
-      const exists = list.some(u=>normalizeRut(u.rut)===normalizeRut(keepRut));
-      if(!exists){
-        const u = (users||[]).find(x=>normalizeRut(x.rut)===normalizeRut(keepRut));
-        if(u) list.unshift(u);
-      }
-    }
-
-    return `<option value="">(Selecciona socio)</option>` + list
-      .sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")))
-      .map(u=> `<option value="${safe(u.rut)}">${safe(u.nombre)} · ${safe(u.rut)}</option>`)
-      .join("");
-  }
-
-  /* =========================
-     ✅ CHARTS (SVG) + SUBLABEL (fecha/hora bajo C1)
-     ========================= */
-  function nOrNull(v){
-    const n = Number(v);
-    return (v === "" || v === null || v === undefined || isNaN(n)) ? null : n;
-  }
-
-  function svgLineChart({ containerEl, legendEl, title, labels, subLabels=[], series, yPad=0.10 }){
-    if(!containerEl) return;
-    containerEl.innerHTML = "";
-    if(legendEl) legendEl.innerHTML = "";
-
-    const W = 920;
-    const H = 320;
-    const PAD_L = 52;
-    const PAD_R = 18;
-    const PAD_T = 16;
-    const PAD_B = 62;
-
-    const plotW = W - PAD_L - PAD_R;
-    const plotH = H - PAD_T - PAD_B;
-
-    const allVals = [];
-    series.forEach(s => (s.values||[]).forEach(v => { if(v!==null) allVals.push(v); }));
-
-    if(allVals.length === 0 || labels.length < 2){
-      containerEl.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
-      return;
-    }
-
-    let minV = Math.min(...allVals);
-    let maxV = Math.max(...allVals);
-    if(minV === maxV){ minV -= 1; maxV += 1; }
-    const pad = (maxV - minV) * yPad;
-    minV -= pad; maxV += pad;
-
-    function xAt(i){
-      const n = labels.length - 1;
-      return PAD_L + (n === 0 ? 0 : (i / n) * plotW);
-    }
-    function yAt(v){
-      const t = (v - minV) / (maxV - minV);
-      return PAD_T + (1 - t) * plotH;
-    }
-
-    if(legendEl){
-      legendEl.innerHTML = series.map(s => `
-        <span class="lg" title="${s.label}">
-          <span class="dot" style="background:${s.color};"></span>
-          ${s.label}
-        </span>
-      `).join("");
-    }
-
-    const gridCount = 5;
-    const gridLines = [];
-    for(let i=0;i<=gridCount;i++){
-      const yy = PAD_T + (i/gridCount) * plotH;
-      const val = (maxV - (i/gridCount)*(maxV-minV));
-      gridLines.push({ yy, val });
-    }
-
-    function pathFor(values){
-      let d = "";
-      let started = false;
-      for(let i=0;i<values.length;i++){
-        const v = values[i];
-        if(v === null){ started = false; continue; }
-        const x = xAt(i), y = yAt(v);
-        if(!started){ d += `M ${x.toFixed(2)} ${y.toFixed(2)} `; started = true; }
-        else { d += `L ${x.toFixed(2)} ${y.toFixed(2)} `; }
-      }
-      return d.trim();
-    }
-    function pointsFor(values){
-      const pts = [];
-      for(let i=0;i<values.length;i++){
-        const v = values[i];
-        if(v === null) continue;
-        pts.push({ x: xAt(i), y: yAt(v) });
-      }
-      return pts;
-    }
-
-    const xLabelEvery = labels.length <= 6 ? 1 : (labels.length <= 12 ? 2 : 3);
-
-    const svg = `
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">
-        <rect x="0" y="0" width="${W}" height="${H}" fill="rgba(0,0,0,.10)"/>
-
-        ${gridLines.map(g=>`
-          <line x1="${PAD_L}" y1="${g.yy}" x2="${W-PAD_R}" y2="${g.yy}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
-          <text x="${PAD_L-10}" y="${g.yy+4}" fill="rgba(255,255,255,.55)" font-size="11" font-weight="800" text-anchor="end">${g.val.toFixed(1)}</text>
-        `).join("")}
-
-        <line x1="${PAD_L}" y1="${PAD_T+plotH}" x2="${W-PAD_R}" y2="${PAD_T+plotH}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
-        <line x1="${PAD_L}" y1="${PAD_T}" x2="${PAD_L}" y2="${PAD_T+plotH}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
-
-        ${labels.map((lab,i)=>{
-          if(i % xLabelEvery !== 0 && i !== labels.length-1) return "";
-          const x = xAt(i);
-          const sub = safe(subLabels[i]||"","");
-
-          return `
-            <text x="${x}" y="${H-30}" fill="rgba(255,255,255,.75)" font-size="11" font-weight="1000" text-anchor="middle">
-              <tspan x="${x}" dy="0">${lab}</tspan>
-              ${sub ? `<tspan x="${x}" dy="13" fill="rgba(255,255,255,.55)" font-size="9" font-weight="900">${sub}</tspan>` : ``}
-            </text>
-          `;
-        }).join("")}
-
-        ${series.map(s=>{
-          const d = pathFor(s.values||[]);
-          if(!d) return "";
-          const pts = pointsFor(s.values||[]);
-          return `
-            <path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-            ${pts.map(p=>`
-              <circle cx="${p.x}" cy="${p.y}" r="3.2" fill="${s.color}" opacity="0.95"/>
-            `).join("")}
-          `;
-        }).join("")}
-      </svg>
-    `;
-
-    containerEl.innerHTML = svg;
-  }
-
-  function renderCharts(rut){
-    const msgEl = document.getElementById("chartMsg");
-    const elA = document.getElementById("chartA");
-    const elB = document.getElementById("chartB");
-    const lgA = document.getElementById("legendA");
-    const lgB = document.getElementById("legendB");
-
-    if(!rut){
-      if(msgEl) msgEl.textContent = "Selecciona un socio para ver gráficos.";
-      if(elA) elA.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin socio seleccionado.</div>`;
-      if(elB) elB.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin socio seleccionado.</div>`;
-      if(lgA) lgA.innerHTML = "";
-      if(lgB) lgB.innerHTML = "";
-      return;
-    }
-
-    const latest = listForRut(rut).slice(0,12).reverse();
-
-    if(latest.length < 2){
-      if(msgEl) msgEl.textContent = "Necesitas al menos 2 evaluaciones para ver un gráfico de progreso.";
-      if(elA) elA.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
-      if(elB) elB.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin datos suficientes para graficar.</div>`;
-      if(lgA) lgA.innerHTML = "";
-      if(lgB) lgB.innerHTML = "";
-      return;
-    }
-
-    msgEl.textContent = `Mostrando ${latest.length} evaluaciones (últimas 12).`;
-
-    const labels = latest.map((x,i)=> `C${i+1}`);
-    const subLabels = latest.map(x => prettyDT(x.fecha, x.hora));
-
-    const seriesA = [
-      { label:"Peso (kg)", color:"rgba(255,255,255,.92)", values: latest.map(x=>nOrNull(x.pesoKg)) },
-      { label:"IMC", color:"rgba(35,166,255,.95)", values: latest.map(x=>{
-          const v = nOrNull(x.imc);
-          if(v !== null) return v;
-          const p = nOrNull(x.pesoKg);
-          const t = nOrNull(x.tallaCm);
-          const c = (p!==null && t!==null) ? calcIMC(p,t) : null;
-          return (c=== "" ? null : c);
-        })
-      },
-      { label:"Brazo (cm)", color:"rgba(124,92,255,.95)", values: latest.map(x=>nOrNull(x.brazoCm)) },
-      { label:"Cintura (cm)", color:"rgba(255,211,110,.95)", values: latest.map(x=>nOrNull(x.cinturaCm)) },
-      { label:"Cadera (cm)", color:"rgba(160,120,255,.95)", values: latest.map(x=>nOrNull(x.caderaCm)) },
-      { label:"Pantorrilla (cm)", color:"rgba(43,213,118,.95)", values: latest.map(x=>nOrNull(x.pantorrillaCm)) },
-    ];
-
-    svgLineChart({ containerEl: elA, legendEl: lgA, title:"Medidas básicas y perímetros", labels, subLabels, series: seriesA });
-
-    const seriesB = [
-      { label:"% Masa muscular", color:"rgba(43,213,118,.95)", values: latest.map(x=>{
-        const mm = nOrNull(x.masaMuscularPct);
-        if(mm !== null) return mm;
-        return nOrNull(x.masaMuscularKg);
-      })},
-      { label:"% Grasa", color:"rgba(255,90,103,.95)", values: latest.map(x=>nOrNull(x.grasaPct)) },
-      { label:"Visceral", color:"rgba(35,166,255,.95)", values: latest.map(x=>nOrNull(x.grasaVisceral)) },
-    ];
-
-    svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, subLabels, series: seriesB });
-  }
-
-  // ===== previews fotos =====
-  function setPreview(file, prevEl){
-    if(!prevEl) return;
-    if(!file){
-      prevEl.innerHTML = "Sin foto";
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    prevEl.innerHTML = `<img src="${url}" alt="preview">`;
-  }
-
-  function clearFile(inputEl, prevEl){
-    if(inputEl) inputEl.value = "";
-    if(prevEl) prevEl.innerHTML = "Sin foto";
-  }
+  async function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
   document.addEventListener("DOMContentLoaded", async ()=>{
-    const me = requireAuth(["FUNCIONARIO"]);
+    const me = requireAuth("FUNCIONARIO");
     if(!me) return;
 
     document.getElementById("who").textContent = me.nombre || "Funcionario";
     document.getElementById("roleBadge").textContent = "FUNCIONARIO";
 
-    document.getElementById("inpFecha").value = nowYMD();
-    document.getElementById("inpHora").value = nowHM();
-    document.getElementById("pNow").textContent = `${prettyDT(nowYMD(), nowHM())}`;
+    const tbody = document.getElementById("usersTbody");
+    const searchInput = document.getElementById("userSearch");
+    const roleFilter = document.getElementById("roleFilter");
+    const msgUser = document.getElementById("msgUser");
 
-    document.getElementById("btnBack").addEventListener("click", ()=> location.href = "funcionario.html");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const cAll = document.getElementById("cAll");
+    const cActive = document.getElementById("cActive");
+    const cExpired = document.getElementById("cExpired");
+    const cInactive = document.getElementById("cInactive");
+    let activeTab = "ALL";
+
+    function setTab(t){
+      activeTab = t;
+      tabs.forEach(x=>x.classList.toggle("active", x.getAttribute("data-tab")===t));
+      render();
+    }
+    tabs.forEach(x=> x.addEventListener("click", ()=> setTab(x.getAttribute("data-tab"))) );
+
+    // ----- modal renovar -----
+    const modalBack = document.getElementById("modalBack");
+    const mSub = document.getElementById("mSub");
+    const mPlanId = document.getElementById("mPlanId");
+    const mActivar = document.getElementById("mActivar");
+    const mInicio = document.getElementById("mInicio");
+    const mDias = document.getElementById("mDias");
+    const mFin = document.getElementById("mFin");
+    const mPreview = document.getElementById("mPreview");
+    const mMsg = document.getElementById("mMsg");
+
+    const mPrecioBase = document.getElementById("mPrecioBase");
+    const mDescPct = document.getElementById("mDescPct");
+    const mPrecioFinal = document.getElementById("mPrecioFinal");
+    const mPagado = document.getElementById("mPagado");
+    const mPrecioSug = document.getElementById("mPrecioSug");
+    const mPrecioResumen = document.getElementById("mPrecioResumen");
+
+    const mSendReceipt = document.getElementById("mSendReceipt");
+    const mReceiptEmail = document.getElementById("mReceiptEmail");
+    const mSendNow = document.getElementById("mSendNow");
+
+    let currentRut = "";
+
+    // ----- modal planes -----
+    const plansBack = document.getElementById("plansBack");
+    const plansTbody = document.getElementById("plansTbody");
+    const pMsg = document.getElementById("pMsg");
+
+    function calcFinal(base, pct){
+      base = Number(base||0);
+      pct = clamp(pct, 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      return { base, pct, final };
+    }
+
+    function refreshPriceUI(){
+      const base = Number(mPrecioBase.value||0);
+      const pct = Number(mDescPct.value||0);
+      const { final } = calcFinal(base, pct);
+
+      mPrecioFinal.value = final;
+
+      if(!mPagado.value || Number(mPagado.value) === 0){
+        mPagado.value = final;
+      }
+
+      mPrecioSug.textContent = `Base: ${moneyCLP(base)} · Desc: ${clamp(pct,0,100)}%`;
+      mPrecioSug.className = "pill " + (base>0 ? "ok" : "");
+
+      mPrecioResumen.textContent = `Final: ${moneyCLP(final)} · Pagado: ${moneyCLP(Number(mPagado.value||0))}`;
+      mPrecioResumen.className = "pill " + (final>0 ? "ok" : "");
+    }
+
+    function updatePreview(){
+      const d = diffDays(mInicio.value, mFin.value);
+      if(d === null){
+        mPreview.className = "pill";
+        mPreview.textContent = "—";
+        return;
+      }
+      mPreview.textContent = `Quedan ${d} días`;
+      mPreview.className = "pill " + (d <= 5 ? "warn" : "ok");
+    }
+
+    function getPlanesActivosLocal(){
+      if(typeof window.getPlanesActivos === "function") return window.getPlanesActivos();
+      const all = (window.getPlanes ? window.getPlanes() : []) || [];
+      return all.filter(p => Number(p.activo ?? 1) === 1);
+    }
+
+    function fillPlanSelect(selectedId=""){
+      const planes = getPlanesActivosLocal();
+      mPlanId.innerHTML =
+        `<option value="">(sin plan)</option>` +
+        planes.map(p=>{
+          const label = `${p.nombre || p.planId} · ${p.dias} días · ${moneyCLP(p.precioCLP)}`;
+          return `<option value="${safe(p.planId,"")}" data-dias="${Number(p.dias||0)}" data-precio="${Number(p.precioCLP||0)}">${label}</option>`;
+        }).join("");
+      mPlanId.value = selectedId || "";
+    }
+
+    function suggestedDaysByPlan(){
+      const opt = mPlanId.selectedOptions?.[0];
+      const d = Number(opt?.dataset?.dias || 0);
+      return d > 0 ? d : 30;
+    }
+
+    function openRenewModal(user){
+      currentRut = user.rut;
+      mSub.textContent = `${safe(user.nombre,"")} · ${safe(user.rut,"")}`;
+
+      const userPlanId = String(user.planId || "").trim().toUpperCase();
+      fillPlanSelect(userPlanId);
+
+      mActivar.value = "1";
+      mInicio.value = ymdFromAny(user.planInicio) || ymdFromAny(new Date());
+
+      const userFin = ymdFromAny(user.planFin);
+      if(userFin){
+        mFin.value = userFin;
+        const d = diffDays(mInicio.value, mFin.value);
+        if([1,7,30,90,180,365].includes(d)) mDias.value = String(d);
+        else mDias.value = "0";
+      }else{
+        const sug = suggestedDaysByPlan();
+        mDias.value = String([1,7,30,90,180,365].includes(sug) ? sug : 30);
+        mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
+      }
+
+      const opt = mPlanId.selectedOptions?.[0];
+      const base = Number(opt?.dataset?.precio || user.planPrecioBase || 0);
+      mPrecioBase.value = base;
+
+      mDescPct.value = Number(user.planDescPct || 0);
+      refreshPriceUI();
+
+      if(Number(user.planPagado || 0) > 0){
+        mPagado.value = Number(user.planPagado || 0);
+        refreshPriceUI();
+      }
+
+      mReceiptEmail.value = String(user.email || "").trim();
+      mSendReceipt.checked = false;
+
+      mMsg.textContent = "";
+      mMsg.className = "msg";
+      updatePreview();
+      modalBack.style.display = "flex";
+    }
+
+    function closeRenewModal(){
+      modalBack.style.display = "none";
+      currentRut = "";
+    }
+
+    document.getElementById("mClose").addEventListener("click", closeRenewModal);
+    document.getElementById("mCancel").addEventListener("click", closeRenewModal);
+    modalBack.addEventListener("click", (e)=>{ if(e.target === modalBack) closeRenewModal(); });
+
+    async function refreshFromServer(){
+      markConnecting();
+      try{
+        for(let i=0;i<2;i++){
+          try{
+            await syncDown();
+            markConnected();
+            return true;
+          }catch(e){
+            if(i===1) throw e;
+            await sleep(450);
+          }
+        }
+      }catch(e){
+        console.warn("syncDown error:", e);
+        markError();
+        return false;
+      }
+    }
+
+    // ===== PERFIL =====
+    const profileBack = document.getElementById("profileBack");
+    const prTitle = document.getElementById("prTitle");
+    const prSub = document.getElementById("prSub");
+    const prMsg = document.getElementById("prMsg");
+
+    const prSumEstado = document.getElementById("prSumEstado");
+    const prSumPlan = document.getElementById("prSumPlan");
+    const prSumVence = document.getElementById("prSumVence");
+    const prSumEmail = document.getElementById("prSumEmail");
+
+    const prLoad = document.getElementById("prLoad");
+    const prEdit = document.getElementById("prEdit");
+    const prSave = document.getElementById("prSave");
+
+    const prEmail = document.getElementById("prEmail");
+    const prTelefono = document.getElementById("prTelefono");
+    const prNacimiento = document.getElementById("prNacimiento");
+    const prSexo = document.getElementById("prSexo");
+    const prDireccion = document.getElementById("prDireccion");
+    const prEmergNombre = document.getElementById("prEmergNombre");
+    const prEmergTel = document.getElementById("prEmergTel");
+    const prObjetivo = document.getElementById("prObjetivo");
+    const prNivel = document.getElementById("prNivel");
+    const prLesiones = document.getElementById("prLesiones");
+    const prPatologias = document.getElementById("prPatologias");
+    const prMedicamentos = document.getElementById("prMedicamentos");
+    const prAlergias = document.getElementById("prAlergias");
+    const prNotas = document.getElementById("prNotas");
+
+    const prInputs = [
+      prEmail, prTelefono, prNacimiento, prSexo, prDireccion, prEmergNombre, prEmergTel,
+      prObjetivo, prNivel, prLesiones, prPatologias, prMedicamentos, prAlergias, prNotas
+    ];
+
+    let currentProfileRut = "";
+    let profileEditMode = false;
+
+    function setProfileEditMode(on){
+      profileEditMode = !!on;
+      prInputs.forEach(el => el.disabled = !profileEditMode);
+      prSave.disabled = !profileEditMode;
+      prEdit.textContent = profileEditMode ? "Bloquear" : "Modificar";
+      prEdit.className = "btn " + (profileEditMode ? "danger" : "primary");
+    }
+
+    function renderProfileSummary(u){
+      const p = planInfo(u.planFin);
+      const isInactive = (u.activo === false);
+
+      if(isInactive){
+        prSumEstado.innerHTML = `<span class="pill bad">INACTIVO</span>`;
+      }else if(p.status === "expired"){
+        prSumEstado.innerHTML = `<span class="pill warn">VENCIDO</span>`;
+      }else{
+        prSumEstado.innerHTML = `<span class="pill ok">ACTIVO</span>`;
+      }
+
+      const pid = safe(u.planId,"").trim().toUpperCase();
+      prSumPlan.innerHTML = pid ? `<span class="pill ok">${pid}</span>` : `<span class="pill">Sin plan</span>`;
+
+      if(!u.planFin){
+        prSumVence.innerHTML = `<span class="pill">—</span>`;
+      }else{
+        const endTxt = (new Date(u.planFin)).toLocaleDateString("es-CL");
+        const d = (p.diff ?? null);
+        const label =
+          (d===null) ? `Vence ${endTxt}` :
+          (d<0) ? `Venció ${endTxt}` :
+          (d===0) ? `Vence hoy (${endTxt})` :
+          `Quedan ${d} días (${endTxt})`;
+
+        const cls = (d!==null && d<=5) ? "warn" : (d!==null && d<0 ? "bad" : "ok");
+        prSumVence.innerHTML = `<span class="pill ${cls}">${label}</span>`;
+      }
+
+      const em = String(u.email || "").trim();
+      prSumEmail.innerHTML = em ? `<span class="pill ok">${em}</span>` : `<span class="pill warn">Sin correo</span>`;
+    }
+
+    function fillProfileFields(u){
+      prEmail.value = String(u.email || "").trim();
+      prTelefono.value = safe(u.telefono,"");
+      prNacimiento.value = ymdFromAny(u.fechaNacimiento);
+      prSexo.value = safe(u.sexo,"").toUpperCase();
+      prDireccion.value = safe(u.direccion,"");
+
+      prEmergNombre.value = safe(u.emergenciaNom,"");
+      prEmergTel.value = safe(u.emergenciaTelef,"");
+
+      prObjetivo.value = safe(u.objetivo,"");
+      prNivel.value = safe(u.nivel,"").toUpperCase();
+      prLesiones.value = safe(u.lesiones,"");
+
+      prPatologias.value = safe(u.patologias,"");
+      prMedicamentos.value = safe(u.medicamentos,"");
+      prAlergias.value = safe(u.alergias,"");
+      prNotas.value = safe(u.notas,"");
+    }
+
+    function openProfileModal(u){
+      currentProfileRut = u.rut;
+
+      prTitle.textContent = "Perfil";
+      prSub.textContent = `${safe(u.nombre,"")} · ${safe(u.rut,"")} · ${safe(u.rol,"")}`;
+
+      renderProfileSummary(u);
+      fillProfileFields(u);
+
+      prMsg.textContent = "";
+      prMsg.className = "msg";
+
+      setProfileEditMode(false);
+      profileBack.style.display = "flex";
+    }
+
+    async function loadProfileFromServer(){
+      if(!currentProfileRut) return;
+      msg(prMsg, "Cargando desde servidor…", true);
+      await refreshFromServer();
+
+      const u = (getUsers() || []).find(x=>x.rut===currentProfileRut);
+      if(!u){
+        msg(prMsg, "❌ No se encontró el usuario en cache", false);
+        return;
+      }
+
+      renderProfileSummary(u);
+      fillProfileFields(u);
+      msg(prMsg, "✅ Perfil cargado", true);
+    }
+
+    function closeProfileModal(){
+      profileBack.style.display = "none";
+      currentProfileRut = "";
+      setProfileEditMode(false);
+    }
+
+    document.getElementById("prClose").addEventListener("click", closeProfileModal);
+    document.getElementById("prCancel").addEventListener("click", closeProfileModal);
+    profileBack.addEventListener("click", (e)=>{ if(e.target === profileBack) closeProfileModal(); });
+
+    prLoad.addEventListener("click", loadProfileFromServer);
+
+    prEdit.addEventListener("click", ()=>{
+      setProfileEditMode(!profileEditMode);
+      msg(prMsg, profileEditMode ? "Modo edición activado." : "Modo edición desactivado.", true);
+    });
+
+    prSave.addEventListener("click", async ()=>{
+      if(!currentProfileRut) return;
+
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentProfileRut);
+      if(!u) return;
+
+      u.email = String(prEmail.value||"").trim();
+      u.telefono = String(prTelefono.value||"").trim();
+      u.fechaNacimiento = String(prNacimiento.value||"").trim();
+      u.sexo = String(prSexo.value||"").trim().toUpperCase();
+      u.direccion = String(prDireccion.value||"").trim();
+
+      u.emergenciaNom = String(prEmergNombre.value||"").trim();
+      u.emergenciaTelef = String(prEmergTel.value||"").trim();
+
+      u.objetivo = String(prObjetivo.value||"").trim();
+      u.nivel = String(prNivel.value||"").trim().toUpperCase();
+      u.lesiones = String(prLesiones.value||"").trim();
+
+      u.patologias = String(prPatologias.value||"").trim();
+      u.medicamentos = String(prMedicamentos.value||"").trim();
+      u.alergias = String(prAlergias.value||"").trim();
+      u.notas = String(prNotas.value||"").trim();
+
+      setUsers(users);
+      render();
+      renderProfileSummary(u);
+
+      try{
+        msg(prMsg, "Guardando…", true);
+        await apiPost("USERS", u);
+        await refreshFromServer();
+        render();
+
+        const u2 = (getUsers()||[]).find(x=>x.rut===currentProfileRut) || u;
+        renderProfileSummary(u2);
+        fillProfileFields(u2);
+
+        msg(prMsg, "✅ Perfil guardado (incluye correo)", true);
+        setProfileEditMode(false);
+      }catch(e){
+        await refreshFromServer();
+        render();
+        msg(prMsg, "❌ No se pudo guardar perfil: " + (e.message||e), false);
+      }
+    });
+
+    // ✅ Enviar comprobante
+    async function sendReceiptNow(){
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentRut);
+      if(!u) return;
+
+      const to = String(mReceiptEmail.value||"").trim();
+      if(!to){
+        msg(mMsg, "❌ Escribe un correo destino.", false);
+        return;
+      }
+
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(Number(mDescPct.value || 0), 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      const pagado = Number(mPagado.value || 0);
+
+      const payload = {
+        to,
+        subject: "MAH FIT · Comprobante de pago",
+        nombre: u.nombre || "",
+        rut: u.rut || "",
+        planId: String(mPlanId.value||"").trim().toUpperCase(),
+        planInicio: String(mInicio.value||""),
+        planFin: String(mFin.value||""),
+        precioBase: base,
+        descPct: pct,
+        precioFinal: final,
+        pagado: pagado,
+        activo: (mActivar.value === "1")
+      };
+
+      try{
+        msg(mMsg, "Enviando comprobante…", true);
+        await apiPost("send_receipt_email", payload);
+        msg(mMsg, "✅ Comprobante enviado al correo", true);
+      }catch(e){
+        msg(mMsg, "❌ No se pudo enviar: " + (e.message||e), false);
+      }
+    }
+    mSendNow.addEventListener("click", sendReceiptNow);
+
+    // modal renovar listeners
+    mPlanId.addEventListener("change", ()=>{
+      const opt = mPlanId.selectedOptions?.[0];
+      const precio = Number(opt?.dataset?.precio || 0);
+      const diasSug = Number(opt?.dataset?.dias || 0);
+
+      mPrecioBase.value = precio || 0;
+      refreshPriceUI();
+
+      if(mDias.value !== "0"){
+        const use = [1,7,30,90,180,365].includes(diasSug) ? diasSug : Number(mDias.value||0);
+        if(use > 0){
+          mDias.value = String(use);
+          mFin.value = addDaysToYMD(mInicio.value, use);
+          updatePreview();
+        }
+      }
+    });
+
+    mDescPct.addEventListener("input", refreshPriceUI);
+    mPagado.addEventListener("input", refreshPriceUI);
+
+    mDias.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mInicio.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mFin.addEventListener("change", updatePreview);
+
+    document.getElementById("mSave").addEventListener("click", async ()=>{
+      if(!currentRut) return;
+
+      const users = getUsers();
+      const u = users.find(x=>x.rut===currentRut);
+      if(!u) return;
+
+      const planId = safe(mPlanId.value,"").trim().toUpperCase();
+
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(Number(mDescPct.value || 0), 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      const pagado = Number(mPagado.value || 0);
+
+      const payload = {
+        rut: currentRut,
+        planId,
+        planInicio: safe(mInicio.value,""),
+        planFin: safe(mFin.value,""),
+
+        planPrecioBase: base,
+        planDescPct: pct,
+        planPrecioFinal: final,
+        planPagado: pagado,
+
+        activo: (mActivar.value === "1")
+      };
+
+      // local
+      u.planId = payload.planId;
+      u.planInicio = payload.planInicio;
+      u.planFin = payload.planFin;
+      u.planPrecioBase = payload.planPrecioBase;
+      u.planDescPct = payload.planDescPct;
+      u.planPrecioFinal = payload.planPrecioFinal;
+      u.planPagado = payload.planPagado;
+      if(payload.activo) u.activo = true;
+
+      // correo editable (para comprobantes)
+      u.email = String(mReceiptEmail.value||u.email||"").trim();
+
+      setUsers(users);
+      render();
+
+      try{
+        await apiPost("users_plan_update", payload);
+
+        // también persistimos el email si lo editaron aquí
+        await apiPost("USERS", u);
+
+        await refreshFromServer();
+        render();
+        msg(mMsg, "✅ Renovación guardada", true);
+
+        if(mSendReceipt.checked){
+          await sendReceiptNow();
+        }
+
+        setTimeout(closeRenewModal, 450);
+      }catch(e){
+        await refreshFromServer();
+        render();
+        msg(mMsg, "❌ No se pudo guardar: " + (e.message||e), false);
+      }
+    });
+
+    // crear usuario
+    document.getElementById("createUserForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      try{
+        registerUser({
+          rut: document.getElementById("newRut").value,
+          nombre: document.getElementById("newNombre").value,
+          email: document.getElementById("newEmail").value,
+          pass: document.getElementById("newPass").value,
+          rol: document.getElementById("newRol").value
+        });
+        e.target.reset();
+        await refreshFromServer();
+        render();
+        msg(msgUser, "✅ Usuario creado", true);
+      }catch(err){
+        msg(msgUser, "❌ " + err.message, false);
+      }
+    });
+
+    function getFilteredUsers(){
+      const users = (getUsers ? getUsers() : []).slice();
+      const q = safe(searchInput.value,"").toLowerCase().trim();
+      const rf = safe(roleFilter.value,"ALL").toUpperCase();
+
+      return users.filter(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const activoTxt = (u.activo === false) ? "INACTIVO" : "ACTIVO";
+        if(rf !== "ALL" && rol !== rf) return false;
+        if(!q) return true;
+
+        const hay = [
+          safe(u.nombre,""),
+          safe(u.rut,""),
+          safe(u.email,""),
+          rol,
+          activoTxt
+        ].join(" ").toLowerCase();
+
+        return hay.includes(q);
+      }).sort((a,b)=> safe(a.nombre,"").localeCompare(safe(b.nombre,"")));
+    }
+
+    function render(){
+      const all = getFilteredUsers();
+
+      const inactive = all.filter(u => u.activo === false);
+      const expired = all.filter(u => planInfo(u.planFin).status === "expired" && u.activo !== false);
+      const active = all.filter(u => u.activo !== false && planInfo(u.planFin).status !== "expired");
+
+      cAll.textContent = String(all.length);
+      cActive.textContent = String(active.length);
+      cExpired.textContent = String(expired.length);
+      cInactive.textContent = String(inactive.length);
+
+      let list = all;
+      if(activeTab === "ACTIVE") list = active;
+      if(activeTab === "EXPIRED") list = expired;
+      if(activeTab === "INACTIVE") list = inactive;
+
+      tbody.innerHTML = "";
+
+      list.forEach(u=>{
+        const rol = safe(u.rol,"SOCIO").toUpperCase();
+        const p = planInfo(u.planFin);
+
+        const isExpired = (p.status === "expired");
+        const isInactive = (u.activo === false);
+
+        const estadoHtml =
+          isInactive ? `<span class="pill bad">INACTIVO</span>` :
+          isExpired ? `<span class="pill warn">VENCIDO</span>` :
+                     `<span class="pill ok">ACTIVO</span>`;
+
+        const toggleLabel = isInactive ? "Activar" : "Desactivar";
+        const toggleClass = isInactive ? "ok" : "danger";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${safe(u.nombre,"")}</td>
+          <td>${safe(u.rut,"")}</td>
+          <td><span class="pill">${rol}</span></td>
+          <td>${estadoHtml}</td>
+          <td>${planPill(p)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn small ${toggleClass}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
+                ${toggleLabel}
+              </button>
+              <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
+              <button class="btn small" data-profile="${safe(u.rut,"")}">Perfil</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll("[data-toggle]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const rut = btn.getAttribute("data-toggle");
+          const isExpired = btn.getAttribute("data-expired") === "1";
+
+          const users = getUsers();
+          const u = users.find(x=>x.rut===rut);
+          if(!u) return;
+
+          if(isExpired && u.activo !== false){
+            openRenewModal(u);
+            return;
+          }
+
+          const cur = (u.activo !== false);
+          u.activo = !cur;
+
+          setUsers(users);
+          render();
+
+          try{
+            await apiPost("USERS", u);
+            await refreshFromServer();
+            render();
+            msg(msgUser, "✅ Estado actualizado", true);
+          }catch(e){
+            await refreshFromServer();
+            render();
+            msg(msgUser, "❌ No se pudo actualizar", false);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-renew]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const rut = btn.getAttribute("data-renew");
+          const u = getUsers().find(x=>x.rut===rut);
+          if(!u) return;
+          openRenewModal(u);
+        });
+      });
+
+      document.querySelectorAll("[data-profile]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const rut = btn.getAttribute("data-profile");
+          const u = getUsers().find(x=>x.rut===rut);
+          if(!u) return;
+          openProfileModal(u);
+        });
+      });
+    }
+
+    // topbar
     document.getElementById("btnLogout").addEventListener("click", ()=>{
       clearSession();
       location.href = "index.html";
     });
+    document.getElementById("btnRutinas").addEventListener("click", ()=>{
+      location.href = "rutinas.html";
+    });
 
-    const sel = document.getElementById("selSocio");
-    const search = document.getElementById("socioSearch");
-    const socios = (getUsers()||[]).filter(u => String(u.rol||"").toUpperCase() === "SOCIO");
-    const rutUrl = parseRutFromUrl();
+    // ✅ NUEVO: Evaluaciones -> evaluacion.html
+    document.getElementById("btnEvaluaciones").addEventListener("click", ()=>{
+      location.href = "evaluacion.html";
+    });
 
-    sel.innerHTML = buildSocioOptions(socios, "", rutUrl);
-    if(rutUrl) sel.value = rutUrl;
-
-    function updateSubtitle(){
-      const rut = sel.value;
-      CURRENT_RUT = rut ? normalizeRut(rut) : "";
-      const u = (getUsers()||[]).find(x=>normalizeRut(x.rut)===normalizeRut(rut));
-      document.getElementById("subTitle").textContent = rut ? `${safe(u?.nombre,"Socio")} · ${rut}` : "Selecciona un socio para comenzar";
-      renderHistory(rut);
-      renderCharts(rut);
-
-      // al cambiar socio: limpiar evalId si aún no hay uno cargado
-      if(!CURRENT_EVAL_ID){
-        setEvalIdUI("");
-        renderPhotoLinksFromRow(null);
-      }
+    // Planes modal
+    function openPlans(){
+      plansBack.style.display = "flex";
+      renderPlansTable();
+      msg(pMsg, "", true);
     }
+    function closePlans(){ plansBack.style.display = "none"; }
 
-    search.addEventListener("input", ()=>{
-      const keep = sel.value || rutUrl || "";
-      sel.innerHTML = buildSocioOptions(socios, search.value, keep);
-      if(keep) sel.value = keep;
-    });
+    document.getElementById("btnPlanes").addEventListener("click", openPlans);
+    document.getElementById("pClose").addEventListener("click", closePlans);
+    document.getElementById("pDone").addEventListener("click", closePlans);
+    plansBack.addEventListener("click", (e)=>{ if(e.target === plansBack) closePlans(); });
 
-    sel.addEventListener("change", ()=>{
-      // si cambias de socio, por defecto reseteamos evalId (para no subir a otro)
-      setEvalIdUI("");
-      renderPhotoLinksFromRow(null);
-      setPhotoStatus("—", null);
-      updateSubtitle();
-    });
+    function renderPlansTable(){
+      const planes = (window.getPlanes ? window.getPlanes() : []) || [];
+      const sorted = planes.slice().sort((a,b)=> Number(a.orden||999) - Number(b.orden||999));
 
-    document.getElementById("pesoKg").addEventListener("input", updateIMC);
-    document.getElementById("tallaCm").addEventListener("input", updateIMC);
+      plansTbody.innerHTML = "";
+      sorted.forEach(p=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input class="miniInp" data-k="planId" value="${safe(p.planId,"")}" disabled></td>
+          <td><input class="miniInp" data-k="nombre" value="${safe(p.nombre,"")}"></td>
+          <td><input class="miniInp" data-k="tipo" value="${safe(p.tipo,"")}" placeholder="MENSUAL/TRIMESTRAL..."></td>
+          <td><input class="miniInp" data-k="dias" type="number" min="0" step="1" value="${Number(p.dias||0)}"></td>
+          <td><input class="miniInp" data-k="precioCLP" type="number" min="0" step="1" value="${Number(p.precioCLP||0)}"></td>
+          <td>
+            <select class="miniInp" data-k="activo">
+              <option value="1" ${Number(p.activo??1)===1?"selected":""}>1</option>
+              <option value="0" ${Number(p.activo??1)===0?"selected":""}>0</option>
+            </select>
+          </td>
+          <td><input class="miniInp" data-k="orden" type="number" min="0" step="1" value="${Number(p.orden||999)}"></td>
+          <td><button class="btn small primary" data-save-plan="${safe(p.planId,"")}">Guardar</button></td>
+        `;
+        plansTbody.appendChild(tr);
+      });
 
-    // ===== fotos inputs =====
-    const fileFront = document.getElementById("fileFront");
-    const fileProfile = document.getElementById("fileProfile");
-    const fileBack = document.getElementById("fileBack");
+      plansTbody.querySelectorAll("[data-save-plan]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const planId = btn.getAttribute("data-save-plan");
+          const row = btn.closest("tr");
+          if(!row) return;
 
-    const prevFront = document.getElementById("prevFront");
-    const prevProfile = document.getElementById("prevProfile");
-    const prevBack = document.getElementById("prevBack");
+          const data = {};
+          row.querySelectorAll("[data-k]").forEach(inp=>{
+            const k = inp.getAttribute("data-k");
+            data[k] = (inp.value ?? "").trim();
+          });
 
-    fileFront.addEventListener("change", ()=> setPreview(fileFront.files?.[0], prevFront));
-    fileProfile.addEventListener("change", ()=> setPreview(fileProfile.files?.[0], prevProfile));
-    fileBack.addEventListener("change", ()=> setPreview(fileBack.files?.[0], prevBack));
+          const payload = {
+            PlanId: planId,
+            Nombre: data.nombre,
+            Tipo: String(data.tipo||"").toUpperCase(),
+            Dias: Number(data.dias||0),
+            PrecioCLP: Number(data.precioCLP||0),
+            Activo: Number(data.activo||1),
+            Orden: Number(data.orden||999),
+          };
 
-    document.getElementById("btnClearFront").addEventListener("click", ()=> clearFile(fileFront, prevFront));
-    document.getElementById("btnClearProfile").addEventListener("click", ()=> clearFile(fileProfile, prevProfile));
-    document.getElementById("btnClearBack").addEventListener("click", ()=> clearFile(fileBack, prevBack));
-
-    document.getElementById("btnClear").addEventListener("click", ()=>{
-      clearForm();
-      // limpiar fotos
-      clearFile(fileFront, prevFront);
-      clearFile(fileProfile, prevProfile);
-      clearFile(fileBack, prevBack);
-      setPhotoStatus("—", null);
-      msg(document.getElementById("msg"), "Formulario limpio.", true);
-    });
-
-    document.getElementById("btnLoadLast").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        msg(document.getElementById("msg"), "Selecciona un socio.", false);
-        return;
-      }
-      try{
-        msg(document.getElementById("msg"), "Cargando…", true);
-        await syncEvaluationsDown();
-        await loadLastForRut(rut);
-        renderHistory(rut);
-        renderCharts(rut);
-      }catch(e){
-        msg(document.getElementById("msg"), "❌ No se pudo cargar: " + (e.message||e), false);
-      }
-    });
-
-    // ✅ Guardar evaluación (crea evalId fijo)
-    document.getElementById("btnSave").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        msg(document.getElementById("msg"), "Selecciona un socio.", false);
-        return;
-      }
-
-      const payload = buildPayload(me);
-      if(!payload.fecha){
-        msg(document.getElementById("msg"), "Falta fecha.", false);
-        return;
-      }
-      if(!payload.evalId){
-        msg(document.getElementById("msg"), "No se pudo generar evalId. Revisa assets/app.js", false);
-        return;
-      }
-
-      try{
-        msg(document.getElementById("msg"), "Guardando…", true);
-        const res = await apiPost("EVALUATIONS", payload);
-
-        // mantener evalId actual (por si API devuelve otro, priorizamos el payload.evalId)
-        setEvalIdUI(payload.evalId);
-
-        await syncEvaluationsDown();
-        renderHistory(rut);
-        renderCharts(rut);
-
-        // si ya quedó con URLs, mostrarlas
-        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === payload.evalId);
-        renderPhotoLinksFromRow(row);
-
-        msg(document.getElementById("msg"), "✅ Evaluación guardada", true);
-        setPhotoStatus("Evaluación lista para fotos ✅", true);
-      }catch(e){
-        msg(document.getElementById("msg"), "❌ No se pudo guardar: " + (e.message||e), false);
-        setPhotoStatus("Error guardando evaluación", false);
-      }
-    });
-
-    // ✅ Subir fotos (usa uploadEvaluationPhotos3 del app.js)
-    document.getElementById("btnUploadPhotos").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        setPhotoStatus("Selecciona un socio.", false);
-        return;
-      }
-      if(!CURRENT_EVAL_ID){
-        setPhotoStatus("Primero guarda la evaluación (necesitamos evalId).", false);
-        return;
-      }
-
-      const fFront = fileFront.files?.[0] || null;
-      const fProfile = fileProfile.files?.[0] || null;
-      const fBack = fileBack.files?.[0] || null;
-
-      if(!fFront && !fProfile && !fBack){
-        setPhotoStatus("Selecciona al menos 1 foto.", false);
-        return;
-      }
-      if(typeof window.uploadEvaluationPhotos3 !== "function"){
-        setPhotoStatus("Falta uploadEvaluationPhotos3 en assets/app.js", false);
-        return;
-      }
-
-      const fecha = document.getElementById("inpFecha").value || nowYMD();
-
-      try{
-        setPhotoStatus("Subiendo fotos…", null);
-
-        await window.uploadEvaluationPhotos3({
-          rutSocio: rut,
-          evalId: CURRENT_EVAL_ID,
-          fecha,
-          files: { frente: fFront, perfil: fProfile, espalda: fBack },
-          compress: true,
-          onProgress: (p)=>{
-            if(p?.status === "uploading") setPhotoStatus(`Subiendo: ${p.slot}…`, null);
-            if(p?.status === "done") setPhotoStatus(`Listo: ${p.slot} ✅`, true);
+          try{
+            await apiPost("PLANES", payload);
+            await refreshFromServer();
+            fillPlanSelect(mPlanId.value);
+            msg(pMsg, "✅ Plan guardado", true);
+          }catch(e){
+            msg(pMsg, "❌ No se pudo guardar plan: " + (e.message||e), false);
           }
         });
+      });
+    }
 
-        // refrescar evaluaciones para traer URLs
-        await syncEvaluationsDown();
-        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === CURRENT_EVAL_ID);
-        renderPhotoLinksFromRow(row);
+    document.getElementById("pAdd").addEventListener("click", async ()=>{
+      const id = prompt("PlanId (ej: MENSUAL, ANUAL, SEMANAL):", "NUEVO_PLAN");
+      if(!id) return;
 
-        setPhotoStatus("Fotos subidas ✅", true);
+      const payload = {
+        PlanId: String(id).trim().toUpperCase(),
+        Nombre: "Nuevo plan",
+        Tipo: String(id).trim().toUpperCase(),
+        Dias: 30,
+        PrecioCLP: 0,
+        Activo: 1,
+        Orden: 999
+      };
+
+      try{
+        await apiPost("PLANES", payload);
+        await refreshFromServer();
+        renderPlansTable();
+        fillPlanSelect(mPlanId.value);
+        msg(pMsg, "✅ Plan creado", true);
       }catch(e){
-        console.error(e);
-        setPhotoStatus("Error subiendo fotos: " + (e.message||e), false);
+        msg(pMsg, "❌ No se pudo crear plan: " + (e.message||e), false);
       }
     });
 
-    try{ await syncEvaluationsDown(); }catch(e){}
+    document.getElementById("pReload").addEventListener("click", async ()=>{
+      await refreshFromServer();
+      renderPlansTable();
+      fillPlanSelect(mPlanId.value);
+      msg(pMsg, "✅ Recargado", true);
+    });
 
-    updateSubtitle();
-    updateIMC();
+    searchInput.addEventListener("input", render);
+    roleFilter.addEventListener("change", render);
 
-    // si venía rut por URL, mantener
-    if(rutUrl){
-      CURRENT_RUT = rutUrl;
-    }
+    // ARRANQUE
+    markConnecting();
+    fillPlanSelect("");
+    render();
+
+    await refreshFromServer();
+    fillPlanSelect("");
+    render();
   });
 </script>
+
 </body>
 </html>
