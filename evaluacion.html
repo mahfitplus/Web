@@ -1500,23 +1500,24 @@ function safeImg(url, alt="foto"){
 
         const text = safe(ta.value,"").trim();
 
-        // 1) intento guardar en Sheets (si tu backend soporta update por evalId)
-        let savedRemote = false;
-        try{
-          // Intento 1: resource dedicado
-          if(typeof apiPost === "function"){
-            await apiPost("EVALUATIONS_UPDATE", { evalId, observaciones: text });
-            savedRemote = true;
-          }
-        }catch(e1){
-          // Intento 2: modo "upsert" estándar (si tu API lo usa)
-          try{
-            if(typeof apiPost === "function"){
-              await apiPost("EVALUATIONS", { action:"update", evalId, observaciones: text });
-              savedRemote = true;
-            }
-          }catch(e2){}
-        }
+      let savedRemote = false;
+try{
+  const rutSocio = CURRENT_RUT; // ya lo tienes global
+  if(typeof window.saveEvaluationComment === "function"){
+    await window.saveEvaluationComment({ evalId, rutSocio, comentario: text });
+    savedRemote = true;
+  }else{
+    // fallback directo si no expusiste la función
+    await apiPost("EVALUATIONS", { evalId, rutSocio, observaciones: text });
+    savedRemote = true;
+  }
+
+  // opcional: refresca cache desde sheets para que quede 100% sincronizado
+  try{ await syncEvaluationsDown(); }catch{}
+}catch(e){
+  savedRemote = false;
+}
+
 
         // 2) fallback local SIEMPRE (para multi-dispositivo necesitas que el remote funcione)
         setLocalComment(evalId, text);
@@ -1865,3 +1866,4 @@ async function ping(){
 
 </body>
 </html>
+
