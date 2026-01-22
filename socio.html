@@ -701,6 +701,62 @@
     }
     .badge i{ color: var(--txt-muted); font-size:11px; }
 
+
+/* ✅ NUEVO: mini KPIs en cabecera de cada control (igual estilo tarjetas) */
+.photo-kpis{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(74px, 1fr));
+  gap:8px;
+  align-items:stretch;
+  min-width: 320px;
+}
+@media (max-width: 720px){
+  .photo-kpis{
+    grid-template-columns: repeat(2, minmax(74px, 1fr));
+    min-width: 0;
+    width: 100%;
+  }
+}
+.mini-kpi{
+  background: var(--surface-2);
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 10px 10px 8px;
+  text-align: center;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  justify-content:center;
+}
+.mini-kpi .mini-top{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  color: var(--txt-muted);
+  font-weight:900;
+  font-size:11px;
+  letter-spacing:.2px;
+}
+.mini-kpi .mini-top i{ font-size:11px; color: var(--txt-muted); }
+.mini-kpi .mini-val{
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--txt);
+  line-height: 1.05;
+}
+.mini-kpi .mini-unit{
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--txt-muted);
+  margin-left: 3px;
+}
+.mini-kpi .kpi-delta{
+  margin: 0 auto;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
     .photo-card-body{
       padding:14px;
       background: #fff;
@@ -751,7 +807,7 @@
   }
 }
 
-    @media (min-width: 768px){
+        @media (min-width: 768px){
       .photo-grid{ grid-template-columns: repeat(3, 1fr); }
     }
     @media (min-width: 1100px){
@@ -2173,6 +2229,48 @@ console.log("📸 DEBUG raw ev[0]:", withPhotos[0]?.ev);
   wrap.innerHTML = `<div class="photo-timeline"></div>`;
   const timeline = wrap.querySelector(".photo-timeline");
 
+
+// helpers mini-kpi (mismo estilo que KPIs de arriba)
+const normalizeDelta = (n) => (Object.is(n, -0) ? 0 : n);
+
+function formatDelta(v, unit=""){
+  if(v === null || v === undefined || !Number.isFinite(v)) return "";
+  v = normalizeDelta(v);
+  const abs = Math.abs(v);
+  const num = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
+  const sign = v > 0 ? "+" : (v < 0 ? "-" : "");
+  return `${sign}${num}${unit ? " " + unit : ""}`;
+}
+
+function buildDeltaBadge(delta, unit="", mode="normal"){
+  if(delta === null || delta === undefined || !Number.isFinite(delta)) return "";
+  delta = normalizeDelta(delta);
+
+  if(delta === 0){
+    return `<div class="kpi-delta flat"><i class="fas fa-minus"></i>0${unit ? " " + unit : ""}</div>`;
+  }
+
+  const isUp = delta > 0;
+  const reverse = (mode === "reverse");
+  const cls  = (isUp && !reverse) || (!isUp && reverse) ? "up" : "down";
+  const icon = isUp ? "fa-arrow-up" : "fa-arrow-down";
+  return `<div class="kpi-delta ${cls}"><i class="fas ${icon}"></i>${formatDelta(delta, unit)}</div>`;
+}
+
+function buildMiniKpi({label, icon, value, unit="", delta=null, mode="normal"}){
+  const v = (value === null || value === undefined || !Number.isFinite(value))
+    ? "—"
+    : (Number.isInteger(value) ? String(value) : value.toFixed(1));
+  const pill = (delta !== null && delta !== undefined) ? buildDeltaBadge(delta, unit || "", mode) : "";
+  return `
+    <div class="mini-kpi">
+      <div class="mini-top"><i class="fas ${icon}"></i><span>${label}</span></div>
+      <div class="mini-val">${v}${unit ? `<span class="mini-unit">${unit}</span>` : ""}</div>
+      ${pill}
+    </div>
+  `;
+}
+
   withPhotos.forEach((item, idx) => {
     const ev = item.ev;
     const urls = item.urls;
@@ -2188,6 +2286,26 @@ console.log("🧪 NORMAL urls:", urls.map(u => normalizePhotoUrl(u)));
     const mm    = numClean(ev.masaMuscularPct);
     const visc  = numClean(ev.grasaVisceral);
 
+    
+const prevPhotoEv = withPhotos[idx+1]?.ev || null;
+
+const dPeso  = (peso !== null  && prevPhotoEv ? numClean(prevPhotoEv.pesoKg) : null);
+const dGrasa = (grasa !== null && prevPhotoEv ? numClean(prevPhotoEv.grasaPct) : null);
+const dMM    = (mm !== null    && prevPhotoEv ? numClean(prevPhotoEv.masaMuscularPct) : null);
+const dVisc  = (visc !== null  && prevPhotoEv ? numClean(prevPhotoEv.grasaVisceral) : null);
+
+const deltaPeso  = (dPeso  !== null) ? (peso  - dPeso)  : null;
+const deltaGrasa = (dGrasa !== null) ? (grasa - dGrasa) : null;
+const deltaMM    = (dMM    !== null) ? (mm    - dMM)    : null;
+const deltaVisc  = (dVisc  !== null) ? (visc  - dVisc)  : null;
+
+const miniKpisHtml = [
+  buildMiniKpi({ label:"Peso",    icon:"fa-weight-scale", value:peso,  unit:"kg", delta:deltaPeso,  mode:"normal" }),
+  buildMiniKpi({ label:"% Grasa", icon:"fa-percent",      value:grasa, unit:"%",  delta:deltaGrasa, mode:"reverse" }),
+  buildMiniKpi({ label:"% Músc.", icon:"fa-dumbbell",     value:mm,    unit:"%",  delta:deltaMM,    mode:"normal" }),
+  buildMiniKpi({ label:"Visceral",icon:"fa-heart-pulse",  value:visc,  unit:"",   delta:deltaVisc,  mode:"reverse" })
+].join("");
+
     const card = document.createElement("div");
     card.className = "photo-card";
     card.innerHTML = `
@@ -2196,11 +2314,8 @@ console.log("🧪 NORMAL urls:", urls.map(u => normalizePhotoUrl(u)));
           <div class="photo-date">${fecha}</div>
           <div class="photo-sub">${urls.length} foto${urls.length===1?"":"s"} · Control #${idx+1}</div>
         </div>
-        <div class="photo-badges">
-          <span class="badge"><i class="fas fa-weight-scale"></i> ${peso ?? "—"}kg</span>
-          <span class="badge"><i class="fas fa-percent"></i> ${grasa ?? "—"}%</span>
-          <span class="badge"><i class="fas fa-dumbbell"></i> ${mm ?? "—"}%</span>
-          <span class="badge"><i class="fas fa-heart-pulse"></i> ${visc ?? "—"}</span>
+        <div class="photo-kpis">
+          ${miniKpisHtml}
         </div>
       </div>
 
