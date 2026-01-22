@@ -106,13 +106,13 @@
     }
 
     /* ✅ app.js usa #dbDot y #dbText */
-    .db-dot {
+    .status-dot, .db-dot {
       width: 12px; height: 12px; border-radius: 50%;
       background-color: var(--txt-muted);
       position: relative;
       flex-shrink: 0;
     }
-    .db-dot::after {
+    .status-dot::after, .db-dot::after {
       content: '';
       position: absolute;
       top: -3px; left: -3px; right: -3px; bottom: -3px;
@@ -200,6 +200,7 @@
       font-weight: 500;
     }
 
+    /* ✅ KPI en columna: valor grande + pill */
     .kpi-value{
       display:flex;
       flex-direction:column;
@@ -222,6 +223,7 @@
       margin-left: 4px;
     }
 
+    /* ✅ pill */
     .kpi-delta{
       display:inline-flex;
       align-items:center;
@@ -234,6 +236,7 @@
       border:1px solid var(--stroke);
       background:#fff;
     }
+
     .kpi-delta i{ font-size:11px; }
 
     .kpi-delta.up{
@@ -478,8 +481,61 @@
     .nutrition-items { font-size: 14px; color: var(--txt-2); }
 
     /* =========================
-       Analisis Músculo-Grasa (barras)
+       NUEVO: Analisis Músculo-Grasa (OPCION B: %)
        ========================= */
+    .mg-pin-line{
+      position:absolute;
+      top:-6px;
+      width:3px;
+      height:28px;
+      border-radius:2px;
+    }
+    .mg-pin-line.current{
+      background: var(--brand);
+      box-shadow: 0 0 0 3px rgba(90,103,216,.15);
+    }
+    .mg-pin-line.prev{
+      background: var(--txt-muted);
+      opacity:.9;
+    }
+    .mg-legend{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+      font-size:12px;
+      color: var(--txt-muted);
+    }
+    .mg-legend .item{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-weight:800;
+    }
+    .mg-legend .swatch{
+      width:10px;height:10px;border-radius:999px;
+      border:2px solid #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,.10);
+    }
+    .mg-legend .swatch.current{ background: var(--brand); }
+    .mg-legend .swatch.prev{ background: var(--txt-muted); }
+    .mg-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid var(--stroke);
+      background:#fff;
+    }
+    .mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
+    .mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
+    .mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
+    .mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
+
     .mg-grid{ display:grid; gap:12px; }
     .mg-row{
       display:grid;
@@ -505,8 +561,8 @@
       border:1px solid var(--stroke);
       background:
         linear-gradient(90deg,
-          rgba(9,132,227,.18) 0%,
-          rgba(9,132,227,.18) 33.33%,
+          rgba(255,107,107,.25) 0%,
+          rgba(255,107,107,.25) 33.33%,
           rgba(43,213,118,.18) 33.33%,
           rgba(43,213,118,.18) 66.66%,
           rgba(255,209,102,.25) 66.66%,
@@ -523,72 +579,15 @@
       padding:0 8px;
       pointer-events:none;
     }
-    .mg-pin-line{
-      position:absolute;
-      top:-6px;
-      width:3px;
-      height:28px;
-      border-radius:2px;
-    }
-    .mg-pin-line.current{
-      background: var(--brand);
-      box-shadow: 0 0 0 3px rgba(90,103,216,.15);
-    }
-    .mg-pin-line.prev{
-      background: var(--txt-muted);
-      opacity:.9;
-    }
     .mg-value{
       text-align:right;
       font-weight:800;
       color:var(--txt);
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:flex-end;
     }
-    .mg-tag{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:900;
-      border:1px solid var(--stroke);
-      background:#fff;
-      width:max-content;
-    }
-    .mg-tag.low{ color: var(--accent-2); border-color: rgba(9,132,227,.25); background: rgba(9,132,227,.06); }
-    .mg-tag.normal{ color: var(--success); border-color: rgba(43,213,118,.25); background: rgba(43,213,118,.08); }
-    .mg-tag.high{ color: var(--warning); border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12); }
-    .mg-tag.veryHigh{ color: var(--danger); border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
-
-    .mg-legend{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-top:10px;
-      font-size:12px;
-      color: var(--txt-muted);
-    }
-    .mg-legend .item{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      font-weight:800;
-    }
-    .mg-legend .swatch{
-      width:10px;height:10px;border-radius:999px;
-      border:2px solid #fff;
-      box-shadow: 0 2px 10px rgba(0,0,0,.10);
-    }
-    .mg-legend .swatch.current{ background: var(--brand); }
-    .mg-legend .swatch.prev{ background: var(--txt-muted); }
+    .mg-value small{ font-weight:700; color:var(--txt-muted); }
 
     /* =========================
-       Historial composición (tabla)
+       NUEVO: Historial composición
        ========================= */
     .comp-table{
       width:100%;
@@ -616,79 +615,208 @@
     .comp-scroll{ overflow:auto; border-radius: var(--radius); }
 
     /* =========================
-       PERÍMETROS CHART (SOCIO)
+       ✅ NUEVO: REGISTROS FOTOGRÁFICOS
        ========================= */
-    .periCard{
-      background: var(--surface-2);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      padding: 14px 14px 10px;
-      margin-bottom: 14px;
+    .photo-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
-    .periTop{
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: var(--surface-2);
+      color: var(--txt-2);
+      font-weight:800;
+      font-size:12px;
+    }
+    .pill i{ color: var(--brand); }
+
+    .photo-timeline{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .photo-card{
+      border:1px solid var(--stroke);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .photo-card-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:10px;
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--stroke);
+      background: var(--surface);
     }
-    .periTitle{
-      font-size: 13px;
-      font-weight: 900;
-      color: var(--txt-2);
+    .photo-card-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
     }
-    .periSub{
-      font-size: 12px;
+    .photo-date{
+      font-size:14px;
+      font-weight:900;
+      color: var(--txt);
+      letter-spacing:-.2px;
+    }
+    .photo-sub{
+      font-size:12px;
       color: var(--txt-muted);
-      margin-top: 2px;
-      font-weight: 700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 100%;
     }
-    .periPills{
+    .photo-badges{
       display:flex;
       gap:8px;
-      flex-wrap: wrap;
       align-items:center;
+      flex-wrap:wrap;
       justify-content:flex-end;
     }
-    .periPill{
+    .badge{
       display:inline-flex;
       align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: #fff;
-      box-shadow: var(--shadow);
-      font-size: 12px;
-      font-weight: 900;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: var(--surface-2);
+      font-size:11px;
+      font-weight:900;
       color: var(--txt-2);
-      transition: var(--transition);
-      user-select:none;
     }
-    .periPill:hover{ transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-    .periPill.active{
-      border-color: rgba(90,103,216,.35);
-      background: rgba(90,103,216,.08);
-      color: var(--txt);
+    .badge i{ color: var(--txt-muted); font-size:11px; }
+
+    .photo-card-body{
+      padding:14px;
+      background: #fff;
     }
-    .periDot{
-      width:10px; height:10px; border-radius: 50%;
-      background: var(--txt-muted);
-      box-shadow: 0 0 0 3px rgba(0,0,0,.03);
+
+    .comment-box{
+      border:1px solid var(--stroke);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding:12px;
+      margin-bottom:12px;
     }
-    .periCanvasWrap{
-      height: 300px;
-      margin-top: 8px;
-    }
-    .periCanvasWrap canvas{
-      width: 100% !important;
-      height: 300px !important;
-    }
-    .periFoot{
-      margin-top: 10px;
-      font-size: 12px;
+    .comment-box .label{
+      font-size:11px;
+      font-weight:900;
       color: var(--txt-muted);
-      font-weight: 700;
+      margin-bottom:6px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      text-transform: uppercase;
+      letter-spacing:.5px;
+    }
+    .comment-box .text{
+      font-size:13px;
+      color: var(--txt-2);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .photo-grid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+    @media (min-width: 768px){
+      .photo-grid{ grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1100px){
+      .photo-grid{ grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .photo-item{
+      position:relative;
+      border-radius: 14px;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      background: var(--surface-2);
+      cursor:pointer;
+      transition: var(--transition);
+      aspect-ratio: 4 / 5;
+    }
+    .photo-item:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .photo-item img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .photo-item .overlay{
+      position:absolute;
+      inset:auto 0 0 0;
+      padding:10px;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 100%);
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    /* Modal visor foto */
+    .img-modal-content{
+      max-width: 980px;
+      width: 100%;
+    }
+    .img-view{
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+    }
+    .img-view img{
+      width:100%;
+      height:auto;
+      max-height: 78vh;
+      object-fit: contain;
+      display:block;
+    }
+    .img-meta{
+      padding:14px 18px;
+      border-top:1px solid rgba(255,255,255,.10);
+      background: #0b0f17;
+      color: rgba(255,255,255,.85);
+      font-size: 13px;
+    }
+    .img-meta b{ color:#fff; }
+    .img-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .btn-dark{
+      background: rgba(255,255,255,.10);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .btn-dark:hover{
+      background: rgba(255,255,255,.14);
     }
   </style>
 </head>
@@ -786,19 +914,21 @@
                 </div>
               </div>
 
+              <!-- ✅ CAMBIO: Registrar -> Registros fotográficos -->
               <div class="accordion-section">
                 <button class="accordion-header" data-accordion="home">
-                  <div class="accordion-icon"><i class="fas fa-plus-circle"></i></div>
+                  <div class="accordion-icon"><i class="fas fa-camera"></i></div>
                   <div class="accordion-content">
-                    <span class="accordion-title">Registrar</span>
-                    <span class="accordion-subtitle">Nueva evaluación corporal</span>
+                    <span class="accordion-title">Registros fotográficos</span>
+                    <span class="accordion-subtitle">Controles + fotos + comentario</span>
                   </div>
                   <div class="accordion-chevron"><i class="fas fa-chevron-down"></i></div>
                 </button>
                 <div class="accordion-body">
-                  <p class="text-muted">Guarda en <b>EVALUATIONS</b> y actualiza KPIs + lista + gráficos.</p>
+                  <p class="text-muted">Revisa tus controles por fecha. Se muestran fotos encontradas en <b>EVALUATIONS</b> + comentario.</p>
                   <div class="btn-group">
-                    <button class="btn btn-primary" id="btnRegistrar"><i class="fas fa-plus"></i> Crear registro</button>
+                    <button class="btn btn-primary" id="btnVerFotos"><i class="fas fa-images"></i> Ver registros</button>
+                    <button class="btn btn-outline" id="btnIrRegistrar"><i class="fas fa-plus"></i> Crear evaluación</button>
                   </div>
                 </div>
               </div>
@@ -851,62 +981,13 @@
           </div>
           <div class="card-body">
 
-            <!-- ✅ Análisis + Historial -->
             <div class="card" style="margin-bottom:16px;">
               <div class="card-header">
                 <h2>Análisis Músculo-Grasa</h2>
-                <p>% grasa, % muscular, peso y visceral (último registro)</p>
+                <p>% grasa y % muscular (último registro)</p>
               </div>
               <div class="card-body">
                 <div id="mgAnalysisBox"></div>
-              </div>
-            </div>
-
-            <!-- ✅ Charts principales ARRIBA (orden: Peso → Músculo → Grasa → Visceral) -->
-            <div id="chartsWrap" class="charts-grid">
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-weight-scale"></i> Peso (kg)</div>
-                <div class="chart-wrap"><canvas id="chartPeso"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
-                <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-percent"></i> % Grasa</div>
-                <div class="chart-wrap"><canvas id="chartGrasa"></canvas></div>
-              </div>
-
-              <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-heart-pulse"></i> Grasa Visceral</div>
-                <div class="chart-wrap"><canvas id="chartVisc"></canvas></div>
-              </div>
-            </div>
-
-            <div class="btn-group" style="margin-top:16px;">
-              <button class="btn btn-secondary" id="btnChartsReload"><i class="fas fa-rotate"></i> Recargar gráficos</button>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- ✅ Perímetros -->
-            <div class="periCard">
-              <div class="periTop">
-                <div>
-                  <div class="periTitle">Medidas básicas y perímetros</div>
-                  <div class="periSub">Últimas 12 evaluaciones (vacíos no se dibujan)</div>
-                </div>
-                <div class="periPills" id="periPills"></div>
-              </div>
-
-              <div class="periCanvasWrap">
-                <canvas id="chartPerimetros"></canvas>
-              </div>
-
-              <div class="periFoot" id="periFoot">
-                Se grafican las últimas 12 evaluaciones (de más antigua a más reciente).
               </div>
             </div>
 
@@ -920,6 +1001,59 @@
               </div>
             </div>
 
+            <!-- Charts -->
+            <div id="chartsWrap" class="charts-grid">
+              <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-weight-scale"></i> Peso (kg)</div>
+                <div class="chart-wrap"><canvas id="chartPeso"></canvas></div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-percent"></i> % Grasa</div>
+                <div class="chart-wrap"><canvas id="chartGrasa"></canvas></div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-dumbbell"></i> % Músculo</div>
+                <div class="chart-wrap"><canvas id="chartMM"></canvas></div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-heart-pulse"></i> Grasa Visceral</div>
+                <div class="chart-wrap"><canvas id="chartVisc"></canvas></div>
+              </div>
+            </div>
+
+            <div class="btn-group" style="margin-top:16px;">
+              <button class="btn btn-secondary" id="btnChartsReload"><i class="fas fa-rotate"></i> Recargar gráficos</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ✅ NUEVO: PHOTOS PAGE -->
+      <section id="page-photos" class="page">
+        <div class="card">
+          <div class="card-header">
+            <h2>Registros fotográficos</h2>
+            <p>Controles por fecha con imágenes y comentario</p>
+          </div>
+
+          <div class="card-body">
+            <div class="photo-toolbar">
+              <div class="pill"><i class="fas fa-camera"></i> <span id="photosCount">0 controles</span></div>
+              <div class="btn-group" style="margin-top:0;">
+                <button class="btn btn-secondary" id="btnFotosRefrescar"><i class="fas fa-rotate"></i> Refrescar</button>
+                <button class="btn btn-outline" id="btnFotosCrear"><i class="fas fa-plus"></i> Crear evaluación</button>
+              </div>
+            </div>
+
+            <div id="photosWrap">
+              <div class="empty-state">
+                <i class="fas fa-images"></i>
+                <p>No hay fotos disponibles todavía.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1060,6 +1194,20 @@
     </div>
   </div>
 
+  <!-- ✅ NUEVO: MODAL VISOR FOTO -->
+  <div class="modal" id="imageModal">
+    <div class="modal-content img-modal-content" style="overflow:hidden; background:#0b0f17;">
+      <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,.10); background:#0b0f17;">
+        <h3 style="color:#fff;"><i class="fas fa-image" style="color: rgba(255,255,255,.85);"></i> Vista previa</h3>
+        <div class="close" id="closeImageModal" style="color: rgba(255,255,255,.75);">&times;</div>
+      </div>
+      <div class="modal-body img-view">
+        <img id="imageModalImg" alt="Foto" />
+      </div>
+      <div class="img-meta" id="imageModalMeta"></div>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <div class="nav-container">
@@ -1071,10 +1219,13 @@
         <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
         <div class="nav-label">Gráficos</div>
       </button>
-      <button class="nav-item" data-go="register">
-        <div class="nav-icon"><i class="fas fa-plus-circle"></i></div>
-        <div class="nav-label">Registrar</div>
+
+      <!-- ✅ CAMBIO: Register -> Fotos -->
+      <button class="nav-item" data-go="photos">
+        <div class="nav-icon"><i class="fas fa-camera"></i></div>
+        <div class="nav-label">Fotos</div>
       </button>
+
       <button class="nav-item" data-go="profile">
         <div class="nav-icon"><i class="fas fa-user"></i></div>
         <div class="nav-label">Perfil</div>
@@ -1091,12 +1242,7 @@
       const $$ = (selector, el = document) => Array.from(el.querySelectorAll(selector));
 
       let currentUser = null;
-
-      // charts base
-      let charts = { peso:null, mm:null, grasa:null, visc:null };
-
-      // perimetros chart
-      let perimChart = null;
+      let charts = { peso:null, grasa:null, mm:null, visc:null };
 
       const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
       function fmtDateShort(iso) {
@@ -1115,11 +1261,6 @@
         const s = String(v ?? "").replace(",", ".").trim();
         const n = Number(s);
         return Number.isFinite(n) ? n : null;
-      }
-
-      function fmt1(n){
-        if(n == null || !Number.isFinite(n)) return "—";
-        return (Number.isInteger(n) ? String(n) : n.toFixed(1));
       }
 
       function planLabel(user) {
@@ -1183,7 +1324,13 @@
         $$('.nav-item').forEach(item => item.classList.remove('active'));
         $(`.nav-item[data-go="${pageId}"]`)?.classList.add('active');
 
-        const titles = { home: 'Panel Socio', graphs: 'Gráficos', register: 'Registrar', profile: 'Perfil' };
+        const titles = {
+          home: 'Panel Socio',
+          graphs: 'Gráficos',
+          photos: 'Registros fotográficos',
+          register: 'Registrar',
+          profile: 'Perfil'
+        };
         $("#subtitle").textContent = titles[pageId] || 'Panel Socio';
 
         if(pageId === "graphs") {
@@ -1191,11 +1338,13 @@
             renderCharts();
             renderMuscleFatAnalysis();
             renderCompositionHistory();
-            renderPerimetersChart();
           }, 50);
         }
-        if(pageId === "profile") {
-          setTimeout(() => renderProfile(), 30);
+
+        if(pageId === "photos") {
+          setTimeout(() => {
+            renderPhotoTimeline();
+          }, 50);
         }
       }
 
@@ -1207,8 +1356,12 @@
         });
 
         $("#btnVerGraficos")?.addEventListener('click', () => navigateTo('graphs'));
-        $("#btnRegistrar")?.addEventListener('click', () => navigateTo('register'));
         $("#btnPerfil")?.addEventListener('click', () => navigateTo('profile'));
+
+        // ✅ nuevo
+        $("#btnVerFotos")?.addEventListener('click', () => navigateTo('photos'));
+        $("#btnFotosCrear")?.addEventListener('click', () => navigateTo('register'));
+        $("#btnIrRegistrar")?.addEventListener('click', () => navigateTo('register'));
 
         $("#btnSalir")?.addEventListener('click', () => {
           if (confirm("¿Estás seguro de que quieres cerrar sesión?")) {
@@ -1221,11 +1374,15 @@
           await hardRefresh();
         });
 
+        $("#btnFotosRefrescar")?.addEventListener('click', async () => {
+          await hardRefresh();
+          navigateTo("photos");
+        });
+
         $("#btnChartsReload")?.addEventListener('click', () => {
           renderCharts();
           renderMuscleFatAnalysis();
           renderCompositionHistory();
-          renderPerimetersChart();
         });
 
         $("#quickWorkout")?.addEventListener('click', () => openModal('workoutModal'));
@@ -1233,6 +1390,9 @@
 
         $("#closeWorkoutModal")?.addEventListener('click', () => closeModal('workoutModal'));
         $("#closeNutritionModal")?.addEventListener('click', () => closeModal('nutritionModal'));
+
+        // ✅ modal imagen
+        $("#closeImageModal")?.addEventListener('click', () => closeModal('imageModal'));
 
         $$('.modal').forEach(modal => {
           modal.addEventListener('click', function(e) {
@@ -1245,8 +1405,6 @@
             $$('.modal.active').forEach(m => closeModal(m.id));
           }
         });
-
-        $("#btnCancelarEval")?.addEventListener("click", () => navigateTo("home"));
       }
 
       function setupAccordions() {
@@ -1269,7 +1427,6 @@
       function openModal(modalId) {
         $(`#${modalId}`)?.classList.add('active');
         document.body.style.overflow = 'hidden';
-        if(modalId === "workoutModal") renderRoutineModal();
       }
       function closeModal(modalId) {
         $(`#${modalId}`)?.classList.remove('active');
@@ -1281,25 +1438,8 @@
         $("#userPlan").textContent = `Plan: ${planLabel(user)}`;
       }
 
-      function getEvaluationsSafe(rut) {
-        // Usa tu app.js si existe
-        if (window.getEvaluationsForRut) return window.getEvaluationsForRut(rut) || [];
-        // fallback local
-        try {
-          const all = JSON.parse(localStorage.getItem("mahfit_evals") || "[]");
-          return all.filter(x => String(x.rut||"").toUpperCase() === String(rut||"").toUpperCase());
-        } catch(_) { return []; }
-      }
-
-      function evaluationsLastN(rut, n) {
-        if (window.evaluationsLastN) return window.evaluationsLastN(rut, n) || [];
-        const list = getEvaluationsSafe(rut);
-        const sorted = (list||[]).slice().sort((a,b)=> String(a.fecha||"").localeCompare(String(b.fecha||"")));
-        return sorted.slice(Math.max(0, sorted.length - n));
-      }
-
       function setKPIsFromLastEval() {
-        const last2 = evaluationsLastN(currentUser.rut, 2);
+        const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
         const last = last2.length ? last2[last2.length - 1] : null;
         const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
 
@@ -1366,7 +1506,7 @@
         if (hint) {
           hint.textContent = last
             ? `Última evaluación: ${fmtDateShort(last.fecha)}`
-            : `Aún no hay evaluaciones. Crea tu primer registro en “Registrar”.`;
+            : `Aún no hay evaluaciones. Crea tu primer registro en “Crear evaluación”.`;
         }
       }
 
@@ -1374,8 +1514,9 @@
         const logsList = $("#logsList");
         if (!logsList) return;
 
-        const list = getEvaluationsSafe(currentUser.rut);
+        const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
         const sorted = (list || []).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+
         const recent = sorted.slice(0, 8);
 
         if (!recent.length) {
@@ -1463,11 +1604,652 @@
       }
 
       /* ==============================
-         Charts base (4) - orden: Peso, Músculo, Grasa, Visceral
+         ✅ FALLBACKS (si no existen en app.js)
+         ============================== */
+      const OMRON_FAT = window.OMRON_FAT || {
+        M: { "20-39": { lowMax: 10, normalMax: 20, highMax: 25 }, "40-59": { lowMax: 11, normalMax: 22, highMax: 28 }, "60-79": { lowMax: 13, normalMax: 25, highMax: 30 } },
+        F: { "20-39": { lowMax: 20, normalMax: 30, highMax: 35 }, "40-59": { lowMax: 21, normalMax: 32, highMax: 37 }, "60-79": { lowMax: 23, normalMax: 34, highMax: 40 } }
+      };
+      const OMRON_MUSCLE = window.OMRON_MUSCLE || {
+        M: { "18-39": { lowMax: 33, normalMax: 39, highMax: 45 }, "40-59": { lowMax: 31, normalMax: 37, highMax: 43 }, "60-80": { lowMax: 29, normalMax: 35, highMax: 41 } },
+        F: { "18-39": { lowMax: 24, normalMax: 30, highMax: 36 }, "40-59": { lowMax: 23, normalMax: 29, highMax: 35 }, "60-80": { lowMax: 22, normalMax: 28, highMax: 34 } }
+      };
+
+      function calcAge(fechaNac){
+        if(window.calcAge) return window.calcAge(fechaNac);
+        const s = String(fechaNac||"").slice(0,10);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+        const [y,m,d] = s.split("-").map(Number);
+        const now = new Date();
+        let age = now.getFullYear() - y;
+        const md = (now.getMonth()+1) - m;
+        if(md < 0 || (md===0 && now.getDate() < d)) age--;
+        return isFinite(age) ? age : null;
+      }
+      function normSexHM(sexo){
+        if(window.normSexHM) return window.normSexHM(sexo);
+        const s = String(sexo||"").toUpperCase();
+        if(s.includes("MUJ")) return "F";
+        if(s.includes("F")) return "F";
+        return "M";
+      }
+      function omronAgeBandFat(age){
+        if(window.omronAgeBandFat) return window.omronAgeBandFat(age);
+        if(age == null) return "20-39";
+        if(age < 40) return "20-39";
+        if(age < 60) return "40-59";
+        return "60-79";
+      }
+      function omronAgeBandMuscle(age){
+        if(window.omronAgeBandMuscle) return window.omronAgeBandMuscle(age);
+        if(age == null) return "18-39";
+        if(age < 40) return "18-39";
+        if(age < 60) return "40-59";
+        return "60-80";
+      }
+      function classifyOmron(val, cuts){
+        if(window.classifyOmron) return window.classifyOmron(val, cuts);
+        if(val == null || !isFinite(val)) return "normal";
+        if(val <= cuts.lowMax) return "low";
+        if(val <= cuts.normalMax) return "normal";
+        if(val <= cuts.highMax) return "high";
+        return "veryHigh";
+      }
+      function labelClass(c){
+        return c==="low"?"Bajo":c==="normal"?"Normal":c==="high"?"Alto":"Muy alto";
+      }
+
+      /* ==============================
+         Analisis % + Historial %
+         ============================== */
+      function renderMuscleFatAnalysis(){
+        const box = document.getElementById("mgAnalysisBox");
+        if(!box || !currentUser) return;
+
+        const sex = normSexHM(currentUser.sexo);
+        const age = calcAge(currentUser.fechaNacimiento);
+
+        const tallaCm = numClean(currentUser.tallaCm);
+        const last2 = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : [];
+        const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
+        const currEv = last2.length ? last2[last2.length - 1] : null;
+
+        if(!currEv){
+          box.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><p>No hay datos para análisis. Registra tu primera evaluación.</p></div>`;
+          return;
+        }
+
+        const grasaCurr  = numClean(currEv.grasaPct);
+        const muscCurr   = numClean(currEv.masaMuscularPct);
+        const grasaPrev  = prevEv ? numClean(prevEv.grasaPct) : null;
+        const muscPrev   = prevEv ? numClean(prevEv.masaMuscularPct) : null;
+
+        const pesoCurr   = numClean(currEv.pesoKg);
+        const pesoPrev   = prevEv ? numClean(prevEv.pesoKg) : null;
+
+        const viscCurr   = numClean(currEv.grasaVisceral);
+        const viscPrev   = prevEv ? numClean(prevEv.grasaVisceral) : null;
+
+        const fatBand = omronAgeBandFat(age);
+        const musBand = omronAgeBandMuscle(age);
+        const sexKey = sex || "M";
+
+        const fatCuts = (OMRON_FAT[sexKey] && OMRON_FAT[sexKey][fatBand]) ? OMRON_FAT[sexKey][fatBand] : OMRON_FAT["M"]["20-39"];
+        const musCuts = (OMRON_MUSCLE[sexKey] && OMRON_MUSCLE[sexKey][musBand]) ? OMRON_MUSCLE[sexKey][musBand] : OMRON_MUSCLE["M"]["18-39"];
+
+        const clamp01 = (x)=> Math.max(0, Math.min(1, x));
+        function scaleRange(cuts){
+          const min = Math.max(0, cuts.lowMax - (cuts.normalMax - cuts.lowMax));
+          const max = cuts.highMax + (cuts.highMax - cuts.normalMax) + 5;
+          return { min, max };
+        }
+        function leftPct(val, min, max){
+          if(val == null || !Number.isFinite(val)) return null;
+          return clamp01((val - min) / (max - min)) * 100;
+        }
+        function fmtVal(v, digits=1){
+          if(v == null || !Number.isFinite(v)) return "—";
+          return Number.isInteger(v) ? String(v) : v.toFixed(digits);
+        }
+        function barBackground(cuts, min, max){
+          const toPct = (x)=> clamp01((x - min) / (max - min)) * 100;
+          const pLowEnd  = toPct(cuts.lowMax);
+          const pNormEnd = toPct(cuts.normalMax);
+          const pHighEnd = toPct(cuts.highMax);
+
+          return `
+            linear-gradient(90deg,
+              rgba(9,132,227,.18) 0%,
+              rgba(9,132,227,.18) ${pLowEnd}%,
+              rgba(43,213,118,.18) ${pLowEnd}%,
+              rgba(43,213,118,.18) ${pNormEnd}%,
+              rgba(255,209,102,.22) ${pNormEnd}%,
+              rgba(255,209,102,.22) ${pHighEnd}%,
+              rgba(255,107,107,.20) ${pHighEnd}%,
+              rgba(255,107,107,.20) 100%
+            )
+          `;
+        }
+
+        function imcFrom(peso, tallaCm){
+          if(peso == null || !Number.isFinite(peso)) return null;
+          if(tallaCm == null || !Number.isFinite(tallaCm) || tallaCm <= 0) return null;
+          const m = tallaCm / 100;
+          return peso / (m*m);
+        }
+        function imcClass(imc){
+          if(imc == null || !Number.isFinite(imc)) return "normal";
+          if(imc < 18.5) return "low";
+          if(imc < 25) return "normal";
+          if(imc < 30) return "high";
+          return "veryHigh";
+        }
+        function visceralClass(v){
+          if(v == null || !Number.isFinite(v)) return "normal";
+          if(v <= 9)  return "normal";
+          if(v <= 14) return "high";
+          return "veryHigh";
+        }
+
+        function rowOmronPct(label, currVal, prevVal, cuts, bandLabel){
+          const {min, max} = scaleRange(cuts);
+          const currLeft = leftPct(currVal, min, max);
+          const prevLeft = leftPct(prevVal, min, max);
+
+          const clsNow = classifyOmron(currVal, cuts);
+          const bg = barBackground(cuts, min, max);
+
+          return `
+            <div class="mg-row">
+              <div class="mg-label">
+                <b>${label}</b>
+                <small>Rango OMRON (${sexKey === "M" ? "HOMBRE" : "MUJER"} · ${bandLabel})</small>
+              </div>
+
+              <div style="position:relative;">
+                <div class="mg-bar" style="background:${bg};"></div>
+
+                ${prevLeft === null ? "" : `
+                  <span class="mg-pin-line prev"
+                    title="Anterior: ${fmtVal(prevVal)}%"
+                    style="left: calc(${prevLeft}% - 1px);"></span>
+                `}
+                ${currLeft === null ? "" : `
+                  <span class="mg-pin-line current"
+                    title="Actual: ${fmtVal(currVal)}%"
+                    style="left: calc(${currLeft}% - 1px);"></span>
+                `}
+              </div>
+
+              <div class="mg-value">
+                ${fmtVal(currVal)} <small>%</small>
+                <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+                  <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function rowGeneric(label, currVal, prevVal, min, max, unit, clsNow, subtitle){
+          const currLeft = leftPct(currVal, min, max);
+          const prevLeft = leftPct(prevVal, min, max);
+
+          const mid1 = 33.33, mid2 = 66.66;
+          const bg = `
+            linear-gradient(90deg,
+              rgba(9,132,227,.14) 0%,
+              rgba(9,132,227,.14) ${mid1}%,
+              rgba(43,213,118,.14) ${mid1}%,
+              rgba(43,213,118,.14) ${mid2}%,
+              rgba(255,107,107,.12) ${mid2}%,
+              rgba(255,107,107,.12) 100%
+            )
+          `;
+
+          return `
+            <div class="mg-row">
+              <div class="mg-label">
+                <b>${label}</b>
+                <small>${subtitle || ""}</small>
+              </div>
+
+              <div style="position:relative;">
+                <div class="mg-bar" style="background:${bg};"></div>
+
+                ${prevLeft === null ? "" : `
+                  <span class="mg-pin-line prev"
+                    title="Anterior: ${fmtVal(prevVal)}${unit ? " " + unit : ""}"
+                    style="left: calc(${prevLeft}% - 1px);"></span>
+                `}
+                ${currLeft === null ? "" : `
+                  <span class="mg-pin-line current"
+                    title="Actual: ${fmtVal(currVal)}${unit ? " " + unit : ""}"
+                    style="left: calc(${currLeft}% - 1px);"></span>
+                `}
+              </div>
+
+              <div class="mg-value">
+                ${fmtVal(currVal)} <small>${unit || ""}</small>
+                <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+                  <span class="mg-tag ${clsNow}">${labelClass(clsNow)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        const imc = imcFrom(pesoCurr, tallaCm);
+        const pesoCls = imcClass(imc);
+        const pesoSub = (imc != null)
+          ? `IMC aprox: ${fmtVal(imc,1)}`
+          : `Peso corporal (sin talla registrada)`;
+
+        const viscCls = visceralClass(viscCurr);
+
+        box.innerHTML = `
+          <div class="mg-grid">
+            ${rowOmronPct("% Grasa Corporal", grasaCurr, grasaPrev, fatCuts, fatBand)}
+            ${rowOmronPct("% Masa Muscular",  muscCurr,  muscPrev,  musCuts, musBand)}
+            ${rowGeneric("Peso corporal", pesoCurr, pesoPrev, 40, 150, "kg", pesoCls, pesoSub)}
+            ${rowGeneric("Grasa visceral", viscCurr, viscPrev, 0, 20, "nivel", viscCls, "Escala 0–20 (referencial)")}
+          </div>
+
+          <div class="mg-legend">
+            <span class="item"><span class="swatch prev"></span> Anterior</span>
+            <span class="item"><span class="swatch current"></span> Actual</span>
+          </div>
+
+          <div class="hint" style="margin-top:10px;">
+            Último registro: <b>${fmtDateShort(currEv.fecha)}</b>
+            ${prevEv?.fecha ? ` · Anterior: <b>${fmtDateShort(prevEv.fecha)}</b>` : ``}
+            ${age != null ? ` · Edad: <b>${age}</b>` : ``}
+            ${currentUser.sexo ? ` · Sexo: <b>${currentUser.sexo}</b>` : ``}
+          </div>
+        `;
+      }
+
+      function renderCompositionHistory(){
+        const box = document.getElementById("compHistoryBox");
+        if(!box || !currentUser) return;
+
+        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 8) : [];
+        if(!list || !list.length){
+          box.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>No hay historial todavía.</p></div>`;
+          return;
+        }
+
+        const rows = list.map(ev=>{
+          const f = fmtDateShort(ev.fecha);
+          const p = numClean(ev.pesoKg);
+          const m = numClean(ev.masaMuscularPct);
+          const g = numClean(ev.grasaPct);
+          return `
+            <tr>
+              <td class="comp-muted">${f}</td>
+              <td>${p ?? "—"}</td>
+              <td>${m ?? "—"}</td>
+              <td>${g ?? "—"}</td>
+            </tr>
+          `;
+        }).join("");
+
+        box.innerHTML = `
+          <div class="comp-scroll">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Peso (kg)</th>
+                  <th>% Músculo</th>
+                  <th>% Grasa</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+     
+/* ==============================
+   ✅ NUEVO: Registros fotográficos (FIX)
+   ============================== */
+
+/* ==============================
+   ✅ NUEVO: Registros fotográficos (FIX REAL)
+   - Soporta campos sueltos, CSV, JSON string, arrays
+   - Convierte links Drive a "uc?export=view&id="
+   - Placeholder embebido si falla carga
+   - ✅ Agrega openImageViewer (no existía)
+   ============================== */
+
+const PHOTO_PLACEHOLDER = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1">
+        <stop offset="0" stop-color="#f1f3f5"/>
+        <stop offset="1" stop-color="#e9ecef"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <g fill="#868e96" font-family="Arial, Helvetica, sans-serif">
+      <text x="50%" y="48%" font-size="36" text-anchor="middle">Sin imagen</text>
+      <text x="50%" y="52%" font-size="18" text-anchor="middle">No se pudo cargar la foto</text>
+    </g>
+  </svg>
+`)}`;
+
+function driveIdFromAnything(raw){
+  const s = String(raw || "").trim();
+  if(!s) return "";
+
+  // /file/d/ID/
+  let m = s.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if(m) return m[1];
+
+  // ?id=ID (open?id=, uc?id=, etc.)
+  m = s.match(/[?&]id=([a-zA-Z0-9_-]+)/i);
+  if(m) return m[1];
+
+  // id suelto
+  if(/^[a-zA-Z0-9_-]{25,}$/.test(s)) return s;
+
+  return "";
+}
+
+function normalizePhotoUrl(raw){
+  const s = String(raw || "").trim();
+  if(!s) return "";
+
+  // si ya es una URL normal que no es Drive
+  if(/^https?:\/\//i.test(s) && !/drive\.google\.com/i.test(s)) return s;
+
+  const id = driveIdFromAnything(s);
+  if(!id) return "";
+
+  // ✅ thumbnail (mucho más compatible)
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+}
+
+
+
+
+
+function parseMaybeList(v){
+  // retorna array de strings (posibles urls/ids)
+  if(v == null) return [];
+  if(Array.isArray(v)) return v.map(x => String(x || "").trim()).filter(Boolean);
+
+  const s = String(v).trim();
+  if(!s) return [];
+
+  // JSON array en string: ["...","..."]
+  if((s.startsWith("[") && s.endsWith("]")) || (s.startsWith("{") && s.endsWith("}"))){
+    try{
+      const parsed = JSON.parse(s);
+      if(Array.isArray(parsed)) return parsed.map(x => String(x||"").trim()).filter(Boolean);
+      // si viene objeto tipo {urls:[...]}
+      if(parsed && typeof parsed === "object"){
+        const cand = parsed.urls || parsed.fotos || parsed.photos || parsed.photoUrls || parsed.imagenes;
+        if(Array.isArray(cand)) return cand.map(x => String(x||"").trim()).filter(Boolean);
+      }
+    }catch(_){}
+  }
+
+  // separadores típicos: coma, salto, punto y coma, pipe
+  return s
+    .split(/[\n,;|]+/g)
+    .map(x => String(x||"").trim())
+    .filter(Boolean);
+}
+
+function extractPhotoUrls(ev){
+  if(!ev || typeof ev !== "object") return [];
+
+  const urls = [];
+
+  // ✅ 1) Campos típicos que existen cuando subes desde evaluacion.html
+  const FIELDS = [
+  // 🔑 campos reales que deja evaluacion.html
+  "fotoFrenteUrl",
+  "fotoPerfilUrl",
+  "fotoEspaldaUrl",
+
+  // compatibilidad
+  "fotoFrente",
+  "fotoPerfil",
+  "fotoEspalda"
+];
+
+
+  FIELDS.forEach(k=>{
+    const u = normalizePhotoUrl(ev[k]);
+    if(u) urls.push(u);
+  });
+
+  // ✅ 2) Campos contenedor (si guardas listas)
+  const LIST_FIELDS = ["fotos","photoUrls","photos","imagenes","linksFotos"];
+  LIST_FIELDS.forEach(k=>{
+    const v = ev[k];
+    if(!v) return;
+
+    // si viene array
+    if(Array.isArray(v)){
+      v.forEach(x=>{
+        const u = normalizePhotoUrl(x);
+        if(u) urls.push(u);
+      });
+      return;
+    }
+
+    const s = String(v).trim();
+    if(!s) return;
+
+    // si viene JSON array en string
+    if(s.startsWith("[") && s.endsWith("]")){
+      try{
+        const arr = JSON.parse(s);
+        if(Array.isArray(arr)){
+          arr.forEach(x=>{
+            const u = normalizePhotoUrl(x);
+            if(u) urls.push(u);
+          });
+          return;
+        }
+      }catch(_){}
+    }
+
+    // si viene CSV
+    s.split(/[\n,;|]+/g).map(t=>t.trim()).filter(Boolean).forEach(x=>{
+      const u = normalizePhotoUrl(x);
+      if(u) urls.push(u);
+    });
+  });
+
+  // ✅ sin duplicados + solo reales
+  return [...new Set(urls.filter(Boolean))];
+}
+
+function extractComment(ev){
+  const candidates = [
+    ev.comentario,
+    ev.comentarios,
+    ev.comentarioControl,
+    ev.comentarioFoto,
+    ev.notas,
+    ev.observaciones
+  ].filter(Boolean);
+
+  return candidates.length ? String(candidates[0]).trim() : "";
+}
+
+/* ✅ ESTO FALTABA: visor de imagen */
+function openImageViewer(url, meta){
+  const imgEl  = document.getElementById("imageModalImg");
+  const metaEl = document.getElementById("imageModalMeta");
+  if(!imgEl || !metaEl) return;
+
+  const safeUrl = normalizePhotoUrl(url);
+
+  imgEl.referrerPolicy = "no-referrer"; // ayuda con algunos hosts
+  imgEl.src = safeUrl || PHOTO_PLACEHOLDER;
+
+  imgEl.onerror = () => {
+    imgEl.src = PHOTO_PLACEHOLDER;
+  };
+
+  const fecha = meta?.fecha ? String(meta.fecha) : "—";
+  const titulo = meta?.titulo ? String(meta.titulo) : "Foto";
+  const comentario = meta?.comentario ? String(meta.comentario) : "";
+
+  metaEl.innerHTML = `
+    <div><b>${titulo}</b></div>
+    <div style="margin-top:6px; opacity:.9;">Fecha: <b>${fecha}</b></div>
+    ${comentario ? `<div style="margin-top:10px; opacity:.9;"><b>Comentario:</b><br>${comentario}</div>` : ``}
+    <div class="img-actions">
+      <a class="btn btn-dark" href="${safeUrl}" target="_blank" rel="noopener">
+        <i class="fas fa-up-right-from-square"></i> Abrir en pestaña
+      </a>
+      <button class="btn btn-dark" type="button" id="btnCloseImgInline">
+        <i class="fas fa-xmark"></i> Cerrar
+      </button>
+    </div>
+  `;
+
+  // cerrar inline
+  setTimeout(() => {
+    document.getElementById("btnCloseImgInline")?.addEventListener("click", () => closeModal("imageModal"));
+  }, 0);
+
+  openModal("imageModal");
+}
+
+function renderPhotoTimeline(){
+  const wrap = document.querySelector("#photosWrap");
+  const countEl = document.querySelector("#photosCount");
+  if(!wrap || !currentUser) return;
+
+  const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
+  const sorted = (list || []).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
+
+  const withPhotos = sorted
+    .map(ev => ({ ev, urls: extractPhotoUrls(ev) }))
+    .filter(x => x.urls.length > 0);
+    console.log("📸 DEBUG withPhotos:", withPhotos);
+console.log("📸 DEBUG urls[0]:", withPhotos[0]?.urls);
+console.log("📸 DEBUG raw ev[0]:", withPhotos[0]?.ev);
+
+
+  if(countEl){
+    countEl.textContent = `${withPhotos.length} control${withPhotos.length===1?"":"es"}`;
+  }
+
+  if(!withPhotos.length){
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-images"></i>
+        <p>No hay fotos asociadas a tus controles todavía.</p>
+      </div>
+    `;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="photo-timeline"></div>`;
+  const timeline = wrap.querySelector(".photo-timeline");
+
+  withPhotos.forEach((item, idx) => {
+    const ev = item.ev;
+    const urls = item.urls;
+    console.log("🧪 RAW urls:", urls);
+console.log("🧪 NORMAL urls:", urls.map(u => normalizePhotoUrl(u)));
+
+
+    const fecha = fmtDateShort(ev.fecha);
+    const comentario = extractComment(ev);
+
+    const peso  = numClean(ev.pesoKg);
+    const grasa = numClean(ev.grasaPct);
+    const mm    = numClean(ev.masaMuscularPct);
+    const visc  = numClean(ev.grasaVisceral);
+
+    const card = document.createElement("div");
+    card.className = "photo-card";
+    card.innerHTML = `
+      <div class="photo-card-head">
+        <div class="photo-card-title">
+          <div class="photo-date">${fecha}</div>
+          <div class="photo-sub">${urls.length} foto${urls.length===1?"":"s"} · Control #${idx+1}</div>
+        </div>
+        <div class="photo-badges">
+          <span class="badge"><i class="fas fa-weight-scale"></i> ${peso ?? "—"}kg</span>
+          <span class="badge"><i class="fas fa-percent"></i> ${grasa ?? "—"}%</span>
+          <span class="badge"><i class="fas fa-dumbbell"></i> ${mm ?? "—"}%</span>
+          <span class="badge"><i class="fas fa-heart-pulse"></i> ${visc ?? "—"}</span>
+        </div>
+      </div>
+
+      <div class="photo-card-body">
+        <div class="comment-box">
+          <div class="label"><i class="fas fa-comment-dots"></i> Comentario del control</div>
+          <div class="text">${comentario ? comentario : `<span style="opacity:.75">Sin comentario registrado.</span>`}</div>
+        </div>
+
+        <div class="photo-grid"></div>
+      </div>
+    `;
+
+    const grid = card.querySelector(".photo-grid");
+
+  const imgsHtml = urls.slice(0,12).map((raw, i) => {
+  const u = normalizePhotoUrl(raw);
+  return `
+    <div class="photo-item" data-url="${u}" data-i="${i}">
+      <img src="${u}" alt="Foto ${i+1}" loading="lazy" referrerpolicy="no-referrer"/>
+      <div class="overlay">
+        <span>Foto ${i+1}</span>
+        <span><i class="fas fa-magnifying-glass"></i></span>
+      </div>
+    </div>
+  `;
+}).join("");
+
+
+
+    grid.innerHTML = imgsHtml;
+
+    grid.querySelectorAll(".photo-item").forEach((p) => {
+      const url = p.dataset.url;
+      const i = Number(p.dataset.i);
+      const img = p.querySelector("img");
+
+      img.onerror = () => {
+  console.warn("❌ No carga img:", img.src);
+  img.style.objectFit = "contain";
+  img.style.padding = "12px";
+  img.src = "assets/img/no-photo.png";
+};
+
+
+      p.addEventListener("click", () => {
+        openImageViewer(url, {
+          fecha,
+          titulo: `Control #${idx+1} · Foto ${i+1}`,
+          comentario
+        });
+      });
+    });
+
+    timeline.appendChild(card);
+  });
+}
+
+      /* ==============================
+         Charts
          ============================== */
       function destroyCharts() {
         Object.values(charts).forEach(c => { try { c && c.destroy(); } catch(_){} });
-        charts = { peso:null, mm:null, grasa:null, visc:null };
+        charts = { peso:null, grasa:null, mm:null, visc:null };
       }
 
       function makeLineChart(canvasId, labels, data, label) {
@@ -1505,7 +2287,7 @@
       function renderCharts() {
         if(!currentUser) return;
 
-        const list = evaluationsLastN(currentUser.rut, 12);
+        const list = window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 12) : [];
         if(!list.length) {
           destroyCharts();
           return;
@@ -1513,465 +2295,128 @@
 
         const labels = list.map(x => fmtDateShort(x.fecha));
         const peso  = list.map(x => numClean(x.pesoKg));
-        const mmPct = list.map(x => numClean(x.masaMuscularPct));
         const grasa = list.map(x => numClean(x.grasaPct));
+        const mmPct = list.map(x => numClean(x.masaMuscularPct));
         const visc  = list.map(x => numClean(x.grasaVisceral));
 
         destroyCharts();
-        charts.peso  = makeLineChart("chartPeso",  labels, peso,  "Peso (kg)");
-        charts.mm    = makeLineChart("chartMM",    labels, mmPct, "% Músculo");
+        charts.peso  = makeLineChart("chartPeso", labels, peso, "Peso (kg)");
         charts.grasa = makeLineChart("chartGrasa", labels, grasa, "% Grasa");
-        charts.visc  = makeLineChart("chartVisc",  labels, visc,  "Grasa Visceral");
+        charts.mm    = makeLineChart("chartMM", labels, mmPct, "% Músculo");
+        charts.visc  = makeLineChart("chartVisc", labels, visc, "Grasa Visceral");
       }
 
-      /* ==============================
-         Perímetros + IMC (IMC requiere tallaCm)
-         ============================== */
-      function destroyPerimChart(){
-        try{ perimChart && perimChart.destroy(); }catch(_){}
-        perimChart = null;
-      }
+      function renderProfile() {
+        const body = $("#profileBody");
+        if(!body || !currentUser) return;
 
-      function renderPerimetersChart(){
-        if(!currentUser || !window.Chart) return;
-
-        const canvas = document.getElementById("chartPerimetros");
-        const pillsWrap = document.getElementById("periPills");
-        const foot = document.getElementById("periFoot");
-        if(!canvas || !pillsWrap) return;
-
-        const list = evaluationsLastN(currentUser.rut, 12);
-        if(!list || !list.length){
-          destroyPerimChart();
-          pillsWrap.innerHTML = "";
-          if(foot) foot.textContent = "No hay evaluaciones para graficar perímetros.";
-          return;
-        }
-
-        const labels = list.map(x => fmtDateShort(x.fecha));
-        const get = (ev, key) => numClean(ev?.[key]);
-
-         const tallaPerfil = numClean(currentUser?.tallaCm);
-
-function calcIMC(pesoKg, tallaCm){
-  if(pesoKg == null || !Number.isFinite(pesoKg)) return null;
-  if(tallaCm == null || !Number.isFinite(tallaCm) || tallaCm <= 0) return null;
-  const m = tallaCm / 100;
-  return pesoKg / (m * m);
-}
-
-const pesoArr = list.map(ev => get(ev, "pesoKg"));
-
-const imcArr = list.map(ev => {
-  // 1) si viene IMC desde Sheets, úsalo
-  const imcSheet = numClean(ev?.imc);
-  if(imcSheet != null) return imcSheet;
-
-  // 2) si no viene, calcúlalo con tallaCm del registro
-  const peso = get(ev, "pesoKg");
-  const tallaEval = numClean(ev?.tallaCm);
-
-  // 3) fallback: talla del perfil
-  return calcIMC(peso, tallaEval ?? tallaPerfil);
-});
-
-
-        const series = [
-          { key:"peso",         label:"Peso (kg)",         data:pesoArr },
-          { key:"imc",          label:"IMC",               data:imcArr  },
-          { key:"brazoCm",      label:"Brazo (cm)",        data:list.map(ev=>get(ev,"brazoCm")) },
-          { key:"cinturaCm",    label:"Cintura (cm)",      data:list.map(ev=>get(ev,"cinturaCm")) },
-          { key:"caderaCm",     label:"Cadera (cm)",       data:list.map(ev=>get(ev,"caderaCm")) },
-          { key:"musloCm",     label:"Muslo (cm)",       data:list.map(ev=>get(ev,"musloCm")) },
-          { key:"pantorrillaCm",label:"Pantorrilla (cm)",  data:list.map(ev=>get(ev,"pantorrillaCm")) },
-        ];
-
-        if(tallaPerfil == null){
-  if(foot) foot.textContent = "IMC: se usa el valor guardado en la evaluación (columna imc). Si no existe, requiere talla (tallaCm) en evaluación o en perfil.";
-}else{
-  if(foot) foot.textContent = "Se grafican las últimas 12 evaluaciones (de más antigua a más reciente).";
-}
-
-
-        const datasets = series.map((s, idx) => ({
-          label: s.label,
-          data: s.data,
-          tension: 0.25,
-          fill: false,
-          borderWidth: 2,
-          pointRadius: 3,
-          spanGaps: false,
-          hidden: idx > 0, // default: solo Peso
-        }));
-
-        destroyPerimChart();
-        perimChart = new Chart(canvas, {
-          type: "line",
-          data: { labels, datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { intersect:false, mode:"index" }
-            },
-            scales: {
-              x: { ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit: 8 } },
-              y: { beginAtZero:false }
-            }
-          }
-        });
-
-        pillsWrap.innerHTML = series.map((s, idx) => `
-          <button class="periPill ${idx===0?"active":""}" type="button" data-ds="${idx}">
-            <span class="periDot"></span>
-            ${s.label}
-          </button>
-        `).join("");
-
-        // Solo para que se vea “dot”, sin depender de colores fijos
-        // (Chart.js elige color por defecto; el dot es estético)
-        pillsWrap.querySelectorAll(".periPill .periDot").forEach((dot, i)=>{
-          dot.style.background = (i===0) ? "var(--txt)" : "var(--txt-muted)";
-        });
-
-        pillsWrap.querySelectorAll(".periPill").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const i = Number(btn.getAttribute("data-ds"));
-            if(!Number.isFinite(i) || !perimChart) return;
-
-            perimChart.data.datasets.forEach((ds, idx)=> ds.hidden = (idx !== i));
-            perimChart.update();
-
-            pillsWrap.querySelectorAll(".periPill").forEach(b=> b.classList.remove("active"));
-            btn.classList.add("active");
-          });
-        });
-      }
-
-      /* ==============================
-         Análisis Músculo-Grasa (barras con actual + anterior)
-         - % grasa, % músculo, peso, visceral
-         ============================== */
-      function classifyMetric(kind, v){
-        // Clasificación simple (referencial). Si quieres tus rangos exactos, me los pasas y lo dejo calcado.
-        if(v == null || !Number.isFinite(v)) return { cls:"", label:"—" };
-
-        if(kind === "grasaPct"){
-          if(v < 10) return { cls:"low", label:"Bajo" };
-          if(v < 20) return { cls:"normal", label:"Normal" };
-          if(v < 25) return { cls:"high", label:"Alto" };
-          return { cls:"veryHigh", label:"Muy alto" };
-        }
-        if(kind === "masaMuscularPct"){
-          if(v < 30) return { cls:"low", label:"Bajo" };
-          if(v < 45) return { cls:"normal", label:"Normal" };
-          if(v < 55) return { cls:"high", label:"Alto" };
-          return { cls:"veryHigh", label:"Muy alto" };
-        }
-        if(kind === "pesoKg"){
-          // Sin talla no hay “normal” real. Mostramos “referencial”.
-          return { cls:"normal", label:"Referencial" };
-        }
-        if(kind === "grasaVisceral"){
-          if(v < 10) return { cls:"normal", label:"Normal" };
-          if(v < 15) return { cls:"high", label:"Alto" };
-          return { cls:"veryHigh", label:"Muy alto" };
-        }
-        return { cls:"", label:"—" };
-      }
-
-      function pinPos(kind, v){
-        // Mapea el valor a 0..100 para pin. Mapa simple.
-        if(v == null || !Number.isFinite(v)) return null;
-
-        let min=0, max=100;
-        if(kind === "grasaPct"){ min=0; max=45; }
-        if(kind === "masaMuscularPct"){ min=0; max=70; }
-        if(kind === "pesoKg"){ min=30; max=180; }
-        if(kind === "grasaVisceral"){ min=0; max=25; }
-
-        const pct = ( (v - min) / (max - min) ) * 100;
-        return Math.max(0, Math.min(100, pct));
-      }
-
-      function pesoIdealByTalla(tallaCm){
-  const t = numClean(tallaCm);
-  if(t == null || !Number.isFinite(t) || t <= 0) return null;
-  const m = t / 100;
-  return 21.7 * (m * m);
-}
-
-
-
-
-      function renderMuscleFatAnalysis(){
-        const box = document.getElementById("mgAnalysisBox");
-        if(!box) return;
-
-        const last2 = evaluationsLastN(currentUser?.rut, 2);
-        const prev = last2.length >= 2 ? last2[last2.length - 2] : null;
-        const last = last2.length ? last2[last2.length - 1] : null;
-        const pesoIdeal = pesoIdealByTalla(currentUser?.tallaCm);
-
-
-        if(!last){
-          box.innerHTML = `
-            <div class="empty-state" style="padding:24px 16px;">
-              <i class="fas fa-chart-line"></i>
-              <p>No hay evaluaciones aún.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const rows = [
-          {
-            kind:"grasaPct",
-            title:"% Grasa Corporal",
-            sub:"Rango referencial",
-            value:numClean(last.grasaPct),
-            prev:numClean(prev?.grasaPct),
-            unit:"%"
-          },
-          {
-            kind:"masaMuscularPct",
-            title:"% Masa Muscular",
-            sub:"Rango referencial",
-            value:numClean(last.masaMuscularPct),
-            prev:numClean(prev?.masaMuscularPct),
-            unit:"%"
-          },
-          {
-  kind:"pesoKg",
-  title:"Peso corporal",
-  sub: pesoIdeal == null
-    ? "Peso ideal: requiere talla"
-    : `Peso ideal: ${pesoIdeal.toFixed(1)} kg`,
-  value: numClean(last.pesoKg),
-  prev: numClean(prev?.pesoKg),
-  unit:"kg"
-},
-
-          {
-            kind:"grasaVisceral",
-            title:"Grasa visceral",
-            sub:"Escala 0–20 (referencial)",
-            value:numClean(last.grasaVisceral),
-            prev:numClean(prev?.grasaVisceral),
-            unit:"nivel"
-          },
-        ];
-
-        const html = `
-          <div class="mg-grid">
-            ${rows.map(r=>{
-              const cls = classifyMetric(r.kind, r.value);
-              const p = pinPos(r.kind, r.value);
-              const pp = pinPos(r.kind, r.prev);
-              const vtxt = (r.value==null) ? "—" : (Number.isInteger(r.value) ? r.value : r.value.toFixed(1));
-              return `
-                <div class="mg-row">
-                  <div class="mg-label">
-                    <b>${r.title}</b>
-                    <small>${r.sub}</small>
-                  </div>
-
-                  <div class="mg-bar">
-                    ${pp==null ? "" : `<span class="mg-pin-line prev" style="left: calc(${pp}% - 1px)"></span>`}
-                    ${p==null ? "" : `<span class="mg-pin-line current" style="left: calc(${p}% - 1px)"></span>`}
-                  </div>
-
-                  <div class="mg-value">
-                    <div>${vtxt} <small>${r.unit}</small></div>
-                    <div class="mg-tag ${cls.cls || "normal"}">${cls.label}</div>
-                  </div>
-                </div>
-              `;
-            }).join("")}
-
-            <div class="mg-legend">
-              <span class="item"><span class="swatch prev"></span>Anterior</span>
-              <span class="item"><span class="swatch current"></span>Actual</span>
-              <span class="comp-muted">Último registro: ${fmtDateShort(last.fecha)} · Anterior: ${prev ? fmtDateShort(prev.fecha) : "—"}</span>
-            </div>
-          </div>
-        `;
-        box.innerHTML = html;
-      }
-
-      /* ==============================
-         Historial de composición (tabla)
-         ============================== */
-      function renderCompositionHistory(){
-        const box = document.getElementById("compHistoryBox");
-        if(!box) return;
-
-        const list = getEvaluationsSafe(currentUser?.rut);
-        const sorted = (list||[]).slice().sort((a,b)=> String(b.fecha||"").localeCompare(String(a.fecha||"")));
-        const recent = sorted.slice(0, 12);
-
-        if(!recent.length){
-          box.innerHTML = `
-            <div class="empty-state" style="padding:24px 16px;">
-              <i class="fas fa-table"></i>
-              <p>No hay registros para mostrar.</p>
-            </div>
-          `;
-          return;
-        }
-
-        box.innerHTML = `
-          <div class="comp-scroll">
-            <table class="comp-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Peso (kg)</th>
-                  <th>% Músculo</th>
-                  <th>% Grasa</th>
-                  <th>Visceral</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${recent.map(ev=>{
-                  const w = numClean(ev.pesoKg);
-                  const m = numClean(ev.masaMuscularPct);
-                  const g = numClean(ev.grasaPct);
-                  const v = numClean(ev.grasaVisceral);
-                  const f = fmtDateShort(ev.fecha);
-                  const fmt = (x)=> x==null ? "—" : (Number.isInteger(x) ? x : x.toFixed(1));
-                  return `
-                    <tr>
-                      <td>${f}</td>
-                      <td>${fmt(w)}</td>
-                      <td>${fmt(m)}</td>
-                      <td>${fmt(g)}</td>
-                      <td>${fmt(v)}</td>
-                    </tr>
-                  `;
-                }).join("")}
-              </tbody>
-            </table>
-          </div>
-        `;
-      }
-
-      /* ==============================
-         Perfil
-         ============================== */
-      function renderProfile(){
-        const body = document.getElementById("profileBody");
-        if(!body) return;
-        if(!currentUser){
-          body.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-user-circle"></i>
-              <p>No se pudo cargar el perfil.</p>
-            </div>
-          `;
-          return;
-        }
-
-        const talla = numClean(currentUser.tallaCm);
         body.innerHTML = `
-          <div class="mg-grid">
-            <div class="mg-row">
-              <div class="mg-label"><b>Nombre</b><small>Cuenta</small></div>
-              <div></div>
-              <div class="mg-value">${currentUser.nombre || "—"}</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>RUT</label>
+              <input value="${currentUser.rut || ""}" disabled />
+            </div>
+            <div class="field">
+              <label>Nombre</label>
+              <input value="${currentUser.nombre || ""}" disabled />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input value="${currentUser.email || ""}" disabled />
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input value="${currentUser.telefono || ""}" disabled />
             </div>
 
-            <div class="mg-row">
-              <div class="mg-label"><b>RUT</b><small>Identificador</small></div>
-              <div></div>
-              <div class="mg-value">${currentUser.rut || "—"}</div>
+            <div class="field">
+              <label>Plan</label>
+              <input value="${String(currentUser.planId || currentUser.planTipo || "—")}" disabled />
+            </div>
+            <div class="field">
+              <label>Vencimiento</label>
+              <input value="${currentUser.planFin ? fmtDateShort(currentUser.planFin) : "—"}" disabled />
             </div>
 
-            <div class="mg-row">
-              <div class="mg-label"><b>Plan</b><small>Vigencia</small></div>
-              <div></div>
-              <div class="mg-value">${planLabel(currentUser)}</div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label>Objetivo</label>
+              <input value="${currentUser.objetivo || ""}" disabled />
             </div>
-
-            <div class="mg-row">
-              <div class="mg-label"><b>Talla</b><small>Para IMC (solo tallaCm)</small></div>
-              <div></div>
-              <div class="mg-value">${talla == null ? "—" : `${talla} cm`}</div>
-            </div>
-
-            <div class="hint">Si falta talla, edítala en tu ficha (Users) para habilitar IMC en el gráfico de perímetros.</div>
+          </div>
+          <div class="divider"></div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btnProfileRefresh"><i class="fas fa-rotate"></i> Refrescar datos</button>
           </div>
         `;
+
+        $("#btnProfileRefresh")?.addEventListener("click", hardRefresh);
       }
 
-      /* ==============================
-         Registrar evaluación (usa app.js si existe; fallback localStorage)
-         ============================== */
-      async function saveEvaluation(ev){
-        // Preferido: tu app.js
-        if (window.createEvaluation) return window.createEvaluation(ev);
-        if (window.upsertEvaluation) return window.upsertEvaluation(ev);
-
-        // fallback local
-        const key = "mahfit_evals";
-        let all = [];
-        try{ all = JSON.parse(localStorage.getItem(key) || "[]"); }catch(_){}
-        // id simple
-        ev.id = ev.id || (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()));
-        all.push(ev);
-        localStorage.setItem(key, JSON.stringify(all));
-        return { ok:true };
-      }
-
-      function setupRegisterForm(){
-        const form = document.getElementById("evalForm");
+      function setupRegisterForm() {
+        const form = $("#evalForm");
         if(!form) return;
 
-        // default fecha hoy
-        const f = document.getElementById("evalFecha");
-        if(f && !f.value){
-          const d = new Date();
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth()+1).padStart(2,"0");
-          const dd = String(d.getDate()).padStart(2,"0");
-          f.value = `${yyyy}-${mm}-${dd}`;
-        }
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth()+1).padStart(2,'0');
+        const dd = String(today.getDate()).padStart(2,'0');
+        $("#evalFecha").value = `${yyyy}-${mm}-${dd}`;
 
-        form.addEventListener("submit", async (e)=>{
+        $("#btnCancelarEval")?.addEventListener("click", () => navigateTo("home"));
+
+        form.addEventListener("submit", async (e) => {
           e.preventDefault();
           if(!currentUser) return;
 
-          const payload = {
-            rut: currentUser.rut,
-            fecha: document.getElementById("evalFecha")?.value || "",
-            pesoKg: numClean(document.getElementById("evalPeso")?.value),
-            grasaPct: numClean(document.getElementById("evalGrasa")?.value),
-            masaMuscularPct: numClean(document.getElementById("evalMM")?.value),
-            grasaVisceral: numClean(document.getElementById("evalVisc")?.value),
-            cinturaCm: numClean(document.getElementById("evalCintura")?.value),
-            observaciones: String(document.getElementById("evalNotas")?.value || "").trim()
-          };
+          const btn = $("#btnGuardarEval");
+          btn.disabled = true;
 
-          try{
-            await saveEvaluation(payload);
+          try {
+            const payload = {
+              rutSocio: currentUser.rut,
+              fecha: $("#evalFecha").value,
 
-            // refrescar desde backend si existe
-            if(window.refreshEvaluations) await window.refreshEvaluations();
+              pesoKg: $("#evalPeso").value,
+              grasaPct: $("#evalGrasa").value,
+              masaMuscularPct: $("#evalMM").value,
+              grasaVisceral: $("#evalVisc").value,
 
-            showNotification("Evaluación guardada", "success");
-            await hardRefresh();
+              cinturaCm: $("#evalCintura").value,
+              observaciones: $("#evalNotas").value
+            };
+
+            Object.keys(payload).forEach(k => {
+              if(payload[k] === "") delete payload[k];
+            });
+
+            if(!window.saveEvaluation) throw new Error("saveEvaluation no disponible. Revisa que assets/app.js esté cargando.");
+            await window.saveEvaluation(payload);
+
+            if(window.refreshEvaluations) {
+              try { await window.refreshEvaluations(); } catch(_) {}
+            }
+
+            showNotification("✅ Evaluación guardada", "success");
+
+            setKPIsFromLastEval();
+            renderRecentLogs();
+            renderRoutineModal();
+            renderCharts();
+            renderMuscleFatAnalysis();
+            renderCompositionHistory();
+            renderPhotoTimeline();
+            renderProfile();
+
             navigateTo("home");
-          }catch(err){
+          } catch(err) {
             console.error(err);
-            showNotification("No se pudo guardar la evaluación.", "error");
+            showNotification(`❌ ${err.message || err}`, "error");
+          } finally {
+            btn.disabled = false;
           }
         });
       }
 
-      /* ==============================
-         Refrescar duro
-         ============================== */
       async function hardRefresh() {
         try {
           if(window.syncDown) await window.syncDown();
@@ -1985,11 +2430,10 @@ const imcArr = list.map(ev => {
           setKPIsFromLastEval();
           renderRecentLogs();
           renderRoutineModal();
-
           renderCharts();
           renderMuscleFatAnalysis();
           renderCompositionHistory();
-          renderPerimetersChart();
+          renderPhotoTimeline();
           renderProfile();
 
           showNotification("Datos actualizados", "success");
@@ -1999,9 +2443,6 @@ const imcArr = list.map(ev => {
         }
       }
 
-      /* ==============================
-         Init
-         ============================== */
       (function init() {
         if(!window.requireAuth) {
           showNotification("Falta cargar assets/app.js", "error");
@@ -2019,11 +2460,36 @@ const imcArr = list.map(ev => {
         setKPIsFromLastEval();
         renderRecentLogs();
         renderRoutineModal();
-
         renderCharts();
         renderMuscleFatAnalysis();
         renderCompositionHistory();
-        renderPerimetersChart();
+        renderPhotoTimeline();
+        renderProfile();
+
+        setTimeout(async () => {
+          try {
+            const list = window.getEvaluationsForRut ? window.getEvaluationsForRut(currentUser.rut) : [];
+            if(!list || !list.length) {
+              if(window.refreshEvaluations) await window.refreshEvaluations();
+              setKPIsFromLastEval();
+              renderRecentLogs();
+              renderCharts();
+              renderMuscleFatAnalysis();
+              renderCompositionHistory();
+              renderPhotoTimeline();
+            }
+          } catch(_) {}
+        }, 600);
+
+        $("#btnViewFullRoutine")?.addEventListener("click", () => {
+          closeModal("workoutModal");
+          window.location.href = "socio_rutina.html";
+        });
+
+        $("#btnLogMeal")?.addEventListener("click", () => {
+          closeModal("nutritionModal");
+          showNotification("Nutrición: lo conectamos después si lo quieres en Sheets.", "info");
+        });
 
         setTimeout(() => showNotification("Sesión iniciada correctamente", "success"), 300);
       })();
