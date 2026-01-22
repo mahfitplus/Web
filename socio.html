@@ -859,6 +859,7 @@
       align-items:center;
       justify-content:center;
       padding:0;
+      position: relative;
     }
     .img-view img{
       width:100%;
@@ -867,6 +868,48 @@
       object-fit: contain;
       display:block;
     }
+.img-view{
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  position: relative;
+}
+.img-nav-btn{
+  position:absolute;
+  top:50%;
+  transform: translateY(-50%);
+  width:48px;
+  height:48px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(11,15,23,.55);
+  color: rgba(255,255,255,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+  transition: transform .12s ease, opacity .12s ease, background .12s ease;
+  z-index: 5;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
+}
+.img-nav-btn:hover{ background: rgba(11,15,23,.75); transform: translateY(-50%) scale(1.05); }
+.img-nav-btn:active{ transform: translateY(-50%) scale(.98); }
+.img-nav-btn.left{ left: 12px; }
+.img-nav-btn.right{ right: 12px; }
+.img-nav-btn[disabled]{
+  opacity: .25;
+  cursor: default;
+  pointer-events: none;
+}
+@media (max-width: 520px){
+  .img-nav-btn{ width:42px; height:42px; }
+  .img-nav-btn.left{ left: 8px; }
+  .img-nav-btn.right{ right: 8px; }
+}
     .img-meta{
       padding:14px 18px;
       border-top:1px solid rgba(255,255,255,.10);
@@ -1273,7 +1316,13 @@
         <div class="close" id="closeImageModal" style="color: rgba(255,255,255,.75);">&times;</div>
       </div>
       <div class="modal-body img-view">
+        <button class="img-nav-btn left" id="imgPrev" type="button" aria-label="Anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
         <img id="imageModalImg" alt="Foto" />
+        <button class="img-nav-btn right" id="imgNext" type="button" aria-label="Siguiente">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
       <div class="img-meta" id="imageModalMeta"></div>
     </div>
@@ -2155,6 +2204,99 @@ function extractComment(ev){
   return candidates.length ? String(candidates[0]).trim() : "";
 }
 
+// ✅ Navegación por fotos (misma postura) entre controles
+let __photoNavItems = []; // [{fecha, comentario, urls:[u0,u1,u2...]}] ordenado (más nuevo -> más antiguo)
+let __navCtrlIdx = 0;     // índice del control actual dentro de __photoNavItems
+let __navSlotIdx = 0;     // índice de la foto dentro del control (0=frente,1=perfil,2=espalda...)
+
+function __findCtrlWithSlot(startIdx, dir, slot){
+  let i = startIdx + dir;
+  while(i >= 0 && i < __photoNavItems.length){
+    const it = __photoNavItems[i];
+    const u = it?.urls?.[slot];
+    if(u) return i;
+    i += dir;
+  }
+  return -1;
+}
+
+function __updateNavButtons(){
+  const btnPrev = document.getElementById("imgPrev");
+  const btnNext = document.getElementById("imgNext");
+  if(!btnPrev || !btnNext) return;
+  const hasPrev = __findCtrlWithSlot(__navCtrlIdx, +1, __navSlotIdx) !== -1; // +1 = más antiguo (lista está más nuevo->más antiguo)
+  const hasNext = __findCtrlWithSlot(__navCtrlIdx, -1, __navSlotIdx) !== -1; // -1 = más nuevo
+  btnPrev.toggleAttribute("disabled", !hasPrev);
+  btnNext.toggleAttribute("disabled", !hasNext);
+}
+
+function openImageViewerNav(ctrlIdx, slotIdx){
+  __navCtrlIdx = ctrlIdx;
+  __navSlotIdx = slotIdx;
+  const it = __photoNavItems[ctrlIdx];
+  const url = it?.urls?.[slotIdx];
+  const fecha = it?.fecha || "—";
+  const comentario = it?.comentario || "";
+  const slotName = (slotIdx===0 ? "Frente" : (slotIdx===1 ? "Perfil" : (slotIdx===2 ? "Espalda" : `Foto ${slotIdx+1}`)));
+  openImageViewer(url, {
+    fecha,
+    titulo: `Control #${ctrlIdx+1} · ${slotName}`,
+    comentario
+  });
+  __updateNavButtons();
+}
+
+function __moveNav(dir){
+  // dir: +1 = ir a control más antiguo, -1 = ir a control más nuevo
+  const nextIdx = __findCtrlWithSlot(__navCtrlIdx, dir, __navSlotIdx);
+  if(nextIdx === -1) return;
+  openImageViewerNav(nextIdx, __navSlotIdx);
+}
+
+// listeners (una vez)
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if(t && (t.id === "imgPrev" || t.closest?.("#imgPrev"))){
+    e.preventDefault();
+    __moveNav(+1);
+  }
+  if(t && (t.id === "imgNext" || t.closest?.("#imgNext"))){
+    e.preventDefault();
+    __moveNav(-1);
+  }
+});
+
+// teclado (cuando modal abierto)
+document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("imageModal");
+  if(!modal || !modal.classList.contains("active")) return;
+  if(e.key === "ArrowLeft") __moveNav(+1);
+  if(e.key === "ArrowRight") __moveNav(-1);
+});
+
+// swipe en móvil dentro del visor
+(function(){
+  const area = document.getElementById("imageModal");
+  if(!area) return;
+  let sx=0, sy=0, st=0;
+  area.addEventListener("touchstart", (ev)=>{
+    const t = ev.touches?.[0];
+    if(!t) return;
+    sx = t.clientX; sy = t.clientY; st = Date.now();
+  }, {passive:true});
+  area.addEventListener("touchend", (ev)=>{
+    const t = ev.changedTouches?.[0];
+    if(!t) return;
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    const dt = Date.now() - st;
+    if(dt > 650) return;
+    if(Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)*1.4) return;
+    if(dx < 0) __moveNav(-1); // swipe left -> más nuevo
+    else __moveNav(+1);       // swipe right -> más antiguo
+  }, {passive:true});
+})();
+
 /* ✅ ESTO FALTABA: visor de imagen */
 function openImageViewer(url, meta){
   const imgEl  = document.getElementById("imageModalImg");
@@ -2207,6 +2349,14 @@ function renderPhotoTimeline(){
   const withPhotos = sorted
     .map(ev => ({ ev, urls: extractPhotoUrls(ev) }))
     .filter(x => x.urls.length > 0);
+
+// ✅ prepara navegación: mismo índice de foto (0=frente,1=perfil,2=espalda) entre controles con fotos
+__photoNavItems = withPhotos.map(x => ({
+  fecha: fmtDateShort(x.ev?.fecha),
+  comentario: extractComment(x.ev),
+  urls: (x.urls || []).map(u => normalizePhotoUrl(u))
+}));
+
     console.log("📸 DEBUG withPhotos:", withPhotos);
 console.log("📸 DEBUG urls[0]:", withPhotos[0]?.urls);
 console.log("📸 DEBUG raw ev[0]:", withPhotos[0]?.ev);
@@ -2362,11 +2512,8 @@ const miniKpisHtml = [
 
 
       p.addEventListener("click", () => {
-        openImageViewer(url, {
-          fecha,
-          titulo: `Control #${idx+1} · Foto ${i+1}`,
-          comentario
-        });
+        // ✅ Navega entre controles manteniendo la misma "postura" (índice de foto)
+        openImageViewerNav(idx, i);
       });
     });
 
