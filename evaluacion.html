@@ -256,7 +256,7 @@
     }
     .chartsTwo{
       display:grid;
-      grid-template-columns: 1fr; /* ✅ SIEMPRE 1 columna */
+      grid-template-columns: 1fr; /* SIEMPRE 1 columna */
       gap: 12px;
     }
 
@@ -329,7 +329,7 @@
       font-size:12px;
     }
 
-    /* ===== FOTO UI ===== */
+    /* ===== FOTO UI (arriba, dentro de evaluación) ===== */
     .photoGrid{
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -385,25 +385,136 @@
       justify-content:flex-end;
       margin-top: 10px;
     }
-    .miniOk{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(170,255,200,.95);
-    }
-    .miniBad{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(255,180,186,.95);
-    }
+    .miniOk{ font-size:12px; font-weight:900; color: rgba(170,255,200,.95); }
+    .miniBad{ font-size:12px; font-weight:900; color: rgba(255,180,186,.95); }
     .linkPills{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
       margin-top: 10px;
     }
-    .linkPills a{
-      text-decoration:none;
-      color: rgba(255,255,255,.88);
+    .linkPills a{ text-decoration:none; color: rgba(255,255,255,.88); }
+
+    /* ===== CONTROLES (debajo de gráficos) ===== */
+    .controlsGallery{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .ctrlCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      border-radius: 16px;
+      overflow:hidden;
+    }
+    .ctrlHead{
+      padding: 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .ctrlTitle{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 11px;
+      color: rgba(255,255,255,.78);
+    }
+    .ctrlMeta{
+      margin-top:4px;
+      color: rgba(255,255,255,.72);
+      font-weight:900;
+      font-size: 12px;
+    }
+
+    .ctrlBody{
+      padding: 12px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 12px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .ctrlBody{ grid-template-columns: 1fr; }
+    }
+
+    .ctrlThumbs{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 860px){
+      .ctrlThumbs{ grid-template-columns: 1fr; }
+    }
+
+    .thumb{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    .thumbTop{
+      padding:10px 10px 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .thumbLabel{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 10px;
+      color: rgba(255,255,255,.75);
+    }
+    .thumbImg{
+      aspect-ratio: 4/5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(255,255,255,.45);
+      font-weight:900;
+      font-size:12px;
+      background: rgba(0,0,0,.10);
+    }
+    .thumbImg img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .ctrlRight .h{
+      font-weight:1000;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size: 11px;
+      color: rgba(255,255,255,.78);
+      margin-bottom: 8px;
+    }
+    .ctrlActions{
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .ctrlSaved{
+      color: rgba(170,255,200,.95);
+      font-weight: 1000;
+      font-size: 12px;
+    }
+    .ctrlError{
+      color: rgba(255,180,186,.95);
+      font-weight: 1000;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -531,20 +642,16 @@
             </div>
           </div>
 
-          <!-- ✅ A) REGISTRO FOTOGRÁFICO (DENTRO DE EVALUACIÓN) -->
+          <!-- REGISTRO FOTOGRÁFICO (en evaluación actual) -->
           <div class="block" style="margin-top:12px;">
             <div class="blockHead">
               <div class="h">Registro fotográfico</div>
               <div class="pill" id="pEvalId">EvalId: —</div>
             </div>
             <div class="blockBody">
-
-              <div class="hint">
-                Primero guarda la evaluación. Luego sube las fotos (frente/perfil/espalda).
-              </div>
+              <div class="hint">Primero guarda la evaluación. Luego sube las fotos (frente/perfil/espalda).</div>
 
               <div class="photoGrid">
-
                 <div class="photoBox">
                   <div class="photoLabel">
                     <span>Frente</span>
@@ -571,7 +678,6 @@
                   <input id="fileBack" type="file" accept="image/*" />
                   <div class="photoPrev" id="prevBack">Sin foto</div>
                 </div>
-
               </div>
 
               <div class="rowActions">
@@ -580,7 +686,6 @@
               </div>
 
               <div class="linkPills" id="photoLinks"></div>
-
             </div>
           </div>
 
@@ -594,12 +699,11 @@
         </div>
       </div>
 
-      <!-- ✅ GRÁFICOS GRANDES (UNO DEBAJO DEL OTRO) -->
+      <!-- GRÁFICOS -->
       <div class="chartsSection">
         <div class="chartMsg" id="chartMsg">Selecciona un socio para ver gráficos.</div>
 
         <div class="chartsTwo">
-
           <div class="chartCard">
             <div class="chartHead">
               <div>
@@ -628,23 +732,24 @@
             </div>
           </div>
 
-          <!-- ✅ REGISTRO FOTOGRÁFICO (HISTORIAL) -->
-<div class="chartCard" style="margin-top:12px;">
-  <div class="chartHead">
-    <div>
-      <div class="chartTitle">Registro fotográfico</div>
-      <div class="muted">Últimas 12 evaluaciones (C1 → C12)</div>
-    </div>
-  </div>
-  <div class="chartBody">
-    <div id="photoTimeline" class="photoTimeline">
-      <div class="muted" style="padding:10px 12px;">Selecciona un socio para ver el registro fotográfico.</div>
-    </div>
-    <div class="chartHint">Se muestran miniaturas por control (frente/perfil/espalda). Si falta una foto, aparece “—”.</div>
-  </div>
-</div>
-
-
+          <!-- CONTROLES CON FOTOS + COMENTARIO -->
+          <div class="chartCard">
+            <div class="chartHead">
+              <div>
+                <div class="chartTitle">Registro fotográfico</div>
+                <div class="muted">Controles con fotos + comentario (últimas 12)</div>
+              </div>
+              <div class="legend">
+                <span class="lg"><span class="dot" style="background:rgba(255,255,255,.92)"></span>Fotos del control</span>
+                <span class="lg"><span class="dot" style="background:rgba(35,166,255,.95)"></span>Comentario</span>
+              </div>
+            </div>
+            <div class="chartBody">
+              <div id="controlsMsg" class="chartMsg">Selecciona un socio para ver controles.</div>
+              <div id="controlsGallery" class="controlsGallery"></div>
+              <div class="chartHint">Tip: el comentario se intenta guardar en la evaluación (Sheets). Si falla, se guarda localmente en este dispositivo.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -655,88 +760,10 @@
 
 <script src="assets/app.js"></script>
 <script>
-
-  function renderPhotoTimeline(rut){
-  const box = document.getElementById("photoTimeline");
-  if(!box) return;
-
-  if(!rut){
-    box.innerHTML = `<div class="muted" style="padding:10px 12px;">Selecciona un socio para ver el registro fotográfico.</div>`;
-    return;
-  }
-
-  const latest = listForRut(rut).slice(0,12).reverse(); // C1..C12
-  if(latest.length === 0){
-    box.innerHTML = `<div class="muted" style="padding:10px 12px;">Sin fotos registradas.</div>`;
-    return;
-  }
-
-  const shotHtml = (label, url) => {
-    const u = safe(url,"").trim();
-    if(!u){
-      return `
-        <div class="ptShot">
-          <div class="lbl">${label}</div>
-          <div class="img">—</div>
-        </div>`;
-    }
-    return `
-      <div class="ptShot">
-        <div class="lbl">${label}</div>
-        <div class="img" data-open="${u}">
-          <img src="${u}" alt="${label}" loading="lazy">
-        </div>
-      </div>`;
-  };
-
-  box.innerHTML = latest.map((x, i)=>{
-    const c = `C${i+1}`;
-    const when = prettyDT(x.fecha, x.hora);
-
-    return `
-      <div class="ptCol">
-        <div class="ptHead">
-          <div class="ptTitle">${c}</div>
-          <div class="ptSub">${when}</div>
-        </div>
-        <div class="ptBody">
-          ${shotHtml("Frente", x.fotoFrenteUrl)}
-          ${shotHtml("Perfil", x.fotoPerfilUrl)}
-          ${shotHtml("Espalda", x.fotoEspaldaUrl)}
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  // ✅ abrir foto en nueva pestaña (simple)
-  box.querySelectorAll("[data-open]").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const url = el.getAttribute("data-open");
-      window.open(url, "_blank", "noopener");
-    });
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
   function normalizeRut(r){ return String(r||"").trim().toUpperCase(); }
 
-  // ===== estado actual =====
+  // estado actual
   let CURRENT_EVAL_ID = "";
   let CURRENT_RUT = "";
 
@@ -791,9 +818,7 @@
     el.textContent = text;
   }
 
-  /* =========================
-     ✅ FECHA/HORA BONITA + ROBUSTA (Sheets / ISO / HH:MM)
-     ========================= */
+  /* FECHA/HORA robusta */
   function pad2(n){ return String(n).padStart(2,"0"); }
 
   function extractTimeHM(anyTime){
@@ -810,6 +835,56 @@
     }
     return "";
   }
+
+
+
+function driveToDirectImage(url){
+  url = String(url||"").trim();
+  if(!url) return "";
+
+  let m = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/i);
+  if(!m) m = url.match(/[?&]id=([^&]+)/i);
+
+  if(m && m[1]){
+    const id = m[1];
+    // ✅ suele cargar mejor en <img>
+    return `https://lh3.googleusercontent.com/d/${id}`;
+    // fallback alternativo:
+    // return `https://drive.google.com/uc?export=view&id=${id}`;
+  }
+
+  return url;
+}
+
+
+function safeImg(url, alt="foto"){
+  const u = driveToDirectImage(url);
+  if(!u) return `<div style="padding:18px 10px;">Sin foto</div>`;
+
+  return `
+    <img
+      src="${u}"
+      alt="${alt}"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      onerror="this.outerHTML='<div style=&quot;padding:18px 10px;&quot;>No se pudo cargar</div>'"
+    >
+  `;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   function extractDateYMD(anyDate){
     const s = safe(anyDate,"").trim();
@@ -899,33 +974,12 @@
     el.className = ok === true ? "miniOk" : (ok === false ? "miniBad" : "muted");
   }
 
-    function renderPhotoLinksFromRow(row){
-    const box = document.getElementById("photoLinks");
-    if(!box) return;
-
-    const f = safe(row?.fotoFrenteUrl,"").trim();
-    const p = safe(row?.fotoPerfilUrl,"").trim();
-    const e = safe(row?.fotoEspaldaUrl,"").trim();
-
-    const mk = (url, label) => url
-      ? `<span class="pill"><a href="${url}" target="_blank" rel="noopener">${label}</a></span>`
-      : "";
-
-    box.innerHTML = (mk(f,"Ver frente") + mk(p,"Ver perfil") + mk(e,"Ver espalda")) || "";
-
-    // ✅ NUEVO: mostrar imágenes en los previews
-    renderPhotoPreviewsFromRow(row);
-  }
-
-
-    function setPreviewUrl(url, prevEl){
+  function setPreviewUrl(url, prevEl){
     if(!prevEl) return;
     const u = safe(url,"").trim();
-    if(!u){
-      prevEl.innerHTML = "Sin foto";
-      return;
-    }
-    prevEl.innerHTML = `<img src="${u}" alt="foto" loading="lazy">`;
+    if(!u){ prevEl.innerHTML = "Sin foto"; return; }
+    prevEl.innerHTML = safeImg(u, "foto");
+
   }
 
   function renderPhotoPreviewsFromRow(row){
@@ -942,9 +996,22 @@
     setPreviewUrl(e, prevBack);
   }
 
+  function renderPhotoLinksFromRow(row){
+    const box = document.getElementById("photoLinks");
+    if(!box) return;
 
+    const f = safe(row?.fotoFrenteUrl,"").trim();
+    const p = safe(row?.fotoPerfilUrl,"").trim();
+    const e = safe(row?.fotoEspaldaUrl,"").trim();
 
+    const mk = (url, label) => url
+      ? `<span class="pill"><a href="${url}" target="_blank" rel="noopener">${label}</a></span>`
+      : "";
 
+    box.innerHTML = (mk(f,"Ver frente") + mk(p,"Ver perfil") + mk(e,"Ver espalda")) || "";
+
+    renderPhotoPreviewsFromRow(row);
+  }
 
   function fillForm(x){
     document.getElementById("inpFecha").value = safe(x.fecha, nowYMD()).includes("T")
@@ -970,12 +1037,11 @@
     document.getElementById("pliegues").value = safe(x.pliegues, "");
     document.getElementById("observaciones").value = safe(x.observaciones, "");
 
-    // ✅ tomar evalId si viene desde historial
     setEvalIdUI(safe(x.evalId,"").trim());
     renderPhotoLinksFromRow(x);
 
     updateIMC();
-    msg(document.getElementById("msg"), "✅ Evaluación cargada", true);
+    msg(document.getElementById("msg"), "Evaluación cargada", true);
   }
 
   function clearForm(){
@@ -1056,7 +1122,6 @@
 
     const masaPct = toNum(document.getElementById("masaMuscularPct").value);
 
-    // ✅ evalId fijo: si no hay, lo generamos con makeEvalId del app.js
     let evalId = CURRENT_EVAL_ID;
     if(!evalId && typeof window.makeEvalId === "function"){
       evalId = window.makeEvalId({ rutSocio, fecha });
@@ -1127,9 +1192,7 @@
       .join("");
   }
 
-  /* =========================
-     ✅ CHARTS (SVG) + SUBLABEL (fecha/hora bajo C1)
-     ========================= */
+  /* CHARTS (SVG) */
   function nOrNull(v){
     const n = Number(v);
     return (v === "" || v === null || v === undefined || isNaN(n)) ? null : n;
@@ -1320,232 +1383,503 @@
     svgLineChart({ containerEl: elB, legendEl: lgB, title:"Bioimpedancia", labels, subLabels, series: seriesB });
   }
 
-  // ===== previews fotos =====
-  function setPreview(file, prevEl){
-    if(!prevEl) return;
-    if(!file){
-      prevEl.innerHTML = "Sin foto";
+    /* ===========================
+     CONTROLES CON FOTOS + COMENTARIO
+     =========================== */
+  function getLocalComment(evalId){
+    try{ return localStorage.getItem(`mahfit_eval_comment_${safe(evalId)}`) || ""; }catch{ return ""; }
+  }
+  function setLocalComment(evalId, text){
+    try{ localStorage.setItem(`mahfit_eval_comment_${safe(evalId)}`, safe(text,"")); }catch{}
+  }
+
+  function renderControlsGallery(rut){
+    const msgEl = document.getElementById("controlsMsg");
+    const box = document.getElementById("controlsGallery");
+    if(!box) return;
+
+    if(!rut){
+      if(msgEl) msgEl.textContent = "Selecciona un socio para ver controles.";
+      box.innerHTML = "";
       return;
     }
-    const url = URL.createObjectURL(file);
-    prevEl.innerHTML = `<img src="${url}" alt="preview">`;
-  }
 
-  function clearFile(inputEl, prevEl){
-    if(inputEl) inputEl.value = "";
-    if(prevEl) prevEl.innerHTML = "Sin foto";
-  }
+    const latest = listForRut(rut).slice(0,12); // ya viene orden desc
+    if(latest.length === 0){
+      if(msgEl) msgEl.textContent = "Sin controles con fotos aún.";
+      box.innerHTML = "";
+      return;
+    }
 
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    const me = requireAuth(["FUNCIONARIO"]);
-    if(!me) return;
+    const rows = latest.map(row=>{
+      const evalId = safe(row.evalId);
+      const when = prettyDT(row.fecha, row.hora);
 
-    document.getElementById("who").textContent = me.nombre || "Funcionario";
-    document.getElementById("roleBadge").textContent = "FUNCIONARIO";
+      const f = safe(row.fotoFrenteUrl,"").trim();
+      const p = safe(row.fotoPerfilUrl,"").trim();
+      const e = safe(row.fotoEspaldaUrl,"").trim();
 
-    document.getElementById("inpFecha").value = nowYMD();
-    document.getElementById("inpHora").value = nowHM();
-    document.getElementById("pNow").textContent = `${prettyDT(nowYMD(), nowHM())}`;
+      const hasPhoto = !!(f||p||e);
 
-    document.getElementById("btnBack").addEventListener("click", ()=> location.href = "funcionario.html");
-    document.getElementById("btnLogout").addEventListener("click", ()=>{
-      clearSession();
-      location.href = "index.html";
+      const commentFromRow = safe(row.observaciones,"").trim();
+      const commentLocal = getLocalComment(evalId);
+      const comment = commentFromRow || commentLocal;
+
+      const thumb = (url) => safeImg(url, "foto");
+
+
+      return `
+        <div class="ctrlCard" data-evalid="${evalId}">
+          <div class="ctrlHead">
+            <div>
+              <div class="ctrlTitle">Control</div>
+              <div class="ctrlMeta">${when} · <span class="pill ${hasPhoto ? "ok":"warn"}">${hasPhoto ? "con fotos":"sin fotos"}</span></div>
+            </div>
+            <div class="toolbar">
+              <button class="btn small" data-open="${evalId}">Cargar</button>
+            </div>
+          </div>
+
+          <div class="ctrlBody">
+            <div class="ctrlThumbs">
+              <div class="thumb">
+                <div class="thumbTop"><div class="thumbLabel">Frente</div></div>
+                <div class="thumbImg">${thumb(f)}</div>
+              </div>
+              <div class="thumb">
+                <div class="thumbTop"><div class="thumbLabel">Perfil</div></div>
+                <div class="thumbImg">${thumb(p)}</div>
+              </div>
+              <div class="thumb">
+                <div class="thumbTop"><div class="thumbLabel">Espalda</div></div>
+                <div class="thumbImg">${thumb(e)}</div>
+              </div>
+            </div>
+
+            <div class="ctrlRight">
+              <div class="h">Comentario</div>
+              <textarea class="ctrlComment" placeholder="Escribe un comentario para este control…">${comment}</textarea>
+
+              <div class="ctrlActions">
+                <button class="btn primary" data-savec="${evalId}">Guardar comentario</button>
+                <span class="ctrlStatus muted" data-status="${evalId}">—</span>
+              </div>
+
+              <div class="linkPills" style="margin-top:10px;">
+                ${f ? `<span class="pill"><a href="${f}" target="_blank" rel="noopener">Ver frente</a></span>` : ``}
+                ${p ? `<span class="pill"><a href="${p}" target="_blank" rel="noopener">Ver perfil</a></span>` : ``}
+                ${e ? `<span class="pill"><a href="${e}" target="_blank" rel="noopener">Ver espalda</a></span>` : ``}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     });
 
-    const sel = document.getElementById("selSocio");
-    const search = document.getElementById("socioSearch");
-    const socios = (getUsers()||[]).filter(u => String(u.rol||"").toUpperCase() === "SOCIO");
-    const rutUrl = parseRutFromUrl();
+    if(msgEl) msgEl.textContent = `Mostrando ${rows.length} controles (últimos 12).`;
+    box.innerHTML = rows.join("");
 
-    sel.innerHTML = buildSocioOptions(socios, "", rutUrl);
-    if(rutUrl) sel.value = rutUrl;
+    // acciones: cargar control desde galería
+    box.querySelectorAll("[data-open]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-open");
+        const all = getEvaluationsCached();
+        const row = all.find(x=>safe(x.evalId)===id);
+        if(row) fillForm(row);
+      });
+    });
 
-    function updateSubtitle(){
-  const rut = sel.value;
-  CURRENT_RUT = rut ? normalizeRut(rut) : "";
-  const u = (getUsers()||[]).find(x=>normalizeRut(x.rut)===normalizeRut(rut));
+    // acciones: guardar comentario
+    box.querySelectorAll("[data-savec]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const evalId = btn.getAttribute("data-savec");
+        const card = box.querySelector(`.ctrlCard[data-evalid="${CSS.escape(evalId)}"]`);
+        const ta = card ? card.querySelector(".ctrlComment") : null;
+        const st = box.querySelector(`[data-status="${CSS.escape(evalId)}"]`);
+        if(!ta) return;
 
-  document.getElementById("subTitle").textContent =
-    rut ? `${safe(u?.nombre,"Socio")} · ${rut}` : "Selecciona un socio para comenzar";
+        const text = safe(ta.value,"").trim();
 
-  renderHistory(rut);
-  renderCharts(rut);
-  renderPhotoTimeline(rut);
+      let savedRemote = false;
+try{
+  const rutSocio = CURRENT_RUT; // ya lo tienes global
+  if(typeof window.saveEvaluationComment === "function"){
+    await window.saveEvaluationComment({ evalId, rutSocio, comentario: text });
+    savedRemote = true;
+  }else{
+    // fallback directo si no expusiste la función
+    await apiPost("EVALUATIONS", { evalId, rutSocio, observaciones: text });
+    savedRemote = true;
+  }
+
+  // opcional: refresca cache desde sheets para que quede 100% sincronizado
+  try{ await syncEvaluationsDown(); }catch{}
+}catch(e){
+  savedRemote = false;
+}
+
+
+        // 2) fallback local SIEMPRE (para multi-dispositivo necesitas que el remote funcione)
+        setLocalComment(evalId, text);
+
+        if(st){
+          st.className = savedRemote ? "ctrlSaved" : "ctrlError";
+          st.textContent = savedRemote
+            ? "Comentario guardado (Sheets)."
+            : "Guardado local (este dispositivo). Revisa endpoint update.";
+        }
+      });
+    });
+  }
+
+  /* ===========================
+     UPLOAD FOTOS (DataURL -> backend)
+     =========================== */
+ async function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    if(!file) return resolve("");
+    const r = new FileReader();
+    r.onload = ()=> resolve(String(r.result||""));
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// ✅ NUEVO: versión comprimida para Apps Script
+async function fileToDataURLCompressed(file, opts = {}){
+  const {
+    maxW = 1400,
+    maxH = 1400,
+    quality = 0.82,
+    mime = "image/jpeg"
+  } = opts;
+
+  if(!file) return "";
+
+  const base = await fileToDataURL(file);
+
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const w0 = img.naturalWidth || img.width;
+      const h0 = img.naturalHeight || img.height;
+
+      const ratio = Math.min(maxW/w0, maxH/h0, 1);
+      const w = Math.round(w0 * ratio);
+      const h = Math.round(h0 * ratio);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+
+      resolve(canvas.toDataURL(mime, quality));
+    };
+    img.onerror = ()=> resolve(base);
+    img.src = base;
+  });
+}
+
+
+  function clearFileInput(inputId, prevId){
+    const inp = document.getElementById(inputId);
+    const prev = document.getElementById(prevId);
+    if(inp) inp.value = "";
+    if(prev) prev.innerHTML = "Sin foto";
+  }
+
+  function stripDataUrl(dataUrl){
+  const s = String(dataUrl||"");
+  const i = s.indexOf("base64,");
+  return i >= 0 ? s.slice(i + 7) : s; // devuelve base64 puro
+}
+
+async function uploadPhotos(){
+  const rutSocio = document.getElementById("selSocio").value;
+  if(!rutSocio){
+    setPhotoStatus("Selecciona un socio primero.", false);
+    return;
+  }
 
   if(!CURRENT_EVAL_ID){
-    setEvalIdUI("");
-    renderPhotoLinksFromRow(null);
+    setPhotoStatus("Primero guarda la evaluación.", false);
+    return;
+  }
+
+  const fFront   = document.getElementById("fileFront")?.files?.[0];
+  const fProfile = document.getElementById("fileProfile")?.files?.[0];
+  const fBack    = document.getElementById("fileBack")?.files?.[0];
+
+  if(!fFront && !fProfile && !fBack){
+    setPhotoStatus("No seleccionaste fotos.", false);
+    return;
+  }
+
+  try{
+    setPhotoStatus("Comprimiendo…", null);
+
+    const frontData   = fFront   ? await fileToDataURLCompressed(fFront)   : "";
+    const profileData = fProfile ? await fileToDataURLCompressed(fProfile) : "";
+    const backData    = fBack    ? await fileToDataURLCompressed(fBack)    : "";
+
+    async function uploadOne(slot, dataUrl){
+      if(!dataUrl) return null;
+
+      const payload = {
+        evalId: String(CURRENT_EVAL_ID).trim(),
+        rutSocio: normalizeRut(rutSocio),
+        slot: slot, // frente | perfil | espalda
+        fileBase64: stripDataUrl(dataUrl),
+        mimeType: "image/jpeg",
+        fileName: `${CURRENT_EVAL_ID}_${slot}.jpg`
+      };
+
+      setPhotoStatus(`Subiendo ${slot}…`, null);
+      return await apiPost("EVALUATIONS_PHOTO_UPLOAD", payload);
+    }
+
+    const r1 = await uploadOne("frente", frontData);
+    const r2 = await uploadOne("perfil", profileData);
+    const r3 = await uploadOne("espalda", backData);
+
+    const last = r3 || r2 || r1;
+    if(last?.row || last?.updated || last?.data){
+      renderPhotoLinksFromRow(last.row || last.updated || last.data);
+    }
+
+    setPhotoStatus("✅ Fotos subidas correctamente.", true);
+
+    try{ await syncEvaluationsDown(); }catch{}
+    renderControlsGallery(CURRENT_RUT);
+
+  }catch(err){
+    console.error(err);
+    setPhotoStatus("❌ Error subiendo fotos: " + err.message, false);
   }
 }
 
 
-    search.addEventListener("input", ()=>{
-      const keep = sel.value || rutUrl || "";
-      sel.innerHTML = buildSocioOptions(socios, search.value, keep);
-      if(keep) sel.value = keep;
+
+  /* ===========================
+     INIT / EVENTS
+     =========================== */
+  function getMe(){
+    const keys = ["mahfit_me","mahfit_user","mahfit_session","mahfit_current_user"];
+    for(const k of keys){
+      try{
+        const v = JSON.parse(localStorage.getItem(k)||"null");
+        if(v && (v.nombre || v.rut)) return v;
+      }catch{}
+    }
+    return {};
+  }
+
+  function setDb(state){
+    const dot = document.getElementById("dbDot");
+    const txt = document.getElementById("dbText");
+    if(!dot || !txt) return;
+
+    dot.classList.remove("connected","error","connecting");
+    if(state === "connected"){
+      dot.classList.add("connected");
+      txt.textContent = "Conectado";
+    }else if(state === "error"){
+      dot.classList.add("error");
+      txt.textContent = "Sin conexión";
+    }else{
+      dot.classList.add("connecting");
+      txt.textContent = "Conectando…";
+    }
+  }
+async function ping(){
+  setDb("connecting");
+  try{
+    await apiGet("USERS");
+    setDb("connected");
+  }catch{
+    setDb("error");
+  }
+}
+
+
+  function bindIMC(){
+    ["pesoKg","tallaCm"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.addEventListener("input", updateIMC);
     });
+  }
 
-    sel.addEventListener("change", ()=>{
-      // si cambias de socio, por defecto reseteamos evalId (para no subir a otro)
-      setEvalIdUI("");
-      renderPhotoLinksFromRow(null);
-      setPhotoStatus("—", null);
-      updateSubtitle();
+  async function init(){
+    // sesión
+    const me = getMe();
+    document.getElementById("who").textContent = safe(me.nombre, "—");
+    document.getElementById("roleBadge").textContent = safe(me.rol || me.role, "—");
+
+    // defaults fecha/hora
+    const f = document.getElementById("inpFecha");
+    const h = document.getElementById("inpHora");
+    if(f && !f.value) f.value = nowYMD();
+    if(h && !h.value) h.value = nowHM();
+
+    bindIMC();
+    updateIMC();
+
+    // botones
+    document.getElementById("btnBack").addEventListener("click", ()=> history.back());
+    document.getElementById("btnLogout").addEventListener("click", ()=>{
+      // tu app.js normalmente maneja logout; aquí solo limpiamos lo mínimo
+      localStorage.removeItem("mahfit_me");
+      localStorage.removeItem("mahfit_user");
+      localStorage.removeItem("mahfit_session");
+      location.href = "index.html";
     });
-
-    document.getElementById("pesoKg").addEventListener("input", updateIMC);
-    document.getElementById("tallaCm").addEventListener("input", updateIMC);
-
-    // ===== fotos inputs =====
-    const fileFront = document.getElementById("fileFront");
-    const fileProfile = document.getElementById("fileProfile");
-    const fileBack = document.getElementById("fileBack");
-
-    const prevFront = document.getElementById("prevFront");
-    const prevProfile = document.getElementById("prevProfile");
-    const prevBack = document.getElementById("prevBack");
-
-    fileFront.addEventListener("change", ()=> setPreview(fileFront.files?.[0], prevFront));
-    fileProfile.addEventListener("change", ()=> setPreview(fileProfile.files?.[0], prevProfile));
-    fileBack.addEventListener("change", ()=> setPreview(fileBack.files?.[0], prevBack));
-
-    document.getElementById("btnClearFront").addEventListener("click", ()=> clearFile(fileFront, prevFront));
-    document.getElementById("btnClearProfile").addEventListener("click", ()=> clearFile(fileProfile, prevProfile));
-    document.getElementById("btnClearBack").addEventListener("click", ()=> clearFile(fileBack, prevBack));
 
     document.getElementById("btnClear").addEventListener("click", ()=>{
       clearForm();
-      // limpiar fotos
-      clearFile(fileFront, prevFront);
-      clearFile(fileProfile, prevProfile);
-      clearFile(fileBack, prevBack);
-      setPhotoStatus("—", null);
-      msg(document.getElementById("msg"), "Formulario limpio.", true);
+      msg(document.getElementById("msg"), "Formulario limpiado", true);
     });
 
     document.getElementById("btnLoadLast").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        msg(document.getElementById("msg"), "Selecciona un socio.", false);
-        return;
-      }
-      try{
-        msg(document.getElementById("msg"), "Cargando…", true);
-        await syncEvaluationsDown();
-        await loadLastForRut(rut);
-        renderHistory(rut);
-        renderCharts(rut);
-      }catch(e){
-        msg(document.getElementById("msg"), "❌ No se pudo cargar: " + (e.message||e), false);
-      }
+      const rut = document.getElementById("selSocio").value;
+      if(!rut) return msg(document.getElementById("msg"), "Selecciona un socio.", false);
+      await loadLastForRut(rut);
     });
 
-    // ✅ Guardar evaluación (crea evalId fijo)
     document.getElementById("btnSave").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        msg(document.getElementById("msg"), "Selecciona un socio.", false);
-        return;
-      }
+      const rutSocio = document.getElementById("selSocio").value;
+      if(!rutSocio) return msg(document.getElementById("msg"), "Selecciona un socio.", false);
+
+      updateIMC();
 
       const payload = buildPayload(me);
-      if(!payload.fecha){
-        msg(document.getElementById("msg"), "Falta fecha.", false);
-        return;
-      }
-      if(!payload.evalId){
-        msg(document.getElementById("msg"), "No se pudo generar evalId. Revisa assets/app.js", false);
-        return;
-      }
+      if(!payload.evalId) return msg(document.getElementById("msg"), "No se pudo generar EvalId.", false);
 
       try{
-        msg(document.getElementById("msg"), "Guardando…", true);
-        const res = await apiPost("EVALUATIONS", payload);
-
-        // mantener evalId actual (por si API devuelve otro, priorizamos el payload.evalId)
-        setEvalIdUI(payload.evalId);
-
-        await syncEvaluationsDown();
-        renderHistory(rut);
-        renderCharts(rut);
-
-        // si ya quedó con URLs, mostrarlas
-        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === payload.evalId);
-        renderPhotoLinksFromRow(row);
-
-        msg(document.getElementById("msg"), "✅ Evaluación guardada", true);
-        setPhotoStatus("Evaluación lista para fotos ✅", true);
-      }catch(e){
-        msg(document.getElementById("msg"), "❌ No se pudo guardar: " + (e.message||e), false);
-        setPhotoStatus("Error guardando evaluación", false);
-      }
-    });
-
-    // ✅ Subir fotos (usa uploadEvaluationPhotos3 del app.js)
-    document.getElementById("btnUploadPhotos").addEventListener("click", async ()=>{
-      const rut = sel.value;
-      if(!rut){
-        setPhotoStatus("Selecciona un socio.", false);
-        return;
-      }
-      if(!CURRENT_EVAL_ID){
-        setPhotoStatus("Primero guarda la evaluación (necesitamos evalId).", false);
-        return;
-      }
-
-      const fFront = fileFront.files?.[0] || null;
-      const fProfile = fileProfile.files?.[0] || null;
-      const fBack = fileBack.files?.[0] || null;
-
-      if(!fFront && !fProfile && !fBack){
-        setPhotoStatus("Selecciona al menos 1 foto.", false);
-        return;
-      }
-      if(typeof window.uploadEvaluationPhotos3 !== "function"){
-        setPhotoStatus("Falta uploadEvaluationPhotos3 en assets/app.js", false);
-        return;
-      }
-
-      const fecha = document.getElementById("inpFecha").value || nowYMD();
-
-      try{
-        setPhotoStatus("Subiendo fotos…", null);
-
-        await window.uploadEvaluationPhotos3({
-          rutSocio: rut,
-          evalId: CURRENT_EVAL_ID,
-          fecha,
-          files: { frente: fFront, perfil: fProfile, espalda: fBack },
-          compress: true,
-          onProgress: (p)=>{
-            if(p?.status === "uploading") setPhotoStatus(`Subiendo: ${p.slot}…`, null);
-            if(p?.status === "done") setPhotoStatus(`Listo: ${p.slot} ✅`, true);
-          }
+        // guardar en backend
+        await apiPost("EVALUATIONS_UPSERT", payload).catch(async ()=>{
+          // fallback: si tu backend usa solo EVALUATIONS
+          await apiPost("EVALUATIONS", { action:"upsert", ...payload });
         });
 
-        // refrescar evaluaciones para traer URLs
+        // sync down para que quede en cache con lo que guardó Sheets
         await syncEvaluationsDown();
-        const row = getEvaluationsCached().find(x=>safe(x.evalId).trim() === CURRENT_EVAL_ID);
-        renderPhotoLinksFromRow(row);
 
-        setPhotoStatus("Fotos subidas ✅", true);
+        // UI refresh
+        CURRENT_RUT = normalizeRut(rutSocio);
+        setEvalIdUI(payload.evalId);
+        renderHistory(CURRENT_RUT);
+        renderCharts(CURRENT_RUT);
+        renderControlsGallery(CURRENT_RUT);
+
+        msg(document.getElementById("msg"), "Evaluación guardada correctamente.", true);
       }catch(e){
-        console.error(e);
-        setPhotoStatus("Error subiendo fotos: " + (e.message||e), false);
+        msg(document.getElementById("msg"), "Error guardando evaluación. Revisa endpoint Apps Script.", false);
       }
     });
 
-    try{ await syncEvaluationsDown(); }catch(e){}
+    // fotos
+    document.getElementById("btnUploadPhotos").addEventListener("click", uploadPhotos);
 
-    updateSubtitle();
-    updateIMC();
+    document.getElementById("btnClearFront").addEventListener("click", ()=> clearFileInput("fileFront","prevFront"));
+    document.getElementById("btnClearProfile").addEventListener("click", ()=> clearFileInput("fileProfile","prevProfile"));
+    document.getElementById("btnClearBack").addEventListener("click", ()=> clearFileInput("fileBack","prevBack"));
 
-    // si venía rut por URL, mantener
-    if(rutUrl){
-      CURRENT_RUT = rutUrl;
+    // preview al elegir archivo
+    const wirePrev = (inputId, prevId)=>{
+      const inp = document.getElementById(inputId);
+      const prev = document.getElementById(prevId);
+      if(!inp || !prev) return;
+      inp.addEventListener("change", async ()=>{
+        const file = inp.files?.[0];
+        if(!file){ prev.innerHTML = "Sin foto"; return; }
+        const url = await fileToDataURL(file);
+        prev.innerHTML = `<img src="${url}" alt="preview">`;
+      });
+    };
+    wirePrev("fileFront","prevFront");
+    wirePrev("fileProfile","prevProfile");
+    wirePrev("fileBack","prevBack");
+
+    // cargar users + evaluations
+    await ping();
+
+    let users = [];
+    try{
+      // intentamos leer cache primero
+      users = JSON.parse(localStorage.getItem("mahfit_users")||"[]");
+    }catch{ users = []; }
+
+    try{
+      if(typeof apiGet === "function"){
+        const j = await apiGet("USERS");
+        if(j && Array.isArray(j.users)) users = j.users;
+        localStorage.setItem("mahfit_users", JSON.stringify(users||[]));
+      }
+    }catch{}
+
+    // carga evaluaciones desde Sheets a cache local
+    try{ await syncEvaluationsDown(); }catch{}
+
+    // socio select
+    const sel = document.getElementById("selSocio");
+    const search = document.getElementById("socioSearch");
+
+    const rutFromUrl = parseRutFromUrl();
+
+    const refreshOptions = (q)=>{
+      sel.innerHTML = buildSocioOptions(users, q, sel.value || rutFromUrl);
+    };
+
+    refreshOptions("");
+
+    if(rutFromUrl){
+      sel.value = rutFromUrl;
     }
-  });
+
+    search.addEventListener("input", ()=> refreshOptions(search.value));
+
+    function onSocioChange(){
+      const rut = sel.value;
+      CURRENT_RUT = normalizeRut(rut);
+      setEvalIdUI(""); // nueva sesión de evaluación (hasta que cargues/guardes)
+
+      const pillNow = document.getElementById("pNow");
+      if(pillNow) pillNow.textContent = CURRENT_RUT ? `RUT: ${CURRENT_RUT}` : "—";
+
+      const sub = document.getElementById("subTitle");
+      if(sub) sub.textContent = CURRENT_RUT ? `Evaluando a ${CURRENT_RUT}` : "Selecciona un socio para comenzar";
+
+      clearForm();
+      renderHistory(CURRENT_RUT);
+      renderCharts(CURRENT_RUT);
+      renderControlsGallery(CURRENT_RUT);
+
+      // fecha/hora default
+      const f = document.getElementById("inpFecha");
+      const h = document.getElementById("inpHora");
+      if(f) f.value = nowYMD();
+      if(h) h.value = nowHM();
+    }
+
+    sel.addEventListener("change", onSocioChange);
+
+    // si venía por URL con rut, dispara carga
+    if(sel.value){
+      onSocioChange();
+    }else{
+      renderHistory("");
+      renderCharts("");
+      renderControlsGallery("");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
 </script>
+
 </body>
 </html>
+
