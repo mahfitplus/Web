@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbxNP9abTgngzg-_HfWPQvW0NKfcQm59cwhDWfWBwMDbNg7tyw3tZToTumIaJdEm54Os7Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzsOrVlrMTCe9pwmUW5eCo6ItdVffW43oLzkr-9HCXic-3VjsX-jvGrIwGVgnnYwbHfIQ/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -1139,3 +1139,4 @@ window.toNumClean = toNumClean;
 // === MAH FIT | EVALUATION PHOTOS exposed ===
 window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
+window.API_URL = API_URL;
