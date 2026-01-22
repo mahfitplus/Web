@@ -736,6 +736,21 @@
       grid-template-columns: repeat(2, 1fr);
       gap:10px;
     }
+
+/* 📱 Mobile: 3 fotos en línea (frente / perfil / espalda) */
+@media (max-width: 640px){
+  .photo-grid{
+    grid-template-columns: repeat(3, 1fr);
+    gap:8px;
+  }
+  .photo-item{
+    border-radius: 12px;
+  }
+  .photo-item .overlay{
+    padding:8px;
+  }
+}
+
     @media (min-width: 768px){
       .photo-grid{ grid-template-columns: repeat(3, 1fr); }
     }
