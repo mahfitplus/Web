@@ -604,7 +604,13 @@
   </div>
 
   <!-- app.js -->
-  <script src="assets/app.js"></script>
+  
+<!-- MAH FIT BOOT MODE: core (cache-first, instant routine view) -->
+<script>
+  window.MAHFIT_BOOT_MODE = "core";
+</script>
+
+<script src="assets/app.js" defer></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
