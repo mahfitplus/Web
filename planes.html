@@ -180,7 +180,13 @@
   </div>
 </div>
 
-<script src="assets/app.js"></script>
+
+<!-- MAH FIT BOOT MODE: core (cache-first, fast admin view) -->
+<script>
+  window.MAHFIT_BOOT_MODE = "core";
+</script>
+
+<script src="assets/app.js" defer></script>
 
 <script>
   function msg(el, text, ok){
