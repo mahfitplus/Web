@@ -541,6 +541,70 @@ async function uploadEvaluationPhotos3({ rutSocio, evalId, fecha, files, compres
 }
 
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
+
+// ---------------- Sync DOWN (CORE) ----------------
+// ✅ Login-only: solo USERS (rápido para index.html)
+async function syncDownLogin(){
+  const u = await apiGet("USERS");
+  const users = (u.users || []).map(x => ({
+    rut: normalizeRut(x.rut),
+    nombre: x.nombre ?? "",
+    email: x.email ?? "",
+    pass: String(x.pass ?? ""),
+    rol: (x.rol ?? x.role ?? "SOCIO"),
+    activo: (x.activo === false || x.activo === 0 || String(x.activo) === "0") ? false : true,
+
+    // plan (por si el login lo usa)
+    planTipo: x.planTipo ?? "",
+    planInicio: x.planInicio ?? "",
+    planFin: x.planFin ?? "",
+    planId: (x.planId ?? x.planID ?? "").toString().trim().toUpperCase(),
+    planPrecioBase: Number(x.planPrecioBase ?? 0),
+    planDescPct: Number(x.planDescPct ?? 0),
+    planPrecioFinal: Number(x.planPrecioFinal ?? 0),
+    planPagado: Number(x.planPagado ?? 0),
+
+    // perfil (se conserva, no pesa)
+    telefono: x.telefono ?? "",
+    fechaNacimiento: x.fechaNacimiento ?? "",
+    sexo: (x.sexo ?? "").toString().trim().toUpperCase(),
+    direccion: x.direccion ?? "",
+    emergenciaNom: x.emergenciaNom ?? "",
+    emergenciaTelef: x.emergenciaTelef ?? "",
+    objetivo: x.objetivo ?? "",
+    nivel: (x.nivel ?? "").toString().trim().toUpperCase(),
+    lesiones: x.lesiones ?? "",
+    patologias: x.patologias ?? "",
+    medicamentos: x.medicamentos ?? "",
+    alergias: x.alergias ?? "",
+    notas: x.notas ?? "",
+    creadoEn: x.creadoEn ?? ""
+  }));
+  setUsers(users);
+  return true;
+}
+
+// ✅ Core: USERS + PLANES (para pantallas ligeras)
+async function syncDownCore(){
+  await syncDownLogin();
+
+  const p = await apiGet("PLANES");
+  const planes = (p.planes || []).map(x => ({
+    planId: String(x.PlanId ?? x.planId ?? "").trim().toUpperCase(),
+    nombre: x.Nombre ?? x.nombre ?? "",
+    tipo: String(x.Tipo ?? x.tipo ?? "").trim().toUpperCase(),
+    dias: Number(x.Dias ?? x.dias ?? 0),
+    precioCLP: Number(x.PrecioCLP ?? x.precioCLP ?? 0),
+    activo: Number(x.Activo ?? x.activo ?? 1),
+    orden: Number(x.Orden ?? x.orden ?? 999),
+    actualizadoEn: x.ActualizadoEn ?? x.actualizadoEn ?? ""
+  })).filter(p=>p.planId);
+  setPlanes(planes);
+
+  return true;
+}
+
+
 async function syncDown(){
   const u = await apiGet("USERS");
 
@@ -1143,9 +1207,26 @@ async function refreshLogs(){
 
 // ---------------- BOOT ----------------
 (async function boot(){
+  // Boot modes:
+  // - "login": solo USERS (rápido para index.html)
+  // - "core" : USERS + PLANES
+  // - "full" : todo (default)
+  // - "none" : no sincroniza (para páginas estáticas)
+  const mode = String(window.MAHFIT_BOOT_MODE || "full").toLowerCase().trim();
+
   setDbStatus("connecting");
   try{
-    await syncDown();
+    if(mode === "none"){
+      setDbStatus("connected");
+      return;
+    }
+    if(mode === "login"){
+      await syncDownLogin();
+    } else if(mode === "core"){
+      await syncDownCore();
+    } else {
+      await syncDown();
+    }
     setDbStatus("connected");
   }catch(e){
     console.error("BOOT ERROR:", e);
@@ -1175,10 +1256,6 @@ window.setRutinasV2 = setRutinasV2;
 
 window.getPlantillasV2 = getPlantillasV2;
 window.setPlantillasV2 = setPlantillasV2;
-// ✅ EXERCISES exposed
-window.getExercises = getExercises;
-window.setExercises = setExercises;
-window.upsertExercise = upsertExercise_;
 
 window.requireAuth = requireAuth;
 window.syncDown = syncDown;
