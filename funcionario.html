@@ -395,6 +395,11 @@
       background: rgba(255,255,255,.08);
     }
   </style>
+
+<style>
+  html{background:#0a0e14;}
+</style>
+
 </head>
 
 <body data-page="funcionario">
@@ -732,7 +737,7 @@
   </div>
 </div>
 
-<script src="assets/app.js"></script>
+<script src="assets/app.js" defer></script>
 
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
@@ -1630,3 +1635,14 @@
 
 </body>
 </html>
+
+<div id="bootLoader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+background:#0a0e14;color:#fff;font-weight:900;z-index:9999">
+  Cargando MAH FIT…
+</div>
+<script>
+  window.addEventListener("DOMContentLoaded",()=>{
+    const l=document.getElementById("bootLoader");
+    if(l) l.style.display="none";
+  });
+</script>
