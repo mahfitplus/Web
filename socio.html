@@ -1188,65 +1188,46 @@
     }
 
 
-    /* =========================
-       ZOOM PRO (viewer)
-       - Mouse wheel zoom
-       - Drag to pan when zoomed
-       - Double click: toggle 1x/2x
-       - Pinch zoom (touch)
-       ========================= */
-
-    .zoom-stage{
+    /* ===== ZOOM PRO (viewer) ===== */
+    .zoom-wrap{
       position: relative;
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      touch-action: none; /* enables custom pinch/pan */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      touch-action:none; /* habilita pan/pinch */
+      cursor: grab;
+      user-select:none;
+      -webkit-user-select:none;
     }
-    .zoom-stage img{
+    .zoom-wrap:active{ cursor: grabbing; }
+
+    /* el img original se transforma */
+    #imageModalImg{
       max-width: 100%;
       max-height: 100%;
-      transform-origin: center center;
+      transform-origin: 0 0;
       will-change: transform;
-      cursor: grab;
+      pointer-events:none; /* para que el pan lo tome el wrap */
     }
-    .zoom-stage img.is-dragging{ cursor: grabbing; }
 
-    .img-zoom-tools{
+    .zoom-hint{
       position:absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 6;
+      left:16px; top:12px;
+      background: rgba(0,0,0,.45);
+      color:#fff;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
       display:flex;
       gap:8px;
-      padding:8px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(10,14,20,.55);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-    }
-    .img-zoom-tools .zbtn{
-      width:38px;
-      height:38px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.90);
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    }
-    .img-zoom-tools .zbtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); }
-    .img-zoom-tools .zbtn:active{ transform: translateY(0px) scale(.98); }
-
-    @media (max-width: 640px){
-      .img-zoom-tools{ top:10px; right:10px; padding:6px; }
-      .img-zoom-tools .zbtn{ width:36px; height:36px; border-radius: 11px; }
+      align-items:center;
+      z-index:3;
+      backdrop-filter: blur(6px);
+      pointer-events:none;
+      opacity:.85;
     }
 
   </style>
@@ -1649,15 +1630,8 @@
           <i class="fas fa-chevron-left"></i>
         </button>
         <div class="photo-badge" id="photoBadge">1</div>
-        
-        <div class="img-zoom-tools" aria-label="Zoom">
-          <button class="zbtn" type="button" id="zoomOut" title="Alejar"><i class="fas fa-minus"></i></button>
-          <button class="zbtn" type="button" id="zoomReset" title="Reset"><i class="fas fa-rotate-left"></i></button>
-          <button class="zbtn" type="button" id="zoomIn" title="Acercar"><i class="fas fa-plus"></i></button>
-        </div>
-        <div class="zoom-stage" id="zoomStage">
-          <img id="imageModalImg" alt="Foto" />
-        </div>
+        <div class="zoom-hint">🖱️ rueda / 🤏 pinch · doble clic para reset</div>
+      <div id="zoomWrap" class="zoom-wrap"><img id="imageModalImg" alt="Foto" /></div>
         <button class="img-nav-btn right" id="imgNext" type="button" aria-label="Siguiente">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -1692,33 +1666,7 @@
   </nav>
 
   <!-- ✅ Tu app.js real -->
-  
-  <!-- ✅ app.js (loader con fallback remoto) -->
-  <script>
-    (function(){
-      const LOCAL = "assets/app.js";
-      const REMOTE = "https://mahfitplus.github.io/assets/app.js"; // cambia si tu repo es otro
-      function inject(src){
-        return new Promise((resolve,reject)=>{
-          const s=document.createElement("script");
-          s.src=src;
-          s.onload=()=>resolve(src);
-          s.onerror=()=>reject(new Error("No se pudo cargar: "+src));
-          document.head.appendChild(s);
-        });
-      }
-      // Primero intenta local (misma carpeta /assets). Si abres por file:// puede fallar por CORS, así que cae a REMOTE.
-      inject(LOCAL).catch(()=>inject(REMOTE)).catch((e)=>{
-        console.error(e);
-        // mensaje amigable
-        const box=document.createElement("div");
-        box.style.cssText="position:fixed;inset:16px;z-index:9999;background:#fff;border:1px solid #e9ecef;border-radius:16px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,.12);font-family:system-ui";
-        box.innerHTML = "<b style='display:block;margin-bottom:6px;'>No se pudo cargar app.js</b><div style='color:#495057;font-size:13px;line-height:1.35'>Asegúrate de subir <code>assets/app.js</code> junto a este archivo o ajusta la URL REMOTE dentro del HTML.</div>";
-        document.body.appendChild(box);
-      });
-    })();
-  </script>
-
+  <script src="assets/app.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -3107,7 +3055,7 @@ const miniKpisHtml = [
   console.warn("❌ No carga img:", img.src);
   img.style.objectFit = "contain";
   img.style.padding = "12px";
-  img.src = PHOTO_PLACEHOLDER;
+  img.src = "assets/img/no-photo.png";
 };
 
 
@@ -3321,182 +3269,8 @@ const miniKpisHtml = [
         }
       }
 
-      (
-  // =========================
-  // ZOOM PRO (viewer)
-  // =========================
-  function setupPhotoViewerZoom(){
-    const stage = document.getElementById("zoomStage");
-    const img   = document.getElementById("imageModalImg");
-    const btnIn = document.getElementById("zoomIn");
-    const btnOut= document.getElementById("zoomOut");
-    const btnRs = document.getElementById("zoomReset");
-
-    if(!stage || !img) return;
-
-    let scale = 1;
-    let tx = 0, ty = 0;
-    const MIN = 1;
-    const MAX = 6;
-
-    // pointer/pinch state
-    const pointers = new Map(); // id -> {x,y}
-    let startScale = 1;
-    let startTx = 0, startTy = 0;
-    let startDist = 0;
-    let startMid = null;
-    let dragStart = null;
-
-    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-
-    function apply(){
-      img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-    }
-
-    function reset(){
-      scale = 1; tx = 0; ty = 0;
-      apply();
-    }
-
-    // keep pan bounds reasonable when zoomed
-    function boundPan(){
-      // allowed pan is proportional to zoom; simple & stable
-      const lim = 60 * scale; // px
-      tx = clamp(tx, -lim, lim);
-      ty = clamp(ty, -lim, lim);
-    }
-
-    function zoomAt(factor, clientX, clientY){
-      const rect = stage.getBoundingClientRect();
-      const x = clientX - rect.left - rect.width/2;
-      const y = clientY - rect.top  - rect.height/2;
-
-      const newScale = clamp(scale * factor, MIN, MAX);
-      const k = newScale / scale;
-
-      // adjust translation so the point under cursor stays close
-      tx = tx - x*(k-1);
-      ty = ty - y*(k-1);
-
-      scale = newScale;
-      boundPan();
-      apply();
-    }
-
-    // Buttons
-    if(btnIn)  btnIn.onclick  = ()=> zoomAt(1.25, stage.getBoundingClientRect().left + stage.clientWidth/2, stage.getBoundingClientRect().top + stage.clientHeight/2);
-    if(btnOut) btnOut.onclick = ()=> zoomAt(0.8,  stage.getBoundingClientRect().left + stage.clientWidth/2, stage.getBoundingClientRect().top + stage.clientHeight/2);
-    if(btnRs)  btnRs.onclick  = ()=> reset();
-
-    // Wheel zoom (desktop)
-    stage.addEventListener("wheel", (e)=>{
-      e.preventDefault();
-      const factor = e.deltaY < 0 ? 1.15 : 0.87;
-      zoomAt(factor, e.clientX, e.clientY);
-    }, { passive:false });
-
-    // Double click toggle
-    stage.addEventListener("dblclick", (e)=>{
-      e.preventDefault();
-      if(scale <= 1.01){
-        zoomAt(2, e.clientX, e.clientY);
-      }else{
-        reset();
-      }
-    });
-
-    // Pointer events for drag + pinch
-    stage.addEventListener("pointerdown", (e)=>{
-      stage.setPointerCapture(e.pointerId);
-      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-
-      if(pointers.size === 1){
-        dragStart = { x:e.clientX, y:e.clientY, tx, ty };
-        img.classList.add("is-dragging");
-      }else if(pointers.size === 2){
-        const pts = Array.from(pointers.values());
-        const dx = pts[0].x - pts[1].x;
-        const dy = pts[0].y - pts[1].y;
-        startDist = Math.hypot(dx, dy);
-        startScale = scale;
-        startTx = tx; startTy = ty;
-        startMid = { x:(pts[0].x+pts[1].x)/2, y:(pts[0].y+pts[1].y)/2 };
-      }
-    });
-
-    stage.addEventListener("pointermove", (e)=>{
-      if(!pointers.has(e.pointerId)) return;
-      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-
-      if(pointers.size === 1 && dragStart){
-        if(scale > 1.01){
-          tx = dragStart.tx + (e.clientX - dragStart.x);
-          ty = dragStart.ty + (e.clientY - dragStart.y);
-          boundPan();
-          apply();
-        }
-      }else if(pointers.size === 2){
-        const pts = Array.from(pointers.values());
-        const dx = pts[0].x - pts[1].x;
-        const dy = pts[0].y - pts[1].y;
-        const dist = Math.hypot(dx, dy);
-        const mid  = { x:(pts[0].x+pts[1].x)/2, y:(pts[0].y+pts[1].y)/2 };
-
-        if(startDist > 0){
-          const ratio = dist / startDist;
-          const newScale = clamp(startScale * ratio, MIN, MAX);
-
-          // zoom around the start midpoint
-          const rect = stage.getBoundingClientRect();
-          const cx = (startMid ? startMid.x : mid.x) - rect.left - rect.width/2;
-          const cy = (startMid ? startMid.y : mid.y) - rect.top  - rect.height/2;
-
-          const k = newScale / scale;
-          tx = tx - cx*(k-1);
-          ty = ty - cy*(k-1);
-
-          // also allow small pan drift following midpoint
-          tx = tx + (mid.x - (startMid ? startMid.x : mid.x));
-          ty = ty + (mid.y - (startMid ? startMid.y : mid.y));
-
-          scale = newScale;
-          boundPan();
-          apply();
-        }
-      }
-    });
-
-    function endPointer(e){
-      if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
-      if(pointers.size === 0){
-        dragStart = null;
-        img.classList.remove("is-dragging");
-      }
-      if(pointers.size < 2){
-        startDist = 0;
-        startMid = null;
-      }
-    }
-
-    stage.addEventListener("pointerup", endPointer);
-    stage.addEventListener("pointercancel", endPointer);
-    stage.addEventListener("pointerleave", (e)=> {
-      // do nothing; leave can happen during capture
-    });
-
-    // When changing image, reset zoom automatically
-    const _setSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
-    // Fallback simple hook: listen for load
-    img.addEventListener("load", ()=> reset());
-
-    // expose for other code if needed
-    window.__resetPhotoZoom = reset;
-  }
-
-function init() {
-        
-    setupPhotoViewerZoom();
-if(!window.requireAuth) {
+      (function init() {
+        if(!window.requireAuth) {
           showNotification("Falta cargar assets/app.js", "error");
           return;
         }
