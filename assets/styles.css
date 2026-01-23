@@ -799,3 +799,19 @@ tbody tr:hover td{
   background: #fff;
 }
 .photo-empty i{ font-size:40px; opacity:.45; margin-bottom: 10px; }
+.photo-badge{
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 6;
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+
