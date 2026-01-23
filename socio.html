@@ -852,7 +852,27 @@
     .img-modal-content{
       max-width: 980px;
       width: 100%;
+      /* ✅ Layout tipo app: header + imagen flexible + meta fijo */
+      display:flex;
+      flex-direction:column;
+      max-height: 92vh;
+      height: 92vh;
+      overflow:hidden;
+      border-radius: 18px;
     }
+
+    .modal-header{
+      flex: 0 0 auto;
+    }
+    .img-view{
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .img-meta{
+      flex: 0 0 auto;
+    }
+    
+
     .img-view{
       background:#000;
       display:flex;
@@ -932,7 +952,194 @@
     .btn-dark:hover{
       background: rgba(255,255,255,.14);
     }
-  </style>
+  
+
+    /* ✅ Badge número de control en vista previa */
+    .img-view{ position: relative; }
+    .photo-badge{
+      position:absolute;
+      top:14px; left:14px;
+      z-index:50;
+      background: rgba(0,0,0,.65);
+      color:#fff;
+      font-weight:800;
+      font-size:18px;
+      padding:8px 12px;
+      border-radius:12px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      pointer-events:none;
+      box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+
+
+/* ===== MAH FIT: Photo modal 100% zoom fix (no crop + footer visible) ===== */
+.img-modal-content{
+  max-width: 980px !important;
+  max-height: 92vh !important;
+  height: 92vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* keep header visible */
+.img-modal-content .modal-header{
+  flex: 0 0 auto !important;
+}
+
+/* image area takes remaining space */
+.img-modal-content .modal-body.img-view{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  position: relative !important;
+  background: #000 !important;
+}
+
+/* footer/meta always visible and scrolls if long */
+.img-modal-content .img-meta{
+  flex: 0 0 auto !important;
+  max-height: 26vh !important;
+  overflow: auto !important;
+  background: #0b0f17 !important;
+}
+
+/* prevent image crop */
+.img-modal-content .modal-body.img-view img{
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* bigger control badge */
+.img-modal-content .photo-badge{
+  top: 16px !important;
+  left: 16px !important;
+  font-size: 18px !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  font-weight: 900 !important;
+  z-index: 25 !important;
+  background: rgba(0,0,0,.72) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+}
+
+  
+
+/* === Mobile: KPIs del control en una sola fila (como desktop) === */
+@media (max-width: 640px){
+  /* contenedor de mini KPIs (probables nombres en tu socio.html) */
+  .control-kpis,
+  .photo-badges,
+  .mini-kpis,
+  .kpi-mini-row{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    gap:10px !important;
+    justify-content:flex-start !important;
+    align-items:stretch !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:6px;
+    scroll-snap-type:x mandatory;
+  }
+
+  /* cada tarjeta KPI */
+  .control-kpis .mini-kpi,
+  .photo-badges .mini-kpi,
+  .mini-kpis .mini-kpi,
+  .kpi-mini-row .mini-kpi,
+  .control-kpis .badge,
+  .photo-badges .badge{
+    flex:0 0 auto !important;
+    min-width:120px;
+    scroll-snap-align:start;
+  }
+
+  /* opcional: scrollbar discreta */
+  .control-kpis::-webkit-scrollbar,
+  .photo-badges::-webkit-scrollbar,
+  .mini-kpis::-webkit-scrollbar,
+  .kpi-mini-row::-webkit-scrollbar{
+    height:6px;
+  }
+}
+
+
+  .control-kpis .mini-kpi,
+  .photo-badges .mini-kpi,
+  .mini-kpis .mini-kpi,
+  .kpi-mini-row .mini-kpi,
+  .control-kpis .badge,
+  .photo-badges .badge{
+    min-width:0 !important;
+    padding:8px 6px !important;
+  }
+
+  .control-kpis .mini-kpi .kpi-title,
+  .photo-badges .badge small{
+    font-size:11px;
+  }
+
+  .control-kpis .mini-kpi .kpi-value{
+    font-size:15px;
+  }
+}
+
+
+/* === Mobile: Fecha arriba + KPIs debajo en una fila (4) como el ejemplo === */
+@media (max-width: 640px){
+  /* Header del control: apila fecha y KPIs */
+  .photo-card-head,
+  .control-head,
+  .control-header{
+    display:flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap:10px !important;
+  }
+
+  /* Bloque fecha/título ocupa todo el ancho */
+  .photo-card-title,
+  .photo-card-head .photo-card-title,
+  .control-meta,
+  .control-left{
+    width: 100% !important;
+  }
+
+  /* KPIs en 4 columnas */
+  .control-kpis,
+  .photo-badges,
+  .mini-kpis,
+  .kpi-mini-row{
+    display:grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap:8px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Tarjeta KPI compacta para que quepan 4 */
+  .control-kpis .mini-kpi,
+  .photo-badges .mini-kpi,
+  .mini-kpis .mini-kpi,
+  .kpi-mini-row .mini-kpi,
+  .control-kpis .badge,
+  .photo-badges .badge{
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 8px 6px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Tipografías compactas pero legibles */
+  .mini-kpi .kpi-title{ font-size: 10.5px !important; }
+  .mini-kpi .kpi-value{ font-size: 14px !important; line-height: 1.1 !important; }
+  .mini-kpi .kpi-delta{ font-size: 10px !important; }
+}
+</style>
 </head>
 
 <body>
@@ -1319,6 +1526,7 @@
         <button class="img-nav-btn left" id="imgPrev" type="button" aria-label="Anterior">
           <i class="fas fa-chevron-left"></i>
         </button>
+        <div class="photo-badge" id="photoBadge">1</div>
         <img id="imageModalImg" alt="Foto" />
         <button class="img-nav-btn right" id="imgNext" type="button" aria-label="Siguiente">
           <i class="fas fa-chevron-right"></i>
@@ -2239,6 +2447,7 @@ function openImageViewerNav(ctrlIdx, slotIdx){
   const comentario = it?.comentario || "";
   const slotName = (slotIdx===0 ? "Frente" : (slotIdx===1 ? "Perfil" : (slotIdx===2 ? "Espalda" : `Foto ${slotIdx+1}`)));
   openImageViewer(url, {
+    controlNo: ctrlIdx+1,
     fecha,
     titulo: `Control #${ctrlIdx+1} · ${slotName}`,
     comentario
@@ -2301,6 +2510,7 @@ document.addEventListener("keydown", (e) => {
 function openImageViewer(url, meta){
   const imgEl  = document.getElementById("imageModalImg");
   const metaEl = document.getElementById("imageModalMeta");
+  const badgeEl = document.getElementById("photoBadge");
   if(!imgEl || !metaEl) return;
 
   const safeUrl = normalizePhotoUrl(url);
@@ -2314,6 +2524,13 @@ function openImageViewer(url, meta){
 
   const fecha = meta?.fecha ? String(meta.fecha) : "—";
   const titulo = meta?.titulo ? String(meta.titulo) : "Foto";
+
+  // ✅ Badge número de control (1,2,3...) en esquina superior izquierda
+  if(badgeEl){
+    const n = (meta && (meta.controlNo!=null)) ? Number(meta.controlNo) : null;
+    badgeEl.textContent = (n && isFinite(n)) ? String(n) : "";
+    badgeEl.style.display = (badgeEl.textContent ? "block" : "none");
+  }
   const comentario = meta?.comentario ? String(meta.comentario) : "";
 
   metaEl.innerHTML = `
