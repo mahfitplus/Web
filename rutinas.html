@@ -58,6 +58,26 @@
       border:1px solid var(--line);
       color:var(--mut);
       font-size:12px;
+
+    .db-badge{
+      display:flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      user-select:none;
+    }
+    .db-dot{
+      width:10px;height:10px;border-radius:999px;
+      background:#666;
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    }
+    .db-dot.connecting{ background:#ffd36e; }
+    .db-dot.on{ background:var(--ok); }
+    .db-dot.off{ background:var(--bad); }
+
     }
 
     .grid{
@@ -118,8 +138,9 @@
       font-weight:600;
       background:linear-gradient(135deg,var(--pri),var(--pri2));
       box-shadow:0 10px 20px rgba(35,166,255,.15);
-      transition:transform .06s ease;
+      transition:transform .06s ease, filter .12s ease;
     }
+    .btn:hover{ filter:brightness(1.05); }
     .btn:active{ transform:scale(.98); }
     .btn.ghost{
       background:rgba(255,255,255,.06);
@@ -400,6 +421,42 @@
       margin-top:6px;
       line-height:1.25;
     }
+
+    /* Mini modal for media preview */
+    .imgModal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.65);
+      z-index:10000;
+      padding:18px;
+    }
+    .imgBox{
+      width:min(980px, 100%);
+      max-height:85vh;
+      overflow:auto;
+      background:rgba(10,14,20,.96);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.55);
+      padding:12px;
+    }
+    .imgTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .imgTop b{ letter-spacing:.2px; }
+    .imgWrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.20);
+    }
+    .imgWrap img{ width:100%; height:auto; display:block; }
   </style>
 </head>
 
@@ -569,7 +626,42 @@
     </div>
   </div>
 
-  <script src="assets/app.js"></script>
+  <!-- Modal Media -->
+  <div class="imgModal" id="imgModal">
+    <div class="imgBox">
+      <div class="imgTop">
+        <b id="imgTitle">Ejercicio</b>
+        <button class="btn ghost small" id="btnCloseImg">Cerrar</button>
+      </div>
+      <div class="imgWrap">
+        <img id="imgEl" alt="media" />
+      </div>
+      <div class="mutedLine" id="imgHint" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================================
+    // Loader robusto: intenta rutas comunes para app.js
+    // (funciona en local sin GitHub)
+    // ==========================================================
+    function loadScriptTry(urls){
+      return new Promise((resolve, reject)=>{
+        let i = 0;
+        function next(){
+          if(i >= urls.length) return reject(new Error("No se pudo cargar app.js. Probé: " + urls.join(" , ")));
+          const src = urls[i++];
+          const s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = ()=> resolve(src);
+          s.onerror = ()=> next();
+          document.head.appendChild(s);
+        }
+        next();
+      });
+    }
+  </script>
 
   <script>
     function $(sel){ return document.querySelector(sel); }
@@ -580,7 +672,6 @@
     }
     function nowISO(){ return new Date().toISOString(); }
 
-    // ✅ UUID seguro
     function uid(){
       try{
         if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -589,17 +680,65 @@
     }
 
     // ==========================================================
-    // Base ejercicios
+    // Base de ejercicios: viene desde Sheets (EXERCISES)
+    // - Se agrupa por músculo
+    // - Cada fila tiene su propio <datalist> único
     // ==========================================================
-    const EXERCISE_DB = {"Pectoral":["Press banca inclinada Smith","Press banca Smith","Press banca plano (barra)","Press banca plano (mancuernas)","Press banca plano (discos)","Press banca inclinado (barra)","Press banca inclinado (mancuernas)","Press banca declinado (barra)","Press banca declinado (mancuernas)","Press banca con agarre estrecho","Press banca en máquina","Press banca en máquina inclinada","Press banca en máquina declinada","Press banca en polea","Press banca en multipower","Press banca en multipower inclinado","Press banca en multipower declinado","Press en máquina hammer","Press en máquina hammer inclinado","Press en máquina hammer declinado","Press en máquina convergente","Press en máquina convergente inclinado","Press en máquina convergente declinado","Press en máquina plate loaded","Press en máquina plate loaded inclinado","Press en máquina plate loaded declinado","Aperturas en máquina (pec deck)","Aperturas en polea alta","Aperturas en polea media","Aperturas en polea baja","Aperturas con mancuernas banco plano","Aperturas con mancuernas banco inclinado","Aperturas con mancuernas banco declinado","Pullover con mancuerna","Pullover en polea","Fondos en paralelas","Fondos asistidos","Cruce de poleas","Cruce de poleas inclinado","Cruce de poleas declinado","Flexiones de brazo (push ups)","Flexiones con lastre","Flexiones en TRX","Flexiones inclinadas","Flexiones declinadas","Press de pecho con banda","Press de pecho en landmine","Squeeze press (mancuernas)"],"Hombros":["Press militar (barra)","Press militar (mancuernas)","Press militar en máquina","Press militar Smith","Press Arnold","Elevaciones laterales (mancuernas)","Elevaciones laterales en polea","Elevaciones laterales en máquina","Elevaciones frontales (barra)","Elevaciones frontales (mancuernas)","Elevaciones frontales en polea","Elevaciones frontales con disco","Pájaros (posteriores)","Pájaros en máquina","Pájaros en polea","Face pull","Remo al mentón (barra)","Remo al mentón (mancuernas)","Remo al mentón en polea","Press tras nuca (barra)","Press tras nuca Smith","Elevaciones laterales sentado","Elevaciones laterales inclinado","Elevaciones laterales con banda","Elevaciones frontales alternadas","Elevaciones frontales con cuerda","Press militar unilateral","Press militar en landmine","Press militar con banda","Y-raise","T-raise","W-raise","Rotación externa con banda","Rotación externa en polea","Rotación interna en polea","Rotación interna con banda","Elevación posterior en banco inclinado","Elevación posterior con mancuernas","Elevación posterior con polea","Encogimiento de hombros","Farmer walk","Carrera del granjero","Caminata del oso"],"Trapecio":["Encogimientos con barra","Encogimientos con mancuernas","Encogimientos en máquina Smith","Encogimientos en máquina","Encogimientos en polea","Face pull","Remo al mentón (barra)"],"Dorsales":["Jalón al pecho (polea)","Jalón al pecho agarre cerrado","Jalón al pecho agarre neutro","Jalón al pecho agarre supino","Jalón tras nuca","Dominadas pronas","Dominadas supinas","Dominadas neutras","Dominadas asistidas","Remo en polea baja","Remo en polea baja agarre cerrado","Remo en polea baja agarre neutro","Remo con barra","Remo con mancuernas","Remo con T-bar","Remo en máquina","Remo en máquina hammer","Pulldown con brazos rectos","Pullover en polea","Pullover en máquina","Remo unilateral en polea","Remo unilateral en máquina"],"Espalda":["Remo con barra","Remo con barra pendlay","Remo con mancuernas","Remo con T-bar","Remo en polea baja","Remo en máquina","Remo en máquina hammer","Remo sentado con cable","Remo a una mano con mancuerna","Remo a una mano en polea","Remo invertido","Peso muerto","Peso muerto rumano","Peso muerto sumo","Buenos días","Hip hinge","Face pull","Remo al mentón","Encogimientos","Dominadas","Jalón al pecho"],"Lumbares":["Hiperextensiones","Hiperextensiones en banco romano","Buenos días","Peso muerto","Peso muerto rumano","Superman","Bird-dog","Puente glúteo","Plancha","Good morning con banda","Extensión lumbar en máquina"],"Bíceps":["Curl con barra","Curl con mancuernas","Curl alternado","Curl martillo","Curl concentrado","Curl en banco inclinado","Curl spider","Curl predicador","Curl predicador en máquina","Curl en polea baja","Curl en polea con cuerda","Curl en polea con barra recta","Curl en polea con barra EZ","Curl en polea unilateral","Curl 21","Curl Zottman","Curl con banda","Curl con barra EZ","Curl en máquina","Curl tipo martillo en polea","Curl reverso","Curl de arrastre","Dominadas supinas","Chin ups","Curl en TRX","Curl en banco Scott","Curl Scott con barra EZ","Curl Scott con mancuernas","Curl en cable alto","Curl tipo bayesian","Curl en polea posterior","Curl con barra olímpica","Curl con barra W","Curl isométrico","Curl en máquina hammer","Curl en máquina convergente","Curl con mancuerna tipo crossbody","Curl en polea con agarre neutro","Curl sentado","Curl de pie"],"Tríceps":["Extensión en polea alta (barra)","Extensión en polea alta (cuerda)","Extensión en polea alta (unilateral)","Fondos en paralelas","Fondos asistidos","Press banca agarre estrecho","Press francés (barra)","Press francés (mancuernas)","Extensión por encima de la cabeza (mancuerna)","Extensión por encima de la cabeza (polea)","Patada de tríceps (mancuerna)","Patada de tríceps (polea)","Extensión en banco (skull crushers)","Extensión en banco inclinado","Extensión en máquina","Extensión en máquina hammer","Extensión en polea con barra V","Extensión en polea con barra recta","Extensión en polea con barra EZ","Extensión en polea con cuerda doble","Extensión en polea inversa","Press cerrado en multipower","Press cerrado con mancuernas","Flexiones diamante","Flexiones cerradas","Extensión con banda","Dips en banco","Dips en banco con peso","Press militar agarre cerrado","Extensión unilateral por encima (mancuerna)","Extensión unilateral en polea alta","Extensión en polea alta sentado","Pressdown con agarre supino","Pressdown con agarre neutro","Kickback en banco","Extensión en TRX","Press francés en polea","Extensión a 45°","Extensión con cuerda por encima"],"Antebrazos":["Curl de muñeca (barra)","Curl de muñeca (mancuernas)","Curl de muñeca en polea","Curl reverso (barra)","Curl reverso (mancuernas)","Extensión de muñeca","Pronación con mancuerna","Supinación con mancuerna","Farmer walk","Agarre con toalla","Agarre en barra","Pinch grip","Rodillo de antebrazo","Martillo en polea"],"Abdominales/Core":["Crunch","Crunch en máquina","Crunch en polea","Crunch bicicleta","Crunch inverso","Elevación de piernas","Elevación de piernas colgado","Elevación de rodillas","Plancha","Plancha lateral","Plancha con toques","Plancha con elevación","Russian twist","Woodchopper (polea)","Pallof press","Ab wheel","Rollout con barra","Mountain climbers","Dead bug","Hollow hold","V-ups","Sit-ups","Sit-ups con peso","Toe touches","Flutter kicks","Scissor kicks","Superman","Bird-dog","Hip thrust hold","Puente glúteo","Rotación de tronco","Encogimientos","Encogimientos en banco declinado","Encogimientos con cable","Encogimientos con pelota","Crunch con pelota","Side bends","Oblicuos en polea","Oblicuos con mancuerna","Plank walk","Bear crawl","Farmer carry","Suitcase carry","Dragon flag","L-sit","Pike","Leg raises en banco","Leg raises en paralelas","Bicicleta en el suelo","Crunch isométrico","Vacuum","Cable crunch","Reverse crunch en banco","Toe-to-bar","Knee-to-elbow","Side plank dips","Twist con barra","Twist con disco","Rotaciones con banda","Rotaciones en máquina"],"Cuádriceps":["Sentadilla","Sentadilla smith","Sentadilla frontal","Sentadilla goblet","Sentadilla hack","Sentadilla búlgara","Sentadilla sumo","Prensa de piernas","Prensa inclinada","Prensa horizontal","Prensa unilateral","Extensión de piernas","Extensión de piernas unilateral","Zancadas","Zancadas caminando","Zancadas estáticas","Step-up","Sissy squat","Sentadilla en multipower","Sentadilla en jaula","Sentadilla con pausa","Sentadilla profunda","Sentadilla a caja","Wall sit","Leg press con pies bajos","Leg press con pies juntos","Split squat","Hack squat máquina","Hack squat libre","Sentadilla con banda","Sentadilla con mancuernas","Sentadilla con barra","Sentadilla con disco","Sentadilla con kettlebell","Sentadilla en landmine","Sentadilla tempo","Sentadilla 1 y 1/4","Zancada lateral","Zancada inversa","Zancada en multipower","Extensión de piernas con banda","Pistol squat","Pistol asistido","Prensa con pies altos (mixto)","Sentadilla en máquina","Sentadilla en máquina convergente","Step-down","Reverse step-up","Leg extension isométrico","Sentadilla con salto","Box jump","Saltos al cajón","Drop jump","Jump squat","Skater jumps","Sentadilla isométrica","Sentadilla con TRX","Sentadilla con polea","Sentadilla con barra safety"],"Isquiotibiales":["Peso muerto rumano","Peso muerto a piernas rígidas","Curl femoral acostado","Curl femoral sentado","Curl femoral de pie","Curl femoral unilateral","Buenos días","Hip hinge","Puente glúteo (mixto)","Hip thrust (mixto)","Nordic curl","Glute ham raise","Kettlebell swing","Cable pull-through","Peso muerto sumo (mixto)","Curl femoral con fitball","Curl femoral con banda","Peso muerto con mancuernas","Peso muerto con barra","RDL unilateral","Good morning con banda","Curl femoral en máquina","Curl femoral en polea","Curl femoral deslizante","Back extension (mixto)","Reverse hyper","Leg curl isométrico","RDL con pausa","Buenos días con barra","Peso muerto desde bloques","Curl femoral con toalla"],"Glúteos":["Hip thrust","Hip thrust smith","Hip thrust con banda","Puente glúteo","Patada de glúteo en polea","Patada de glúteo en máquina","Abducción de cadera en máquina","Abducción con banda","Sentadilla sumo","Peso muerto sumo","Peso muerto rumano (mixto)","Zancada inversa","Zancada caminando (mixto)","Step-up","Sentadilla búlgara (mixto)","Pull-through en polea","Kettlebell swing","Frog pumps","Fire hydrants","Donkey kicks","Clamshell","Monster walk","Side walk con banda","Kickback unilateral en polea","Hip thrust unilateral","Puente glúteo unilateral","Peso muerto unilateral","Sentadilla a caja (mixto)","Good morning (mixto)","Back extension (mixto)","Reverse hyper","Abducción acostado","Abducción en polea baja","Elevación de cadera","Extensión de cadera en máquina","Cable kickback","Hip airplane","Curtsy lunge","Sentadilla sumo con mancuerna","Hip thrust con pausa","Puente glúteo con pausa"],"Aductores/Abductores":["Aducción de cadera en máquina","Aducción con banda","Aducción en polea","Aducción acostado","Aducción en fitball","Copenhagen plank","Aducción isométrica","Abducción de cadera en máquina","Abducción con banda","Abducción en polea"],"Pantorrillas":["Elevación de talones de pie","Elevación de talones sentado","Elevación de talones en prensa","Elevación de talones unilateral","Elevación de talones en smith","Elevación de talones en máquina","Donkey calf raise","Calf raise con mancuernas","Calf raise con barra","Calf raise en escalón","Saltos de pantorrilla","Pliometría de tobillo","Farmer walk en puntas","Jump rope","Tibialis raise","Elevación de punta (tibial anterior)"],"Cardio":["Trotadora","Caminadora","Eliptica","Bicicleta","Bicicleta estática","Remo","Escaladora","Stepper","HIIT","Sprints","Cuerda","Air bike","Assault bike","Spinning","Caminata inclinada","Caminata rápida","Trote suave","Trote continuo","Ciclismo","Natación","Boxeo","Shadow boxing","Saco de boxeo","Battle ropes","Circuito","Burpees"]};
-    const MUSCLES = Object.keys(EXERCISE_DB);
+    let EX_BY_MUSCLE = {};   // { "Pectoral": [ {nombre, mediaUrl, maq, tecnica, tags}, ... ] }
+    let MUSCLES = [];        // ["Pectoral", "Hombros", ...]
+
+    function normalizeMuscle(m){ return String(m||"").trim(); }
+    function normalizeName(n){ return String(n||"").trim(); }
+
+    function buildExerciseIndex(){
+      const rows = (typeof getExercises === "function") ? (getExercises() || []) : [];
+      const active = rows.filter(r => (r.activo === false) ? false : true);
+
+      const map = {};
+      active.forEach(r=>{
+        const mus = normalizeMuscle(r.musculo);
+        const nom = normalizeName(r.nombre);
+        if(!mus || !nom) return;
+
+        if(!map[mus]) map[mus] = [];
+        map[mus].push({
+          exId: r.exId || r.id || "",
+          nombre: nom,
+          musculo: mus,
+          maq: r.maq || "",
+          tecnica: r.tecnica || "",
+          tags: r.tags || "",
+          mediaUrl: r.mediaUrl || r.media || r.url || ""
+        });
+      });
+
+      // ordenar alfabético
+      Object.keys(map).forEach(k=>{
+        map[k].sort((a,b)=> a.nombre.localeCompare(b.nombre, "es"));
+      });
+
+      EX_BY_MUSCLE = map;
+      MUSCLES = Object.keys(EX_BY_MUSCLE).sort((a,b)=> a.localeCompare(b, "es"));
+
+      // Si por alguna razón no hay ejercicios cargados, caemos a una base mínima (para que nunca quede vacío)
+      if(MUSCLES.length === 0){
+        EX_BY_MUSCLE = { "Pectoral": [], "Hombros": [], "Espalda": [], "Bíceps": [], "Tríceps": [], "Piernas": [], "Glúteos": [], "Abdominales/Core": [] };
+        MUSCLES = Object.keys(EX_BY_MUSCLE);
+      }
+    }
+
+    function findExercise(muscle, name){
+      const m = normalizeMuscle(muscle);
+      const n = normalizeName(name).toLowerCase();
+      const list = EX_BY_MUSCLE[m] || [];
+      return list.find(x => String(x.nombre).toLowerCase() === n) || null;
+    }
 
     // ----------------------------------------------------------
     // UI Day Template (incluye Cardio)
     // ----------------------------------------------------------
     function dayCardTemplate(dayNum){
-      const cardioOptions = (EXERCISE_DB["Cardio"] || []).map(c=>`<option value="${c}">${c}</option>`).join("");
-
+      const cardioOptions = (EX_BY_MUSCLE["Cardio"] || []).map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join("");
       return `
         <div class="dayCard" data-day="${dayNum}">
           <div class="dayHead">
@@ -630,7 +769,15 @@
                 <label>Tipo</label>
                 <select class="tblInput" data-cardio-tipo="${dayNum}">
                   <option value="">— Sin cardio —</option>
-                  ${cardioOptions}
+                  ${cardioOptions || `
+                    <option value="Trotadora">Trotadora</option>
+                    <option value="Elíptica">Elíptica</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Escaladora">Escaladora</option>
+                    <option value="Remo">Remo</option>
+                    <option value="Caminata inclinada">Caminata inclinada</option>
+                    <option value="HIIT">HIIT</option>
+                  `}
                 </select>
               </div>
 
@@ -709,6 +856,7 @@
                 <th>REPS</th>
                 <th>CARGA</th>
                 <th>DESCANSO</th>
+                <th>MEDIA</th>
                 <th>ACCIÓN</th>
               </tr>
             </thead>
@@ -720,32 +868,44 @@
 
     function rowTemplate(dayNum){
       const muscleOptions = MUSCLES.map(m => `<option value="${m}">${m}</option>`).join("");
+      const dlId = `dl_${dayNum}_${uid().slice(0,8)}`;
       return `
-        <tr>
+        <tr data-row="${dlId}">
           <td>
             <select class="tblInput tblBig" data-muscle="${dayNum}">
               ${muscleOptions}
             </select>
           </td>
+
           <td>
-            <input class="tblInput tblBig" list="dl-${dayNum}" placeholder="Escribe o elige" data-ex="${dayNum}"/>
-            <datalist id="dl-${dayNum}"></datalist>
+            <input class="tblInput tblBig" list="${dlId}" placeholder="Escribe o elige" data-ex="${dayNum}" autocomplete="off"/>
+            <datalist id="${dlId}"></datalist>
           </td>
+
           <td><input class="tblInput tblSmall" placeholder="N° maq / variante" data-maq="${dayNum}"/></td>
           <td><input class="tblInput tblMid" placeholder="Técnica / tempo / RIR.." data-obs="${dayNum}"/></td>
           <td><input class="tblInput tblSmall" placeholder="3" data-series="${dayNum}"/></td>
           <td><input class="tblInput tblSmall" placeholder="8-12" data-reps="${dayNum}"/></td>
           <td><input class="tblInput tblSmall" placeholder="kg" data-carga="${dayNum}"/></td>
           <td><input class="tblInput tblSmall" placeholder="Ej: 1:30" data-desc="${dayNum}"/></td>
+
+          <td>
+            <button class="btn ghost small" data-media="${dayNum}" title="Ver imagen/video del ejercicio">Ver</button>
+          </td>
+
           <td><button class="btn ghost small" data-delrow="${dayNum}">Quitar</button></td>
         </tr>
       `;
     }
 
-    function updateDatalist(dayNum, muscle){
-      const dl = document.getElementById(`dl-${dayNum}`);
+    function updateRowDatalist(tr, muscle){
+      const input = tr.querySelector(`input[data-ex]`);
+      const dlId = input?.getAttribute("list");
+      const dl = dlId ? document.getElementById(dlId) : null;
       if(!dl) return;
-      dl.innerHTML = (EXERCISE_DB[muscle] || []).map(ex => `<option value="${ex}"></option>`).join("");
+
+      const list = EX_BY_MUSCLE[normalizeMuscle(muscle)] || [];
+      dl.innerHTML = list.map(ex => `<option value="${ex.nombre}"></option>`).join("");
     }
 
     function updateFocusBadges(dayNum){
@@ -786,16 +946,92 @@
       });
     }
 
+    function openMediaModal(title, url){
+      const modal = $("#imgModal");
+      const img = $("#imgEl");
+      const hint = $("#imgHint");
+      $("#imgTitle").textContent = title || "Ejercicio";
+
+      if(!url){
+        img.removeAttribute("src");
+        hint.textContent = "Este ejercicio no tiene mediaUrl registrado en la base de datos.";
+      }else{
+        img.src = url;
+        hint.textContent = url;
+      }
+
+      modal.style.display = "flex";
+    }
+    function closeMediaModal(){ $("#imgModal").style.display = "none"; }
+
     function wireRowActions(dayNum){
+      // quitar fila
       document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
-        btn.onclick = ()=>{
-          btn.closest("tr")?.remove();
+        btn.onclick = ()=> btn.closest("tr")?.remove();
+      });
+
+      // cambio músculo -> actualizar datalist de esa fila
+      document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
+        const tr = sel.closest("tr");
+        if(!tr) return;
+
+        // primera carga
+        updateRowDatalist(tr, sel.value);
+
+        sel.onchange = ()=>{
+          updateRowDatalist(tr, sel.value);
+
+          // si ya había ejercicio escrito, lo validamos contra el nuevo músculo
+          const exIn = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          if(exIn && exIn.value){
+            const match = findExercise(sel.value, exIn.value);
+            if(!match){
+              // no borramos automáticamente (para no molestar), pero avisamos visualmente
+              exIn.style.borderColor = "rgba(255,90,103,.55)";
+            }else{
+              exIn.style.borderColor = "rgba(255,255,255,.10)";
+            }
+          }
         };
       });
 
-      document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
-        sel.onchange = ()=> updateDatalist(dayNum, sel.value);
-        updateDatalist(dayNum, sel.value);
+      // cuando el usuario escribe/elige un ejercicio, validamos y (si existe) autocompletamos maq/obs base (opcional)
+      document.querySelectorAll(`input[data-ex="${dayNum}"]`).forEach(inp=>{
+        const tr = inp.closest("tr");
+        const musSel = tr?.querySelector(`select[data-muscle="${dayNum}"]`);
+
+        const validate = ()=>{
+          const muscle = musSel?.value || "";
+          const exName = inp.value || "";
+          if(!muscle || !exName) return;
+
+          const match = findExercise(muscle, exName);
+          if(match){
+            inp.style.borderColor = "rgba(255,255,255,.10)";
+            // si el usuario no llenó "maq/obs", ponemos sugerencias (sin pisar si ya escribió)
+            const maq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+            const obs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+            if(maq && !maq.value && match.maq) maq.value = match.maq;
+            if(obs && !obs.value && match.tecnica) obs.value = match.tecnica;
+          }else{
+            // sigue dejando texto libre, pero marcamos suave
+            inp.style.borderColor = "rgba(255,90,103,.55)";
+          }
+        };
+
+        inp.addEventListener("change", validate);
+        inp.addEventListener("blur", validate);
+      });
+
+      // botón media
+      document.querySelectorAll(`button[data-media="${dayNum}"]`).forEach(btn=>{
+        btn.onclick = ()=>{
+          const tr = btn.closest("tr");
+          const muscle = tr?.querySelector(`select[data-muscle="${dayNum}"]`)?.value || "";
+          const exName = tr?.querySelector(`input[data-ex="${dayNum}"]`)?.value || "";
+          const match = findExercise(muscle, exName);
+          openMediaModal(exName || "Ejercicio", match?.mediaUrl || "");
+        };
       });
     }
 
@@ -809,24 +1045,12 @@
       const fcavg = document.querySelector(`[data-cardio-fcavg="${dayNum}"]`)?.value || "";
       const fcmax = document.querySelector(`[data-cardio-fcmax="${dayNum}"]`)?.value || "";
       const notas = document.querySelector(`[data-cardio-notas="${dayNum}"]`)?.value || "";
-
       if(!tipo) return null;
-
-      return {
-        tipo,
-        min,
-        zona,
-        intensidad,
-        kcal,
-        fcavg,
-        fcmax,
-        notas
-      };
+      return { tipo, min, zona, intensidad, kcal, fcavg, fcmax, notas };
     }
 
     function writeCardioForDay(dayNum, cardio){
       const setVal = (sel, val)=>{ const el = document.querySelector(sel); if(el) el.value = (val ?? ""); };
-
       if(!cardio){
         setVal(`[data-cardio-tipo="${dayNum}"]`, "");
         setVal(`[data-cardio-min="${dayNum}"]`, "");
@@ -838,7 +1062,6 @@
         setVal(`[data-cardio-notas="${dayNum}"]`, "");
         return;
       }
-
       setVal(`[data-cardio-tipo="${dayNum}"]`, cardio.tipo || "");
       setVal(`[data-cardio-min="${dayNum}"]`, cardio.min || "");
       setVal(`[data-cardio-zona="${dayNum}"]`, cardio.zona || "");
@@ -865,8 +1088,6 @@
       document.querySelectorAll(".dayCard").forEach(card=>{
         const d = card.getAttribute("data-day");
         const enfoque = [...document.querySelectorAll(`input[data-focus="${d}"]:checked`)].map(x=>x.value);
-
-        // ✅ cardio del día (opcional)
         const cardio = readCardioForDay(d);
 
         const ejercicios = [];
@@ -881,8 +1102,12 @@
           const carga = tr.querySelector(`input[data-carga="${d}"]`)?.value || "";
           const descanso = tr.querySelector(`input[data-desc="${d}"]`)?.value || "";
 
+          // si existe mediaUrl en la base, lo guardamos (para socio.html / vista)
+          const match = (musculo && ejercicio) ? findExercise(musculo, ejercicio) : null;
+          const mediaUrl = match?.mediaUrl || "";
+
           if(musculo && ejercicio){
-            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso });
+            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso, mediaUrl });
           }
         });
 
@@ -911,14 +1136,11 @@
 
       routine.dias.forEach(day=>{
         out += `${day.dia}\n`;
-
-        // cardio en texto
         if(day.cardio){
           const c = day.cardio;
           out += `Cardio: ${c.tipo} · ${c.min || "-"} min · Zona: ${c.zona || "-"} · Int: ${c.intensidad || "-"} · Kcal: ${c.kcal || "-"} · FC: ${c.fcavg || "-"} / ${c.fcmax || "-"}\n`;
           if(c.notas) out += `Notas cardio: ${c.notas}\n`;
         }
-
         if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\n`;
         out += `\n`;
 
@@ -926,6 +1148,7 @@
           out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\n`;
           if(e.maq) out += `   Maq/Var: ${e.maq}\n`;
           if(e.obs) out += `   Obs: ${e.obs}\n`;
+          if(e.mediaUrl) out += `   Media: ${e.mediaUrl}\n`;
         });
         out += `\n------------------------------\n\n`;
       });
@@ -1009,7 +1232,6 @@
         const dayNum = extractDayNumber(day.dia);
         addDayIfNotExists(dayNum);
 
-        // ✅ cargar cardio
         writeCardioForDay(dayNum, day.cardio || null);
 
         const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
@@ -1040,7 +1262,7 @@
 
           if(selM){
             selM.value = ex.musculo || selM.value;
-            updateDatalist(dayNum, selM.value);
+            updateRowDatalist(tr, selM.value);
           }
           if(inEx) inEx.value = ex.ejercicio || "";
           if(inMaq) inMaq.value = ex.maq || "";
@@ -1113,6 +1335,7 @@
                         </span>
                         ${e.maq ? `<div style="opacity:.78;margin-top:6px">Maq/Var: ${e.maq}</div>` : ``}
                         ${e.obs ? `<div style="opacity:.78;margin-top:6px">Obs: ${e.obs}</div>` : ``}
+                        ${e.mediaUrl ? `<div style="opacity:.78;margin-top:6px">Media: <a href="${e.mediaUrl}" target="_blank" rel="noopener" style="color:#9bd4ff">Abrir</a></div>` : ``}
                       </div>
                     `).join("")}
                   </div>`
@@ -1153,23 +1376,6 @@
       }
       if(typeof window.syncDown === "function"){
         try{ await window.syncDown(); return; }catch(e){ console.warn(e); }
-      }
-      try{
-        if(typeof window.apiGet === "function" && typeof window.setUsers === "function"){
-          const u = await apiGet("USERS");
-          const list = (u.users || []).map(x=>({
-            rut: String(x.rut||"").trim().toUpperCase(),
-            nombre: x.nombre || "",
-            email: x.email || "",
-            pass: String(x.pass || ""),
-            rol: x.rol ?? x.role ?? "SOCIO",
-            activo: (x.activo === false) ? false : true,
-            creadoEn: x.creadoEn || ""
-          }));
-          setUsers(list);
-        }
-      }catch(e){
-        console.warn("No pude precargar USERS.", e);
       }
     }
 
@@ -1214,11 +1420,17 @@
 
     const addedDays = new Set();
 
-    document.addEventListener("DOMContentLoaded", async ()=>{
+    async function mainInit(){
+      const msgEl = $("#msg");
+
+      // Auth
       let me = requireAuth("FUNCIONARIO");
       if(!me) return;
 
       await preloadCoreData();
+
+      // **IMPORTANTE**: construimos el índice después del syncDown
+      buildExerciseIndex();
 
       $("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
       $("#btnLogout").onclick = ()=>{
@@ -1229,6 +1441,11 @@
       $("#btnCerrarVista").onclick = closeVistaModal;
       $("#vistaModal").addEventListener("click", (e)=>{
         if(e.target.id === "vistaModal") closeVistaModal();
+      });
+
+      $("#btnCloseImg").onclick = closeMediaModal;
+      $("#imgModal").addEventListener("click", (e)=>{
+        if(e.target.id === "imgModal") closeMediaModal();
       });
 
       const socioSelect = $("#socioSelect");
@@ -1262,14 +1479,22 @@
       $("#btnAddDay").onclick = ()=>{
         const d = String($("#dayPicker").value);
         if(addedDays.has(d)){
-          showMsg($("#msg"), `⚠️ Día ${d} ya está agregado.`, false);
+          showMsg(msgEl, `⚠️ Día ${d} ya está agregado.`, false);
           return;
         }
         $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
         addedDays.add(d);
         wireDayActions();
         updateFocusBadges(d);
-        showMsg($("#msg"), `Agregado: Día ${d}`, true);
+
+        // agregamos una fila por defecto para que aparezca la lista al tiro
+        const tbody = document.getElementById(`tbody-${d}`);
+        if(tbody){
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(d));
+          wireRowActions(d);
+        }
+
+        showMsg(msgEl, `Agregado: Día ${d}`, true);
       };
 
       $("#dayPicker").value = "1";
@@ -1285,7 +1510,6 @@
 
       // ✅ GUARDAR RUTINA
       $("#btnGuardar").onclick = async ()=>{
-        const msgEl = $("#msg");
         try{
           showMsg(msgEl, "Guardando rutina…", true);
 
@@ -1334,7 +1558,7 @@
           renderVistaSocio(routine, me.nombre);
           openVistaModal();
         }catch(err){
-          showMsg($("#msg"), err.message, false);
+          showMsg(msgEl, err.message, false);
         }
       };
 
@@ -1412,7 +1636,7 @@
           renderPlantillas("");
         }catch(e){
           console.error(e);
-          showMsg($("#msg"), "⚠️ No pude cargar plantillas (revisa API / permisos).", false);
+          showMsg(msgEl, "⚠️ No pude cargar plantillas (revisa API / permisos).", false);
         }
       }
 
@@ -1432,9 +1656,9 @@
             dias: tplRoutine.dias || []
           });
 
-          showMsg($("#msg"), "📋 Plantilla cargada. Ahora puedes editar y guardar al socio.", true);
+          showMsg(msgEl, "📋 Plantilla cargada. Ahora puedes editar y guardar al socio.", true);
         }catch(err){
-          showMsg($("#msg"), err.message, false);
+          showMsg(msgEl, err.message, false);
         }
       };
 
@@ -1463,14 +1687,52 @@
             actualizadoEn: nowISO()
           });
 
-          showMsg($("#msg"), "✅ Plantilla guardada. Recargando lista…", true);
+          showMsg(msgEl, "✅ Plantilla guardada. Recargando lista…", true);
           await cargarPlantillasDesdeSheets();
         }catch(err){
-          showMsg($("#msg"), err.message, false);
+          showMsg(msgEl, err.message, false);
         }
       };
 
       await cargarPlantillasDesdeSheets();
+      showMsg(msgEl, `✅ Base de ejercicios: ${Object.values(EX_BY_MUSCLE).reduce((a,b)=>a+b.length,0)} cargados.`, true);
+    }
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      const msgEl = $("#msg");
+
+      try{
+        // intenta varias rutas según tu estructura local:
+        // - assets/app.js (si rutinas.html está en Web/ y assets/ al lado)
+        // - Web/assets/app.js (si rutinas.html está un nivel arriba y Web/ contiene assets/)
+        // - ./assets/app.js (seguro)
+        // - ../assets/app.js (si rutinas.html está dentro de una subcarpeta)
+        const loadedFrom = await loadScriptTry([
+          "assets/app.js",
+          "./assets/app.js",
+          "Web/assets/app.js",
+          "../assets/app.js",
+          "/Web/assets/app.js"
+        ]);
+
+        // sanity: aseguramos que existen funciones críticas
+        if(typeof requireAuth !== "function" || typeof apiGet !== "function"){
+          throw new Error("app.js cargó desde: " + loadedFrom + " pero faltan funciones (requireAuth/apiGet). Revisa que sea el app.js correcto.");
+        }
+
+        await mainInit();
+      }catch(err){
+        console.error(err);
+        showMsg(msgEl, "⛔ " + (err.message || String(err)), false);
+
+        // fallback: pinta conexión como caída si existen elementos
+        try{
+          const dot = document.getElementById("dbDot");
+          const txt = document.getElementById("dbText");
+          if(dot) dot.className = "db-dot off";
+          if(txt) txt.textContent = "Sin app.js";
+        }catch{}
+      }
     });
   </script>
 </body>
