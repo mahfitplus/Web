@@ -60,6 +60,7 @@
     button { font: inherit; cursor: pointer; border: none; background: none; }
 
     .wrap {
+      
       max-width: var(--max-width);
       margin: 0 auto;
       padding: calc(20px + var(--safe-top)) 20px calc(100px + var(--safe-bottom));
@@ -150,7 +151,7 @@
     .card-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--stroke); }
     .card-header h2 { font-size: 18px; font-weight: 600; color: var(--txt); margin-bottom: 4px; }
     .card-header p { font-size: 13px; color: var(--txt-muted); }
-    .card-body { padding: 20px; }
+    .card-body { padding: 2 0px; }
 
     /* QUICK ACTIONS */
     .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
@@ -1090,55 +1091,51 @@
 
 
 /* === Mobile: Fecha arriba + KPIs debajo en una fila (4) como el ejemplo === */
+/* ✅ Mantener el MISMO ORDEN en móvil:
+   Fecha -> Fotos -> KPIs -> Comentario
+*/
 @media (max-width: 640px){
-  /* Header del control: apila fecha y KPIs */
-  .photo-card-head,
-  .control-head,
-  .control-header{
-    display:flex !important;
+
+  /* 1) Asegura que el body sea columna */
+  .photo-card-body{
+    display: flex !important;
     flex-direction: column !important;
-    align-items: stretch !important;
-    gap:10px !important;
+    gap: 12px !important;
   }
 
-  /* Bloque fecha/título ocupa todo el ancho */
-  .photo-card-title,
-  .photo-card-head .photo-card-title,
-  .control-meta,
-  .control-left{
-    width: 100% !important;
+  /* 2) Orden fijo dentro del card */
+  .photo-card-head{ order: 1 !important; }   /* Fecha */
+  .photo-grid{      order: 2 !important; }   /* Fotos */
+  .photo-kpis{      order: 3 !important; }   /* KPIs */
+  .comment-box{     order: 4 !important; }   /* Comentario */
+
+  /* 3) En móvil, la cabecera solo contiene título/fecha (no KPIs) */
+  .photo-card-head{
+    display: block !important;
   }
 
-  /* KPIs en 4 columnas */
-  .control-kpis,
-  .photo-badges,
-  .mini-kpis,
-  .kpi-mini-row{
-    display:grid !important;
+  /* 4) Que los KPIs se vean en 4 columnas compactas */
+  .photo-kpis{
+    display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap:8px !important;
+    gap: 8px !important;
     width: 100% !important;
-    overflow: visible !important;
+    margin-top: 0 !important;
   }
 
-  /* Tarjeta KPI compacta para que quepan 4 */
-  .control-kpis .mini-kpi,
-  .photo-badges .mini-kpi,
-  .mini-kpis .mini-kpi,
-  .kpi-mini-row .mini-kpi,
-  .control-kpis .badge,
-  .photo-badges .badge{
-    width: 100% !important;
-    min-width: 0 !important;
+  /* 5) Compactar mini-kpis para que quepan */
+  .mini-kpi{
     padding: 8px 6px !important;
     border-radius: 14px !important;
   }
-
-  /* Tipografías compactas pero legibles */
-  .mini-kpi .kpi-title{ font-size: 10.5px !important; }
-  .mini-kpi .kpi-value{ font-size: 14px !important; line-height: 1.1 !important; }
+  .mini-kpi .mini-top{ font-size: 10.5px !important; }
+  .mini-kpi .mini-val{ font-size: 14px !important; }
   .mini-kpi .kpi-delta{ font-size: 10px !important; }
 }
+
+
+
+
 </style>
 </head>
 
@@ -2676,25 +2673,38 @@ const miniKpisHtml = [
     const card = document.createElement("div");
     card.className = "photo-card";
     card.innerHTML = `
-      <div class="photo-card-head">
-        <div class="photo-card-title">
-          <div class="photo-date">${fecha}</div>
-          <div class="photo-sub">${urls.length} foto${urls.length===1?"":"s"} · Control #${idx+1}</div>
-        </div>
-        <div class="photo-kpis">
-          ${miniKpisHtml}
-        </div>
-      </div>
+  <!-- HEADER: solo fecha -->
+  <div class="photo-card-head">
+    <div class="photo-card-title">
+      <div class="photo-date">${fecha}</div>
+      <div class="photo-sub">${urls.length} foto${urls.length===1?"":"s"} · Control #${idx+1}</div>
+    </div>
+  </div>
 
-      <div class="photo-card-body">
-        <div class="comment-box">
-          <div class="label"><i class="fas fa-comment-dots"></i> Comentario del control</div>
-          <div class="text">${comentario ? comentario : `<span style="opacity:.75">Sin comentario registrado.</span>`}</div>
-        </div>
+  <!-- BODY: orden lógico -->
+  <div class="photo-card-body">
 
-        <div class="photo-grid"></div>
+    <!-- 1️⃣ FOTOS -->
+    <div class="photo-grid"></div>
+
+    <!-- 2️⃣ KPIs -->
+    <div class="photo-kpis">
+      ${miniKpisHtml}
+    </div>
+
+    <!-- 3️⃣ COMENTARIO -->
+    <div class="comment-box">
+      <div class="label">
+        <i class="fas fa-comment-dots"></i> Comentario del control
       </div>
-    `;
+      <div class="text">
+        ${comentario ? comentario : `<span style="opacity:.75">Sin comentario registrado.</span>`}
+      </div>
+    </div>
+
+  </div>
+`;
+
 
     const grid = card.querySelector(".photo-grid");
 
