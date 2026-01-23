@@ -506,7 +506,11 @@
       .workout-day{ break-inside:avoid; }
       .ex{ break-inside:avoid; }
     }
-  </style>
+  
+      .ex-media{ margin-top:8px; }
+      .ex-media img{ width:100%; max-width:220px; border-radius:12px; border:1px solid rgba(255,255,255,.10); display:block; }
+      .ex-tech{ margin-top:8px; }
+    </style>
 </head>
 
 <body>
@@ -603,7 +607,7 @@
   <script src="assets/app.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const $ = (s, el=document) => el.querySelector(s);
 
       // auth
@@ -674,6 +678,31 @@
       // Feedback store: { rating: 0..5, text:"" }
       let feedback = lsGet(fbKey, { rating: 0, text: "" });
 
+      // ✅ EXERCISES base (desde Sheet)
+      let EX_LIST = [];
+      let EX_BY_ID = new Map();
+      let EX_BY_NAME = new Map();
+
+      async function ensureExercises(){
+        try{
+          if(window.getExercises){ EX_LIST = window.getExercises() || []; }
+          if((!EX_LIST || !EX_LIST.length) && window.syncDown){ await window.syncDown(); }
+          if(window.getExercises){ EX_LIST = window.getExercises() || []; }
+        }catch(e){ EX_LIST = EX_LIST || []; }
+
+        EX_BY_ID = new Map((EX_LIST||[]).map(x=>[String(x.exId||x.id||""), x]));
+        EX_BY_NAME = new Map((EX_LIST||[]).map(x=>[String(x.nombre||"").trim().toLowerCase(), x]));
+      }
+
+      function findExerciseInfo(e){
+        const exId = String(e?.exId || e?.exerciseId || e?.id || "").trim();
+        if(exId && EX_BY_ID.has(exId)) return EX_BY_ID.get(exId);
+        const name = String(e?.ejercicio || e?.nombre || "").trim().toLowerCase();
+        if(name && EX_BY_NAME.has(name)) return EX_BY_NAME.get(name);
+        return null;
+      }
+
+
       // Render week chips
       function renderWeekChips(){
         const box = $("#weekChips");
@@ -708,6 +737,20 @@
       const timerDisplay = $("#timerDisplay");
       const timerSub = $("#timerSub");
       const timerTitle = $("#timerTitle");
+
+      // ✅ Técnica modal
+      const techModal = $("#techModal");
+      const techTitleEl = $("#techTitle");
+      const techBodyEl = $("#techBody");
+      $("#techClose").addEventListener("click", ()=>{ techModal.style.display = "none"; techModal.setAttribute("aria-hidden","true"); });
+      techModal.addEventListener("click", (e)=>{ if(e.target === techModal){ techModal.style.display="none"; techModal.setAttribute("aria-hidden","true"); } });
+
+      function openTechModal(title, text){
+        techTitleEl.textContent = title || "Técnica";
+        techBodyEl.textContent = text || "";
+        techModal.style.display = "flex";
+        techModal.setAttribute("aria-hidden","false");
+      }
 
       let timerSecs = 60;
       let timerInt = null;
@@ -886,7 +929,24 @@
 
                   <div class="ex-info">
                     <div class="ex-name">${escapeHtml(name)}</div>
-                    <div class="ex-meta">
+                    
+                    ${(()=>{
+                      const info = findExerciseInfo(e) || {};
+                      const media = String(info.mediaUrl||"").trim();
+                      const tec = String(info.tecnica||"").trim();
+                      const thumb = media ? `
+                        <div class="ex-media">
+                          <img src="${escapeAttr(media)}" alt="media" loading="lazy" onerror="this.style.display='none'"/>
+                        </div>` : "";
+                      const tech = tec ? `
+                        <div class="ex-tech">
+                          <button class="mini ghost" data-tech="${escapeAttr(tec)}" data-techtitle="${escapeAttr(name)}">
+                            <i class="fas fa-circle-info"></i> Técnica
+                          </button>
+                        </div>` : "";
+                      return thumb + tech;
+                    })()}
+<div class="ex-meta">
                       ${series || reps ? `<span class="tag"><i class="fas fa-layer-group"></i>${escapeHtml(series)}${escapeHtml(reps)}</span>` : ""}
                       ${carga ? `<span class="tag"><i class="fas fa-weight-hanging"></i>${escapeHtml(carga)}</span>` : ""}
                       ${descanso ? `<span class="tag"><i class="fas fa-stopwatch"></i>${escapeHtml(descanso)}</span>` : ""}
@@ -987,9 +1047,24 @@
       }
 
       // init
+      await ensureExercises();
       renderWeekChips();
       renderRoutine();
     });
   </script>
+
+  <!-- ✅ TÉCNICA MODAL -->
+  <div class="modal" id="techModal" aria-hidden="true" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <strong id="techTitle">Técnica</strong>
+        <button class="close" id="techClose" title="Cerrar"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="meta" id="techBody" style="white-space:pre-wrap;line-height:1.5;"></div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
