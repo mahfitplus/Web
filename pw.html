@@ -510,7 +510,13 @@
     </div>
   </main>
 
-  <script src="assets/app.js"></script>
+  
+<!-- MAH FIT BOOT MODE: core (light page, instant render) -->
+<script>
+  window.MAHFIT_BOOT_MODE = "core";
+</script>
+
+<script src="assets/app.js" defer></script>
   <script>
     // Volver
     const btnBack = document.getElementById("btnBack");
