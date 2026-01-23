@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbzsOrVlrMTCe9pwmUW5eCo6ItdVffW43oLzkr-9HCXic-3VjsX-jvGrIwGVgnnYwbHfIQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzVhcspvmRfaarndA-CLZptF-Ftyvc71SWBZ3Cfm4DIRoYJMPxlu6EnvBGLHaJBQ8X0tA/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -267,6 +267,66 @@ async function apiPost(resource, data){
   return j;
 }
 
+
+// ---------------- EXERCISES helpers (Base) ----------------
+function exIdNew_(){
+  // ID estable y único (no dependas del nombre)
+  return "EX_" + crypto.randomUUID().replace(/-/g,"").slice(0,10).toUpperCase();
+}
+
+function findExerciseByName_(nombre){
+  const n = String(nombre||"").trim().toLowerCase();
+  if(!n) return null;
+  return getExercises().find(e => String(e.nombre||"").trim().toLowerCase() === n) || null;
+}
+
+async function upsertExercise_(ex){
+  // ex: { exId, nombre, musculo, maq, tecnica, mediaUrl, estado }
+  const payload = {
+    exId: String(ex.exId || "").trim() || exIdNew_(),
+    nombre: String(ex.nombre || "").trim(),
+    musculo: String(ex.musculo || "").trim(),
+    maq: String(ex.maq || "").trim(),
+    tecnica: String(ex.tecnica || "").trim(),
+    mediaUrl: String(ex.mediaUrl || "").trim(),
+    estado: String(ex.estado || "pendiente").trim(),
+    actualizadoEn: nowISO()
+  };
+  if(!payload.nombre) throw new Error("Falta nombre de ejercicio");
+
+  // intentar guardar remoto (si existe resource). Si falla, igual guardamos local.
+  try{
+    await apiPost("EXERCISES", payload);
+  }catch(err){
+    console.warn("[EXERCISES] No se pudo guardar remoto (se guardará local):", err && err.message ? err.message : err);
+  }
+
+  // merge local cache
+  const list = getExercises();
+  const i = list.findIndex(x => String(x.exId).trim() === payload.exId);
+  if(i >= 0) list[i] = { ...list[i], ...payload };
+  else list.unshift(payload);
+  setExercises(list);
+  return payload;
+}
+
+async function ensureExerciseInBase_(nombre, musculo="", maq=""){
+  // Si existe por nombre => devuelve; si no existe => crea pendiente
+  const found = findExerciseByName_(nombre);
+  if(found) return found;
+
+  return await upsertExercise_({
+    exId: exIdNew_(),
+    nombre,
+    musculo,
+    maq,
+    tecnica: "",
+    mediaUrl: "",
+    estado: "pendiente",
+  });
+}
+
+
 // ---------------- Cache local ----------------
 function getUsers(){ return LS.get("mahfit_users", []); }
 function setUsers(v){ LS.set("mahfit_users", v); }
@@ -288,6 +348,10 @@ function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
+
+// ✅ EXERCISES (Base de ejercicios)
+function getExercises(){ return LS.get("mahfit_exercises", []); }
+function setExercises(v){ LS.set("mahfit_exercises", v); }
 
 // ✅ LOGS PRO caches
 function getWorkoutLog(){ return LS.get("mahfit_workout_log", []); }
@@ -575,6 +639,27 @@ async function syncDown(){
       actualizadoEn: x.actualizadoEn ?? ""
     };
   }));
+
+  // ✅ EXERCISES (Base de ejercicios) — opcional (no rompe si aún no existe el resource)
+  try{
+    const ex = await apiGet("EXERCISES");
+    const list = (ex.exercises || ex.EXERCISES || []).map(x => ({
+      exId: String(x.exId ?? x.id ?? "").trim(),
+      nombre: x.nombre ?? x.Nombre ?? "",
+      musculo: x.musculo ?? x.Musculo ?? "",
+      maq: x.maq ?? x.maquina ?? x.Maq ?? "",
+      tecnica: x.tecnica ?? x.Tecnica ?? "",
+      mediaUrl: x.mediaUrl ?? x.media_url ?? x.MediaUrl ?? "",
+      estado: (x.estado ?? x.Estado ?? "").toString().trim(),
+      actualizadoEn: x.actualizadoEn ?? x.ActualizadoEn ?? ""
+    })).filter(x=>x.exId && x.nombre);
+    setExercises(list);
+  }catch(err){
+    // Si todavía no existe la hoja/resource, no frenamos el syncDown
+    console.warn("[EXERCISES] syncDown omitido:", err && err.message ? err.message : err);
+  }
+
+
 
   // ✅ LOGS PRO (con fallback logId/id)
   const wl = await apiGet("WORKOUT_LOG");
@@ -1090,6 +1175,10 @@ window.setRutinasV2 = setRutinasV2;
 
 window.getPlantillasV2 = getPlantillasV2;
 window.setPlantillasV2 = setPlantillasV2;
+// ✅ EXERCISES exposed
+window.getExercises = getExercises;
+window.setExercises = setExercises;
+window.upsertExercise = upsertExercise_;
 
 window.requireAuth = requireAuth;
 window.syncDown = syncDown;
