@@ -751,7 +751,44 @@
   </div>
 
   <!-- app.js -->
+  <script>window.MAHFIT_BOOT_MODE="login";</script>
   <script src="assets/app.js"></script>
+
+  <script>
+  (function(){
+    // Fallback loader: si assets/app.js no cargó (paths distintos), intentamos rutas alternativas.
+    const candidates = ["./assets/app.js","../assets/app.js","Web/assets/app.js","/Web/assets/app.js"];
+    function load(src){
+      return new Promise((resolve, reject)=>{
+        const s=document.createElement("script");
+        s.src=src;
+        s.onload=()=>resolve(src);
+        s.onerror=()=>reject(src);
+        document.head.appendChild(s);
+      });
+    }
+    async function ensure(){
+      if(typeof window.requireAuth==="function" && typeof window.apiGet==="function"){
+        document.dispatchEvent(new Event("appjs-ready"));
+        return;
+      }
+      for(const p of candidates){
+        try{
+          await load(p);
+          if(typeof window.requireAuth==="function" && typeof window.apiGet==="function"){
+            document.dispatchEvent(new Event("appjs-ready"));
+            return;
+          }
+        }catch(e){}
+      }
+      console.warn("MAH FIT: app.js no pudo cargarse en ninguna ruta.");
+      document.dispatchEvent(new Event("appjs-missing"));
+    }
+    // Si el script principal cargó bien, esto será instantáneo.
+    ensure();
+  })();
+  </script>
+
 
   <script>
     (function(){
