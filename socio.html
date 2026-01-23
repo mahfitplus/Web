@@ -151,7 +151,7 @@
     .card-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--stroke); }
     .card-header h2 { font-size: 18px; font-weight: 600; color: var(--txt); margin-bottom: 4px; }
     .card-header p { font-size: 13px; color: var(--txt-muted); }
-    .card-body { padding: 2 0px; }
+    .card-body { padding: 20px; }
 
     /* QUICK ACTIONS */
     .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
@@ -1066,9 +1066,8 @@
   .kpi-mini-row::-webkit-scrollbar{
     height:6px;
   }
-}
 
-
+  /* compactar valores para que no se rompa el layout */
   .control-kpis .mini-kpi,
   .photo-badges .mini-kpi,
   .mini-kpis .mini-kpi,
@@ -1088,7 +1087,6 @@
     font-size:15px;
   }
 }
-
 
 /* === Mobile: Fecha arriba + KPIs debajo en una fila (4) como el ejemplo === */
 /* ✅ Mantener el MISMO ORDEN en móvil:
@@ -2304,6 +2302,218 @@
       }
 
      
+
+
+/* ==============================
+         ✅ ANÁLISIS AUTOMÁTICO (PRO)
+         - Última evaluación vs anterior
+         - Genera resumen + recomendaciones
+         ============================== */
+
+      function fmtDelta(v, unit="", digits=1){
+        if(v === null || v === undefined || !Number.isFinite(v)) return "—";
+        const sign = v > 0 ? "+" : (v < 0 ? "−" : "");
+        const abs = Math.abs(v);
+        const num = (Number.isInteger(abs) ? abs.toString() : abs.toFixed(digits));
+        return `${sign}${num}${unit ? " " + unit : ""}`;
+      }
+
+      function safeNum(v){
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function bmiFrom(pesoKg, tallaCm){
+        const w = safeNum(pesoKg);
+        const h = safeNum(tallaCm);
+        if(!w || !h || h <= 0) return null;
+        const m = h / 100;
+        return w / (m*m);
+      }
+
+      function bmiLabelLocal(bmi){
+        if(bmi == null || !Number.isFinite(bmi)) return null;
+        if(bmi < 18.5) return "Bajo peso";
+        if(bmi < 25) return "Normal";
+        if(bmi < 30) return "Sobrepeso";
+        return "Obesidad";
+      }
+
+      function toneTag(score){
+        if(score >= 2) return { cls:"normal", title:"Progreso positivo" };
+        if(score <= -2) return { cls:"veryHigh", title:"Atención" };
+        return { cls:"high", title:"Progreso mixto" };
+      }
+
+      function buildAutoInsights({ currEv, prevEv, user }){
+        const talla = numClean(currEv?.tallaCm) ?? numClean(user?.tallaCm) ?? null;
+
+        const pesoC  = numClean(currEv?.pesoKg);
+        const grasaC = numClean(currEv?.grasaPct);
+        const mmC    = numClean(currEv?.masaMuscularPct);
+        const visC   = numClean(currEv?.grasaVisceral);
+
+        const pesoP  = prevEv ? numClean(prevEv?.pesoKg) : null;
+        const grasaP = prevEv ? numClean(prevEv?.grasaPct) : null;
+        const mmP    = prevEv ? numClean(prevEv?.masaMuscularPct) : null;
+        const visP   = prevEv ? numClean(prevEv?.grasaVisceral) : null;
+
+        const dPeso  = (pesoC !== null && pesoP !== null) ? (pesoC - pesoP) : null;
+        const dGrasa = (grasaC !== null && grasaP !== null) ? (grasaC - grasaP) : null;
+        const dMM    = (mmC !== null && mmP !== null) ? (mmC - mmP) : null;
+        const dVis   = (visC !== null && visP !== null) ? (visC - visP) : null;
+
+        const bmi = bmiFrom(pesoC, talla);
+        const bmiTxt = bmiLabelLocal(bmi);
+
+        let score = 0;
+        if(dGrasa !== null){ score += (dGrasa < 0 ? 1 : (dGrasa > 0 ? -1 : 0)); }
+        if(dMM !== null){    score += (dMM > 0 ? 1 : (dMM < 0 ? -1 : 0)); }
+        if(dVis !== null){   score += (dVis < 0 ? 1 : (dVis > 0 ? -1 : 0)); }
+
+        if(dPeso !== null && dMM !== null){
+          if(dPeso < 0 && dMM >= 0) score += 0.5;
+          if(dPeso < 0 && dMM < 0)  score -= 0.5;
+          if(dPeso > 0 && dGrasa !== null && dGrasa > 0) score -= 0.5;
+        }
+
+        const tone = toneTag(score);
+
+        const bullets = [];
+
+        if(prevEv){
+          const fatDown = (dGrasa !== null && dGrasa < 0);
+          const mmUpOrStable = (dMM !== null && dMM >= 0);
+
+          if(fatDown && mmUpOrStable) bullets.push("Vas por muy buen camino: bajó grasa y el músculo se mantuvo/subió.");
+          else if(dGrasa !== null && dGrasa > 0) bullets.push("Hubo aumento de grasa vs control anterior: revisemos adherencia (comidas, fin de semana, pasos y cardio).");
+          else if(dMM !== null && dMM < 0) bullets.push("Se observa baja de músculo: ojo con proteína diaria, progresión en cargas y sueño.");
+          else bullets.push("Evolución estable/mixta: seguimos monitoreando con el mismo protocolo de medición.");
+
+          if(visC !== null){
+            if(visC <= 9) bullets.push("Grasa visceral en rango normal (bien).");
+            else if(visC <= 14) bullets.push("Grasa visceral elevada: prioriza cardio + fibra + déficit leve sostenido.");
+            else bullets.push("Grasa visceral muy alta: enfoque en recomposición con hábitos estrictos + seguimiento más frecuente.");
+          }
+
+        } else {
+          bullets.push("Este es tu primer registro: desde el próximo control podré comparar cambios y tendencias.");
+          bullets.push("Tip: intenta medir siempre en condiciones similares (hora, hidratación, comida y entrenamiento).");
+        }
+
+        if(dGrasa !== null && dGrasa > 0){
+          bullets.push("Acción sugerida: planifica 1–2 colaciones proteicas/día y controla líquidos calóricos (salsas, bebidas, alcohol).");
+        }
+        if(dMM !== null && dMM < 0){
+          bullets.push("Acción sugerida: prioriza fuerza (multiarticulares) + proteína distribuida (3–4 tomas/día) + 7–9h de sueño.");
+        }
+        if(dVis !== null && dVis > 0){
+          bullets.push("Acción sugerida: suma 2–3 sesiones/semana de cardio (zona 2 o intervalos suaves) y aumenta pasos.");
+        }
+
+        if(bmi != null && bmiTxt){
+          if(bmiTxt === "Sobrepeso" || bmiTxt === "Obesidad"){
+            bullets.push(`IMC estimado en ${bmiTxt}: lo importante es la tendencia + cintura/visceral (no solo el peso).`);
+          } else {
+            bullets.push(`IMC estimado: ${bmi.toFixed(1)} (${bmiTxt}).`);
+          }
+        }
+
+        return { tone, stats:{ pesoC, grasaC, mmC, visC, dPeso, dGrasa, dMM, dVis, bmi, bmiTxt, talla }, bullets };
+      }
+
+      function renderAutoAnalysis(){
+        const box = document.getElementById("autoAnalysisBox");
+        if(!box) return;
+
+        try{
+          if(typeof buildAutoInsights !== "function"){
+            box.innerHTML = `<div class="auto-foot">No está disponible buildAutoInsights(). Revisa que el bloque de análisis esté cargado.</div>`;
+            return;
+          }
+
+          if(!currentUser){
+            box.innerHTML = `<div class="auto-foot">No se pudo cargar el usuario (sesión). Recarga la página.</div>`;
+            return;
+          }
+
+          if(typeof window.evaluationsLastN !== "function"){
+            box.innerHTML = `<div class="auto-foot">No está disponible evaluationsLastN (app.js no cargó bien).</div>`;
+            return;
+          }
+
+          const last2 = window.evaluationsLastN(currentUser.rut, 2) || [];
+          const currEv = last2.length ? last2[last2.length - 1] : null;
+          const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
+
+          if(!currEv){
+            box.innerHTML = `<div class="auto-foot">No hay evaluaciones aún para generar análisis.</div>`;
+            return;
+          }
+
+          const data = buildAutoInsights({ currEv, prevEv, user: currentUser });
+          const t = data.tone;
+
+          const fechaTxt = fmtDateShort(currEv.fecha);
+          const prevTxt = prevEv ? fmtDateShort(prevEv.fecha) : null;
+
+          const s = data.stats;
+
+          function metricRow(name, val, delta, unit, reverse=false){
+            let cls = "high";
+            if(delta === null || !Number.isFinite(delta)) cls = "high";
+            else if(delta === 0) cls = "high";
+            else{
+              const up = delta > 0;
+              const good = reverse ? !up : up;
+              cls = good ? "normal" : "veryHigh";
+            }
+
+            const vTxt = (val === null || val === undefined) ? "—" : (Number.isInteger(val) ? String(val) : Number(val).toFixed(1));
+            const unitTxt = unit ? unit : "";
+            const dTxt = fmtDelta(delta, unitTxt ? unitTxt.trim() : "", unitTxt ? 1 : 0);
+
+            return `
+              <div class="auto-metric">
+                <div class="k">${name}</div>
+                <div class="v">
+                  ${vTxt}${unitTxt ? unitTxt : ""}
+                  <span class="mg-tag ${cls}" style="margin-left:10px;">${dTxt}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          const list = (data.bullets || []).map(x => `<li>${x}</li>`).join("");
+
+          box.innerHTML = `
+            <div class="auto-head">
+              <div class="auto-title">
+                <b>${t.title}</b>
+                <small>${prevTxt ? `Comparación: ${prevTxt} → ${fechaTxt}` : `Registro: ${fechaTxt}`}</small>
+              </div>
+              <span class="mg-tag ${t.cls}">${t.title}</span>
+            </div>
+
+            <div class="auto-grid">
+              ${metricRow("Peso", s.pesoC, s.dPeso, " kg", false)}
+              ${metricRow("% Grasa", s.grasaC, s.dGrasa, " %", true)}
+              ${metricRow("% Músculo", s.mmC, s.dMM, " %", false)}
+              ${metricRow("Visceral", s.visC, s.dVis, "", true)}
+            </div>
+
+            <ul class="auto-list">${list}</ul>
+
+            <div class="auto-foot">
+              Nota: El análisis es orientativo. Para máxima precisión, mide siempre bajo condiciones similares (hora, hidratación y descanso).
+            </div>
+          `;
+        }catch(e){
+          console.error("AUTO ANALYSIS ERROR:", e);
+          box.innerHTML = `<div class="auto-foot">Error generando análisis automático: <b>${(e && e.message) ? e.message : "desconocido"}</b>. Abre consola (F12 → Console) para ver el detalle.</div>`;
+        }
+      }
+
 /* ==============================
    ✅ NUEVO: Registros fotográficos (FIX)
    ============================== */
@@ -3070,196 +3280,6 @@ const miniKpisHtml = [
     });
   
 
-      /* ==============================
-         ✅ ANÁLISIS AUTOMÁTICO (PRO)
-         - Última evaluación vs anterior
-         - Genera resumen + recomendaciones
-         ============================== */
-
-      function fmtDelta(v, unit="", digits=1){
-        if(v === null || v === undefined || !Number.isFinite(v)) return "—";
-        const sign = v > 0 ? "+" : (v < 0 ? "−" : "");
-        const abs = Math.abs(v);
-        const num = (Number.isInteger(abs) ? abs.toString() : abs.toFixed(digits));
-        return `${sign}${num}${unit ? " " + unit : ""}`;
-      }
-
-      function safeNum(v){
-        const n = Number(v);
-        return Number.isFinite(n) ? n : null;
-      }
-
-      function bmiFrom(pesoKg, tallaCm){
-        const w = safeNum(pesoKg);
-        const h = safeNum(tallaCm);
-        if(!w || !h || h <= 0) return null;
-        const m = h / 100;
-        return w / (m*m);
-      }
-
-      function bmiLabelLocal(bmi){
-        if(bmi == null || !Number.isFinite(bmi)) return null;
-        if(bmi < 18.5) return "Bajo peso";
-        if(bmi < 25) return "Normal";
-        if(bmi < 30) return "Sobrepeso";
-        return "Obesidad";
-      }
-
-      function toneTag(score){
-        if(score >= 2) return { cls:"normal", title:"Progreso positivo" };
-        if(score <= -2) return { cls:"veryHigh", title:"Atención" };
-        return { cls:"high", title:"Progreso mixto" };
-      }
-
-      function buildAutoInsights({ currEv, prevEv, user }){
-        const talla = numClean(currEv?.tallaCm) ?? numClean(user?.tallaCm) ?? null;
-
-        const pesoC  = numClean(currEv?.pesoKg);
-        const grasaC = numClean(currEv?.grasaPct);
-        const mmC    = numClean(currEv?.masaMuscularPct);
-        const visC   = numClean(currEv?.grasaVisceral);
-
-        const pesoP  = prevEv ? numClean(prevEv?.pesoKg) : null;
-        const grasaP = prevEv ? numClean(prevEv?.grasaPct) : null;
-        const mmP    = prevEv ? numClean(prevEv?.masaMuscularPct) : null;
-        const visP   = prevEv ? numClean(prevEv?.grasaVisceral) : null;
-
-        const dPeso  = (pesoC !== null && pesoP !== null) ? (pesoC - pesoP) : null;
-        const dGrasa = (grasaC !== null && grasaP !== null) ? (grasaC - grasaP) : null;
-        const dMM    = (mmC !== null && mmP !== null) ? (mmC - mmP) : null;
-        const dVis   = (visC !== null && visP !== null) ? (visC - visP) : null;
-
-        const bmi = bmiFrom(pesoC, talla);
-        const bmiTxt = bmiLabelLocal(bmi);
-
-        let score = 0;
-        if(dGrasa !== null){ score += (dGrasa < 0 ? 1 : (dGrasa > 0 ? -1 : 0)); }
-        if(dMM !== null){    score += (dMM > 0 ? 1 : (dMM < 0 ? -1 : 0)); }
-        if(dVis !== null){   score += (dVis < 0 ? 1 : (dVis > 0 ? -1 : 0)); }
-
-        if(dPeso !== null && dMM !== null){
-          if(dPeso < 0 && dMM >= 0) score += 0.5;
-          if(dPeso < 0 && dMM < 0)  score -= 0.5;
-          if(dPeso > 0 && dGrasa !== null && dGrasa > 0) score -= 0.5;
-        }
-
-        const tone = toneTag(score);
-
-        const bullets = [];
-
-        if(prevEv){
-          const fatDown = (dGrasa !== null && dGrasa < 0);
-          const mmUpOrStable = (dMM !== null && dMM >= 0);
-
-          if(fatDown && mmUpOrStable) bullets.push("Vas por muy buen camino: bajó grasa y el músculo se mantuvo/subió.");
-          else if(dGrasa !== null && dGrasa > 0) bullets.push("Hubo aumento de grasa vs control anterior: revisemos adherencia (comidas, fin de semana, pasos y cardio).");
-          else if(dMM !== null && dMM < 0) bullets.push("Se observa baja de músculo: ojo con proteína diaria, progresión en cargas y sueño.");
-          else bullets.push("Evolución estable/mixta: seguimos monitoreando con el mismo protocolo de medición.");
-
-          if(visC !== null){
-            if(visC <= 9) bullets.push("Grasa visceral en rango normal (bien).");
-            else if(visC <= 14) bullets.push("Grasa visceral elevada: prioriza cardio + fibra + déficit leve sostenido.");
-            else bullets.push("Grasa visceral muy alta: enfoque en recomposición con hábitos estrictos + seguimiento más frecuente.");
-          }
-
-        } else {
-          bullets.push("Este es tu primer registro: desde el próximo control podré comparar cambios y tendencias.");
-          bullets.push("Tip: intenta medir siempre en condiciones similares (hora, hidratación, comida y entrenamiento).");
-        }
-
-        if(dGrasa !== null && dGrasa > 0){
-          bullets.push("Acción sugerida: planifica 1–2 colaciones proteicas/día y controla líquidos calóricos (salsas, bebidas, alcohol).");
-        }
-        if(dMM !== null && dMM < 0){
-          bullets.push("Acción sugerida: prioriza fuerza (multiarticulares) + proteína distribuida (3–4 tomas/día) + 7–9h de sueño.");
-        }
-        if(dVis !== null && dVis > 0){
-          bullets.push("Acción sugerida: suma 2–3 sesiones/semana de cardio (zona 2 o intervalos suaves) y aumenta pasos.");
-        }
-
-        if(bmi != null && bmiTxt){
-          if(bmiTxt === "Sobrepeso" || bmiTxt === "Obesidad"){
-            bullets.push(`IMC estimado en ${bmiTxt}: lo importante es la tendencia + cintura/visceral (no solo el peso).`);
-          } else {
-            bullets.push(`IMC estimado: ${bmi.toFixed(1)} (${bmiTxt}).`);
-          }
-        }
-
-        return { tone, stats:{ pesoC, grasaC, mmC, visC, dPeso, dGrasa, dMM, dVis, bmi, bmiTxt, talla }, bullets };
-      }
-
-      function renderAutoAnalysis(){
-        const box = document.getElementById("autoAnalysisBox");
-        if(!box || !currentUser) return;
-
-        const last2 = (window.evaluationsLastN ? window.evaluationsLastN(currentUser.rut, 2) : []);
-        const currEv = last2.length ? last2[last2.length - 1] : null;
-        const prevEv = last2.length >= 2 ? last2[last2.length - 2] : null;
-
-        if(!currEv){
-          box.innerHTML = `<div class="empty-state"><i class="fas fa-wand-magic-sparkles"></i><p>No hay evaluaciones aún. Registra tu primera evaluación para generar análisis automático.</p></div>`;
-          return;
-        }
-
-        const data = buildAutoInsights({ currEv, prevEv, user: currentUser });
-        const t = data.tone;
-
-        const fechaTxt = fmtDateShort(currEv.fecha);
-        const prevTxt = prevEv ? fmtDateShort(prevEv.fecha) : null;
-
-        const s = data.stats;
-
-        function metricRow(name, val, delta, unit, reverse=false){
-          let cls = "high";
-          if(delta === null || !Number.isFinite(delta)) cls = "high";
-          else if(delta === 0) cls = "high";
-          else{
-            const up = delta > 0;
-            const good = reverse ? !up : up;
-            cls = good ? "normal" : "veryHigh";
-          }
-
-          const vTxt = (val === null || val === undefined) ? "—" : (Number.isInteger(val) ? String(val) : Number(val).toFixed(1));
-          const unitTxt = unit ? unit : "";
-          const dTxt = fmtDelta(delta, unitTxt ? unitTxt.trim() : "", unitTxt ? 1 : 0);
-
-          return `
-            <div class="auto-metric">
-              <div class="k">${name}</div>
-              <div class="v">
-                ${vTxt}${unitTxt ? unitTxt : ""}
-                <span class="mg-tag ${cls}" style="margin-left:10px;">${dTxt}</span>
-              </div>
-            </div>
-          `;
-        }
-
-        const list = data.bullets.map(x => `<li>${x}</li>`).join("");
-
-        box.innerHTML = `
-          <div class="auto-head">
-            <div class="auto-title">
-              <b>${t.title}</b>
-              <small>${prevTxt ? `Comparación: ${prevTxt} → ${fechaTxt}` : `Registro: ${fechaTxt}`}</small>
-            </div>
-            <span class="mg-tag ${t.cls}">${t.title}</span>
-          </div>
-
-          <div class="auto-grid">
-            ${metricRow("Peso", s.pesoC, s.dPeso, " kg", false)}
-            ${metricRow("% Grasa", s.grasaC, s.dGrasa, " %", true)}
-            ${metricRow("% Músculo", s.mmC, s.dMM, " %", false)}
-            ${metricRow("Visceral", s.visC, s.dVis, "", true)}
-          </div>
-
-          <ul class="auto-list">${list}</ul>
-
-          <div class="auto-foot">
-            Nota: El análisis es orientativo. Para máxima precisión, mide siempre bajo condiciones similares (hora, hidratación y descanso).
-          </div>
-        `;
-      }
-
-</script>
+      </script>
 </body>
 </html>
