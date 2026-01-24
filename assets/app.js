@@ -281,13 +281,14 @@ function findExerciseByName_(nombre){
 }
 
 async function upsertExercise_(ex){
-  // ex: { exId, nombre, musculo, maq, tecnica, mediaUrl, estado }
+  // ex: { exId, nombre, musculo, maq, tecnica, mediaUrlGif, mediaUrl, estado }
   const payload = {
     exId: String(ex.exId || "").trim() || exIdNew_(),
     nombre: String(ex.nombre || "").trim(),
     musculo: String(ex.musculo || "").trim(),
     maq: String(ex.maq || "").trim(),
     tecnica: String(ex.tecnica || "").trim(),
+    mediaUrlGif: String(ex.mediaUrlGif || "").trim(),
     mediaUrl: String(ex.mediaUrl || "").trim(),
     estado: String(ex.estado || "pendiente").trim(),
     actualizadoEn: nowISO()
@@ -321,6 +322,7 @@ async function ensureExerciseInBase_(nombre, musculo="", maq=""){
     musculo,
     maq,
     tecnica: "",
+    mediaUrlGif: "",
     mediaUrl: "",
     estado: "pendiente",
   });
@@ -714,6 +716,7 @@ async function syncDown(){
       maq: x.maq ?? x.maquina ?? x.Maq ?? "",
       tecnica: x.tecnica ?? x.Tecnica ?? "",
       mediaUrl: x.mediaUrl ?? x.media_url ?? x.MediaUrl ?? "",
+      mediaUrlGif: x.mediaUrlGif ?? x.media_url_gif ?? x.MediaUrlGif ?? "",
       estado: (x.estado ?? x.Estado ?? "").toString().trim(),
       actualizadoEn: x.actualizadoEn ?? x.ActualizadoEn ?? ""
     })).filter(x=>x.exId && x.nombre);
