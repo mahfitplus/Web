@@ -670,6 +670,123 @@
       100%{ transform: translateY(220px) rotate(220deg); opacity: 0; }
     }
 
+
+    /* ===== PREMIUM MOTION ===== */
+    .modal.active{ animation: modalFade .18s ease-out; }
+    .modal-box{ transform: translateY(6px) scale(.985); opacity: 0; }
+    .modal.active .modal-box{
+      animation: modalPop .22s cubic-bezier(.2,.9,.2,1) forwards;
+    }
+    @keyframes modalFade{
+      from{ background: rgba(0,0,0,.0); }
+      to{ background: rgba(0,0,0,.45); }
+    }
+    @keyframes modalPop{
+      to{ transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* subtle shimmer on success badge */
+    .complete-badge::before{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background: linear-gradient(110deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.35) 45%, rgba(255,255,255,0) 60%);
+      transform: translateX(-60%) rotate(18deg);
+      animation: shimmer 1.2s ease-out 1;
+      pointer-events:none;
+    }
+    @keyframes shimmer{
+      to{ transform: translateX(90%) rotate(18deg); }
+    }
+    .complete-badge{
+      animation: badgeBounce .55s cubic-bezier(.2,.9,.2,1) 1;
+    }
+    @keyframes badgeBounce{
+      0%{ transform: scale(.85); }
+      55%{ transform: scale(1.08); }
+      100%{ transform: scale(1); }
+    }
+
+    /* Timer: pulse when last seconds */
+    .timer.pulse{
+      animation: timerPulse .35s ease-in-out infinite;
+    }
+    @keyframes timerPulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.04); }
+    }
+
+    /* Button micro-interactions */
+    .btn, .mini, .update-notice__btn{
+      transition: transform .12s ease, background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .btn:active, .mini:active, .update-notice__btn:active{
+      transform: translateY(1px) scale(.99);
+    }
+
+
+    /* ===== TIMER PROGRESS RING ===== */
+    .timer-wrap{
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .ring{ position:absolute; inset:0; transform: rotate(-90deg); }
+    .ring circle{ fill:none; stroke-width:12; stroke-linecap:round; }
+    .ring .bg{ stroke: rgba(134,142,150,.18); }
+    .ring .fg{
+      stroke: rgba(90,103,216,.75);
+      stroke-dasharray: 0 999;
+      transition: stroke-dasharray .18s linear, stroke .2s ease;
+    }
+    .timer-wrap.warn .ring .fg{ stroke: rgba(255,209,102,.92); }
+    .timer-wrap.danger .ring .fg{ stroke: rgba(255,107,107,.92); }
+
+    /* completion micro-anim */
+    #completeQuote{ animation: quoteIn .35s ease-out 1; }
+    @keyframes quoteIn{ from{ transform: translateY(6px); opacity:0; } to{ transform: translateY(0); opacity:1; } }
+    #completeModal .modal-actions .btn{ animation: btnIn .32s ease-out 1; }
+    @keyframes btnIn{ from{ transform: translateY(8px); opacity:0; } to{ transform: translateY(0); opacity:1; } }
+
+
+    /* ===== STREAK BADGE ===== */
+    .streak{
+      margin-top:10px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(90,103,216,.25);
+      background: rgba(90,103,216,.08);
+      color: var(--brand);
+      font-weight:1000;
+      font-size:12px;
+    }
+    .streak i{ opacity:.9; }
+
+    /* ===== CONFETTI PRO ===== */
+    .confetti span{
+      width: 8px;
+      height: 14px;
+      border-radius: 5px;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));
+      animation: fall 1.35s linear infinite, sway 0.55s ease-in-out infinite;
+    }
+    .confetti span.big{
+      width: 10px;
+      height: 18px;
+      border-radius: 6px;
+    }
+    @keyframes sway{
+      0%,100%{ margin-left: 0px; }
+      50%{ margin-left: 10px; }
+    }
+
 </style>
 </head>
 
@@ -767,7 +884,13 @@
         <button class="close" id="timerClose" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="modal-body">
-        <div class="timer" id="timerDisplay">01:00</div>
+        <div class="timer-wrap" id="timerWrap">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="bg" cx="60" cy="60" r="48"></circle>
+            <circle class="fg" id="ringFg" cx="60" cy="60" r="48"></circle>
+          </svg>
+          <div class="timer" id="timerDisplay">01:00</div>
+        </div>
         <div class="timer-sub" id="timerSub">Listo para iniciar</div>
       </div>
       <div class="modal-actions">
@@ -1123,23 +1246,134 @@ const DAYS = [
         "No se trata de hacerlo perfecto, sino de hacerlo siempre 💯"
       ];
 
-      const COMPLETE_KEY = `MAHFIT_ROUTINE_COMPLETE_${String(user?.rut||"").toUpperCase()}_${weekStamp}`;
+      
+      // ===== SONIDOS (bonito al marcar Hecho) + STREAK semanal =====
+      let _uiAudioCtx = null;
+      function uiTone(freq=880, ms=70, gain=0.045){
+        try{
+          if(!_uiAudioCtx) _uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const ctx = _uiAudioCtx;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = "sine";
+          o.frequency.value = freq;
+          g.gain.value = gain;
+          o.start();
+          setTimeout(()=>{ try{o.stop();}catch(_){ } }, ms);
+        }catch(_){}
+      }
+      function doneChime(){
+        // dos tonos cortos tipo “ding” suave
+        uiTone(784, 55, 0.04);
+        setTimeout(()=> uiTone(988, 70, 0.045), 70);
+        try{ if(navigator.vibrate) navigator.vibrate(10); }catch(_){}
+      }
+
+      function parseWeekStamp(stamp){
+        // "YYYY_W##"
+        const m = String(stamp||"").match(/^(\d{4})_W(\d{2})$/);
+        if(!m) return null;
+        return { y: Number(m[1]), w: Number(m[2]) };
+      }
+      function weekStampFrom(y,w){
+        return `${y}_W${String(w).padStart(2,"0")}`;
+      }
+      function prevWeekStamp(stamp){
+        const p = parseWeekStamp(stamp);
+        if(!p) return null;
+        let y = p.y, w = p.w - 1;
+        if(w <= 0){
+          y -= 1;
+          w = 52; // aproximación simple, suficiente para streak visual
+        }
+        return weekStampFrom(y,w);
+      }
+      function computeWeeklyStreak(){
+        // cuenta semanas consecutivas completadas hacia atrás, incluyendo esta si está completada
+        let streak = 0;
+        let s = weekStamp;
+        while(true){
+          const k = `MAHFIT_ROUTINE_WEEKDONE_${String(user?.rut||"").toUpperCase()}_${s}`;
+          if(localStorage.getItem(k) === "1"){
+            streak += 1;
+            const prev = prevWeekStamp(s);
+            if(!prev) break;
+            s = prev;
+            if(streak > 52) break;
+          }else{
+            break;
+          }
+        }
+        return streak;
+      }
+      // ===== JINGLE DE COMPLETADO (1s aprox) =====
+      function completeJingle(){
+        try{
+          if(!_uiAudioCtx) _uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const ctx = _uiAudioCtx;
+          const now = ctx.currentTime;
+          const seq = [
+            {f: 784, t: 0.00, d: 0.18},
+            {f: 988, t: 0.20, d: 0.18},
+            {f: 1175, t: 0.40, d: 0.22},
+            {f: 1568, t: 0.65, d: 0.30},
+          ];
+          seq.forEach(n=>{
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = "sine";
+            o.frequency.setValueAtTime(n.f, now + n.t);
+            g.gain.setValueAtTime(0.0001, now + n.t);
+            g.gain.exponentialRampToValueAtTime(0.06, now + n.t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
+            o.start(now + n.t);
+            o.stop(now + n.t + n.d + 0.02);
+          });
+          try{ if(navigator.vibrate) navigator.vibrate([30,40,30]); }catch(_){}
+        }catch(_){}
+      }
+      // ===== /JINGLE =====
+
+      // ===== /SONIDOS + STREAK =====
+
+const COMPLETE_KEY = `MAHFIT_ROUTINE_COMPLETE_${String(user?.rut||"").toUpperCase()}_${weekStamp}`;
 
       function randQuote(){
         return MOTIVATIONAL_QUOTES[Math.floor(Math.random()*MOTIVATIONAL_QUOTES.length)];
       }
 
       function openCompleteModal(quote){
+        try{ completeJingle(); }catch(_){ }
+
         const m = $("#completeModal");
         const q = $("#completeQuote");
         if(q) q.textContent = `“${quote}”`;
 
-        // confetti
+        // ✅ marcar semana completada + mostrar racha
+        try{
+          const wkKey = `MAHFIT_ROUTINE_WEEKDONE_${String(user?.rut||"").toUpperCase()}_${weekStamp}`;
+          localStorage.setItem(wkKey, "1");
+          const streak = computeWeeklyStreak();
+          const box = $("#completeStreak");
+          const st = $("#streakText");
+          if(box && st){
+            if(streak >= 2){
+              box.style.display = "inline-flex";
+              st.textContent = `Racha: ${streak} semana${streak===1?"":"s"} 🔥`;
+            }else{
+              box.style.display = "none";
+            }
+          }
+        }catch(_){ }
+// confetti
         const c = $("#confetti");
         if(c){
           c.innerHTML = "";
-          for(let i=0;i<18;i++){
+          for(let i=0;i<30;i++){
             const s = document.createElement("span");
+            if(Math.random() < 0.33) s.classList.add("big");
             s.style.left = (Math.random()*100).toFixed(2) + "%";
             s.style.animationDelay = (Math.random()*0.6).toFixed(2) + "s";
             s.style.animationDuration = (0.9 + Math.random()*0.7).toFixed(2) + "s";
@@ -1312,7 +1546,44 @@ async function ensureExercises(){
       let timerSecs = 60;
       let timerInt = null;
 
-      function fmtMMSS(sec){
+      let timerTotalSecs = 60;
+
+      function setRingProgress(rem, total){
+        const ring = $("#ringFg");
+        const wrap = $("#timerWrap");
+        if(!ring || !wrap) return;
+        const r = 48;
+        const C = 2 * Math.PI * r;
+        const ratio = total > 0 ? Math.max(0, Math.min(1, rem/total)) : 0;
+        ring.style.strokeDasharray = `${(C*ratio).toFixed(2)} ${(C*(1-ratio)).toFixed(2)}`;
+        wrap.classList.remove("warn","danger");
+        if(rem <= 10 && rem > 5) wrap.classList.add("warn");
+        if(rem <= 5 && rem > 0) wrap.classList.add("danger");
+      }
+
+      
+
+      // ===== TIMER: beeps últimos 5s =====
+      let _timerAudioCtx = null;
+
+      function timerBeep(freq=880, ms=80){
+        try{
+          if(!_timerAudioCtx){
+            _timerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          const ctx = _timerAudioCtx;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.type = "sine";
+          o.frequency.value = freq;
+          g.gain.value = 0.045;
+          o.start();
+          setTimeout(()=>{ try{o.stop();}catch(_){ } }, ms);
+        }catch(_){}
+      }
+      // ===== /TIMER beeps =====
+function fmtMMSS(sec){
         sec = Math.max(0, Math.floor(sec));
         const m = String(Math.floor(sec/60)).padStart(2,"0");
         const s = String(sec%60).padStart(2,"0");
@@ -1320,9 +1591,13 @@ async function ensureExercises(){
       }
       function openTimer(title, secs){
         timerTitle.textContent = title || "Descanso";
-        timerSecs = Number(secs)||60;
+        timerTotalSecs = Number(secs)||60;
+        timerSecs = timerTotalSecs;
         timerDisplay.textContent = fmtMMSS(timerSecs);
         timerSub.textContent = "Listo para iniciar";
+        setRingProgress(timerSecs, timerTotalSecs);
+        const tw = $("#timerWrap");
+        if(tw){ tw.classList.remove("warn","danger"); }
         timerModal.classList.add("active");
         timerModal.setAttribute("aria-hidden","false");
         document.body.style.overflow="hidden";
@@ -1339,23 +1614,30 @@ async function ensureExercises(){
         timerInt = setInterval(()=>{
           timerSecs -= 1;
           timerDisplay.textContent = fmtMMSS(timerSecs);
+          setRingProgress(timerSecs, timerTotalSecs);
+
+          // ✅ últimos 5 segundos: pitido cada segundo + pulse
+          if(timerSecs <= 5 && timerSecs > 0){
+            timerDisplay.classList.add("pulse");
+            timerBeep(880, 70);
+            try{ if(navigator.vibrate) navigator.vibrate(15); }catch(_){}
+          }else{
+            timerDisplay.classList.remove("pulse");
+          }
+
           if(timerSecs <= 0){
             stopTimer();
+            timerDisplay.classList.remove("pulse");
+            setRingProgress(0, timerTotalSecs);
             timerSub.textContent = "✅ Descanso terminado";
-            try{
-              const ctx = new (window.AudioContext || window.webkitAudioContext)();
-              const o = ctx.createOscillator();
-              const g = ctx.createGain();
-              o.connect(g); g.connect(ctx.destination);
-              o.frequency.value = 880; o.type = "sine";
-              g.gain.value = 0.05;
-              o.start();
-              setTimeout(()=>{ o.stop(); ctx.close(); }, 250);
-            }catch(_){}
+            // ✅ pitido final doble (tipo gym timer)
+            timerBeep(660, 120);
+            setTimeout(()=> timerBeep(660, 140), 170);
           }
+
         }, 1000);
       }
-      function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt = null; } }
+      function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt = null; } try{ timerDisplay.classList.remove("pulse"); }catch(_){} }
 
       $("#timerClose").addEventListener("click", closeTimer);
       timerModal.addEventListener("click", (e)=>{ if(e.target===timerModal) closeTimer(); });
@@ -1363,11 +1645,15 @@ async function ensureExercises(){
 
       $("#timerMinus").addEventListener("click", ()=>{
         timerSecs = Math.max(0, timerSecs - 10);
+        timerTotalSecs = Math.max(timerTotalSecs, timerSecs); // no bajar total al recortar
         timerDisplay.textContent = fmtMMSS(timerSecs);
+        setRingProgress(timerSecs, timerTotalSecs);
       });
       $("#timerPlus").addEventListener("click", ()=>{
         timerSecs = Math.min(60*10, timerSecs + 10);
+        timerTotalSecs = Math.max(timerTotalSecs, timerSecs);
         timerDisplay.textContent = fmtMMSS(timerSecs);
+        setRingProgress(timerSecs, timerTotalSecs);
       });
       $("#timerStart").addEventListener("click", startTimer);
       $("#timerStop").addEventListener("click", ()=>{
@@ -1614,7 +1900,10 @@ async function ensureExercises(){
 
           
           // ✅ cola: si quedó en Hecho, lo movemos al final
-          if(next){ moveExerciseToEnd(card); }
+          if(next){
+            moveExerciseToEnd(card);
+            doneChime();
+          }
 const check = card.querySelector(".check");
           if(check){
             check.classList.toggle("done", next);
@@ -1658,6 +1947,10 @@ const check = card.querySelector(".check");
           </div>
           <div class="complete-title" id="completeTitle">¡Felicitaciones!</div>
           <div class="complete-sub" id="completeSub">Completaste tu rutina al 100% 💯</div>
+          <div class="streak" id="completeStreak" style="display:none;">
+            <i class="fas fa-fire" aria-hidden="true"></i>
+            <span id="streakText">Racha: 1 semana</span>
+          </div>
         </div>
 
         <div class="quote" id="completeQuote"></div>
