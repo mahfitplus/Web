@@ -63,6 +63,14 @@ const LS = {
 };
 
 function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
+
+// ✅ Normaliza texto (minúsculas + sin acentos) para matching de ejercicios
+function mhfNormText(s){
+  return String(s||"")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 function nowISO(){ return new Date().toISOString(); }
 
 // ✅ Helpers fecha / ids (PRO)
@@ -1309,3 +1317,6 @@ window.toNumClean = toNumClean;
 window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
 window.API_URL = API_URL;
+
+// ✅ helper público (no rompe nada)
+window.mhfNormText = mhfNormText;
