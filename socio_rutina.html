@@ -26,6 +26,7 @@
       --warning:#ffd166;
 
       --radius:16px;
+      --radius-lg:22px;
       --shadow:0 8px 24px rgba(0,0,0,.08);
       --transition:all .2s ease;
     }
@@ -42,44 +43,49 @@
       margin:0 auto;
       padding:20px 18px 120px;
     }
-     .user-status {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px;
-      
-      border-radius: var(--radius-lg);
-      
-     
-      
-      justify-content: flex-end;
-    }
 
-    /* ✅ app.js usa #dbDot y #dbText */
-    .status-dot, .db-dot {
+    /* STATUS (app.js usa #dbDot y #dbText) */
+    .statusbar{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .user-status{
+      display:flex; align-items:center; gap:12px;
+      padding:10px 14px;
+      border-radius: var(--radius-lg);
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow);
+      max-width: 360px;
+    }
+    .db-dot{
       width: 12px; height: 12px; border-radius: 50%;
       background-color: var(--txt-muted);
       position: relative;
       flex-shrink: 0;
     }
-    .status-dot::after, .db-dot::after {
+    .db-dot::after{
       content: '';
       position: absolute;
       top: -3px; left: -3px; right: -3px; bottom: -3px;
       border-radius: 50%;
       background-color: rgba(134, 142, 150, 0.20);
     }
-
     .db-dot.ok { background-color: var(--success); }
     .db-dot.ok::after { background-color: rgba(43, 213, 118, 0.20); }
-
     .db-dot.bad { background-color: var(--danger); }
     .db-dot.bad::after { background-color: rgba(255, 107, 107, 0.22); }
-
     .db-dot.pending { background-color: var(--warning); }
     .db-dot.pending::after { background-color: rgba(255, 209, 102, 0.22); }
-
-    .user-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .user-info strong { font-size: 14px; font-weight: 600; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-info span { font-size: 12px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .user-info span{
+      font-size:12px; color:var(--txt-muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-weight:800;
+    }
 
     /* TOP */
     .topbar{
@@ -89,14 +95,12 @@
       gap:12px;
       margin-bottom:14px;
     }
-
     .left{
       display:flex;
       align-items:center;
       gap:12px;
       min-width:0;
     }
-
     .back-btn{
       width:44px;height:44px;
       border-radius:14px;
@@ -111,10 +115,7 @@
       flex-shrink:0;
     }
     .back-btn:hover{background:var(--surface-2)}
-
-    .title{
-      min-width:0;
-    }
+    .title{ min-width:0; }
     .title h1{
       font-size:20px;
       font-weight:900;
@@ -131,7 +132,6 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-
     .actions{
       display:flex;
       gap:10px;
@@ -152,6 +152,7 @@
       align-items:center;
       gap:8px;
       color:var(--txt-2);
+      user-select:none;
     }
     .btn:hover{background:var(--surface-2)}
     .btn.primary{
@@ -178,9 +179,7 @@
       border-bottom:1px solid var(--stroke);
       background: rgba(255,255,255,.9);
     }
-    .card-body{
-      padding:16px;
-    }
+    .card-body{ padding:16px; }
 
     /* WEEK TABS */
     .weekbar{
@@ -190,11 +189,7 @@
       gap:12px;
       flex-wrap:wrap;
     }
-    .chips{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
     .chip{
       padding:8px 10px;
       border-radius:999px;
@@ -216,10 +211,10 @@
     .meta{
       font-size:12px;
       color:var(--txt-muted);
-      font-weight:700;
+      font-weight:800;
     }
 
-    /* DAY BLOCK */
+    /* DAY */
     .workout-day{
       background:var(--surface-2);
       border-radius:18px;
@@ -283,16 +278,14 @@
       flex-shrink:0;
       transition:var(--transition);
       margin-top:2px;
+      color: var(--txt-muted);
     }
     .check.done{
       background: rgba(43,213,118,.12);
       border-color: rgba(43,213,118,.30);
       color: var(--success);
     }
-    .ex-info{
-      min-width:0;
-      flex:1;
-    }
+    .ex-info{ min-width:0; flex:1; }
     .ex-name{
       font-weight:1000;
       font-size:14px;
@@ -303,7 +296,7 @@
       text-overflow:ellipsis;
     }
     .ex-meta{
-      margin-top:6px;
+      margin-top:8px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
@@ -320,6 +313,17 @@
       border:1px solid var(--stroke);
       background:var(--surface-2);
     }
+
+    .ex-media{ margin-top:8px; }
+    .ex-media img{
+      width:100%;
+      max-width:220px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      display:block;
+      background: var(--surface-2);
+    }
+    .ex-tech{ margin-top:8px; }
 
     .ex-actions{
       display:flex;
@@ -342,6 +346,7 @@
       justify-content:center;
       color:var(--txt-2);
       min-width:120px;
+      user-select:none;
     }
     .mini:hover{ background:var(--surface-3); }
     .mini.success{
@@ -353,6 +358,11 @@
       background: rgba(255,209,102,.14);
       border-color: rgba(255,209,102,.35);
       color: #7a5b00;
+    }
+    .mini.ghost{
+      background: rgba(90,103,216,.10);
+      border-color: rgba(90,103,216,.25);
+      color: var(--brand);
     }
 
     .empty-state{
@@ -366,7 +376,7 @@
       opacity:.35;
     }
 
-    /* TIMER MODAL */
+    /* MODALS */
     .modal{
       position:fixed;
       inset:0;
@@ -414,6 +424,7 @@
       padding:18px 16px 16px;
       text-align:center;
     }
+
     .timer{
       font-size:44px;
       font-weight:1000;
@@ -468,17 +479,12 @@
       justify-content:center;
       transition:var(--transition);
       color: var(--txt-muted);
+      user-select:none;
     }
     .star.active{
       background: rgba(255,209,102,.20);
       border-color: rgba(255,209,102,.45);
       color:#7a5b00;
-    }
-    .fb-area{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
     }
     textarea{
       width:100%;
@@ -497,41 +503,40 @@
       box-shadow: 0 0 0 3px rgba(90,103,216,.10);
     }
 
-    /* PRINT (PDF) */
+    /* PRINT */
     @media print{
-      .topbar, .weekbar, .feedback, .ex-actions, .check, .modal{ display:none !important; }
+      .topbar, .weekbar, .feedback, .ex-actions, .check, .modal, .statusbar{ display:none !important; }
       body{ background:#fff; }
       .wrap{ padding:0; max-width:unset; }
       .card{ box-shadow:none; border:none; }
       .workout-day{ break-inside:avoid; }
       .ex{ break-inside:avoid; }
     }
-  
-      .ex-media{ margin-top:8px; }
-      .ex-media img{ width:100%; max-width:220px; border-radius:12px; border:1px solid rgba(255,255,255,.10); display:block; }
-      .ex-tech{ margin-top:8px; }
-    </style>
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; scroll-behavior:auto !important; }
+    }
+  </style>
 </head>
 
 <body>
   <div class="wrap">
-    <!-- TOP BAR -->
-    <header class="topbar">
-      
 
-      <div class="user-status">
-        <!-- ✅ app.js controla esto -->
-        <div id="dbDot" class="db-dot pending"></div>
+    <!-- STATUS (conexión) -->
+    <div class="statusbar">
+      <div class="user-status" aria-live="polite">
+        <div id="dbDot" class="db-dot pending" aria-hidden="true"></div>
         <div class="user-info">
-          
           <span id="dbText">Conectando…</span>
         </div>
       </div>
-    </header>
-    <div class="topbar">
+    </div>
+
+    <!-- TOP BAR -->
+    <header class="topbar">
       <div class="left">
-        <button class="back-btn" id="btnBack" title="Volver">
-          <i class="fas fa-arrow-left"></i>
+        <button class="back-btn" id="btnBack" title="Volver" aria-label="Volver">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
         <div class="title">
           <h1 id="pageTitle">Mi Rutina</h1>
@@ -541,18 +546,18 @@
 
       <div class="actions">
         <button class="btn primary" id="btnPrint">
-          <i class="fas fa-file-arrow-down"></i> PDF
+          <i class="fas fa-file-arrow-down" aria-hidden="true"></i> PDF
         </button>
         <button class="btn" id="btnReset">
-          <i class="fas fa-rotate-left"></i> Reset semana
+          <i class="fas fa-rotate-left" aria-hidden="true"></i> Reset semana
         </button>
       </div>
-    </div>
+    </header>
 
     <div class="card">
       <div class="card-head">
         <div class="weekbar">
-          <div class="chips" id="weekChips"></div>
+          <div class="chips" id="weekChips" aria-label="Seleccionar día"></div>
           <div class="meta" id="metaInfo">—</div>
         </div>
       </div>
@@ -560,7 +565,7 @@
       <div class="card-body">
         <div id="routineWrap">
           <div class="empty-state">
-            <i class="fas fa-dumbbell"></i>
+            <i class="fas fa-dumbbell" aria-hidden="true"></i>
             <p>Cargando rutina…</p>
           </div>
         </div>
@@ -568,12 +573,12 @@
         <div class="feedback" id="feedbackBox" style="display:none;">
           <div class="fb-title">
             <strong>Feedback de tu rutina</strong>
-            <div class="stars" id="stars"></div>
+            <div class="stars" id="stars" aria-label="Calificación"></div>
           </div>
           <div class="fb-area">
             <textarea id="fbText" placeholder="¿Cómo te sentiste? (dolor, energía, dificultad, etc.)"></textarea>
             <button class="btn primary" id="btnSaveFeedback">
-              <i class="fas fa-paper-plane"></i> Guardar feedback
+              <i class="fas fa-paper-plane" aria-hidden="true"></i> Guardar feedback
             </button>
             <div class="meta" id="fbSavedMsg" style="display:none;">✅ Feedback guardado</div>
           </div>
@@ -584,39 +589,46 @@
   </div>
 
   <!-- TIMER MODAL -->
-  <div class="modal" id="timerModal" aria-hidden="true">
+  <div class="modal" id="timerModal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-box">
       <div class="modal-head">
         <strong id="timerTitle">Descanso</strong>
-        <button class="close" id="timerClose" title="Cerrar"><i class="fas fa-xmark"></i></button>
+        <button class="close" id="timerClose" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="modal-body">
         <div class="timer" id="timerDisplay">01:00</div>
         <div class="timer-sub" id="timerSub">Listo para iniciar</div>
       </div>
       <div class="modal-actions">
-        <button class="btn" id="timerMinus"><i class="fas fa-minus"></i> 10s</button>
-        <button class="btn" id="timerPlus"><i class="fas fa-plus"></i> 10s</button>
-        <button class="btn primary" id="timerStart"><i class="fas fa-play"></i> Iniciar</button>
-        <button class="btn danger" id="timerStop"><i class="fas fa-stop"></i> Parar</button>
+        <button class="btn" id="timerMinus"><i class="fas fa-minus" aria-hidden="true"></i> 10s</button>
+        <button class="btn" id="timerPlus"><i class="fas fa-plus" aria-hidden="true"></i> 10s</button>
+        <button class="btn primary" id="timerStart"><i class="fas fa-play" aria-hidden="true"></i> Iniciar</button>
+        <button class="btn danger" id="timerStop"><i class="fas fa-stop" aria-hidden="true"></i> Parar</button>
       </div>
     </div>
   </div>
 
-  <!-- app.js -->
-  
-<!-- MAH FIT BOOT MODE: core (cache-first, instant routine view) -->
-<script>
-  window.MAHFIT_BOOT_MODE = "core";
-</script>
+  <!-- ✅ TÉCNICA MODAL -->
+  <div class="modal" id="techModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <strong id="techTitle">Técnica</strong>
+        <button class="close" id="techClose" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="meta" id="techBody" style="white-space:pre-wrap;line-height:1.5;text-align:left;"></div>
+      </div>
+    </div>
+  </div>
 
-<script src="assets/app.js" defer></script>
+  <!-- MAH FIT BOOT MODE -->
+  <script>window.MAHFIT_BOOT_MODE = "core";</script>
+  <script src="assets/app.js" defer></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const $ = (s, el=document) => el.querySelector(s);
 
-      // auth
       if(!window.requireAuth){
         alert("Error: app.js no cargó");
         return;
@@ -624,22 +636,12 @@
       const user = window.requireAuth("SOCIO");
       if(!user) return;
 
-      // Back
-      $("#btnBack").addEventListener("click", () => {
-        window.location.href = "socio.html";
-      });
+      $("#btnBack").addEventListener("click", () => { window.location.href = "socio.html"; });
+      $("#btnPrint").addEventListener("click", () => { window.print(); });
 
-      // Print PDF
-      $("#btnPrint").addEventListener("click", () => {
-        // abre diálogo (Guardar como PDF en Chrome)
-        window.print();
-      });
-
-      // Data
       const row = window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null;
       const routine = row?.routine;
 
-      // Week logic (Lun-Dom)
       const DAYS = [
         {k:"LUN", t:"Lun"},
         {k:"MAR", t:"Mar"},
@@ -651,20 +653,19 @@
       ];
 
       const todayKey = (()=>{
-        const d = new Date().getDay(); // 0=Dom
+        const d = new Date().getDay();
         if(d===0) return "DOM";
         return ["LUN","MAR","MIE","JUE","VIE","SAB"][d-1];
       })();
 
-      const stateKey = (suffix)=> `mahfit_routine_${suffix}_${String(user.rut||"").toUpperCase()}`;
       const weekStamp = getWeekStamp();
+      const stateKey = (suffix)=> `mahfit_routine_${suffix}_${String(user.rut||"").toUpperCase()}`;
       const doneKey = stateKey(`done_${weekStamp}`);
-      const fbKey = stateKey(`feedback_${weekStamp}`);
+      const fbKey   = stateKey(`feedback_${weekStamp}`);
 
       let activeDay = todayKey;
 
       function getWeekStamp(){
-        // semana ISO simple: YYYY-WW (aprox)
         const d = new Date();
         const oneJan = new Date(d.getFullYear(),0,1);
         const dayOfYear = Math.floor((d - oneJan) / 86400000) + 1;
@@ -675,16 +676,11 @@
       function lsGet(key, fb){
         try{ return JSON.parse(localStorage.getItem(key)) ?? fb; }catch{ return fb; }
       }
-      function lsSet(key, val){
-        localStorage.setItem(key, JSON.stringify(val));
-      }
+      function lsSet(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 
-      // Done store: { "<exerciseId>": true/false }
       let doneMap = lsGet(doneKey, {});
-      // Feedback store: { rating: 0..5, text:"" }
       let feedback = lsGet(fbKey, { rating: 0, text: "" });
 
-      // ✅ EXERCISES base (desde Sheet)
       let EX_LIST = [];
       let EX_BY_ID = new Map();
       let EX_BY_NAME = new Map();
@@ -708,55 +704,76 @@
         return null;
       }
 
+      function normalizeDayLabel(s){
+        s = String(s||"").trim().toUpperCase();
+        if(s.startsWith("LUN")) return "LUN";
+        if(s.startsWith("MAR")) return "MAR";
+        if(s.startsWith("MI"))  return "MIE";
+        if(s.startsWith("JUE")) return "JUE";
+        if(s.startsWith("VIE")) return "VIE";
+        if(s.startsWith("SAB")) return "SAB";
+        if(s.startsWith("DOM")) return "DOM";
+        return "";
+      }
 
-      // Render week chips
+      function parseRestToSecs(s){
+        s = String(s||"").trim();
+        if(!s) return null;
+        if(/^\d+(\.\d+)?\s*s?$/.test(s)){
+          const n = Number(s.replace(/[^\d.]/g,""));
+          return Number.isFinite(n) ? Math.round(n) : null;
+        }
+        const m = s.match(/^(\d+)\s*:\s*(\d{1,2})$/);
+        if(m){
+          const mm = Number(m[1]);
+          const ss = Number(m[2]);
+          if(Number.isFinite(mm) && Number.isFinite(ss)) return mm*60 + ss;
+        }
+        return null;
+      }
+
+      function escapeHtml(str){
+        return String(str ?? "")
+          .replace(/&/g,"&amp;")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;")
+          .replace(/'/g,"&#039;");
+      }
+      function escapeAttr(str){ return escapeHtml(str).replace(/"/g,"&quot;"); }
+
+      $("#pageTitle").textContent = "Mi Rutina";
+      $("#pageSub").textContent = `${user.nombre || user.rut || "Socio"} · Semana ${weekStamp.replace("_"," ")}`;
+
       function renderWeekChips(){
         const box = $("#weekChips");
         box.innerHTML = DAYS.map(d => {
           const cls = d.k === activeDay ? "chip active" : "chip";
-          return `<div class="${cls}" data-day="${d.k}">${d.t}</div>`;
+          return `<div class="${cls}" role="button" tabindex="0" data-day="${d.k}">${d.t}</div>`;
         }).join("");
 
         box.querySelectorAll(".chip").forEach(ch=>{
-          ch.addEventListener("click", ()=>{
+          const onPick = ()=>{
             activeDay = ch.dataset.day;
             renderWeekChips();
-            renderRoutine();
-          });
+            buildRoutineDom();
+          };
+          ch.addEventListener("click", onPick);
+          ch.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onPick(); } });
         });
       }
 
-      // Reset week
       $("#btnReset").addEventListener("click", ()=>{
         if(!confirm("¿Resetear checks de esta semana?")) return;
         doneMap = {};
         lsSet(doneKey, doneMap);
-        renderRoutine();
+        buildRoutineDom();
       });
 
-      // Title meta
-      $("#pageTitle").textContent = "Mi Rutina";
-      $("#pageSub").textContent = `${user.nombre || user.rut || "Socio"} · Semana ${weekStamp.replace("_"," ")}`;
-
-      // Timer
       const timerModal = $("#timerModal");
       const timerDisplay = $("#timerDisplay");
       const timerSub = $("#timerSub");
       const timerTitle = $("#timerTitle");
-
-      // ✅ Técnica modal
-      const techModal = $("#techModal");
-      const techTitleEl = $("#techTitle");
-      const techBodyEl = $("#techBody");
-      $("#techClose").addEventListener("click", ()=>{ techModal.style.display = "none"; techModal.setAttribute("aria-hidden","true"); });
-      techModal.addEventListener("click", (e)=>{ if(e.target === techModal){ techModal.style.display="none"; techModal.setAttribute("aria-hidden","true"); } });
-
-      function openTechModal(title, text){
-        techTitleEl.textContent = title || "Técnica";
-        techBodyEl.textContent = text || "";
-        techModal.style.display = "flex";
-        techModal.setAttribute("aria-hidden","false");
-      }
 
       let timerSecs = 60;
       let timerInt = null;
@@ -773,11 +790,13 @@
         timerDisplay.textContent = fmtMMSS(timerSecs);
         timerSub.textContent = "Listo para iniciar";
         timerModal.classList.add("active");
+        timerModal.setAttribute("aria-hidden","false");
         document.body.style.overflow="hidden";
       }
       function closeTimer(){
         stopTimer();
         timerModal.classList.remove("active");
+        timerModal.setAttribute("aria-hidden","true");
         document.body.style.overflow="auto";
       }
       function startTimer(){
@@ -789,7 +808,6 @@
           if(timerSecs <= 0){
             stopTimer();
             timerSub.textContent = "✅ Descanso terminado";
-            // beep simple
             try{
               const ctx = new (window.AudioContext || window.webkitAudioContext)();
               const o = ctx.createOscillator();
@@ -803,9 +821,7 @@
           }
         }, 1000);
       }
-      function stopTimer(){
-        if(timerInt){ clearInterval(timerInt); timerInt = null; }
-      }
+      function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt = null; } }
 
       $("#timerClose").addEventListener("click", closeTimer);
       timerModal.addEventListener("click", (e)=>{ if(e.target===timerModal) closeTimer(); });
@@ -825,7 +841,25 @@
         timerSub.textContent = "Detenido";
       });
 
-      // Feedback UI
+      const techModal = $("#techModal");
+      const techTitleEl = $("#techTitle");
+      const techBodyEl = $("#techBody");
+      $("#techClose").addEventListener("click", ()=> closeTech());
+      techModal.addEventListener("click", (e)=>{ if(e.target===techModal) closeTech(); });
+
+      function openTech(title, text){
+        techTitleEl.textContent = title || "Técnica";
+        techBodyEl.textContent = text || "";
+        techModal.classList.add("active");
+        techModal.setAttribute("aria-hidden","false");
+        document.body.style.overflow="hidden";
+      }
+      function closeTech(){
+        techModal.classList.remove("active");
+        techModal.setAttribute("aria-hidden","true");
+        document.body.style.overflow="auto";
+      }
+
       function renderFeedback(){
         const fbBox = $("#feedbackBox");
         const stars = $("#stars");
@@ -836,16 +870,18 @@
         stars.innerHTML = Array.from({length:5}).map((_,i)=>{
           const v = i+1;
           const active = (feedback.rating||0) >= v ? "star active" : "star";
-          return `<div class="${active}" data-v="${v}" title="${v}/5"><i class="fas fa-star"></i></div>`;
+          return `<div class="${active}" data-v="${v}" title="${v}/5" role="button" tabindex="0"><i class="fas fa-star" aria-hidden="true"></i></div>`;
         }).join("");
 
         stars.querySelectorAll(".star").forEach(st=>{
-          st.addEventListener("click", ()=>{
+          const set = ()=>{
             feedback.rating = Number(st.dataset.v)||0;
             lsSet(fbKey, feedback);
             renderFeedback();
             savedMsg.style.display="none";
-          });
+          };
+          st.addEventListener("click", set);
+          st.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); set(); } });
         });
 
         fbText.value = feedback.text || "";
@@ -858,32 +894,25 @@
         };
       }
 
-      // Routine render
-      function normalizeDayLabel(s){
-        s = String(s||"").trim().toUpperCase();
-        // acepta "LUNES", "LUN", etc
-        if(s.startsWith("LUN")) return "LUN";
-        if(s.startsWith("MAR")) return "MAR";
-        if(s.startsWith("MI"))  return "MIE";
-        if(s.startsWith("JUE")) return "JUE";
-        if(s.startsWith("VIE")) return "VIE";
-        if(s.startsWith("SAB")) return "SAB";
-        if(s.startsWith("DOM")) return "DOM";
-        return "";
+      const wrap = $("#routineWrap");
+
+      function calcDoneCount(){
+        return Object.values(doneMap || {}).filter(Boolean).length;
+      }
+
+      function updateMeta(totalDays, showingDays){
+        $("#metaInfo").textContent = `${showingDays}/${totalDays} día(s) · ✅ ${calcDoneCount()} realizados`;
       }
 
       function exId(dayIdx, exIdx, exName){
-        const base = `${user.rut}_${weekStamp}_${dayIdx}_${exIdx}_${String(exName||"").toLowerCase().replace(/\s+/g,"_")}`;
-        return base;
+        return `${user.rut}_${weekStamp}_${dayIdx}_${exIdx}_${String(exName||"").toLowerCase().replace(/\s+/g,"_")}`;
       }
 
-      function renderRoutine(){
-        const wrap = $("#routineWrap");
-
+      function buildRoutineDom(){
         if(!routine || !Array.isArray(routine.dias) || !routine.dias.length){
           wrap.innerHTML = `
             <div class="empty-state">
-              <i class="fas fa-dumbbell"></i>
+              <i class="fas fa-dumbbell" aria-hidden="true"></i>
               <p>No hay rutina asignada todavía.</p>
             </div>
           `;
@@ -892,88 +921,93 @@
           return;
         }
 
-        // Filtrar por día si coincide
         const dias = routine.dias.slice();
         const filtered = dias.filter(d=>{
           const key = normalizeDayLabel(d.dia || d.dayLabel || "");
-          return key ? key === activeDay : true; // si no hay día, lo mostramos igual
+          return key ? key === activeDay : true;
         });
-
         const listToShow = filtered.length ? filtered : dias;
 
-        // meta
-        const totalDays = dias.length;
-        const showing = listToShow.length;
-        const doneCount = Object.values(doneMap || {}).filter(Boolean).length;
-        $("#metaInfo").textContent = `${showing}/${totalDays} día(s) · ✅ ${doneCount} realizados`;
+        updateMeta(dias.length, listToShow.length);
 
-        wrap.innerHTML = listToShow.map((d, dayIdx) => {
+        const parts = [];
+        listToShow.forEach((d, dayIdx) => {
           const dia = d.dia || `Día ${dayIdx+1}`;
           const enfoque = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "");
           const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
 
-          const exHtml = ejercicios.map((e, exIdx)=>{
-            const name = e.ejercicio || "Ejercicio";
-            const id = exId(dayIdx, exIdx, name);
-            const isDone = !!doneMap[id];
+          let exHtml = "";
+          if(ejercicios.length){
+            exHtml = ejercicios.map((e, exIdx)=>{
+              const name = e.ejercicio || "Ejercicio";
+              const id = exId(dayIdx, exIdx, name);
+              const isDone = !!doneMap[id];
 
-            const series = e.series ? `${e.series}x` : "";
-            const reps = e.reps ? `${e.reps}` : "";
-            const carga = e.carga ? `${e.carga}` : "";
-            const descanso = e.descanso ? String(e.descanso) : "";
-            const obs = e.obs ? String(e.obs) : "";
+              const series = e.series ? `${e.series}x` : "";
+              const reps = e.reps ? `${e.reps}` : "";
+              const carga = e.carga ? `${e.carga}` : "";
+              const descanso = e.descanso ? String(e.descanso) : "";
+              const obs = e.obs ? String(e.obs) : "";
+              const restSecs = parseRestToSecs(descanso) ?? 60;
 
-            // descanso: si trae "60s" o "1:30"
-            const restSecs = parseRestToSecs(descanso) ?? 60;
+              const info = findExerciseInfo(e) || {};
+              const mediaGif = String(info.mediaUrlGif||info.media_url_gif||"").trim();
+              const mediaImg = String(info.mediaUrl||info.media_url||"").trim();
+              const media = (mediaGif || mediaImg).trim();
+              const tec = String(info.tecnica||"").trim();
 
-            return `
-              <div class="ex" data-exid="${id}">
-                <div class="ex-left">
-                  <div class="check ${isDone ? "done":""}" title="Marcar realizado">
-                    <i class="fas ${isDone ? "fa-check" : "fa-minus"}"></i>
-                  </div>
+              const thumb = media ? `
+                <div class="ex-media">
+                  <img src="${escapeAttr(media)}" alt="media" loading="lazy" decoding="async" onerror="this.style.display='none'"/>
+                </div>` : "";
 
-                  <div class="ex-info">
-                    <div class="ex-name">${escapeHtml(name)}</div>
-                    
-                    ${(()=>{
-                      const info = findExerciseInfo(e) || {};
-                      const media = String(info.mediaUrl||"").trim();
-                      const tec = String(info.tecnica||"").trim();
-                      const thumb = media ? `
-                        <div class="ex-media">
-                          <img src="${escapeAttr(media)}" alt="media" loading="lazy" onerror="this.style.display='none'"/>
-                        </div>` : "";
-                      const tech = tec ? `
-                        <div class="ex-tech">
-                          <button class="mini ghost" data-tech="${escapeAttr(tec)}" data-techtitle="${escapeAttr(name)}">
-                            <i class="fas fa-circle-info"></i> Técnica
-                          </button>
-                        </div>` : "";
-                      return thumb + tech;
-                    })()}
-<div class="ex-meta">
-                      ${series || reps ? `<span class="tag"><i class="fas fa-layer-group"></i>${escapeHtml(series)}${escapeHtml(reps)}</span>` : ""}
-                      ${carga ? `<span class="tag"><i class="fas fa-weight-hanging"></i>${escapeHtml(carga)}</span>` : ""}
-                      ${descanso ? `<span class="tag"><i class="fas fa-stopwatch"></i>${escapeHtml(descanso)}</span>` : ""}
-                      ${obs ? `<span class="tag"><i class="fas fa-note-sticky"></i>${escapeHtml(obs)}</span>` : ""}
+              const tech = tec ? `
+                <div class="ex-tech">
+                  <button class="mini ghost" data-tech="${escapeAttr(tec)}" data-techtitle="${escapeAttr(name)}">
+                    <i class="fas fa-circle-info" aria-hidden="true"></i> Técnica
+                  </button>
+                </div>` : "";
+
+              return `
+                <div class="ex" data-exid="${escapeAttr(id)}">
+                  <div class="ex-left">
+                    <div class="check ${isDone ? "done":""}" title="Marcar realizado" role="button" tabindex="0" data-action="toggle">
+                      <i class="fas ${isDone ? "fa-check" : "fa-minus"}" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="ex-info">
+                      <div class="ex-name">${escapeHtml(name)}</div>
+
+                      ${thumb}
+                      ${tech}
+
+                      <div class="ex-meta">
+                        ${(series || reps) ? `<span class="tag"><i class="fas fa-layer-group" aria-hidden="true"></i>${escapeHtml(series)}${escapeHtml(reps)}</span>` : ""}
+                        ${carga ? `<span class="tag"><i class="fas fa-weight-hanging" aria-hidden="true"></i>${escapeHtml(carga)}</span>` : ""}
+                        ${descanso ? `<span class="tag"><i class="fas fa-stopwatch" aria-hidden="true"></i>${escapeHtml(descanso)}</span>` : ""}
+                        ${obs ? `<span class="tag"><i class="fas fa-note-sticky" aria-hidden="true"></i>${escapeHtml(obs)}</span>` : ""}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="ex-actions">
-                  <button class="mini warning" data-rest="${restSecs}" data-name="${escapeAttr(name)}">
-                    <i class="fas fa-stopwatch"></i> Descanso
-                  </button>
-                  <button class="mini success" data-toggle>
-                    <i class="fas fa-check"></i> Hecho
-                  </button>
+                  <div class="ex-actions">
+                    <button class="mini warning" data-action="rest" data-rest="${restSecs}" data-name="${escapeAttr(name)}">
+                      <i class="fas fa-stopwatch" aria-hidden="true"></i> Descanso
+                    </button>
+                    <button class="mini success" data-action="toggle">
+                      <i class="fas fa-check" aria-hidden="true"></i> Hecho
+                    </button>
+                  </div>
                 </div>
-              </div>
-            `;
-          }).join("");
+              `;
+            }).join("");
 
-          return `
+            exHtml = `<div class="ex-list">${exHtml}</div>`;
+          }else{
+            exHtml = `<div class="empty-state" style="padding:22px 12px;"><p>Sin ejercicios.</p></div>`;
+          }
+
+          parts.push(`
             <div class="workout-day">
               <div class="workout-header">
                 <div>
@@ -984,93 +1018,65 @@
                 </div>
                 <div class="workout-focus">${enfoque ? escapeHtml(enfoque) : "—"}</div>
               </div>
-
-              ${ejercicios.length ? `<div class="ex-list">${exHtml}</div>` : `<div class="empty-state" style="padding:22px 12px;"><p>Sin ejercicios.</p></div>`}
+              ${exHtml}
             </div>
-          `;
-        }).join("");
-
-        // bind events
-        wrap.querySelectorAll(".ex").forEach(card=>{
-          const id = card.getAttribute("data-exid");
-
-          // check click
-          const check = card.querySelector(".check");
-          const toggleBtn = card.querySelector("[data-toggle]");
-          const restBtn = card.querySelector("[data-rest]");
-
-          function setDone(next){
-            doneMap[id] = !!next;
-            lsSet(doneKey, doneMap);
-            renderRoutine();
-          }
-
-          check?.addEventListener("click", ()=> setDone(!doneMap[id]));
-          toggleBtn?.addEventListener("click", ()=> setDone(!doneMap[id]));
-
-          restBtn?.addEventListener("click", ()=>{
-            const secs = Number(restBtn.dataset.rest)||60;
-            const name = restBtn.dataset.name || "Descanso";
-            openTimer(`Descanso · ${name}`, secs);
-          });
+          `);
         });
 
-        // feedback always visible when routine exists
+        wrap.innerHTML = parts.join("");
         renderFeedback();
       }
 
-      function parseRestToSecs(s){
-        s = String(s||"").trim();
-        if(!s) return null;
+      wrap.addEventListener("click", (e)=>{
+        const btn = e.target.closest("[data-action], [data-tech]");
+        if(!btn) return;
 
-        // "60", "60s"
-        if(/^\d+(\.\d+)?\s*s?$/.test(s)){
-          const n = Number(s.replace(/[^\d.]/g,""));
-          return Number.isFinite(n) ? Math.round(n) : null;
+        if(btn.matches("[data-tech]")){
+          const text = btn.getAttribute("data-tech") || "";
+          const t = btn.getAttribute("data-techtitle") || "Técnica";
+          openTech(t, text);
+          return;
         }
 
-        // "1:30"
-        const m = s.match(/^(\d+)\s*:\s*(\d{1,2})$/);
-        if(m){
-          const mm = Number(m[1]);
-          const ss = Number(m[2]);
-          if(Number.isFinite(mm) && Number.isFinite(ss)) return mm*60 + ss;
+        const action = btn.getAttribute("data-action");
+        const card = btn.closest(".ex");
+        if(!card) return;
+        const id = card.getAttribute("data-exid");
+
+        if(action === "rest"){
+          const secs = Number(btn.getAttribute("data-rest")) || 60;
+          const name = btn.getAttribute("data-name") || "Descanso";
+          openTimer(`Descanso · ${name}`, secs);
+          return;
         }
 
-        return null;
-      }
+        if(action === "toggle"){
+          const next = !doneMap[id];
+          doneMap[id] = next;
+          lsSet(doneKey, doneMap);
 
-      function escapeHtml(str){
-        return String(str ?? "")
-          .replace(/&/g,"&amp;")
-          .replace(/</g,"&lt;")
-          .replace(/>/g,"&gt;")
-          .replace(/"/g,"&quot;")
-          .replace(/'/g,"&#039;");
-      }
-      function escapeAttr(str){
-        return escapeHtml(str).replace(/"/g,"&quot;");
-      }
+          const check = card.querySelector(".check");
+          if(check){
+            check.classList.toggle("done", next);
+            const icon = check.querySelector("i");
+            if(icon) icon.className = `fas ${next ? "fa-check" : "fa-minus"}`;
+          }
+          updateMeta((routine?.dias||[]).length, (wrap.querySelectorAll(".workout-day")||[]).length);
+        }
+      });
 
-      // init
+      wrap.addEventListener("keydown", (e)=>{
+        if(e.key !== "Enter" && e.key !== " ") return;
+        const el = e.target.closest(".check[role='button']");
+        if(!el) return;
+        e.preventDefault();
+        el.click();
+      });
+
       await ensureExercises();
       renderWeekChips();
-      renderRoutine();
+      buildRoutineDom();
     });
   </script>
-
-  <!-- ✅ TÉCNICA MODAL -->
-  <div class="modal" id="techModal" aria-hidden="true" style="display:none;">
-    <div class="modal-box">
-      <div class="modal-head">
-        <strong id="techTitle">Técnica</strong>
-        <button class="close" id="techClose" title="Cerrar"><i class="fas fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="meta" id="techBody" style="white-space:pre-wrap;line-height:1.5;"></div>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>
