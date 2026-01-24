@@ -516,7 +516,83 @@
     @media (prefers-reduced-motion: reduce){
       *{ transition:none !important; scroll-behavior:auto !important; }
     }
-  </style>
+  
+    /* ===== Rutina: aviso de actualización (PRO) ===== */
+    .update-notice{
+      margin: 12px 0 0;
+      padding: 12px 12px;
+      border: 1px solid var(--stroke-2);
+      background: linear-gradient(180deg, rgba(90,103,216,.08), rgba(90,103,216,.03));
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.04);
+    }
+    .update-notice__icon{
+      width:36px;height:36px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(90,103,216,.12);
+      color: var(--brand);
+      flex:0 0 auto;
+    }
+    .update-notice__text{ flex:1 1 auto; min-width:0; }
+    .update-notice__title{ font-weight:800; color: var(--txt); line-height:1.15; }
+    .update-notice__sub{ margin-top:2px; color: var(--txt-muted); font-size:.92rem; }
+    .update-notice__btn{
+      border: 1px solid var(--stroke-2);
+      background: #fff;
+      color: var(--txt);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .update-notice__btn:hover{ background: var(--surface-2); }
+    .update-notice__btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .update-notice.ready{
+      border-color: rgba(43,213,118,.45);
+      background: linear-gradient(180deg, rgba(43,213,118,.14), rgba(43,213,118,.06));
+    }
+    .update-notice.updating{
+      border-color: rgba(255,211,110,.55);
+      background: linear-gradient(180deg, rgba(255,211,110,.18), rgba(255,211,110,.06));
+    }
+    .update-notice.error{
+      border-color: rgba(255,90,103,.45);
+      background: linear-gradient(180deg, rgba(255,90,103,.14), rgba(255,90,103,.06));
+    }
+    .update-notice__btn.ready{
+      border-color: rgba(43,213,118,.6);
+      background: rgba(43,213,118,.16);
+    }
+    .update-notice__btn.updating{
+      border-color: rgba(255,211,110,.7);
+      background: rgba(255,211,110,.18);
+    }
+
+    .update-notice__x{
+      border:none;
+      background: transparent;
+      color: var(--txt-muted);
+      font-size: 18px;
+      width:32px;height:32px;
+      border-radius: 10px;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .update-notice__x:hover{ background: var(--surface-2); color: var(--txt); }
+
+    @media (max-width:720px){
+      .update-notice{ flex-wrap:wrap; }
+      .update-notice__btn{ width:100%; }
+    }
+
+</style>
 </head>
 
 <body>
@@ -551,8 +627,25 @@
         <button class="btn" id="btnReset">
           <i class="fas fa-rotate-left" aria-hidden="true"></i> Reset semana
         </button>
-      </div>
+      
+        <button class="btn primary" id="btnUpdateRoutine" style="display:none;">
+          <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Actualizar rutina
+        </button>
+</div>
     </header>
+
+    <div id="updateNotice" class="update-notice" style="display:none;" role="status" aria-live="polite">
+      <div class="update-notice__icon"><i class="fas fa-bell" aria-hidden="true"></i></div>
+      <div class="update-notice__text">
+        <div class="update-notice__title">Tu coach actualizó tu rutina</div>
+        <div class="update-notice__sub">Presiona “Actualizar rutina” para sincronizar los cambios.</div>
+      </div>
+      <button class="update-notice__btn" id="btnUpdateRoutineInline" type="button">
+        <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Actualizar
+      </button>
+      <button class="update-notice__x" id="btnHideUpdateNotice" type="button" aria-label="Ocultar aviso">✕</button>
+    </div>
+
 
     <div class="card">
       <div class="card-head">
@@ -642,7 +735,228 @@
       const row = window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null;
       const routine = row?.routine;
 
-      const DAYS = [
+      
+      // ===== PRO: detectar cambios de rutina + botón "Actualizar rutina" =====
+      // Objetivo:
+      // - El botón siempre visible (deshabilitado si NO hay cambios)
+      // - Se habilita en "verde" cuando detecta cambios ("Rutina actualizada por tu coach")
+      // - Al tocarlo, limpia caché + sincroniza + recarga para traer la rutina nueva
+
+      const ROUTINE_HASH_KEY = `MAHFIT_ROUTINE_HASH_${user?.rut || "anon"}`;
+      let candidateHash = null;
+
+      function stableStringify(obj){
+        const seen = new WeakSet();
+        const walk = (v)=>{
+          if(v && typeof v === "object"){
+            if(seen.has(v)) return "[Circular]";
+            seen.add(v);
+            if(Array.isArray(v)) return v.map(walk);
+            const out = {};
+            Object.keys(v).sort().forEach(k => { out[k] = walk(v[k]); });
+            return out;
+          }
+          return v;
+        };
+        return JSON.stringify(walk(obj));
+      }
+
+      function fnv1a(str){
+        // 32-bit FNV-1a
+        let h = 0x811c9dc5;
+        for(let i=0;i<str.length;i++){
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        // unsigned -> base36
+        return (h >>> 0).toString(36);
+      }
+
+      function computeRoutineHash(rowObj){
+        // usamos el objeto completo para que cualquier cambio (rutina, items, metadata) dispare update
+        const s = stableStringify(rowObj || {});
+        return fnv1a(s);
+      }
+
+      const btnUpdateRoutine = $("#btnUpdateRoutine");
+      const updateNotice = $("#updateNotice");
+      const updateNoticeText = $("#updateNoticeText");
+      const updateNoticeSub  = $("#updateNoticeSub");
+
+      function setUpdateUI(state, infoText){
+        // state: idle | available | updating | error
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2,"0");
+        const mm = String(now.getMinutes()).padStart(2,"0");
+        const stamp = `${hh}:${mm}`;
+
+        if(updateNotice){
+          updateNotice.style.display = "flex";
+          updateNotice.classList.remove("ready","updating","error");
+        }
+        if(btnUpdateRoutine){
+          btnUpdateRoutine.disabled = true;
+          btnUpdateRoutine.classList.remove("ready","updating");
+        }
+
+        if(state === "idle"){
+          if(updateNoticeText) updateNoticeText.textContent = "Rutina al día";
+          if(updateNoticeSub)  updateNoticeSub.textContent  = `Última verificación: ${stamp}`;
+          if(btnUpdateRoutine){
+            btnUpdateRoutine.disabled = true;
+            btnUpdateRoutine.textContent = "Rutina actualizada";
+            btnUpdateRoutine.title = "No hay cambios por aplicar";
+          }
+          return;
+        }
+
+        if(state === "available"){
+          if(updateNotice) updateNotice.classList.add("ready");
+          if(updateNoticeText) updateNoticeText.textContent = "Rutina actualizada por tu coach ✅";
+          if(updateNoticeSub)  updateNoticeSub.textContent  = infoText || `Actualización disponible · ${stamp}`;
+          if(btnUpdateRoutine){
+            btnUpdateRoutine.disabled = false;
+            btnUpdateRoutine.classList.add("ready");
+            btnUpdateRoutine.textContent = "Actualizar rutina";
+            btnUpdateRoutine.title = "Aplicar actualización";
+          }
+          return;
+        }
+
+        if(state === "updating"){
+          if(updateNotice) updateNotice.classList.add("updating");
+          if(updateNoticeText) updateNoticeText.textContent = "Actualizando rutina…";
+          if(updateNoticeSub)  updateNoticeSub.textContent  = infoText || "Sincronizando y recargando";
+          if(btnUpdateRoutine){
+            btnUpdateRoutine.disabled = true;
+            btnUpdateRoutine.classList.add("updating");
+            btnUpdateRoutine.textContent = "Actualizando…";
+          }
+          return;
+        }
+
+        if(state === "error"){
+          if(updateNotice) updateNotice.classList.add("error");
+          if(updateNoticeText) updateNoticeText.textContent = "No se pudo verificar";
+          if(updateNoticeSub)  updateNoticeSub.textContent  = infoText || "Revisa tu conexión e intenta nuevamente";
+          if(btnUpdateRoutine){
+            btnUpdateRoutine.disabled = false;
+            btnUpdateRoutine.classList.add("ready");
+            btnUpdateRoutine.textContent = "Reintentar";
+            btnUpdateRoutine.title = "Reintentar verificación";
+          }
+        }
+      }
+
+      // guardamos el hash base de la rutina actualmente mostrada
+      const currentRowForHash = (window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null) || row || {};
+      const currentHash = computeRoutineHash(currentRowForHash);
+      if(!localStorage.getItem(ROUTINE_HASH_KEY)){
+        localStorage.setItem(ROUTINE_HASH_KEY, currentHash);
+      }
+      setUpdateUI("idle");
+
+      async function runSync(){
+        // Intentamos la mejor opción disponible para refrescar la DB local
+        // (depende de tu app.js / socio_rutina.html original)
+        if(typeof window.syncDown === "function"){
+          await window.syncDown();
+          return;
+        }
+        if(typeof window.boot === "function"){
+          // boot suele cargar datos; lo invocamos con "silent" si existe
+          await window.boot({ silent:true }).catch(()=>{});
+          return;
+        }
+        // fallback: nada
+      }
+
+      async function checkForUpdates(silent=true){
+        try{
+          await runSync();
+
+          const freshRow = (window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null) || null;
+          const freshHash = computeRoutineHash(freshRow || {});
+          const baseHash  = localStorage.getItem(ROUTINE_HASH_KEY) || currentHash;
+
+          if(freshHash && baseHash && freshHash !== baseHash){
+            candidateHash = freshHash;
+            setUpdateUI("available");
+            if(!silent) showNotification("Rutina actualizada por tu coach ✅", "info");
+          }else{
+            candidateHash = null;
+            setUpdateUI("idle");
+            if(!silent) showNotification("No hay cambios en tu rutina", "success");
+          }
+        }catch(e){
+          candidateHash = null;
+          setUpdateUI("error", "Error al verificar cambios");
+          if(!silent) showNotification("No se pudo verificar la rutina", "warn");
+        }
+      }
+
+      async function applyUpdate(){
+        if(!candidateHash){
+          showNotification("No hay cambios por aplicar", "info");
+          return;
+        }
+        try{
+          setUpdateUI("updating");
+
+          // Limpieza agresiva de caché local (solo de tu app)
+          const prefixList = [
+            "MAHFIT_DB_CACHE",
+            "MAHFIT_DB_CACHE_V2",
+            "MAHFIT_SHEET_CACHE",
+            "MAHFIT_ROUTINE_CACHE",
+            "MAHFIT_RUTINA_CACHE",
+            "RUTINA_CACHE",
+          ];
+          for(let i=localStorage.length-1;i>=0;i--){
+            const k = localStorage.key(i);
+            if(!k) continue;
+            if(prefixList.some(p=>k.startsWith(p))) localStorage.removeItem(k);
+          }
+
+          // marcamos este hash como "aceptado"
+          localStorage.setItem(ROUTINE_HASH_KEY, candidateHash);
+
+          // refetch + reload con cache-bust
+          await runSync().catch(()=>{});
+          const u = new URL(window.location.href);
+          u.searchParams.set("v", Date.now().toString());
+          window.location.href = u.toString();
+        }catch(e){
+          setUpdateUI("error", "No se pudo aplicar la actualización");
+          showNotification("No se pudo actualizar la rutina", "warn");
+        }
+      }
+
+      if(btnUpdateRoutine){
+        btnUpdateRoutine.addEventListener("click", async ()=>{
+          // si está en modo "Reintentar"
+          if(btnUpdateRoutine.textContent === "Reintentar"){
+            await checkForUpdates(false);
+            return;
+          }
+          await applyUpdate();
+        });
+
+        // click cuando está deshabilitado (al día): hacemos una verificación manual
+        btnUpdateRoutine.addEventListener("pointerdown", async (ev)=>{
+          if(btnUpdateRoutine.disabled){
+            ev.preventDefault();
+            await checkForUpdates(false);
+          }
+        });
+      }
+
+      // verificaciones automáticas
+      setTimeout(()=>checkForUpdates(true), 900);                // al cargar
+      document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) checkForUpdates(true); });
+      setInterval(()=>checkForUpdates(true), 10*60*1000);        // cada 10 min
+      // ===== /PRO =====
+const DAYS = [
         {k:"LUN", t:"Lun"},
         {k:"MAR", t:"Mar"},
         {k:"MIE", t:"Mié"},
