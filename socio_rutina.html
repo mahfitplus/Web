@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAH FIT | Mi Rutina</title>
 
+  <!-- Performance hints -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.google.com">
+  <link rel="preconnect" href="https://googleusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://googleusercontent.com">
+
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -628,7 +636,7 @@
           <i class="fas fa-rotate-left" aria-hidden="true"></i> Reset semana
         </button>
       
-        <button class="btn primary" id="btnUpdateRoutine" style="display:none;">
+        <button class="btn primary" id="btnUpdateRoutine" disabled>
           <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Actualizar rutina
         </button>
 </div>
@@ -637,8 +645,8 @@
     <div id="updateNotice" class="update-notice" style="display:none;" role="status" aria-live="polite">
       <div class="update-notice__icon"><i class="fas fa-bell" aria-hidden="true"></i></div>
       <div class="update-notice__text">
-        <div class="update-notice__title">Tu coach actualizó tu rutina</div>
-        <div class="update-notice__sub">Presiona “Actualizar rutina” para sincronizar los cambios.</div>
+        <div class="update-notice__title" id="updateNoticeText">Tu coach actualizó tu rutina</div>
+        <div class="update-notice__sub" id="updateNoticeSub">Presiona “Actualizar rutina” para sincronizar los cambios.</div>
       </div>
       <button class="update-notice__btn" id="btnUpdateRoutineInline" type="button">
         <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Actualizar
@@ -732,8 +740,62 @@
       $("#btnBack").addEventListener("click", () => { window.location.href = "socio.html"; });
       $("#btnPrint").addEventListener("click", () => { window.print(); });
 
-      const row = window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null;
-      const routine = row?.routine;
+// =========================================================
+// ✅ FIX CONEXIÓN RUTINA:
+// Antes leíamos la rutina "muy rápido" y quedaba null.
+// Ahora: hacemos syncDown/boot, luego leemos rutinaV2DeSocio.
+// =========================================================
+let row = null;
+let routine = null;
+
+// ✅ Sync único (evita 2-3 syncDown seguidos)
+let __syncPromise = null;
+function runSyncOnce(){
+  if(__syncPromise) return __syncPromise;
+  __syncPromise = (async ()=>{
+    if(typeof window.syncDown === "function"){
+      await window.syncDown();
+      return;
+    }
+    if(typeof window.boot === "function"){
+      await window.boot({ silent:true }).catch(()=>{});
+      return;
+    }
+  })();
+  return __syncPromise;
+}
+
+// ✅ Lectura ultra rápida desde caché (sin esperar red)
+function readRoutineFromCache(){
+  if(!window.rutinaV2DeSocio) return { row:null, routine:null };
+  const r = window.rutinaV2DeSocio(user.rut);
+  return { row: r || null, routine: (r && r.routine) ? r.routine : null };
+}
+
+// 1) Render inmediato con lo que haya en caché
+const cached = readRoutineFromCache();
+row = cached.row;
+routine = cached.routine;
+
+// 2) Luego sincroniza en segundo plano y refresca pantalla
+runSyncOnce()
+  .then(()=>{
+    const fresh = readRoutineFromCache();
+    if(fresh && fresh.routine){
+      row = fresh.row;
+      routine = fresh.routine;
+      // si ya está renderizado, refrescamos
+      if(typeof buildRoutineDom === "function") buildRoutineDom();
+    }
+  })
+  .catch(()=>{});
+
+
+
+
+
+
+      
 
       
       // ===== PRO: detectar cambios de rutina + botón "Actualizar rutina" =====
@@ -855,25 +917,9 @@
         localStorage.setItem(ROUTINE_HASH_KEY, currentHash);
       }
       setUpdateUI("idle");
-
-      async function runSync(){
-        // Intentamos la mejor opción disponible para refrescar la DB local
-        // (depende de tu app.js / socio_rutina.html original)
-        if(typeof window.syncDown === "function"){
-          await window.syncDown();
-          return;
-        }
-        if(typeof window.boot === "function"){
-          // boot suele cargar datos; lo invocamos con "silent" si existe
-          await window.boot({ silent:true }).catch(()=>{});
-          return;
-        }
-        // fallback: nada
-      }
-
       async function checkForUpdates(silent=true){
         try{
-          await runSync();
+          await runSyncOnce();
 
           const freshRow = (window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null) || null;
           const freshHash = computeRoutineHash(freshRow || {});
@@ -882,22 +928,22 @@
           if(freshHash && baseHash && freshHash !== baseHash){
             candidateHash = freshHash;
             setUpdateUI("available");
-            if(!silent) showNotification("Rutina actualizada por tu coach ✅", "info");
+            if(!silent) window.showNotification?.("Rutina actualizada por tu coach ✅", "info");
           }else{
             candidateHash = null;
             setUpdateUI("idle");
-            if(!silent) showNotification("No hay cambios en tu rutina", "success");
+            if(!silent) window.showNotification?.("No hay cambios en tu rutina", "success");
           }
         }catch(e){
           candidateHash = null;
           setUpdateUI("error", "Error al verificar cambios");
-          if(!silent) showNotification("No se pudo verificar la rutina", "warn");
+          if(!silent) window.showNotification?.("No se pudo verificar la rutina", "warn");
         }
       }
 
       async function applyUpdate(){
         if(!candidateHash){
-          showNotification("No hay cambios por aplicar", "info");
+          window.showNotification?.("No hay cambios por aplicar", "info");
           return;
         }
         try{
@@ -922,13 +968,13 @@
           localStorage.setItem(ROUTINE_HASH_KEY, candidateHash);
 
           // refetch + reload con cache-bust
-          await runSync().catch(()=>{});
+          await runSyncOnce().catch(()=>{});
           const u = new URL(window.location.href);
           u.searchParams.set("v", Date.now().toString());
           window.location.href = u.toString();
         }catch(e){
           setUpdateUI("error", "No se pudo aplicar la actualización");
-          showNotification("No se pudo actualizar la rutina", "warn");
+          window.showNotification?.("No se pudo actualizar la rutina", "warn");
         }
       }
 
@@ -1002,7 +1048,7 @@ const DAYS = [
       async function ensureExercises(){
         try{
           if(window.getExercises){ EX_LIST = window.getExercises() || []; }
-          if((!EX_LIST || !EX_LIST.length) && window.syncDown){ await window.syncDown(); }
+          if((!EX_LIST || !EX_LIST.length)) { await runSyncOnce(); }
           if(window.getExercises){ EX_LIST = window.getExercises() || []; }
         }catch(e){ EX_LIST = EX_LIST || []; }
 
@@ -1387,9 +1433,10 @@ const DAYS = [
         el.click();
       });
 
-      await ensureExercises();
       renderWeekChips();
       buildRoutineDom();
+      // Carga catálogo de ejercicios en segundo plano (no bloquea la UI)
+      ensureExercises().then(()=>{ buildRoutineDom(); });
     });
   </script>
 </body>
