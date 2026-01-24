@@ -1,4 +1,4 @@
-<!doctype html>
+ <!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -1045,7 +1045,14 @@ const DAYS = [
       let EX_BY_ID = new Map();
       let EX_BY_NAME = new Map();
 
-      async function ensureExercises(){
+      function normName(s){
+  return String(s||"")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+async function ensureExercises(){
         try{
           if(window.getExercises){ EX_LIST = window.getExercises() || []; }
           if((!EX_LIST || !EX_LIST.length)) { await runSyncOnce(); }
@@ -1053,16 +1060,17 @@ const DAYS = [
         }catch(e){ EX_LIST = EX_LIST || []; }
 
         EX_BY_ID = new Map((EX_LIST||[]).map(x=>[String(x.exId||x.id||""), x]));
-        EX_BY_NAME = new Map((EX_LIST||[]).map(x=>[String(x.nombre||"").trim().toLowerCase(), x]));
-      }
+        EX_BY_NAME = new Map((EX_LIST||[]).map(x=>[normName(x.nombre), x]));
+}
 
       function findExerciseInfo(e){
-        const exId = String(e?.exId || e?.exerciseId || e?.id || "").trim();
-        if(exId && EX_BY_ID.has(exId)) return EX_BY_ID.get(exId);
-        const name = String(e?.ejercicio || e?.nombre || "").trim().toLowerCase();
-        if(name && EX_BY_NAME.has(name)) return EX_BY_NAME.get(name);
-        return null;
-      }
+  const exId = String(e?.exId || e?.exerciseId || e?.id || "").trim();
+  if(exId && EX_BY_ID.has(exId)) return EX_BY_ID.get(exId);
+  const name = normName(e?.ejercicio || e?.nombre || "");
+  if(name && EX_BY_NAME.has(name)) return EX_BY_NAME.get(name);
+  return null;
+}
+
 
       function normalizeDayLabel(s){
         s = String(s||"").trim().toUpperCase();
