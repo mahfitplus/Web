@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbzVhcspvmRfaarndA-CLZptF-Ftyvc71SWBZ3Cfm4DIRoYJMPxlu6EnvBGLHaJBQ8X0tA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyNAHdfaLjW6urxc5DLpvvAq6gl-ap0-wh6MB8S3J8GGsyew0jJzCgkPN2KmoHrCKDUEg/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -249,8 +249,12 @@ function renderPesoYVisceral(actual, anterior, tallaCm){
 }
 
 // ---------------- API helpers (GET/POST) ----------------
-async function apiGet(resource){
-  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
+async function apiGet(resource, params=null){
+  const p = new URLSearchParams({ resource: String(resource||"").trim(), _: String(Date.now()) });
+  if(params && typeof params === "object"){
+    Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!==null && params[k]!=="") p.set(k, String(params[k])); });
+  }
+  const url = `${API_URL}?${p.toString()}`;
   const r = await fetch(url, { method:"GET", cache:"no-store" });
   const t = await r.text();
   let j = null;
@@ -611,6 +615,42 @@ async function syncDownCore(){
   })).filter(p=>p.planId);
   setPlanes(planes);
 
+  return true;
+}
+
+
+// ✅ FAST: Sync liviano para socio_rutina (USERS + PLANES + RUTINAS_V2 filtrado por rutSocio)
+// - TTL por defecto 10 min (stale-while-revalidate simple)
+// - Usa window.syncDownRutinaLite(true, rutSocio) para forzar
+async function syncDownRutinaLite(force=false, rutSocio=""){
+  const KEY = "mahfit_sync_rutina_ts";
+  const TTL = 10 * 60 * 1000; // 10 min
+  const last = Number(localStorage.getItem(KEY) || 0);
+  const now = Date.now();
+
+  if(!force && last && (now - last) < TTL){
+    return true;
+  }
+
+  await syncDownCore();
+
+  const params = {};
+  if(rutSocio) params.rutSocio = rutSocio;
+
+  const rv2 = await apiGet("RUTINAS_V2", params);
+  setRutinasV2((rv2.rutinas_v2 || []).map(x => {
+    let routine = null;
+    try{ routine = JSON.parse(x.routine_json || "null"); }catch(e){}
+    return {
+      rutSocio: normalizeRut(x.rutSocio),
+      routine,
+      routine_json: x.routine_json ?? null,
+      creadoPorRut: x.creadoPorRut ?? "",
+      actualizadoEn: x.actualizadoEn ?? ""
+    };
+  }));
+
+  localStorage.setItem(KEY, String(now));
   return true;
 }
 
