@@ -180,8 +180,8 @@
       border:1px solid var(--stroke);
       border-radius:22px;
       box-shadow:var(--shadow);
-      overflow:hidden;
-    }
+      overflow:visible;
+}
     .card-head{
       padding:16px 16px 12px;
       border-bottom:1px solid var(--stroke);
@@ -788,92 +788,66 @@
     }
 
 
-    /* =========================
-       ✅ ENTRENAMIENTO ACTIVO PRO
+        /* =========================
+       ✅ ENTRENAMIENTO ACTIVO (APP STORE)
+       - Sticky SOLO cuando "Iniciar"
+       - Efecto premium al quedar "pegado"
+       - Top responsivo (móvil vs desktop)
        ========================= */
+    :root{
+      --activeTop: 86px;      /* desktop */
+      --activeTopMobile: 14px; /* móvil */
+    }
+
     .activeBar{
       margin: 14px 18px 0;
       padding: 12px 14px;
       border: 1px solid var(--stroke);
       border-radius: 14px;
-      background: linear-gradient(180deg, rgba(90,103,216,.10), rgba(255,255,255,.75));
+      background: linear-gradient(180deg, rgba(90,103,216,.10), rgba(255,255,255,.78));
       box-shadow: 0 10px 24px rgba(0,0,0,.08);
-      position: sticky;
-      top: 86px;
-      z-index: 20;
       backdrop-filter: blur(10px);
-    }
-    .activeTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-    }
-    .activeTitle{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width:0;
-    }
-    .activeTitle strong{
-      font-size: 13px;
-      font-weight: 1000;
-      color: var(--txt);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 520px;
-    }
-    .activeRight{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-    }
-    .switch{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      font-size:12px;
-      font-weight:900;
-      color: var(--txt-2);
-      user-select:none;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.65);
-    }
-    .switch input{ accent-color: var(--brand); }
-    .activeProg{
-      margin-top: 10px;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-    .activeTrack{
-      flex:1;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--surface-3);
-      overflow:hidden;
-      border: 1px solid var(--stroke);
-    }
-    .activeFill{
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, var(--brand), var(--success));
-      transition: width .25s ease;
-    }
-    .activeMeta{
-      font-size: 12px;
-      font-weight: 1000;
-      color: var(--txt-2);
-      min-width: 52px;
-      text-align:right;
+
+      /* por defecto: NO sticky */
+      position: relative;
+      top: auto;
+      z-index: 20;
+
+      /* micro-motion */
+      transform: translateY(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .18s ease, opacity .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
-    .ex.active{
+    /* visible cuando estás en modo activo */
+    .activeBar.is-visible{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* sticky solo si está activo */
+    .activeBar.is-sticky{
+      position: sticky;
+      top: var(--activeTop);
+      z-index: 60;
+    }
+
+    /* estado "pegado" (cuando el scroll ya pasó el umbral) */
+    .activeBar.is-stuck{
+      border-color: rgba(90,103,216,.28);
+      box-shadow: 0 14px 34px rgba(0,0,0,.12);
+    }
+
+    @media (max-width:720px){
+      .activeBar.is-sticky{ top: var(--activeTopMobile); }
+      .activeBar{ margin: 12px 12px 0; }
+      .activeTitle strong{ max-width: 260px; }
+      .activeRight{ gap:6px; }
+    }
+
+.ex.active{
       border: 2px solid rgba(90,103,216,.55);
       background: linear-gradient(180deg, rgba(90,103,216,.08), rgba(255,255,255,.9));
       box-shadow: 0 14px 28px rgba(90,103,216,.12);
@@ -888,6 +862,34 @@
 
     /* Botón start/stop más “app” */
     #btnStartActive{ box-shadow: 0 10px 24px rgba(90,103,216,.18); }
+
+    /* ===== Toast (LOGS PRO) ===== */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(0,0,0,.72);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      max-width: min(560px, calc(100% - 24px));
+      box-shadow: 0 16px 50px rgba(0,0,0,.45);
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
 </style>
 </head>
 
@@ -1444,6 +1446,7 @@ const DAYS = [
 
         if(!activeMode){
           bar.style.display = "none";
+          bar.classList.remove("is-visible","is-sticky","is-stuck");
           // limpiar highlight
           wrap.querySelectorAll(".ex.active").forEach(x=>x.classList.remove("active"));
           $("#btnStopActive").style.display = "none";
@@ -1453,6 +1456,8 @@ const DAYS = [
         }
 
         bar.style.display = "";
+        bar.classList.add("is-visible");
+        bar.classList.toggle("is-sticky", !!activeMode);
         $("#btnStopActive").style.display = "";
         $("#btnStartActive").style.display = "none";
 
@@ -1468,17 +1473,80 @@ const DAYS = [
         $("#btnNextEx").disabled = !(activeList.length && activeIndex < activeList.length - 1);
       }
 
-      function setActiveMode(on){
-        activeMode = !!on;
-        lsSet(ACTIVE_KEY, activeMode);
-        if(activeMode){
-          // escoger primer pendiente
-          const idx = firstPendingIndex();
-          setActiveIndex(idx, { scroll:true });
-        }else{
-          updateActiveBar();
-        }
-      }
+      function setupActiveSticky(){
+  const bar = document.getElementById("activeBar");
+  if(!bar) return;
+  if(window.__MAHFIT_ACTIVE_STICKY_BOUND) return;
+  window.__MAHFIT_ACTIVE_STICKY_BOUND = true;
+
+  let triggerY = 0;
+
+  const getTopOffset = ()=>{
+    // lee vars CSS, con fallback
+    const root = getComputedStyle(document.documentElement);
+    const isMobile = window.matchMedia("(max-width:720px)").matches;
+    const v = (isMobile ? root.getPropertyValue("--activeTopMobile") : root.getPropertyValue("--activeTop")).trim();
+    const n = parseInt(v || (isMobile ? "14" : "86"), 10);
+    return Number.isFinite(n) ? n : (isMobile ? 14 : 86);
+  };
+
+  const compute = ()=>{
+    // punto donde debería empezar a verse "pegado"
+    const topOffset = getTopOffset();
+    const rect = bar.getBoundingClientRect();
+    triggerY = window.scrollY + rect.top - topOffset;
+  };
+
+  const onScroll = ()=>{
+    if(!activeMode){
+      bar.classList.remove("is-stuck");
+      return;
+    }
+    // si aún no se calculó, calculamos
+    if(!triggerY) compute();
+    const stuck = window.scrollY >= triggerY;
+    bar.classList.toggle("is-stuck", stuck);
+  };
+
+  window.addEventListener("scroll", onScroll, { passive:true });
+  window.addEventListener("resize", ()=>{ compute(); onScroll(); }, { passive:true });
+
+  // primer cálculo
+  setTimeout(()=>{ compute(); onScroll(); }, 0);
+
+  // hook para recalcular cuando se re-renderiza
+  bar.__mahfitRecalcSticky = ()=>{ compute(); onScroll(); };
+}
+
+function setActiveMode(on){
+  activeMode = !!on;
+  lsSet(ACTIVE_KEY, activeMode);
+
+  const bar = document.getElementById("activeBar");
+  if(bar){
+    // sticky SOLO cuando está activo
+    bar.classList.toggle("is-sticky", activeMode);
+    bar.classList.toggle("is-visible", activeMode);
+    if(!activeMode) bar.classList.remove("is-stuck");
+  }
+
+  if(activeMode){
+    setupActiveSticky();
+
+    // ✅ UX PRO: asegura que la barra quede visible al iniciar
+    setTimeout(()=>{
+      try{ bar?.scrollIntoView({ behavior:"smooth", block:"start" }); }catch(_){}
+      try{ bar?.__mahfitRecalcSticky?.(); }catch(_){}
+      try{ if(navigator.vibrate) navigator.vibrate(10); }catch(_){}
+    }, 30);
+
+    // escoger primer pendiente
+    const idx = firstPendingIndex();
+    setActiveIndex(idx, { scroll:true });
+  }else{
+    updateActiveBar();
+  }
+}
 
       function gotoNextPending({ allowWrap=true } = {}){
         collectActiveList();
@@ -1555,6 +1623,80 @@ const DAYS = [
         setTimeout(()=> uiTone(988, 70, 0.045), 70);
         try{ if(navigator.vibrate) navigator.vibrate(10); }catch(_){}
       }
+      // ===== Toast helper (mini feedback) =====
+      let _toastTimer = null;
+      function showToast(msg, ms=1600){
+        const t = document.getElementById("toast");
+        if(!t) return;
+        t.textContent = String(msg||"");
+        t.classList.add("show");
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(()=> t.classList.remove("show"), ms);
+      }
+
+      // ===== LOGS PRO: guardar automáticamente al marcar "Hecho" =====
+      async function logWorkoutDoneFromCard(card){
+        try{
+          if(!card) return;
+          if(!window.saveWorkoutLog || !window.makeWorkoutLogId || !window.getWorkoutLog || !window.setWorkoutLog){
+            // app.js viejo o no cargó (no rompemos UI)
+            return;
+          }
+
+          const name = card.getAttribute("data-name") || (card.querySelector(".ex-name")?.textContent||"Ejercicio");
+          const dayLabel = card.getAttribute("data-daylabel") || (document.querySelector(".workout-title")?.textContent||"DIA");
+          const idx = Number(card.getAttribute("data-exidx")||0);
+
+          const series = (card.getAttribute("data-series")||"").trim();
+          const reps = (card.getAttribute("data-reps")||"").trim();
+          const carga = (card.getAttribute("data-carga")||"").trim();
+          const descanso = (card.getAttribute("data-descanso")||"").trim();
+          const obs = (card.getAttribute("data-obs")||"").trim();
+
+          const fecha = (typeof isoLocalDate === "function") ? isoLocalDate() : (new Date().toISOString().slice(0,10));
+          const base = {
+            rutSocio: (user?.rut || user?.Rut || ""),
+            fecha,
+            dayLabel,
+            idx,
+            ejercicio: name,
+            series,
+            reps,
+            carga,
+            descanso,
+            obs,
+            source: "socio_rutina",
+            actualizadoEn: (typeof nowISO === "function") ? nowISO() : new Date().toISOString(),
+          };
+
+          // ID robusto igual a app.js
+          base.logId = window.makeWorkoutLogId({ rutSocio: base.rutSocio, fecha: base.fecha, dayLabel: base.dayLabel, idx: base.idx });
+
+          // 1) Intenta guardar remoto (Sheets)
+          try{
+            await window.saveWorkoutLog(base);
+            showToast("✅ Guardado en historial");
+            return;
+          }catch(err){
+            // 2) Fallback local (queda como pendiente)
+            const local = { ...base, pending: 1, localOnly: 1 };
+            const list = (window.getWorkoutLog() || []).slice();
+
+            const i = list.findIndex(x => String(x?.logId||x?.id||"").trim() === String(local.logId).trim());
+            if(i >= 0) list[i] = { ...list[i], ...local };
+            else list.push(local);
+
+            window.setWorkoutLog(list);
+
+            showToast("📌 Guardado local (pendiente sync)");
+            console.warn("[WORKOUT_LOG] guardado local pendiente:", err && err.message ? err.message : err);
+          }
+        }catch(e){
+          console.warn("[WORKOUT_LOG] logWorkoutDoneFromCard error:", e);
+        }
+      }
+
+
 
       function parseWeekStamp(stamp){
         // "YYYY_W##"
@@ -2098,7 +2240,7 @@ function fmtMMSS(sec){
                 </div>` : "";
 
               return `
-                <div class="ex" data-exid="${escapeAttr(id)}">
+                <div class="ex" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
                   <div class="ex-left">
                     <div class="check ${isDone ? "done":""}" title="Marcar realizado" role="button" tabindex="0" data-action="toggle">
                       <i class="fas ${isDone ? "fa-check" : "fa-minus"}" aria-hidden="true"></i>
@@ -2161,6 +2303,8 @@ function fmtMMSS(sec){
           setActiveIndex(idx, { scroll:false });
         }
         updateActiveBar();
+        try{ document.getElementById("activeBar")?.__mahfitRecalcSticky?.(); }catch(_){ }
+
       }
 
       wrap.addEventListener("click", (e)=>{
@@ -2194,6 +2338,9 @@ function fmtMMSS(sec){
           
           // ✅ cola: si quedó en Hecho, lo movemos al final
           if(next){
+            // ✅ LOGS PRO: guarda altiro en historial
+            (async()=>{ await logWorkoutDoneFromCard(card); })();
+
             moveExerciseToEnd(card);
             doneChime();
 
@@ -2274,5 +2421,6 @@ function fmtMMSS(sec){
     </div>
   </div>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
