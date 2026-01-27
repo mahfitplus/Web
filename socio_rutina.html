@@ -890,109 +890,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-
-/* =========================
-   📱 ACTIVE BAR · MOBILE UI (EXTRA PRO)
-   - Flechas grandes + progreso centrado
-   - Animación suave y UX tipo app
-   ========================= */
-@media (max-width:720px){
-  .activeTop{
-    display:grid;
-    grid-template-columns: 44px 1fr 44px;
-    grid-template-rows: auto auto;
-    gap:8px;
-    align-items:center;
-  }
-
-  /* Flecha izquierda */
-  #btnPrevEx{
-    grid-column:1;
-    grid-row:1 / span 2;
-    height:44px;
-    width:44px;
-    min-width:44px;
-    border-radius:14px;
-  }
-
-  /* Flecha derecha */
-  #btnNextEx{
-    grid-column:3;
-    grid-row:1 / span 2;
-    height:44px;
-    width:44px;
-    min-width:44px;
-    border-radius:14px;
-  }
-
-  /* Nombre ejercicio centrado */
-  .activeTitle{
-    grid-column:2;
-    grid-row:1;
-    text-align:center;
-    justify-content:center;
-  }
-
-  .activeTitle strong{
-    display:block;
-    font-size:14px;
-    font-weight:1000;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  /* Oculta pill en móvil (más limpio) */
-  .activeTitle .pill{ display:none; }
-
-  /* Auto descanso abajo centrado */
-  .activeRight{
-    grid-column:2;
-    grid-row:2;
-    justify-content:center;
-    gap:8px;
-  }
-
-  .switch span{ font-weight:900; }
-
-  /* Progreso centrado */
-  .activeProg{ margin-top:10px; }
-  .activeMeta{
-    text-align:center;
-    font-weight:1000;
-    margin-top:6px;
-  }
-}
-
-/* UX: animación al cambiar ejercicio activo */
-.ex{
-  transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
-}
-.ex.flash{
-  animation: flashIn .18s ease-out 1;
-}
-@keyframes flashIn{
-  from{ transform: translateY(2px); opacity:.75; }
-  to{ transform: translateY(0); opacity:1; }
-}
-
-/* Hint de swipe (solo visual, no molesta) */
-.activeBar .swipe-hint{
-  margin-top:10px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-  font-size:11px;
-  font-weight:900;
-  color: var(--txt-muted);
-  opacity:.85;
-  user-select:none;
-}
-@media (min-width:721px){
-  .activeBar .swipe-hint{ display:none; }
-}
-
 </style>
 </head>
 
@@ -1083,7 +980,6 @@
           <div class="activeTrack"><div class="activeFill" id="activeFill" style="width:0%"></div></div>
           <div class="activeMeta" id="activeMeta">0/0</div>
         </div>
-        <div class="swipe-hint" aria-hidden="true"><i class="fas fa-hand-pointer"></i> Desliza para cambiar ejercicio</div>
       </div>
 
       <div class="card-body">
@@ -1152,7 +1048,99 @@
   </div>
 
   <!-- MAH FIT BOOT MODE -->
-  <script>window.MAHFIT_BOOT_MODE = "core";</script>
+  <script>window.MAHFIT_BOOT_MODE = "core";
+/* =========================
+   ✅ APP BOTTOM BAR hooks
+   ========================= */
+function showAppBottomBar(show){
+  const bar = document.getElementById("appBottomBar");
+  if(!bar) return;
+  bar.style.display = show ? "" : "none";
+  // Evita que tape el contenido
+  if(window.matchMedia && window.matchMedia("(max-width:720px)").matches){
+    document.body.style.paddingBottom = show ? "140px" : "";
+  }else{
+    document.body.style.paddingBottom = "";
+  }
+}
+
+function syncBottomMeta(){
+  const top = document.getElementById("activeMeta")?.textContent || "0/0";
+  const bottom = document.getElementById("activeMetaBottom");
+  if(bottom) bottom.textContent = top;
+}
+
+document.getElementById("btnPrevExBottom")?.addEventListener("click", ()=> {
+  if(typeof gotoPrev === "function") gotoPrev();
+});
+
+document.getElementById("btnNextExBottom")?.addEventListener("click", ()=> {
+  if(typeof gotoNext === "function") gotoNext();
+});
+
+// Patch seguro: si existe updateActiveBar, lo envolvemos para mantener la barra sincronizada
+if(typeof updateActiveBar === "function" && !updateActiveBar.__mahfitPatched){
+  const __old = updateActiveBar;
+  updateActiveBar = function(){
+    const r = __old.apply(this, arguments);
+    try{
+      // activeMode suele existir; si no, inferimos por display del activeBar
+      const isActive = (typeof activeMode !== "undefined") ? !!activeMode : (document.getElementById("activeBar")?.style.display !== "none");
+      showAppBottomBar(false);
+      syncBottomMeta();
+
+      // deshabilitar botones según estado (si existen vars)
+      const bp = document.getElementById("btnPrevExBottom");
+      const bn = document.getElementById("btnNextExBottom");
+      if(typeof activeList !== "undefined" && typeof activeIndex !== "undefined"){
+        if(bp) bp.disabled = !(activeList.length && activeIndex > 0);
+        if(bn) bn.disabled = !(activeList.length && activeIndex < activeList.length - 1);
+      }
+    }catch(_){}
+    return r;
+  };
+  updateActiveBar.__mahfitPatched = true;
+}
+
+// En resize/orientation, re-aplica padding
+window.addEventListener("resize", ()=>{ 
+  try{
+    const isActive = (typeof activeMode !== "undefined") ? !!activeMode : false;
+    showAppBottomBar(isActive);
+  }catch(_){}
+});
+
+
+/* =========================
+   🔥 Mostrar APP Bottom Bar al iniciar rutina
+   ========================= */
+(function(){
+  function onStart(){
+    try{
+      showAppBottomBar(true);
+      syncBottomMeta();
+    }catch(_){}
+  }
+
+  // Caso 1: botón explícito
+  document.getElementById("btnStart")?.addEventListener("click", onStart);
+
+  // Caso 2: botones con data-action
+  document.querySelectorAll('[data-action="start"]').forEach(b=>{
+    b.addEventListener("click", onStart);
+  });
+
+  // Caso 3: fallback por texto (robusto)
+  document.addEventListener("click", (e)=>{
+    const t = e.target.closest("button");
+    if(!t) return;
+    if((t.textContent || "").toLowerCase().includes("iniciar")){
+      onStart();
+    }
+  });
+})();
+
+</script>
   <script src="assets/app.js" defer></script>
 
   <script>
@@ -1518,10 +1506,6 @@ const DAYS = [
         const el = activeList[activeIndex];
         if(el){
           el.classList.add("active");
-          el.classList.remove("flash");
-          // fuerza reflow para re-disparar animación
-          void el.offsetWidth;
-          el.classList.add("flash");
           if(scroll){
             el.scrollIntoView({ behavior:"smooth", block:"center" });
           }
@@ -1696,97 +1680,10 @@ function setActiveMode(on){
       $("#btnStopActive")?.addEventListener("click", ()=>{
         setActiveMode(false);
       });
-      // ✅ EXTRA PRO: haptic + tono al navegar
-function hapticTap(){
-  try{ if(navigator.vibrate) navigator.vibrate(12); }catch(_){}
-}
-function navTone(dir="next"){
-  try{
-    // reutiliza uiTone si existe (más abajo), si no crea uno rápido
-    if(typeof uiTone === "function"){
-      uiTone(dir==="next" ? 740 : 620, 55, 0.035);
-      return;
-    }
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = "sine";
-    o.frequency.value = (dir==="next" ? 740 : 620);
-    g.gain.value = 0.035;
-    o.start();
-    setTimeout(()=>{ try{o.stop(); ctx.close();}catch(_){ } }, 70);
-  }catch(_){}
-}
+      $("#btnPrevEx")?.addEventListener("click", ()=> gotoPrev() );
+      $("#btnNextEx")?.addEventListener("click", ()=> gotoNext() );
 
-$("#btnPrevEx")?.addEventListener("click", ()=>{
-  hapticTap(); navTone("prev");
-  gotoPrev();
-});
-$("#btnNextEx")?.addEventListener("click", ()=>{
-  hapticTap(); navTone("next");
-  gotoNext();
-});
-
-// ✅ EXTRA PRO: Swipe izquierda/derecha en móvil (cambiar ejercicio)
-(function bindSwipeNavigation(){
-  const zone = document.getElementById("activeBar") || wrap;
-  if(!zone || window.__MAHFIT_SWIPE_BOUND) return;
-  window.__MAHFIT_SWIPE_BOUND = true;
-
-  let sx=0, sy=0, st=0;
-  const THX = 55;   // umbral horizontal
-  const THY = 35;   // tolerancia vertical
-  const MAXT = 900; // ms
-
-  zone.addEventListener("touchstart", (ev)=>{
-    if(!activeMode) return;
-    const t = ev.touches?.[0];
-    if(!t) return;
-    sx = t.clientX; sy = t.clientY;
-    st = Date.now();
-  }, { passive:true });
-
-  zone.addEventListener("touchend", (ev)=>{
-    if(!activeMode) return;
-    const dt = Date.now() - st;
-    if(dt > MAXT) return;
-    const t = ev.changedTouches?.[0];
-    if(!t) return;
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-
-    if(Math.abs(dx) >= THX && Math.abs(dy) <= THY){
-      if(dx < 0){
-        hapticTap(); navTone("next");
-        gotoNext();
-      }else{
-        hapticTap(); navTone("prev");
-        gotoPrev();
-      }
-    }
-  }, { passive:true });
-})();
-
-// ✅ EXTRA PRO: teclas ← → (solo cuando estás en modo activo)
-document.addEventListener("keydown", (e)=>{
-  if(!activeMode) return;
-  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-  if(tag === "input" || tag === "textarea" || tag === "select") return;
-
-  if(e.key === "ArrowLeft"){
-    e.preventDefault();
-    hapticTap(); navTone("prev");
-    gotoPrev();
-  }
-  if(e.key === "ArrowRight"){
-    e.preventDefault();
-    hapticTap(); navTone("next");
-    gotoNext();
-  }
-}, { passive:false });
-
-$("#toggleAutoRest")?.addEventListener("change", (e)=>{
+      $("#toggleAutoRest")?.addEventListener("change", (e)=>{
         autoRest = !!e.target.checked;
         lsSet(AUTO_REST_KEY, autoRest);
       });
@@ -2617,5 +2514,33 @@ function fmtMMSS(sec){
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ✅ APP BOTTOM BAR (mobile) - Prev / Meta / Next -->
+  
+  <!-- ✅ APP BOTTOM BAR (mobile) - estilo app nativa -->
+  <div class="appBottomBar" id="appBottomBar" style="display:none;">
+    <div class="appPill" role="group" aria-label="Navegación de ejercicios">
+      <button class="appNavBtn" id="btnPrevExBottom" type="button" aria-label="Anterior">
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        <span>ANTERIOR</span>
+      </button>
+
+      <div class="appNavCenter">
+        <div class="appNavCount" id="activeMetaBottom">0/0</div>
+      </div>
+
+      <button class="appNavBtn primary" id="btnNextExBottom" type="button" aria-label="Siguiente">
+        <span>SIGUIENTE</span>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+    <button class="appNavBtn" id="btnNextExBottom" type="button" aria-label="Siguiente">
+      <i class="fas fa-chevron-right" aria-hidden="true"></i>
+    </button>
+  </div>
+
 </body>
 </html>
