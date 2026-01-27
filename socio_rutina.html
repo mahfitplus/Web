@@ -928,8 +928,6 @@
         return;
       }
       const user = window.requireAuth("SOCIO");
-      const __rutSocio = window.normalizeRut ? window.normalizeRut(user.rut || user.rutSocio || "") : String(user.rut || user.rutSocio || "");
-      window.__rutSocioCurrent = __rutSocio;
       if(!user) return;
 
       $("#btnBack").addEventListener("click", () => { window.location.href = "socio.html"; });
@@ -945,13 +943,9 @@ let routine = null;
 
 // ✅ Sync único (evita 2-3 syncDown seguidos)
 let __syncPromise = null;
-function runSyncOnce(rutSocio=""){
+function runSyncOnce(){
   if(__syncPromise) return __syncPromise;
   __syncPromise = (async ()=>{
-    if(typeof window.syncDownRutinaLite === "function"){
-      await window.syncDownRutinaLite(false, rutSocio);
-      return;
-    }
     if(typeof window.syncDown === "function"){
       await window.syncDown();
       return;
@@ -977,7 +971,7 @@ row = cached.row;
 routine = cached.routine;
 
 // 2) Luego sincroniza en segundo plano y refresca pantalla
-runSyncOnce(window.__rutSocioCurrent||"")
+runSyncOnce()
   .then(()=>{
     const fresh = readRoutineFromCache();
     if(fresh && fresh.routine){
@@ -1118,7 +1112,7 @@ runSyncOnce(window.__rutSocioCurrent||"")
       setUpdateUI("idle");
       async function checkForUpdates(silent=true){
         try{
-          await runSyncOnce(window.__rutSocioCurrent||"");
+          await runSyncOnce();
 
           const freshRow = (window.rutinaV2DeSocio ? window.rutinaV2DeSocio(user.rut) : null) || null;
           const freshHash = computeRoutineHash(freshRow || {});
@@ -1167,7 +1161,7 @@ runSyncOnce(window.__rutSocioCurrent||"")
           localStorage.setItem(ROUTINE_HASH_KEY, candidateHash);
 
           // refetch + reload con cache-bust
-          await runSyncOnce(window.__rutSocioCurrent||"").catch(()=>{});
+          await runSyncOnce().catch(()=>{});
           const u = new URL(window.location.href);
           u.searchParams.set("v", Date.now().toString());
           window.location.href = u.toString();
@@ -1460,7 +1454,7 @@ const COMPLETE_KEY = `MAHFIT_ROUTINE_COMPLETE_${String(user?.rut||"").toUpperCas
 async function ensureExercises(){
         try{
           if(window.getExercises){ EX_LIST = window.getExercises() || []; }
-          if((!EX_LIST || !EX_LIST.length)) { await runSyncOnce(window.__rutSocioCurrent||""); }
+          if((!EX_LIST || !EX_LIST.length)) { await runSyncOnce(); }
           if(window.getExercises){ EX_LIST = window.getExercises() || []; }
         }catch(e){ EX_LIST = EX_LIST || []; }
 
