@@ -787,6 +787,107 @@
       50%{ margin-left: 10px; }
     }
 
+
+    /* =========================
+       ✅ ENTRENAMIENTO ACTIVO PRO
+       ========================= */
+    .activeBar{
+      margin: 14px 18px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(90,103,216,.10), rgba(255,255,255,.75));
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      position: sticky;
+      top: 86px;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    .activeTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .activeTitle{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
+    .activeTitle strong{
+      font-size: 13px;
+      font-weight: 1000;
+      color: var(--txt);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 520px;
+    }
+    .activeRight{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .switch{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:900;
+      color: var(--txt-2);
+      user-select:none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.65);
+    }
+    .switch input{ accent-color: var(--brand); }
+    .activeProg{
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .activeTrack{
+      flex:1;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-3);
+      overflow:hidden;
+      border: 1px solid var(--stroke);
+    }
+    .activeFill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, var(--brand), var(--success));
+      transition: width .25s ease;
+    }
+    .activeMeta{
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--txt-2);
+      min-width: 52px;
+      text-align:right;
+    }
+
+    .ex.active{
+      border: 2px solid rgba(90,103,216,.55);
+      background: linear-gradient(180deg, rgba(90,103,216,.08), rgba(255,255,255,.9));
+      box-shadow: 0 14px 28px rgba(90,103,216,.12);
+      transform: translateY(-1px);
+    }
+    .ex.active .ex-name::after{
+      content:" · Ahora";
+      font-weight: 1000;
+      color: var(--brand);
+      letter-spacing:.2px;
+    }
+
+    /* Botón start/stop más “app” */
+    #btnStartActive{ box-shadow: 0 10px 24px rgba(90,103,216,.18); }
 </style>
 </head>
 
@@ -826,6 +927,13 @@
         <button class="btn primary" id="btnUpdateRoutine" disabled>
           <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Actualizar rutina
         </button>
+        <button class="btn primary" id="btnStartActive">
+          <i class="fas fa-play" aria-hidden="true"></i> Iniciar
+        </button>
+        <button class="btn" id="btnStopActive" style="display:none;">
+          <i class="fas fa-circle-stop" aria-hidden="true"></i> Salir
+        </button>
+
 </div>
     </header>
 
@@ -847,6 +955,28 @@
         <div class="weekbar">
           <div class="chips" id="weekChips" aria-label="Seleccionar día"></div>
           <div class="meta" id="metaInfo">—</div>
+        </div>
+      </div>
+
+      <!-- ✅ ENTRENAMIENTO ACTIVO (PRO) -->
+      <div class="activeBar" id="activeBar" style="display:none;" role="region" aria-label="Entrenamiento activo">
+        <div class="activeTop">
+          <div class="activeTitle">
+            <span class="pill"><i class="fas fa-bolt" aria-hidden="true"></i> Activo</span>
+            <strong id="activeName">—</strong>
+          </div>
+          <div class="activeRight">
+            <label class="switch" title="Auto descanso">
+              <input type="checkbox" id="toggleAutoRest" checked>
+              <span>Auto descanso</span>
+            </label>
+            <button class="mini ghost" id="btnPrevEx" title="Anterior"><i class="fas fa-chevron-left"></i></button>
+            <button class="mini ghost" id="btnNextEx" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="activeProg">
+          <div class="activeTrack"><div class="activeFill" id="activeFill" style="width:0%"></div></div>
+          <div class="activeMeta" id="activeMeta">0/0</div>
         </div>
       </div>
 
@@ -1245,6 +1375,162 @@ const DAYS = [
         "Cada repetición cuenta. Hoy sumaste otra victoria ✅",
         "No se trata de hacerlo perfecto, sino de hacerlo siempre 💯"
       ];
+      // ===== ENTRENAMIENTO ACTIVO (PRO) =====
+      const ACTIVE_KEY = stateKey(`activeMode_${weekStamp}`);
+      const AUTO_REST_KEY = stateKey(`autoRest_${weekStamp}`);
+
+      let activeMode = !!lsGet(ACTIVE_KEY, false);
+      let autoRest = lsGet(AUTO_REST_KEY, true) !== false;
+
+      let activeList = [];    // elementos .ex visibles
+      let activeIndex = -1;   // índice en activeList
+
+      function collectActiveList(){
+        activeList = [...wrap.querySelectorAll(".ex")];
+        // asegúrate que activeDay filtre bien (ya viene filtrado por buildRoutineDom)
+        return activeList;
+      }
+
+      function firstPendingIndex(){
+        collectActiveList();
+        const idx = activeList.findIndex(el => !doneMap[el.getAttribute("data-exid")]);
+        return idx >= 0 ? idx : (activeList.length ? 0 : -1);
+      }
+
+      function setActiveIndex(i, { scroll=true } = {}){
+        collectActiveList();
+        if(!activeList.length){ activeIndex = -1; return; }
+
+        // clamp
+        if(i < 0) i = 0;
+        if(i >= activeList.length) i = activeList.length - 1;
+
+        // limpiar estados
+        activeList.forEach(el => el.classList.remove("active"));
+
+        activeIndex = i;
+        const el = activeList[activeIndex];
+        if(el){
+          el.classList.add("active");
+          if(scroll){
+            el.scrollIntoView({ behavior:"smooth", block:"center" });
+          }
+        }
+        updateActiveBar();
+      }
+
+      function activeCounts(){
+        collectActiveList();
+        const total = activeList.length;
+        const done = activeList.filter(el => !!doneMap[el.getAttribute("data-exid")]).length;
+        return { total, done };
+      }
+
+      function getActiveExerciseName(){
+        collectActiveList();
+        const el = activeList[activeIndex];
+        if(!el) return "—";
+        const name = el.querySelector(".ex-name")?.textContent?.trim() || "Ejercicio";
+        return name;
+      }
+
+      function updateActiveBar(){
+        const bar = $("#activeBar");
+        const fill = $("#activeFill");
+        const meta = $("#activeMeta");
+        const name = $("#activeName");
+
+        if(!bar) return;
+
+        if(!activeMode){
+          bar.style.display = "none";
+          // limpiar highlight
+          wrap.querySelectorAll(".ex.active").forEach(x=>x.classList.remove("active"));
+          $("#btnStopActive").style.display = "none";
+          $("#btnStartActive").style.display = "";
+          $("#btnStartActive").innerHTML = `<i class="fas fa-play" aria-hidden="true"></i> Iniciar`;
+          return;
+        }
+
+        bar.style.display = "";
+        $("#btnStopActive").style.display = "";
+        $("#btnStartActive").style.display = "none";
+
+        const { total, done } = activeCounts();
+        const pct = total ? Math.round((done/total)*100) : 0;
+
+        if(fill) fill.style.width = pct + "%";
+        if(meta) meta.textContent = `${done}/${total}`;
+        if(name) name.textContent = getActiveExerciseName();
+
+        // botones prev/next
+        $("#btnPrevEx").disabled = !(activeList.length && activeIndex > 0);
+        $("#btnNextEx").disabled = !(activeList.length && activeIndex < activeList.length - 1);
+      }
+
+      function setActiveMode(on){
+        activeMode = !!on;
+        lsSet(ACTIVE_KEY, activeMode);
+        if(activeMode){
+          // escoger primer pendiente
+          const idx = firstPendingIndex();
+          setActiveIndex(idx, { scroll:true });
+        }else{
+          updateActiveBar();
+        }
+      }
+
+      function gotoNextPending({ allowWrap=true } = {}){
+        collectActiveList();
+        if(!activeList.length) return;
+
+        // busca desde el siguiente al actual
+        for(let i = activeIndex + 1; i < activeList.length; i++){
+          const id = activeList[i].getAttribute("data-exid");
+          if(!doneMap[id]){
+            setActiveIndex(i, { scroll:true });
+            return;
+          }
+        }
+        if(allowWrap){
+          for(let i = 0; i < activeList.length; i++){
+            const id = activeList[i].getAttribute("data-exid");
+            if(!doneMap[id]){
+              setActiveIndex(i, { scroll:true });
+              return;
+            }
+          }
+        }
+        // no hay pendientes => deja el último y revisa completado
+        setActiveIndex(activeList.length - 1, { scroll:false });
+        checkRoutineCompleted();
+      }
+
+      function gotoPrev(){
+        setActiveIndex(activeIndex - 1, { scroll:true });
+      }
+      function gotoNext(){
+        setActiveIndex(activeIndex + 1, { scroll:true });
+      }
+
+      // Hook UI active mode
+      $("#btnStartActive")?.addEventListener("click", ()=>{
+        setActiveMode(true);
+      });
+      $("#btnStopActive")?.addEventListener("click", ()=>{
+        setActiveMode(false);
+      });
+      $("#btnPrevEx")?.addEventListener("click", ()=> gotoPrev() );
+      $("#btnNextEx")?.addEventListener("click", ()=> gotoNext() );
+
+      $("#toggleAutoRest")?.addEventListener("change", (e)=>{
+        autoRest = !!e.target.checked;
+        lsSet(AUTO_REST_KEY, autoRest);
+      });
+
+      // Inicializa toggle y bar
+      if($("#toggleAutoRest")) $("#toggleAutoRest").checked = autoRest;
+
 
       
       // ===== SONIDOS (bonito al marcar Hecho) + STREAK semanal =====
@@ -1868,6 +2154,13 @@ function fmtMMSS(sec){
 
         wrap.innerHTML = parts.join("");
         renderFeedback();
+        // ✅ refresca estado de Entrenamiento Activo
+        collectActiveList();
+        if(activeMode){
+          const idx = firstPendingIndex();
+          setActiveIndex(idx, { scroll:false });
+        }
+        updateActiveBar();
       }
 
       wrap.addEventListener("click", (e)=>{
@@ -1903,8 +2196,22 @@ function fmtMMSS(sec){
           if(next){
             moveExerciseToEnd(card);
             doneChime();
+
+            // ✅ Entrenamiento Activo: avanza automático
+            if(activeMode && next){
+              // auto descanso
+              if(autoRest){
+                const restBtn = card.querySelector("[data-action='rest']");
+                const secs = Number(restBtn?.getAttribute("data-rest")) || 60;
+                const nm = restBtn?.getAttribute("data-name") || (card.querySelector(".ex-name")?.textContent||"Descanso");
+                openTimer(`Descanso · ${nm}`, secs);
+              }
+              // pasa al siguiente pendiente
+              setTimeout(()=>{ gotoNextPending({ allowWrap:true }); }, 50);
+            }
           }
-const check = card.querySelector(".check");
+
+          const check = card.querySelector(".check");
           if(check){
             check.classList.toggle("done", next);
             const icon = check.querySelector("i");
