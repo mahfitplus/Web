@@ -1050,94 +1050,93 @@
   <!-- MAH FIT BOOT MODE -->
   <script>window.MAHFIT_BOOT_MODE = "core";
 /* =========================
-   ✅ APP BOTTOM BAR hooks
-   ========================= */
-function showAppBottomBar(show){
-  const bar = document.getElementById("appBottomBar");
-  if(!bar) return;
-  bar.style.display = show ? "" : "none";
-  // Evita que tape el contenido
-  if(window.matchMedia && window.matchMedia("(max-width:720px)").matches){
-    document.body.style.paddingBottom = show ? "140px" : "";
-  }else{
-    document.body.style.paddingBottom = "";
-  }
-}
-
-function syncBottomMeta(){
-  const top = document.getElementById("activeMeta")?.textContent || "0/0";
-  const bottom = document.getElementById("activeMetaBottom");
-  if(bottom) bottom.textContent = top;
-}
-
-document.getElementById("btnPrevExBottom")?.addEventListener("click", ()=> {
-  if(typeof gotoPrev === "function") gotoPrev();
-});
-
-document.getElementById("btnNextExBottom")?.addEventListener("click", ()=> {
-  if(typeof gotoNext === "function") gotoNext();
-});
-
-// Patch seguro: si existe updateActiveBar, lo envolvemos para mantener la barra sincronizada
-if(typeof updateActiveBar === "function" && !updateActiveBar.__mahfitPatched){
-  const __old = updateActiveBar;
-  updateActiveBar = function(){
-    const r = __old.apply(this, arguments);
-    try{
-      // activeMode suele existir; si no, inferimos por display del activeBar
-      const isActive = (typeof activeMode !== "undefined") ? !!activeMode : (document.getElementById("activeBar")?.style.display !== "none");
-      showAppBottomBar(false);
-      syncBottomMeta();
-
-      // deshabilitar botones según estado (si existen vars)
-      const bp = document.getElementById("btnPrevExBottom");
-      const bn = document.getElementById("btnNextExBottom");
-      if(typeof activeList !== "undefined" && typeof activeIndex !== "undefined"){
-        if(bp) bp.disabled = !(activeList.length && activeIndex > 0);
-        if(bn) bn.disabled = !(activeList.length && activeIndex < activeList.length - 1);
-      }
-    }catch(_){}
-    return r;
-  };
-  updateActiveBar.__mahfitPatched = true;
-}
-
-// En resize/orientation, re-aplica padding
-window.addEventListener("resize", ()=>{ 
-  try{
-    const isActive = (typeof activeMode !== "undefined") ? !!activeMode : false;
-    showAppBottomBar(isActive);
-  }catch(_){}
-});
-
-
-/* =========================
-   🔥 Mostrar APP Bottom Bar al iniciar rutina
+   ✅ REAL_NATIVE_BOTTOM_FIX
+   - En móvil: el ActiveBar de arriba NO debe mostrarse.
+   - En su lugar: mostrar AppBottomBar.
    ========================= */
 (function(){
+  const mql = window.matchMedia ? window.matchMedia("(max-width:720px)") : null;
+  function isMobile(){ return !!(mql && mql.matches); }
+
+  function showBottom(on){
+    const bar = document.getElementById("appBottomBar");
+    if(!bar) return;
+    const show = !!on && isMobile();
+    bar.style.display = show ? "" : "none";
+    // padding para que no tape contenido
+    document.body.style.paddingBottom = show ? "150px" : "";
+  }
+
+  function syncBottom(){
+    const top = document.getElementById("activeMeta")?.textContent || "0/0";
+    const bottom = document.getElementById("activeMetaBottom");
+    if(bottom) bottom.textContent = top;
+  }
+
+  function hideTopActiveBarIfMobile(){
+    const ab = document.getElementById("activeBar");
+    if(!ab) return;
+    if(isMobile() && (typeof activeMode !== "undefined") && activeMode){
+      ab.style.display = "none"; // ✅ fuerza real
+    }
+  }
+
+  // conecta botones abajo a tu lógica existente
+  document.getElementById("btnPrevExBottom")?.addEventListener("click", ()=> { if(typeof gotoPrev==="function") gotoPrev(); });
+  document.getElementById("btnNextExBottom")?.addEventListener("click", ()=> { if(typeof gotoNext==="function") gotoNext(); });
+
+  // Cuando se haga click en "Iniciar" -> mostrar barra abajo (solo móvil)
   function onStart(){
     try{
-      showAppBottomBar(true);
-      syncBottomMeta();
+      showBottom(true);
+      syncBottom();
+      hideTopActiveBarIfMobile();
     }catch(_){}
   }
 
-  // Caso 1: botón explícito
+  // listeners robustos
   document.getElementById("btnStart")?.addEventListener("click", onStart);
-
-  // Caso 2: botones con data-action
-  document.querySelectorAll('[data-action="start"]').forEach(b=>{
-    b.addEventListener("click", onStart);
-  });
-
-  // Caso 3: fallback por texto (robusto)
+  document.querySelectorAll('[data-action="start"]').forEach(b=> b.addEventListener("click", onStart));
   document.addEventListener("click", (e)=>{
-    const t = e.target.closest("button");
-    if(!t) return;
-    if((t.textContent || "").toLowerCase().includes("iniciar")){
-      onStart();
-    }
+    const b = e.target.closest("button");
+    if(!b) return;
+    if((b.textContent||"").trim().toLowerCase().includes("iniciar")) onStart();
   });
+
+  // Envolver updateActiveBar para mantener todo sincronizado y forzar ocultar arriba
+  if(typeof updateActiveBar === "function" && !updateActiveBar.__nativeDock){
+    const _old = updateActiveBar;
+    updateActiveBar = function(){
+      const r = _old.apply(this, arguments);
+      try{
+        const started = (typeof activeMode !== "undefined") ? !!activeMode : false;
+        showBottom(started);
+        syncBottom();
+
+        // disabled states
+        const bp = document.getElementById("btnPrevExBottom");
+        const bn = document.getElementById("btnNextExBottom");
+        if(typeof activeList !== "undefined" && typeof activeIndex !== "undefined"){
+          if(bp) bp.disabled = !(activeList.length && activeIndex > 0);
+          if(bn) bn.disabled = !(activeList.length && activeIndex < activeList.length - 1);
+        }
+
+        hideTopActiveBarIfMobile();
+      }catch(_){}
+      return r;
+    };
+    updateActiveBar.__nativeDock = true;
+  }
+
+  // si cambia el tamaño (rotación), re-aplica
+  window.addEventListener("resize", ()=>{ 
+    try{
+      const started = (typeof activeMode !== "undefined") ? !!activeMode : false;
+      showBottom(started);
+      hideTopActiveBarIfMobile();
+    }catch(_){}
+  });
+
 })();
 
 </script>
@@ -2515,9 +2514,7 @@ function fmtMMSS(sec){
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- ✅ APP BOTTOM BAR (mobile) - Prev / Meta / Next -->
-  
-  <!-- ✅ APP BOTTOM BAR (mobile) - estilo app nativa -->
+  <!-- ✅ APP NATIVE BOTTOM BAR (solo móvil, aparece al iniciar) -->
   <div class="appBottomBar" id="appBottomBar" style="display:none;">
     <div class="appPill" role="group" aria-label="Navegación de ejercicios">
       <button class="appNavBtn" id="btnPrevExBottom" type="button" aria-label="Anterior">
@@ -2534,12 +2531,6 @@ function fmtMMSS(sec){
         <i class="fas fa-chevron-right" aria-hidden="true"></i>
       </button>
     </div>
-  </div>
-</div>
-
-    <button class="appNavBtn" id="btnNextExBottom" type="button" aria-label="Siguiente">
-      <i class="fas fa-chevron-right" aria-hidden="true"></i>
-    </button>
   </div>
 
 </body>
