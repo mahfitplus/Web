@@ -189,6 +189,95 @@
     }
     .card-body{ padding:16px; }
 
+    /* ===== Days accordion (App-like) ===== */
+    .days-accordion{ display:flex; flex-direction:column; gap:14px; }
+    .day-card{
+      background: rgba(255,255,255,.96);
+      border:1px solid var(--stroke);
+      border-radius: 18px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.06);
+      overflow:hidden;
+    }
+    .day-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 14px;
+      background: linear-gradient(180deg, rgba(124,92,255,.08), rgba(124,92,255,.00));
+    }
+    .day-left{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .day-title{
+      font-weight: 950;
+      letter-spacing: -.2px;
+      font-size: 15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .day-sub{ font-size:12px; color:var(--txt-muted); font-weight:800; }
+    .day-right{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .day-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(90,103,216,.20);
+      background: rgba(90,103,216,.10);
+      color: var(--brand);
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .day-toggle{
+      width:40px; height:40px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.9);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      transition: var(--transition);
+    }
+    .day-card.open .day-toggle{ transform: rotate(180deg); }
+
+    .day-body{ padding: 0 14px 14px; display:none; }
+    .day-card.open .day-body{ display:block; }
+
+    .day-actions{ display:flex; gap:10px; margin: 10px 0 12px; }
+    .start-day{
+      flex: 1;
+      height: 44px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(90,103,216,1), rgba(124,92,255,1));
+      color: #fff;
+      font-weight: 950;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      box-shadow: 0 10px 24px rgba(90,103,216,.25);
+    }
+    .start-day.secondary{
+      background: rgba(90,103,216,.10);
+      color: var(--brand);
+      border: 1px solid rgba(90,103,216,.22);
+      box-shadow: none;
+    }
+    .day-exercises{ display:none; }
+    .day-card.open .day-exercises{ display:block; }
+    .day-card.started .day-exercises{ display:block; }
+
+    /* Make long exercise names in the dock look native (2-line clamp) */
+    .dock-title{
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+
+    @media (max-width: 520px){
+      .day-sub{ display:none; }
+    }
+
     /* WEEK TABS */
     .weekbar{
       display:flex;
@@ -356,6 +445,19 @@
       min-width:120px;
       user-select:none;
     }
+
+    /* Botón mini solo-ícono (para flechas, etc.) */
+    .mini.icon{
+      min-width:44px;
+      width:44px;
+      height:40px;
+      padding:0;
+      border-radius:12px;
+      gap:0;
+    }
+    .mini.icon i{ font-size:14px; }
+
+    /* (duplicado eliminado) */
     .mini:hover{ background:var(--surface-3); }
     .mini.success{
       background: rgba(43,213,118,.10);
@@ -789,62 +891,162 @@
 
 
         /* =========================
-       ✅ ENTRENAMIENTO ACTIVO (APP STORE)
-       - Sticky SOLO cuando "Iniciar"
-       - Efecto premium al quedar "pegado"
-       - Top responsivo (móvil vs desktop)
+       ✅ ENTRENAMIENTO ACTIVO (NATIVE DOCK)
+       - Dock fijo ABAJO (tipo app nativa)
+       - Nombre del ejercicio protagonista (2 líneas)
+       - Safe-area para iPhone + blur premium
        ========================= */
-    :root{
-      --activeTop: 86px;      /* desktop */
-      --activeTopMobile: 14px; /* móvil */
-    }
+
+    /* deja espacio para el dock */
+    body{ padding-bottom: 140px; }
 
     .activeBar{
-      margin: 14px 18px 0;
-      padding: 12px 14px;
-      border: 1px solid var(--stroke);
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(90,103,216,.10), rgba(255,255,255,.78));
-      box-shadow: 0 10px 24px rgba(0,0,0,.08);
-      backdrop-filter: blur(10px);
+      /* Dock fijo abajo */
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 200;
 
-      /* por defecto: NO sticky */
-      position: relative;
-      top: auto;
-      z-index: 20;
+      margin: 0;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+
+      border-top: 1px solid rgba(0,0,0,.06);
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 18px 18px 0 0;
+
+      background: rgba(255,255,255,.86);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 -10px 30px rgba(0,0,0,.10);
 
       /* micro-motion */
-      transform: translateY(4px);
+      transform: translateY(18px);
       opacity: 0;
       pointer-events: none;
-      transition: transform .18s ease, opacity .18s ease, box-shadow .18s ease, border-color .18s ease;
+      transition: transform .18s ease, opacity .18s ease, box-shadow .18s ease;
     }
 
-    /* visible cuando estás en modo activo */
+    .activeInner{
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Visible cuando estás en modo activo */
     .activeBar.is-visible{
       transform: translateY(0);
       opacity: 1;
       pointer-events: auto;
     }
 
-    /* sticky solo si está activo */
-    .activeBar.is-sticky{
-      position: sticky;
-      top: var(--activeTop);
-      z-index: 60;
+    /* Mantén compatibilidad con clases existentes de app.js */
+    .activeBar.is-sticky{ position: fixed; }
+    .activeBar.is-stuck{ box-shadow: 0 -14px 36px rgba(0,0,0,.14); }
+
+    /* Layout interno */
+    .activeTop{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.activeTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  width:100%;
+}
+
+    .activeTitle .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(90,103,216,.25);
+      background: rgba(90,103,216,.10);
+      color: var(--brand);
+      font-size:12px;
+      font-weight:1000;
+      flex-shrink:0;
+      margin-top: 2px;
     }
 
-    /* estado "pegado" (cuando el scroll ya pasó el umbral) */
-    .activeBar.is-stuck{
-      border-color: rgba(90,103,216,.28);
-      box-shadow: 0 14px 34px rgba(0,0,0,.12);
+    /* 🔥 Nombre protagonista (2 líneas, corte elegante) */
+.activeTitle strong{
+  font-size:16px;
+  font-weight:1000;
+  letter-spacing:-.2px;
+  color: var(--txt);
+  line-height: 1.2;
+
+  min-width:0;
+  flex:1 1 auto;
+
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  word-break: normal;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  margin-top: 1px;
+}
+
+    .activeRight{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+.activeRight .switch{ margin-right:auto; }
+
+    .switch{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.88);
+      font-size:12px;
+      font-weight:1000;
+      color:var(--txt-2);
+      user-select:none;
+    }
+    .switch input{ width:16px; height:16px; }
+    .switch span{ white-space:nowrap; }
+
+    .activeProg{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+    .activeTrack{
+      flex:1;
+      height:8px;
+      background: rgba(233,236,239,.95);
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(233,236,239,.9);
+    }
+    .activeFill{
+      height:100%;
+      background: linear-gradient(90deg, rgba(90,103,216,.95), rgba(35,166,255,.95));
+    }
+    .activeMeta{
+      min-width:52px;
+      text-align:right;
+      font-size:12px;
+      font-weight:1000;
+      color:var(--txt-muted);
     }
 
+    /* Ajustes mobile */
     @media (max-width:720px){
-      .activeBar.is-sticky{ top: var(--activeTopMobile); }
-      .activeBar{ margin: 12px 12px 0; }
-      .activeTitle strong{ max-width: 260px; }
-      .activeRight{ gap:6px; }
+      body{ padding-bottom: 150px; }
+      .activeRight{ gap:8px; }
+    }
+    @media (max-width:420px){
+      .switch span{ display:none; }
     }
 
 .ex.active{
@@ -962,23 +1164,25 @@
 
       <!-- ✅ ENTRENAMIENTO ACTIVO (PRO) -->
       <div class="activeBar" id="activeBar" style="display:none;" role="region" aria-label="Entrenamiento activo">
-        <div class="activeTop">
-          <div class="activeTitle">
-            <span class="pill"><i class="fas fa-bolt" aria-hidden="true"></i> Activo</span>
-            <strong id="activeName">—</strong>
+        <div class="activeInner">
+          <div class="activeTop">
+            <div class="activeTitle">
+              <span class="pill"><i class="fas fa-bolt" aria-hidden="true"></i> Activo</span>
+              <strong id="activeName">—</strong>
+            </div>
+            <div class="activeRight">
+              <label class="switch" title="Auto descanso">
+                <input type="checkbox" id="toggleAutoRest" checked>
+                <span>Auto descanso</span>
+              </label>
+              <button class="mini icon ghost" id="btnPrevEx" title="Anterior" aria-label="Ejercicio anterior"><i class="fas fa-chevron-left"></i></button>
+              <button class="mini icon ghost" id="btnNextEx" title="Siguiente" aria-label="Ejercicio siguiente"><i class="fas fa-chevron-right"></i></button>
+            </div>
           </div>
-          <div class="activeRight">
-            <label class="switch" title="Auto descanso">
-              <input type="checkbox" id="toggleAutoRest" checked>
-              <span>Auto descanso</span>
-            </label>
-            <button class="mini ghost" id="btnPrevEx" title="Anterior"><i class="fas fa-chevron-left"></i></button>
-            <button class="mini ghost" id="btnNextEx" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+          <div class="activeProg">
+            <div class="activeTrack"><div class="activeFill" id="activeFill" style="width:0%"></div></div>
+            <div class="activeMeta" id="activeMeta">0/0</div>
           </div>
-        </div>
-        <div class="activeProg">
-          <div class="activeTrack"><div class="activeFill" id="activeFill" style="width:0%"></div></div>
-          <div class="activeMeta" id="activeMeta">0/0</div>
         </div>
       </div>
 
@@ -989,6 +1193,8 @@
             <p>Cargando rutina…</p>
           </div>
         </div>
+
+        <div id="feedbackHome"></div>
 
         <div class="feedback" id="feedbackBox" style="display:none;">
           <div class="fb-title">
@@ -1438,8 +1644,12 @@ const DAYS = [
       const stateKey = (suffix)=> `mahfit_routine_${suffix}_${String(user.rut||"").toUpperCase()}`;
       const doneKey = stateKey(`done_${weekStamp}`);
       const fbKey   = stateKey(`feedback_${weekStamp}`);
+      const openDayKey = stateKey(`openDay_${weekStamp}`);
+      const startedDayKey = stateKey(`startedDay_${weekStamp}`);
 
       let activeDay = todayKey;
+
+      function getTodayKey(){ return todayKey; }
 
       function getWeekStamp(){
         const d = new Date();
@@ -1479,8 +1689,15 @@ const DAYS = [
       let activeIndex = -1;   // índice en activeList
 
       function collectActiveList(){
-        activeList = [...wrap.querySelectorAll(".ex")];
-        // asegúrate que activeDay filtre bien (ya viene filtrado por buildRoutineDom)
+        // ✅ Solo recorre el día iniciado (startedDay). Si no hay día iniciado, usa el día abierto o hoy.
+        const started = lsGet(startedDayKey, "") || "";
+        const open = lsGet(openDayKey, "") || "";
+        const dayKey = (activeMode ? (started || activeDay || open) : (started || open || activeDay)) || "";
+        if(dayKey){
+          activeList = [...wrap.querySelectorAll(`.ex[data-daykey="${dayKey}"]`)];
+        }else{
+          activeList = [...wrap.querySelectorAll(".ex")];
+        }
         return activeList;
       }
 
@@ -1673,8 +1890,10 @@ function setActiveMode(on){
       }
 
       // Hook UI active mode
+      // ✅ Iniciar = inicia el día abierto (o el de hoy si no hay uno abierto)
       $("#btnStartActive")?.addEventListener("click", ()=>{
-        setActiveMode(true);
+        const key = lsGet(openDayKey) || activeDay || todayKey;
+        try{ startDay(key); }catch(_){ setActiveMode(true); }
       });
       $("#btnStopActive")?.addEventListener("click", ()=>{
         setActiveMode(false);
@@ -2033,20 +2252,9 @@ async function ensureExercises(){
 
       function renderWeekChips(){
         const box = $("#weekChips");
-        box.innerHTML = DAYS.map(d => {
-          const cls = d.k === activeDay ? "chip active" : "chip";
-          return `<div class="${cls}" role="button" tabindex="0" data-day="${d.k}">${d.t}</div>`;
-        }).join("");
-
-        box.querySelectorAll(".chip").forEach(ch=>{
-          const onPick = ()=>{
-            activeDay = ch.dataset.day;
-            renderWeekChips();
-            buildRoutineDom();
-          };
-          ch.addEventListener("click", onPick);
-          ch.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onPick(); } });
-        });
+        // ✅ Reemplazado por días desplegables (accordion)
+        box.style.display = "none";
+        box.innerHTML = "";
       }
 
       $("#btnReset").addEventListener("click", ()=>{
@@ -2228,7 +2436,8 @@ function fmtMMSS(sec){
         const fbText = $("#fbText");
         const savedMsg = $("#fbSavedMsg");
 
-        fbBox.style.display = "block";
+        // se muestra solo dentro del día iniciado
+        fbBox.style.display = "none";
         stars.innerHTML = Array.from({length:5}).map((_,i)=>{
           const v = i+1;
           const active = (feedback.rating||0) >= v ? "star active" : "star";
@@ -2240,6 +2449,7 @@ function fmtMMSS(sec){
             feedback.rating = Number(st.dataset.v)||0;
             lsSet(fbKey, feedback);
             renderFeedback();
+        mountFeedbackIntoStartedDay();
             savedMsg.style.display="none";
           };
           st.addEventListener("click", set);
@@ -2255,6 +2465,29 @@ function fmtMMSS(sec){
           setTimeout(()=> savedMsg.style.display="none", 1800);
         };
       }
+      function mountFeedbackIntoStartedDay(){
+        const fbBox = $("#feedbackBox");
+        const home = $("#feedbackHome");
+        if(!fbBox) return;
+
+        // por defecto: vuelve a "home" y queda oculto
+        if(home && fbBox.parentElement !== home){
+          home.appendChild(fbBox);
+        }
+        fbBox.style.display = "none";
+
+        const started = lsGet(startedDayKey, "") || "";
+        if(!started) return;
+
+        const daySection = wrap.querySelector(`.day-card[data-daykey="${started}"]`);
+        const target = daySection?.querySelector(".day-body");
+        if(!target) return;
+
+        // mover el feedback dentro del día iniciado (debajo de ejercicios)
+        target.appendChild(fbBox);
+        fbBox.style.display = "block";
+      }
+
 
       const wrap = $("#routineWrap");
 
@@ -2284,17 +2517,19 @@ function fmtMMSS(sec){
         }
 
         const dias = routine.dias.slice();
-        const filtered = dias.filter(d=>{
-          const key = normalizeDayLabel(d.dia || d.dayLabel || "");
-          return key ? key === activeDay : true;
-        });
-        const listToShow = filtered.length ? filtered : dias;
 
-        updateMeta(dias.length, listToShow.length);
+        // ✅ App-like: days are accordions and START decides what day to run
+        const todayKey = getTodayKey();
+        const openKey = lsGet(openDayKey) || activeDay || todayKey || normalizeDayLabel(dias[0]?.dia||"") || "";
+        const startedKey = lsGet(startedDayKey) || (activeMode ? (activeDay||openKey) : "");
+
+        // update meta: show total days, done count
+        updateMeta(dias.length, dias.length);
 
         const parts = [];
-        listToShow.forEach((d, dayIdx) => {
+        dias.forEach((d, dayIdx) => {
           const dia = d.dia || `Día ${dayIdx+1}`;
+          const dayKey = normalizeDayLabel(dia) || String(dayIdx+1);
           const enfoque = Array.isArray(d.enfoque) ? d.enfoque.join(" + ") : (d.enfoque || "");
           const ejercicios = Array.isArray(d.ejercicios) ? d.ejercicios : [];
 
@@ -2331,7 +2566,7 @@ function fmtMMSS(sec){
                 </div>` : "";
 
               return `
-                <div class="ex" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
+                <div class="ex" data-daykey="${escapeAttr(dayKey)}" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
                   <div class="ex-left">
                     <div class="check ${isDone ? "done":""}" title="Marcar realizado" role="button" tabindex="0" data-action="toggle">
                       <i class="fas ${isDone ? "fa-check" : "fa-minus"}" aria-hidden="true"></i>
@@ -2369,24 +2604,45 @@ function fmtMMSS(sec){
             exHtml = `<div class="empty-state" style="padding:22px 12px;"><p>Sin ejercicios.</p></div>`;
           }
 
+          const isOpen = (dayKey === openKey);
+          const isStarted = (dayKey === startedKey);
+
           parts.push(`
-            <div class="workout-day">
-              <div class="workout-header">
-                <div>
-                  <div class="workout-title">${escapeHtml(dia)}</div>
-                  <div style="font-size:12px;color:var(--txt-muted);font-weight:800;margin-top:4px;">
-                    ${enfoque ? `Enfoque: ${escapeHtml(enfoque)}` : "Enfoque: —"}
-                  </div>
+            <section class="day-card ${isOpen ? "open" : ""} ${isStarted ? "started" : ""}" data-daykey="${escapeAttr(dayKey)}" data-dayidx="${dayIdx}">
+              <header class="day-head" role="button" tabindex="0" aria-expanded="${isOpen ? "true" : "false"}">
+                <div class="day-left">
+                  <div class="day-title">${escapeHtml(dia)}</div>
+                  <div class="day-sub">${enfoque ? escapeHtml(enfoque) : "Enfoque: —"}</div>
                 </div>
-                <div class="workout-focus">${enfoque ? escapeHtml(enfoque) : "—"}</div>
+                <div class="day-right">
+                  <span class="day-pill">${isStarted ? "En curso" : ""}</span>
+                  <button class="day-toggle" type="button" aria-label="Desplegar">
+                    <i class="fas ${isOpen ? "fa-chevron-up" : "fa-chevron-down"}" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </header>
+
+              <div class="day-body">
+                <div class="day-actions">
+                  <button class="start-day" type="button" data-action="start-day">
+                    <i class="fas fa-play" aria-hidden="true"></i> Iniciar entrenamiento
+                  </button>
+                  <button class="start-day secondary" type="button" data-action="open-only">
+                    Ver
+                  </button>
+                </div>
+
+                <div class="day-exercises">
+                  ${exHtml}
+                </div>
               </div>
-              ${exHtml}
-            </div>
+            </section>
           `);
         });
 
-        wrap.innerHTML = parts.join("");
+        wrap.innerHTML = `<div class="days-accordion">${parts.join("")}</div>`;
         renderFeedback();
+        mountFeedbackIntoStartedDay();
         // ✅ refresca estado de Entrenamiento Activo
         collectActiveList();
         if(activeMode){
@@ -2398,7 +2654,47 @@ function fmtMMSS(sec){
 
       }
 
+      function setOpenDay(dayKey){
+        if(!dayKey){
+          localStorage.removeItem(openDayKey);
+        }else{
+          lsSet(openDayKey, dayKey);
+        }
+        buildRoutineDom();
+      }
+
+      function startDay(dayKey){
+        if(!dayKey) return;
+
+        // ✅ El día iniciado define el "scope" del dock (prev/next) + feedback
+        activeDay = dayKey;
+        lsSet(startedDayKey, dayKey);
+        lsSet(openDayKey, dayKey);
+
+        // 1) Renderiza el día abierto (accordion + ejercicios)
+        buildRoutineDom();
+
+        // 2) Activa modo entrenamiento y salta ALTIRO al primer pendiente del día iniciado
+        //    (esto también muestra el dock + scroll suave al ejercicio)
+        setTimeout(()=>{
+          setActiveMode(true);
+          // por si acaso, recalcula sticky
+          try{ document.getElementById("activeBar")?.__mahfitRecalcSticky?.(); }catch(_){}
+        }, 30);
+      }
+
+
       wrap.addEventListener("click", (e)=>{
+        // click en header del día para desplegar
+        const dayHead = e.target.closest(".day-head");
+        if(dayHead){
+          const dayCard = dayHead.closest(".day-card");
+          const key = dayCard?.getAttribute("data-daykey") || "";
+          const curr = lsGet(openDayKey) || "";
+          setOpenDay(curr === key ? "" : key);
+          return;
+        }
+
         const btn = e.target.closest("[data-action], [data-tech]");
         if(!btn) return;
 
@@ -2410,6 +2706,16 @@ function fmtMMSS(sec){
         }
 
         const action = btn.getAttribute("data-action");
+
+        // ✅ acciones del accordion
+        if(action === "start-day" || action === "open-only"){
+          const dayCard = btn.closest(".day-card");
+          const key = dayCard?.getAttribute("data-daykey") || "";
+          if(action === "open-only") setOpenDay(key);
+          else startDay(key);
+          return;
+        }
+
         const card = btn.closest(".ex");
         if(!card) return;
         const id = card.getAttribute("data-exid");
@@ -2455,7 +2761,7 @@ function fmtMMSS(sec){
             const icon = check.querySelector("i");
             if(icon) icon.className = `fas ${next ? "fa-check" : "fa-minus"}`;
           }
-          updateMeta((routine?.dias||[]).length, (wrap.querySelectorAll(".workout-day")||[]).length);
+          updateMeta((routine?.dias||[]).length, (routine?.dias||[]).length);
           checkRoutineCompleted();
         }
       });
