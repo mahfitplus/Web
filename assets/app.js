@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbz4QYwxcqQY5hvfJPlpc1KVv55h7wE42kdnw_--pqhCG5pEwWAtv0OudOwUveiyAzxklw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyrhomW_sCNnAmh9Z_RXH3v4Mj09mPmuzqSUYgxx3iwws0cC4a6923XyK25cK8F38Xvsw/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -371,7 +371,20 @@ function getCardioLog(){ return LS.get("mahfit_cardio_log", []); }
 function setCardioLog(v){ LS.set("mahfit_cardio_log", v); }
 
 function getBodyLog(){ return LS.get("mahfit_body_log", []); }
-function setBodyLog(v){ LS.set("mahfit_body_log", v); }
+function setBodyLog(v){ LS.set("mahfit_body_log", v); // ✅ WORKOUT_SETS_LOG (historial por ejercicio)
+function getWorkoutSetsLog(){ return LS.get("mahfit_workout_sets_log", []); }
+function setWorkoutSetsLog(v){ LS.set("mahfit_workout_sets_log", v); }
+
+// filtra por socio + ejercicio
+function workoutSetsForExercise(rutSocio, ejercicioId){
+  const r = normalizeRut(rutSocio);
+  return (getWorkoutSetsLog() || []).filter(x =>
+    normalizeRut(x.rut_socio) === r &&
+    String(x.ejercicio_id) === String(ejercicioId)
+  );
+}
+
+}
 
 // ✅ NUEVO: EVALUATIONS cache
 function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
@@ -733,6 +746,15 @@ async function syncDown(){
     // Si todavía no existe la hoja/resource, no frenamos el syncDown
     console.warn("[EXERCISES] syncDown omitido:", err && err.message ? err.message : err);
   }
+
+  // ✅ WORKOUT_SETS_LOG (historial por ejercicio) — opcional (no rompe si aún no existe)
+  try{
+    const ws = await apiGet("WORKOUT_SETS_LOG");
+    setWorkoutSetsLog(ws.workout_sets_log || []);
+  }catch(err){
+    console.warn("[WORKOUT_SETS_LOG] syncDown omitido:", err && err.message ? err.message : err);
+  }
+
 
 
 
@@ -1248,6 +1270,10 @@ async function refreshLogs(){
 })();
 
 // ---------------- Exponer helpers globales ----------------
+// ✅ WORKOUT_SETS_LOG exposed
+window.getWorkoutSetsLog = getWorkoutSetsLog;
+window.workoutSetsForExercise = workoutSetsForExercise;
+
 window.API_URL = API_URL;
 window.apiGet = apiGet;
 window.apiPost = apiPost;
@@ -1320,4 +1346,3 @@ window.API_URL = API_URL;
 
 // ✅ helper público (no rompe nada)
 window.mhfNormText = mhfNormText;
-
