@@ -3439,50 +3439,196 @@ function fmtMMSS(sec){
         updateStreakUI();
       }
 
-      // RPE modal logic
+      
+      // RPE + Peso/Reps/Nota (registro por ejercicio)
       let rpeCtx = null; // { exid, dayKey, name }
-      function openRPE(exid, name, dayKey){
-        rpeCtx = { exid, name, dayKey };
-        const bd = document.getElementById("rpeBackdrop");
-        const sub = document.getElementById("rpeSub");
-        if(sub) sub.textContent = `Ejercicio: ${name || "—"}`;
-        if(bd){
-          bd.style.display = "flex";
+      let rpeSelected = "mid";
+
+      function normNum(v){
+        if(v==null) return "";
+        const s = String(v).trim().replace(",", ".");
+        const n = parseFloat(s);
+        return Number.isFinite(n) ? n : "";
+      }
+      function normInt(v){
+        if(v==null) return "";
+        const s = String(v).trim();
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) ? n : "";
+      }
+
+      const LS_WEIGHT_MAP = "mahfit_weight_v1";
+
+      function getLastSet(exid){
+        const map = readJSON(LS_WEIGHT_MAP, {});
+        return map?.[exid] || null;
+      }
+      function setLastSet(exid, obj){
+        const map = readJSON(LS_WEIGHT_MAP, {});
+        map[exid] = obj;
+        writeJSON(LS_WEIGHT_MAP, map);
+      }
+
+      function setRpeUI(val){
+        rpeSelected = val || "mid";
+        const row = document.getElementById("rpeRow");
+        if(!row) return;
+        row.querySelectorAll("[data-rpe]").forEach(btn=>{
+          const v = btn.getAttribute("data-rpe");
+          if(v === rpeSelected){
+            btn.classList.add("primary");
+          }else{
+            btn.classList.remove("primary");
+          }
+        });
+      }
+
+      async function postLogWorkoutSet(payload){
+        // Usa API_URL del archivo o la que venga desde app.js (window.API_URL)
+        const url = (typeof API_URL !== "undefined" && API_URL) ? API_URL : (window.API_URL || "");
+        if(!url){
+          showToast("API_URL no configurada", 1800);
+          return { ok:false, error:"no_api" };
+        }
+        try{
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type":"text/plain;charset=utf-8" },
+            body: JSON.stringify({ action:"LOG_WORKOUT_SET", ...payload })
+          });
+          const data = await res.json().catch(()=> ({}));
+          if(data && (data.ok || data.status === "ok")) return { ok:true, data };
+          return { ok:false, data };
+        }catch(e){
+          return { ok:false, error:String(e) };
         }
       }
+
+      function openRPE(exid, name, dayKey){
+        rpeCtx = { exid, name, dayKey };
+        rpeSelected = "mid";
+        setRpeUI("mid");
+
+        const bd = document.getElementById("rpeBackdrop");
+        const sub = document.getElementById("rpeSub");
+        const w = document.getElementById("rpeWeight");
+        const r = document.getElementById("rpeReps");
+        const n = document.getElementById("rpeNote");
+
+        if(sub) sub.textContent = `Ejercicio: ${name || "—"}`;
+
+        // Prefill con última vez
+        const last = getLastSet(exid);
+        if(w) w.value = (last?.peso_kg ?? "");
+        if(r) r.value = (last?.reps ?? "");
+        if(n) n.value = "";
+
+        if(bd){
+          bd.style.display = "flex";
+          document.body.style.overflow = "hidden";
+        }
+      }
+
       function closeRPE(){
         const bd = document.getElementById("rpeBackdrop");
         if(bd) bd.style.display = "none";
+        document.body.style.overflow = "";
         rpeCtx = null;
       }
-      document.addEventListener("click", (e)=>{
+
+      document.addEventListener("click", async (e)=>{
         const t = e.target;
+
         if(t?.id === "rpeClose") return closeRPE();
         if(t?.id === "rpeBackdrop" && e.target === t) return closeRPE();
-        const b = t?.closest?.("[data-rpe]");
-        if(!b || !rpeCtx) return;
 
-        const val = b.getAttribute("data-rpe");
-        const map = readJSON(LS_RPE_KEY, {});
-        map[rpeCtx.exid] = { val, at: Date.now(), day: rpeCtx.dayKey || "" };
-        writeJSON(LS_RPE_KEY, map);
-
-        // 2x "hard" rule of thumb
-        const hist = readJSON(LS_RPE_HISTORY_KEY, []);
-        hist.push({ exid: rpeCtx.exid, val, at: Date.now() });
-        while(hist.length > 30) hist.shift();
-        writeJSON(LS_RPE_HISTORY_KEY, hist);
-        const lastTwo = hist.slice(-2).filter(x=>x.exid === rpeCtx.exid);
-        if(lastTwo.length === 2 && lastTwo.every(x=>x.val === "hard")){
-          showToast("Sugerencia: ajusta peso/volumen (2x Difícil).");
-        }else{
-          showToast("RPE guardado ✅");
+        const pick = t?.closest?.("[data-rpe]");
+        if(pick){
+          const val = pick.getAttribute("data-rpe");
+          setRpeUI(val);
+          haptic(val === "hard" ? 26 : (val === "mid" ? 18 : 12));
+          return;
         }
-        haptic(15);
-        closeRPE();
+
+        if(t?.id === "rpeSkip"){
+          showToast("Registro omitido");
+          haptic(10);
+          return closeRPE();
+        }
+
+        if(t?.id === "rpeSave"){
+          if(!rpeCtx) return;
+
+          const peso_kg = normNum(document.getElementById("rpeWeight")?.value);
+          const reps = normInt(document.getElementById("rpeReps")?.value);
+          const comentario = (document.getElementById("rpeNote")?.value || "").trim();
+
+          // Guardar local RPE
+          const map = readJSON(LS_RPE_KEY, {});
+          map[rpeCtx.exid] = { val: rpeSelected, at: Date.now(), day: rpeCtx.dayKey || "" };
+          writeJSON(LS_RPE_KEY, map);
+
+          // Guardar último set local (prefill futuro)
+          setLastSet(rpeCtx.exid, { peso_kg, reps });
+
+          // 2x "hard" sugerencia
+          const hist = readJSON(LS_RPE_HISTORY_KEY, []);
+          hist.push({ exid: rpeCtx.exid, val: rpeSelected, at: Date.now() });
+          while(hist.length > 30) hist.shift();
+          writeJSON(LS_RPE_HISTORY_KEY, hist);
+          const lastTwo = hist.slice(-2).filter(x=>x.exid === rpeCtx.exid);
+          const suggest = (lastTwo.length === 2 && lastTwo.every(x=>x.val === "hard"));
+
+          // Payload para Sheets
+          const payload = {
+            fecha: getTodayISO(),
+            rut_socio: (window.user?.rut || window.user?.rut_socio || window.user?.id || "").toString(),
+            dia: rpeCtx.dayKey || "",
+            ejercicio_id: rpeCtx.exid || "",
+            ejercicio_nombre: rpeCtx.name || "",
+            peso_kg: (peso_kg === "" ? "" : peso_kg),
+            reps: (reps === "" ? "" : reps),
+            rpe: rpeSelected,
+            comentario: comentario,
+            timestamp: Date.now()
+          };
+
+          // Si no hay rut, igual guarda local y no revienta
+          if(!payload.rut_socio){
+            showToast("Guardado local (sin RUT)");
+            if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
+            haptic(18);
+            closeRPE();
+            return;
+          }
+
+          // Enviar al backend
+          const btn = t;
+          const oldTxt = btn.textContent;
+          btn.textContent = "Guardando...";
+          btn.disabled = true;
+
+          const res = await postLogWorkoutSet(payload);
+
+          btn.disabled = false;
+          btn.textContent = oldTxt;
+
+          if(res.ok){
+            showToast("Registro guardado ✅");
+            if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
+            haptic(18);
+            closeRPE();
+          }else{
+            showToast("No se pudo guardar (offline).");
+            haptic(12);
+            // Deja guardado local igual
+            closeRPE();
+          }
+        }
       });
 
-      // Tips: show small tip box if exercise has data-tip (from catalog)
+      // Tips:
+ // Tips: show small tip box if exercise has data-tip (from catalog)
       function ensureTipBox(card){
         let box = card.querySelector(".tip-box");
         if(!box){
@@ -3899,6 +4045,53 @@ document.addEventListener("mousedown", (e)=>{
 
 
 <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:10000;display:none;"></canvas>
+
+
+<div id="rpeBackdrop" role="dialog" aria-modal="true" aria-labelledby="rpeTitle">
+  <div id="rpeModal">
+    <header>
+      <div class="ttl" id="rpeTitle">Registro del ejercicio</div>
+      <button class="cls" id="rpeClose" aria-label="Cerrar">✕</button>
+    </header>
+    <div class="body">
+      <div id="rpeSub" style="font-weight:900; opacity:.92;">Ejercicio: —</div>
+      <div style="margin-top:6px; font-size:12px; opacity:.75;" id="rpeMeta">Completa tu registro para llevar historial.</div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px;">
+        <label style="display:block;">
+          <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Peso usado (kg)</div>
+          <input id="rpeWeight" inputmode="decimal" placeholder="Ej: 75" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:900;">
+        </label>
+        <label style="display:block;">
+          <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Reps reales</div>
+          <input id="rpeReps" inputmode="numeric" placeholder="Ej: 12" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:900;">
+        </label>
+      </div>
+
+      <div style="margin-top:12px; font-weight:900; opacity:.86;">Esfuerzo (RPE)</div>
+      <div class="rpeRow" id="rpeRow" style="margin-top:10px;">
+        <button class="rpeBtn" data-rpe="easy">😌 Fácil</button>
+        <button class="rpeBtn primary" data-rpe="mid">😐 Medio</button>
+        <button class="rpeBtn" data-rpe="hard">😮‍💨 Difícil</button>
+      </div>
+
+      <label style="display:block; margin-top:12px;">
+        <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Nota (opcional)</div>
+        <input id="rpeNote" maxlength="80" placeholder="Ej: última serie costó" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:700;">
+      </label>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="rpeBtn" id="rpeSkip" style="flex:1;">Omitir</button>
+        <button class="rpeBtn primary" id="rpeSave" style="flex:1;">Guardar</button>
+      </div>
+
+      <div style="margin-top:10px; font-size:12px; opacity:.75;">
+        Tip: si marcas “Difícil” 2 veces seguidas, sugeriremos ajustar carga/volumen.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 
 </body>
 </html>
