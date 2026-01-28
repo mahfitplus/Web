@@ -1120,6 +1120,139 @@
   line-height: 1.35;
 }
 
+
+/* =======================
+   ULTRA PRO ADD-ONS
+   ======================= */
+
+/* Skeleton loader */
+.skel-wrap{ padding:14px; }
+.skel-card{
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0;
+  background: rgba(255,255,255,.75);
+  overflow:hidden;
+}
+.skel-line{ height:12px; border-radius:10px; background: rgba(0,0,0,.06); margin:10px 0; }
+.skel-line.w60{ width:60%; }
+.skel-line.w40{ width:40%; }
+.skel-img{ height:120px; border-radius:14px; background: rgba(0,0,0,.06); margin-top:10px; }
+@media (prefers-reduced-motion: no-preference){
+  .skel-card, .skel-line, .skel-img{
+    position:relative;
+  }
+  .skel-card::after, .skel-line::after, .skel-img::after{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    transform: translateX(-100%);
+    animation: skelShine 1.1s infinite;
+  }
+  @keyframes skelShine{
+    to{ transform: translateX(100%); }
+  }
+}
+
+/* Toast */
+#toast{
+  position: fixed; left: 50%; bottom: 88px;
+  transform: translateX(-50%);
+  background: rgba(17,24,39,.88);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 12px 35px rgba(0,0,0,.25);
+  display:none;
+  z-index: 9999;
+}
+
+/* Tips */
+.tip-box{
+  margin-top: 10px;
+  background: rgba(124,92,255,.08);
+  border: 1px solid rgba(124,92,255,.18);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: rgba(31,42,68,.92);
+  display:none;
+}
+.tip-box .t{ font-weight: 900; margin-bottom:4px; }
+.tip-box .b{ font-size: 13px; line-height: 1.35; }
+
+/* RPE mini modal */
+#rpeBackdrop{
+  position: fixed; inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background: rgba(15,22,35,.45);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  padding: 16px;
+}
+#rpeModal{
+  width: min(460px, 100%);
+  background: rgba(255,255,255,.94);
+  border: 1px solid rgba(124,92,255,.22);
+  border-radius: 18px;
+  box-shadow: 0 18px 55px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+#rpeModal header{
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(124,92,255,.14), rgba(35,166,255,.10));
+  display:flex; justify-content: space-between; align-items:center;
+}
+#rpeModal .ttl{ font-weight: 900; color: rgba(31,42,68,.95); }
+#rpeModal .cls{
+  width:38px; height:38px; border-radius: 14px;
+  border:1px solid rgba(0,0,0,.07);
+  background: rgba(255,255,255,.7);
+  cursor:pointer;
+}
+#rpeModal .body{ padding: 14px; color: rgba(31,42,68,.9); }
+#rpeModal .rpeRow{ display:flex; gap:10px; margin-top:12px; }
+#rpeModal .rpeBtn{
+  flex:1;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.04);
+  font-weight: 900;
+  cursor:pointer;
+}
+#rpeModal .rpeBtn.primary{
+  background: linear-gradient(135deg, #7c5cff, #23a6ff);
+  color:#fff;
+  border: none;
+  box-shadow: 0 12px 30px rgba(124,92,255,.25);
+}
+
+/* Streak pill (top bar) */
+.streak-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(43,213,118,.22);
+  background: rgba(43,213,118,.08);
+  color: rgba(31,42,68,.95);
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* Share button */
+.btn-share{
+  background: rgba(0,0,0,.06);
+  color: rgba(31,42,68,.95);
+  border: 1px solid rgba(0,0,0,.08);
+}
+
 </style>
 
 <style>
@@ -1923,7 +2056,13 @@ const DAYS = [
         const el = activeList[activeIndex];
         if(el){
           el.classList.add("active");
-          if(scroll){
+          
+
+        try{
+          const tip = el.getAttribute("data-tip") || "";
+          if(tip) setTip(el, tip);
+        }catch(_e){}
+if(scroll){
             el.scrollIntoView({ behavior:"smooth", block:"center" });
           }
         }
@@ -3089,6 +3228,7 @@ function fmtMMSS(sec){
         if(action === "rest"){
           const secs = Number(btn.getAttribute("data-rest")) || 60;
           const name = btn.getAttribute("data-name") || "Descanso";
+          try{ sfxRest(); }catch(_e){}
           openTimer(`Descanso · ${name}`, secs);
           return;
         }
@@ -3110,7 +3250,7 @@ function fmtMMSS(sec){
             if(icon) icon.className = `fas ${next ? "fa-check" : "fa-minus"}`;
           }
 
-          if(next){ doneChime(); }
+          if(next){ doneChime(); try{ sfxDone(); }catch(_e){} }
 
           // ✅ Auto descanso (según switch)
           if(activeMode && next && autoRest){
@@ -3132,6 +3272,11 @@ function fmtMMSS(sec){
 
             if(next){
               // avanza al siguiente pendiente (sin wrap)
+              try{
+                const nm = card.querySelector(".name")?.textContent || card.querySelector(".ex-title")?.textContent || "Ejercicio";
+                const dk = card.getAttribute("data-daykey") || card.getAttribute("data-day") || "";
+                openRPE(id, nm, dk);
+              }catch(_e){}
               gotoNextPending({ allowWrap:false, scroll:true });
             }else{
               // si desmarca, vuelve a dejar activo este mismo
@@ -3161,7 +3306,246 @@ function fmtMMSS(sec){
         el.click();
       });
 
+      
+      // =======================
+      // ULTRA PRO: feedback, streak, tips, RPE, share, skeleton, PWA
+      // =======================
+
+      const LS_RPE_KEY = "mahfit_rpe_v1";
+      const LS_STREAK_KEY = "mahfit_streak_v1";
+      const LS_RPE_HISTORY_KEY = "mahfit_rpe_hist_v1";
+
+      function showToast(msg, ms=1400){
+        const t = document.getElementById("toast");
+        if(!t) return;
+        t.textContent = msg;
+        t.style.display = "block";
+        clearTimeout(showToast._tm);
+        showToast._tm = setTimeout(()=>{ t.style.display = "none"; }, ms);
+      }
+
+      function haptic(ms=18){
+        try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(_e){}
+      }
+
+      // Minimal sound pack (no external files): click, rest, complete (day)
+      function playBeep(freq=880, dur=0.06, gain=0.12){
+        try{
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if(!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sine";
+          o.frequency.value = freq;
+          g.gain.value = gain;
+          o.connect(g); g.connect(ctx.destination);
+          o.start();
+          o.stop(ctx.currentTime + dur);
+          setTimeout(()=>{ try{ ctx.close(); }catch(_e){} }, Math.ceil(dur*1200));
+        }catch(_e){}
+      }
+      function sfxClick(){ playBeep(740, 0.045, 0.10); }
+      function sfxRest(){ playBeep(520, 0.06, 0.10); }
+      function sfxDone(){ playBeep(880, 0.06, 0.12); }
+
+      // Skeleton loader helper (optional: if you have a loading element)
+      function showSkeleton(target){
+        if(!target) return;
+        if(target.querySelector(".skel-wrap")) return;
+        const w = document.createElement("div");
+        w.className = "skel-wrap";
+        w.innerHTML = `
+          <div class="skel-card">
+            <div class="skel-line w40"></div>
+            <div class="skel-line w60"></div>
+            <div class="skel-img"></div>
+          </div>
+          <div class="skel-card">
+            <div class="skel-line w40"></div>
+            <div class="skel-line w60"></div>
+            <div class="skel-img"></div>
+          </div>
+        `;
+        target.appendChild(w);
+      }
+      function hideSkeleton(target){
+        const w = target?.querySelector(".skel-wrap");
+        if(w) w.remove();
+      }
+
+      // Streak: counts days completed (by dayKey) within a week and consecutive completion dates
+      function getTodayISO(){
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,"0");
+        const da = String(d.getDate()).padStart(2,"0");
+        return `${y}-${m}-${da}`;
+      }
+      function readJSON(key, fallback){
+        try{ return JSON.parse(localStorage.getItem(key) || "") ?? fallback; }catch(_e){ return fallback; }
+      }
+      function writeJSON(key, val){
+        try{ localStorage.setItem(key, JSON.stringify(val)); }catch(_e){}
+      }
+
+      function updateStreakUI(){
+        const host = document.querySelector(".top-actions") || document.querySelector(".topbar") || document.body;
+        if(!host) return;
+        let pill = document.getElementById("streakPill");
+        if(!pill){
+          pill = document.createElement("div");
+          pill.id = "streakPill";
+          pill.className = "streak-pill";
+          pill.style.marginLeft = "8px";
+          // try insert near PDF/Reset buttons
+          const ref = host.querySelector("button, .btn");
+          if(ref?.parentElement) ref.parentElement.appendChild(pill);
+          else host.appendChild(pill);
+        }
+        const s = readJSON(LS_STREAK_KEY, { last:null, streak:0, weekDone:{} });
+        const week = (typeof weekKey !== "undefined" && weekKey) ? weekKey : "week";
+        const doneCount = Object.keys(s.weekDone?.[week] || {}).length;
+        pill.innerHTML = `🔥 Racha: ${s.streak} · Semana: ${doneCount}`;
+      }
+
+      function bumpStreakOnDayComplete(dayKey){
+        const today = getTodayISO();
+        const s = readJSON(LS_STREAK_KEY, { last:null, streak:0, weekDone:{} });
+        const week = (typeof weekKey !== "undefined" && weekKey) ? weekKey : "week";
+        s.weekDone = s.weekDone || {};
+        s.weekDone[week] = s.weekDone[week] || {};
+
+        // mark day completed for this week
+        s.weekDone[week][dayKey] = today;
+
+        // update consecutive streak by date
+        if(!s.last){
+          s.streak = 1;
+        }else{
+          const last = new Date(s.last + "T00:00:00");
+          const cur  = new Date(today + "T00:00:00");
+          const diffDays = Math.round((cur - last)/(1000*60*60*24));
+          if(diffDays === 0){
+            // same day: keep
+          }else if(diffDays === 1){
+            s.streak = (s.streak||0) + 1;
+          }else{
+            s.streak = 1;
+          }
+        }
+        s.last = today;
+        writeJSON(LS_STREAK_KEY, s);
+        updateStreakUI();
+      }
+
+      // RPE modal logic
+      let rpeCtx = null; // { exid, dayKey, name }
+      function openRPE(exid, name, dayKey){
+        rpeCtx = { exid, name, dayKey };
+        const bd = document.getElementById("rpeBackdrop");
+        const sub = document.getElementById("rpeSub");
+        if(sub) sub.textContent = `Ejercicio: ${name || "—"}`;
+        if(bd){
+          bd.style.display = "flex";
+        }
+      }
+      function closeRPE(){
+        const bd = document.getElementById("rpeBackdrop");
+        if(bd) bd.style.display = "none";
+        rpeCtx = null;
+      }
+      document.addEventListener("click", (e)=>{
+        const t = e.target;
+        if(t?.id === "rpeClose") return closeRPE();
+        if(t?.id === "rpeBackdrop" && e.target === t) return closeRPE();
+        const b = t?.closest?.("[data-rpe]");
+        if(!b || !rpeCtx) return;
+
+        const val = b.getAttribute("data-rpe");
+        const map = readJSON(LS_RPE_KEY, {});
+        map[rpeCtx.exid] = { val, at: Date.now(), day: rpeCtx.dayKey || "" };
+        writeJSON(LS_RPE_KEY, map);
+
+        // 2x "hard" rule of thumb
+        const hist = readJSON(LS_RPE_HISTORY_KEY, []);
+        hist.push({ exid: rpeCtx.exid, val, at: Date.now() });
+        while(hist.length > 30) hist.shift();
+        writeJSON(LS_RPE_HISTORY_KEY, hist);
+        const lastTwo = hist.slice(-2).filter(x=>x.exid === rpeCtx.exid);
+        if(lastTwo.length === 2 && lastTwo.every(x=>x.val === "hard")){
+          showToast("Sugerencia: ajusta peso/volumen (2x Difícil).");
+        }else{
+          showToast("RPE guardado ✅");
+        }
+        haptic(15);
+        closeRPE();
+      });
+
+      // Tips: show small tip box if exercise has data-tip (from catalog)
+      function ensureTipBox(card){
+        let box = card.querySelector(".tip-box");
+        if(!box){
+          box = document.createElement("div");
+          box.className = "tip-box";
+          box.innerHTML = `<div class="t">Tip del coach</div><div class="b" id=""></div>`;
+          card.appendChild(box);
+        }
+        return box;
+      }
+      function setTip(card, tipText){
+        const box = ensureTipBox(card);
+        const b = box.querySelector(".b");
+        if(b) b.textContent = tipText;
+        box.style.display = tipText ? "block" : "none";
+      }
+
+      // Share summary (Web Share API + fallback copy)
+      async function shareSummary(text){
+        try{
+          if(navigator.share){
+            await navigator.share({ text });
+            showToast("Compartido ✅");
+          }else{
+            await navigator.clipboard.writeText(text);
+            showToast("Resumen copiado ✅");
+          }
+        }catch(_e){
+          try{ await navigator.clipboard.writeText(text); showToast("Resumen copiado ✅"); }catch(_e2){}
+        }
+      }
+
+      // PWA minimal (optional): register a tiny SW via blob (cache-first for this page)
+      (function registerPWA(){
+        try{
+          if(!("serviceWorker" in navigator)) return;
+          const swCode = `
+            self.addEventListener('install', e=>{
+              e.waitUntil(caches.open('mahfit-v1').then(c=>c.addAll(['./'])));
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', e=>{
+              e.waitUntil(self.clients.claim());
+            });
+            self.addEventListener('fetch', e=>{
+              e.respondWith(
+                caches.match(e.request).then(r=> r || fetch(e.request).then(res=>{
+                  const copy = res.clone();
+                  caches.open('mahfit-v1').then(c=>c.put(e.request, copy)).catch(()=>{});
+                  return res;
+                }).catch(()=>r))
+              );
+            });
+          `;
+          const blob = new Blob([swCode], { type: "text/javascript" });
+          const url = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(url).catch(()=>{});
+        }catch(_e){}
+      })();
+
+
       renderWeekChips();
+      try{ updateStreakUI(); }catch(_e){}
       buildRoutineDom();
       // Carga catálogo de ejercicios en segundo plano (no bloquea la UI)
       ensureExercises().then(()=>{ buildRoutineDom(); });
@@ -3247,6 +3631,7 @@ function fmtMMSS(sec){
     <div class="actions">
       <button class="btnx btn-ghost" id="dayDoneOkBtn">Seguir viendo</button>
       <button class="btnx btn-ghost" id="dayDoneMarkBtn">Marcar día ✅</button>
+      <button class="btnx btn-ghost btn-share" id="dayDoneShareBtn">Compartir</button>
       <button class="btnx btn-primary" id="dayDoneNextBtn">Ir al siguiente día</button>
     </div>
   </div>
@@ -3276,6 +3661,8 @@ function showDayDoneModal(payload){
   const phrase = phrasePool[Math.floor(Math.random()*phrasePool.length)];
 
   if(msg) msg.textContent = `${dayName} completado al 100%. ${phrase}`;
+  // resumen para compartir
+  window.__mahfitLastSummary = `MAH FIT ✅ ${dayName} completado\nEjercicios: ${payload?.exCount ?? "-"}\nSeries: ${payload?.setCount ?? "-"}\nMin est.: ${payload?.mins ?? "-"}\n🔥 ¡Vamos por más!`;
   if(k1) k1.textContent = String(payload?.exCount ?? "—");
   if(k2) k2.textContent = String(payload?.setCount ?? "—");
   if(k3) k3.textContent = String(payload?.mins ?? "—");
@@ -3455,6 +3842,8 @@ function maybeCelebrateDayDone(){
   if(localStorage.getItem(flagKey) === "1") return;
   localStorage.setItem(flagKey, "1");
 
+  try{ bumpStreakOnDayComplete(dayKey || dayName); }catch(_e){}
+
   // Nombre de día desde el propio ejercicio activo
   const active = document.querySelector(".ex.active") || cards[0];
   const dayLabel = active?.getAttribute("data-daylabel") || active?.getAttribute("data-day") || "Día completado";
@@ -3471,10 +3860,16 @@ document.addEventListener("click", (e)=>{
   if(t?.id === "dayDoneCloseBtn" || t?.id === "dayDoneOkBtn"){
     hideDayDoneModal();
   }
+  if(t?.id === "dayDoneShareBtn"){
+    const s = window.__mahfitLastSummary || "";
+    if(s) shareSummary(s);
+    return;
+  }
   if(t?.id === "dayDoneMarkBtn"){
-    const dayEl = getActiveDayContainer();
+    const dayEl = (typeof getActiveDayContainer==="function") ? getActiveDayContainer() : null;
     if(dayEl) markDayCompletedUI(dayEl);
     hideDayDoneModal();
+    return;
   }
   if(t?.id === "dayDoneNextBtn"){
     hideDayDoneModal();
