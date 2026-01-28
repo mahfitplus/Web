@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbymKUDmuCgQVB-vPG1EdArUyLg6vIhQNFBJcpIgkQj52x8q0GUE84AcLhDQhDga-M3QHw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz4QYwxcqQY5hvfJPlpc1KVv55h7wE42kdnw_--pqhCG5pEwWAtv0OudOwUveiyAzxklw/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -1320,3 +1320,4 @@ window.API_URL = API_URL;
 
 // ✅ helper público (no rompe nada)
 window.mhfNormText = mhfNormText;
+
