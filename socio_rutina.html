@@ -3070,6 +3070,17 @@ function fmtMMSS(sec){
 
           if(next){ doneChime(); }
 
+          // ✅ Auto descanso (según switch)
+          if(activeMode && next && autoRest){
+            const restBtn = card.querySelector("[data-action='rest']");
+            const secs = Number(restBtn?.getAttribute("data-rest")) || Number(card.getAttribute("data-rest")) || 60;
+            const nm = restBtn?.getAttribute("data-name")
+                    || card.querySelector(".name")?.textContent
+                    || card.querySelector(".ex-title")?.textContent
+                    || "Descanso";
+            openTimer(`Descanso · ${nm}`, secs);
+          }
+
           // ✅ UX: al marcar "Hecho", el rectángulo morado avanza al siguiente ejercicio
           // y hacemos scroll suave para que "siga" la pantalla (sin doble salto).
           if(activeMode){
