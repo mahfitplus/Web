@@ -1093,6 +1093,21 @@
     }
 
 </style>
+
+<style>
+/* =======================
+   FIX: SIN MOVIMIENTO AL MARCAR HECHO
+   ======================= */
+.exercise-card.done,
+.exercise-card[data-done="true"]{
+  opacity: .55;
+}
+.exercise-card.done .ex-body,
+.exercise-card[data-done="true"] .ex-body{
+  display: block !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -1387,6 +1402,51 @@ function runSyncOnce(){
   return __syncPromise;
 }
 
+
+
+
+
+
+
+
+function isDayComplete(dayId){
+  const list = (window.__DAY_EXERCISES?.[dayId] || []);
+  if(!list.length) return false;
+  return list.every(x => x && x.done === true);
+}
+
+function showCongrats(dayId){
+  // evita doble disparo
+  if(window.__CONGRATS_SHOWN?.[dayId]) return;
+  window.__CONGRATS_SHOWN = window.__CONGRATS_SHOWN || {};
+  window.__CONGRATS_SHOWN[dayId] = true;
+
+  // 🔔 modal simple (si ya tienes uno, llama al tuyo aquí)
+  const msg = document.createElement("div");
+  msg.style.cssText = `
+    position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999;
+    display:flex; align-items:center; justify-content:center; padding:18px;
+  `;
+  msg.innerHTML = `
+    <div style="background:#fff;border-radius:18px;max-width:420px;width:100%;
+                padding:18px 16px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;">
+      <div style="font-size:34px">🎉</div>
+      <div style="font-weight:900;font-size:18px;margin-top:6px;color:#5a67d8">¡Felicitaciones!</div>
+      <div style="margin-top:6px;color:#495057;font-size:14px">
+        Completaste tu día al <b>100%</b>.
+      </div>
+      <button id="closeCongrats" style="
+        margin-top:14px;width:100%;height:44px;border:0;border-radius:12px;
+        background:#5a67d8;color:#fff;font-weight:800;">
+        Genial 🚀
+      </button>
+    </div>
+  `;
+  document.body.appendChild(msg);
+  msg.querySelector("#closeCongrats").onclick = () => msg.remove();
+}
+
+
 // ✅ Lectura ultra rápida desde caché (sin esperar red)
 function readRoutineFromCache(){
   if(!window.rutinaV2DeSocio) return { row:null, routine:null };
@@ -1646,6 +1706,7 @@ const DAYS = [
       const fbKey   = stateKey(`feedback_${weekStamp}`);
       const openDayKey = stateKey(`openDay_${weekStamp}`);
       const startedDayKey = stateKey(`startedDay_${weekStamp}`);
+      const dayDoneKey = (dayKey)=> stateKey(`dayDone_${weekStamp}_${dayKey}`);
 
       let activeDay = todayKey;
 
@@ -1856,7 +1917,7 @@ function setActiveMode(on){
   }
 }
 
-      function gotoNextPending({ allowWrap=true } = {}){
+      function gotoNextPending({ allowWrap=true, scroll=true } = {}){
         collectActiveList();
         if(!activeList.length) return;
 
@@ -1864,7 +1925,7 @@ function setActiveMode(on){
         for(let i = activeIndex + 1; i < activeList.length; i++){
           const id = activeList[i].getAttribute("data-exid");
           if(!doneMap[id]){
-            setActiveIndex(i, { scroll:true });
+            setActiveIndex(i, { scroll });
             return;
           }
         }
@@ -1872,14 +1933,11 @@ function setActiveMode(on){
           for(let i = 0; i < activeList.length; i++){
             const id = activeList[i].getAttribute("data-exid");
             if(!doneMap[id]){
-              setActiveIndex(i, { scroll:true });
+              setActiveIndex(i, { scroll });
               return;
             }
           }
         }
-        // no hay pendientes => deja el último y revisa completado
-        setActiveIndex(activeList.length - 1, { scroll:false });
-        checkRoutineCompleted();
       }
 
       function gotoPrev(){
@@ -2159,6 +2217,90 @@ const COMPLETE_KEY = `MAHFIT_ROUTINE_COMPLETE_${String(user?.rut||"").toUpperCas
         if(list) list.appendChild(exEl);
       }
 
+
+      // ===== COMPLETADO POR DÍA (solo el día iniciado) =====
+      function openDayCompleteModal(dayLabel){
+        try{ completeJingle(); }catch(_){}
+
+        // Personaliza texto para "día"
+        const t = $("#completeTitle");
+        const s = $("#completeSub");
+        if(t) t.textContent = "¡Felicitaciones!";
+        if(s) s.innerHTML = `Completaste <strong>${escapeHtml(dayLabel||"tu día")}</strong> al <strong>100%</strong> 💯`;
+
+        // Oculta streak en completado por día
+        try{ const box = $("#completeStreak"); if(box) box.style.display="none"; }catch(_){}
+
+        // Quote
+        const quote = randQuote();
+        const q = $("#completeQuote");
+        if(q) q.textContent = `“${quote}”`;
+
+        // Confetti
+        const c = $("#confetti");
+        if(c){
+          c.innerHTML = "";
+          for(let i=0;i<26;i++){
+            const sp = document.createElement("span");
+            if(Math.random() < 0.33) sp.classList.add("big");
+            sp.style.left = (Math.random()*100).toFixed(2) + "%";
+            sp.style.animationDelay = (Math.random()*0.6).toFixed(2) + "s";
+            sp.style.animationDuration = (0.9 + Math.random()*0.7).toFixed(2) + "s";
+            sp.style.background = i%3===0 ? "rgba(43,213,118,.85)" : (i%3===1 ? "rgba(90,103,216,.85)" : "rgba(255,209,102,.85)");
+            c.appendChild(sp);
+          }
+        }
+
+        const m = $("#completeModal");
+        if(m){
+          m.classList.add("active");
+          m.setAttribute("aria-hidden","false");
+          document.body.style.overflow="hidden";
+        }
+      }
+
+      // ✅ Modal de "Felicitaciones" SOLO cuando se completa el día
+      // en el MOMENTO en que el usuario marca el último pendiente como "Hecho".
+      function checkStartedDayCompletedFromCard(card, justMarkedDone){
+        try{
+          if(!card) return;
+          // solo nos interesa el evento "marcar como hecho"
+          if(!justMarkedDone) return;
+          const started = lsGet(startedDayKey,"") || "";
+          if(!started) return;
+
+          const dayKey = card.getAttribute("data-daykey") || "";
+          if(!dayKey || dayKey !== started) return;
+
+          // ya mostrado para este día
+          const key = dayDoneKey(dayKey);
+          if(localStorage.getItem(key) === "1") return;
+
+          const els = [...document.querySelectorAll(`.ex[data-daykey="${cssEscape(dayKey)}"]`)];
+          if(!els.length) return;
+
+          const allDone = els.every(ex => !!doneMap[ex.getAttribute("data-exid")]);
+          if(!allDone) return;
+
+          // marcar día completado
+          localStorage.setItem(key, "1");
+
+          // salir de modo activo (dock)
+          try{ setActiveMode(false); }catch(_){ activeMode=false; lsSet(ACTIVE_KEY,false); }
+
+          // re-render para cambiar pill a "Completado" y mantener feedback en el día
+          buildRoutineDom();
+          mountFeedbackIntoStartedDay();
+
+          // mostrar modal de felicitaciones por día
+          const dayLabel = card.getAttribute("data-daylabel") || "tu día";
+          setTimeout(()=> openDayCompleteModal(dayLabel), 220);
+        }catch(e){
+          console.warn("[DAY_DONE] error:", e);
+        }
+      }
+      // ===== /COMPLETADO POR DÍA =====
+
       function checkRoutineCompleted(){
         if(localStorage.getItem(COMPLETE_KEY) === "1") return; // ya mostrado esta semana
 
@@ -2246,6 +2388,14 @@ async function ensureExercises(){
           .replace(/'/g,"&#039;");
       }
       function escapeAttr(str){ return escapeHtml(str).replace(/"/g,"&quot;"); }
+
+      function cssEscape(v){
+        try{
+          if(window.CSS && CSS.escape) return CSS.escape(String(v));
+        }catch(_){}
+        return String(v).replace(/["\\]/g,"\\$&");
+      }
+
 
       $("#pageTitle").textContent = "Mi Rutina";
       $("#pageSub").textContent = `${user.nombre || user.rut || "Socio"} · Semana ${weekStamp.replace("_"," ")}`;
@@ -2604,6 +2754,7 @@ function fmtMMSS(sec){
             exHtml = `<div class="empty-state" style="padding:22px 12px;"><p>Sin ejercicios.</p></div>`;
           }
 
+          const isDayDone = (localStorage.getItem(dayDoneKey(dayKey)) === "1");
           const isOpen = (dayKey === openKey);
           const isStarted = (dayKey === startedKey);
 
@@ -2615,7 +2766,7 @@ function fmtMMSS(sec){
                   <div class="day-sub">${enfoque ? escapeHtml(enfoque) : "Enfoque: —"}</div>
                 </div>
                 <div class="day-right">
-                  <span class="day-pill">${isStarted ? "En curso" : ""}</span>
+                  <span class="day-pill">${(activeMode && isStarted) ? "En curso" : (isDayDone ? "Completado" : "")}</span>
                   <button class="day-toggle" type="button" aria-label="Desplegar">
                     <i class="fas ${isOpen ? "fa-chevron-up" : "fa-chevron-down"}" aria-hidden="true"></i>
                   </button>
@@ -2665,24 +2816,69 @@ function fmtMMSS(sec){
 
       function startDay(dayKey){
         if(!dayKey) return;
-
-        // ✅ El día iniciado define el "scope" del dock (prev/next) + feedback
-        activeDay = dayKey;
+        activeDay = dayKey; // para el header/meta
         lsSet(startedDayKey, dayKey);
         lsSet(openDayKey, dayKey);
 
-        // 1) Renderiza el día abierto (accordion + ejercicios)
-        buildRoutineDom();
+        // activa modo entrenamiento
+        activeMode = true;
+        lsSet(ACTIVE_KEY, true);
 
-        // 2) Activa modo entrenamiento y salta ALTIRO al primer pendiente del día iniciado
-        //    (esto también muestra el dock + scroll suave al ejercicio)
+        buildRoutineDom();
+        // foco al primer pendiente.
+        // ✅ Importante: el modal de "Felicitaciones" se muestra SOLO cuando el usuario
+        // marca el ÚLTIMO ejercicio pendiente como "Hecho" en el día iniciado.
         setTimeout(()=>{
-          setActiveMode(true);
-          // por si acaso, recalcula sticky
-          try{ document.getElementById("activeBar")?.__mahfitRecalcSticky?.(); }catch(_){}
-        }, 30);
+          const idx = firstPendingIndex();
+          if(idx >= 0){
+            setActiveIndex(idx, { scroll:true });
+          }else{
+            // No hay pendientes: dejamos la barra activa en 0/0 y evitamos loops
+            setActiveIndex(0, { scroll:false });
+          }
+          updateActiveBar();
+        }, 60);
       }
 
+      // ✅ Compleción por día (sin depender de un card click)
+      function checkStartedDayCompleted(dayKey){
+        try{
+          if(!dayKey) return;
+
+          // ya mostrado para este día
+          const key = dayDoneKey(dayKey);
+          if(localStorage.getItem(key) === "1") return;
+
+          const els = [...document.querySelectorAll(`.ex[data-daykey="${cssEscape(dayKey)}"]`)];
+          if(!els.length) return;
+
+          const allDone = els.every(ex => {
+            const id = ex.getAttribute("data-exid");
+            return !!doneMap[id];
+          });
+          if(!allDone) return;
+
+          localStorage.setItem(key, "1");
+
+          // salir de modo activo (dock)
+          try{ setActiveMode(false); }catch(_){ activeMode=false; lsSet(ACTIVE_KEY,false); }
+
+          // re-render para mostrar "Completado" y dejar feedback dentro
+          buildRoutineDom();
+          mountFeedbackIntoStartedDay();
+
+          const label = dayLabelFromKey(dayKey) || "tu día";
+          setTimeout(()=> openDayCompleteModal(label), 220);
+        }catch(e){
+          console.warn("[DAY_DONE_CHECK]", e);
+        }
+      }
+
+      function dayLabelFromKey(dayKey){
+        // intenta leer el label desde el DOM actual
+        const el = document.querySelector(`.day-card[data-daykey="${cssEscape(dayKey)}"]`);
+        return el?.getAttribute("data-daylabel") || "";
+      }
 
       wrap.addEventListener("click", (e)=>{
         // click en header del día para desplegar
@@ -2732,37 +2928,45 @@ function fmtMMSS(sec){
           doneMap[id] = next;
           lsSet(doneKey, doneMap);
 
-          
-          // ✅ cola: si quedó en Hecho, lo movemos al final
-          if(next){
-            // ✅ LOGS PRO: guarda altiro en historial
-            (async()=>{ await logWorkoutDoneFromCard(card); })();
+          // Estado visual del card
+          card.classList.toggle("done", next);
+          card.setAttribute("data-done", next ? "true" : "false");
 
-            moveExerciseToEnd(card);
-            doneChime();
-
-            // ✅ Entrenamiento Activo: avanza automático
-            if(activeMode && next){
-              // auto descanso
-              if(autoRest){
-                const restBtn = card.querySelector("[data-action='rest']");
-                const secs = Number(restBtn?.getAttribute("data-rest")) || 60;
-                const nm = restBtn?.getAttribute("data-name") || (card.querySelector(".ex-name")?.textContent||"Descanso");
-                openTimer(`Descanso · ${nm}`, secs);
-              }
-              // pasa al siguiente pendiente
-              setTimeout(()=>{ gotoNextPending({ allowWrap:true }); }, 50);
-            }
-          }
-
+          // Update check UI
           const check = card.querySelector(".check");
           if(check){
             check.classList.toggle("done", next);
             const icon = check.querySelector("i");
             if(icon) icon.className = `fas ${next ? "fa-check" : "fa-minus"}`;
           }
-          updateMeta((routine?.dias||[]).length, (routine?.dias||[]).length);
-          checkRoutineCompleted();
+
+          if(next){ doneChime(); }
+
+          // ✅ UX: al marcar "Hecho", el rectángulo morado avanza al siguiente ejercicio
+          // y hacemos scroll suave para que "siga" la pantalla (sin doble salto).
+          if(activeMode){
+            collectActiveList();
+            const idx = activeList.indexOf(card);
+            if(idx >= 0) activeIndex = idx;
+
+            if(next){
+              // avanza al siguiente pendiente (sin wrap)
+              gotoNextPending({ allowWrap:false, scroll:true });
+            }else{
+              // si desmarca, vuelve a dejar activo este mismo
+              setActiveIndex(activeIndex, { scroll:false });
+            }
+          }else{
+            // Si aún no se presiona "Iniciar", igual hacemos un scroll suave al siguiente.
+            if(next){
+              const list = card.parentElement ? Array.from(card.parentElement.querySelectorAll(".ex")) : [];
+              const pos = list.indexOf(card);
+              const target = (pos >= 0) ? (list[pos+1] || null) : null;
+              if(target) target.scrollIntoView({ behavior:"smooth", block:"center" });
+            }
+          }
+
+          updateActiveBar();
         }
       });
 
