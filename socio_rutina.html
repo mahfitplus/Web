@@ -275,7 +275,22 @@
     }
 
     @media (max-width: 520px){
-      .day-sub{ display:none; }
+      /* ✅ Mostrar el subtítulo del día también en móvil */
+      .day-title{
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        line-height: 1.15;
+      }
+      .day-sub{
+        display: block;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        font-size: 12px;
+        line-height: 1.15;
+      }
+      .day-left{ gap: 2px; }
     }
 
     /* WEEK TABS */
@@ -1108,6 +1123,118 @@
 }
 </style>
 
+
+<style>
+/* =======================
+   MODAL FELICITACIONES DÍA
+   ======================= */
+#dayDoneModalBackdrop{
+  position: fixed; inset: 0;
+  background: rgba(15, 22, 35, .45);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 18px;
+}
+#dayDoneModal{
+  width: min(520px, 100%);
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(124,92,255,.22);
+  box-shadow: 0 18px 55px rgba(0,0,0,.18);
+  border-radius: 18px;
+  overflow: hidden;
+}
+#dayDoneModal header{
+  display:flex; align-items:center; justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(124,92,255,.14), rgba(35,166,255,.10));
+}
+#dayDoneModal .title{
+  display:flex; gap:10px; align-items:center;
+  font-weight: 800;
+  color: #1f2a44;
+}
+#dayDoneModal .title .badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:12px;
+  background: rgba(124,92,255,.18);
+  border:1px solid rgba(124,92,255,.25);
+}
+#dayDoneModal .body{
+  padding: 16px;
+  color: rgba(31,42,68,.9);
+}
+#dayDoneModal .kpis{
+  margin-top: 10px;
+  display:grid; grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+}
+#dayDoneModal .kpi{
+  background: rgba(255,255,255,.8);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius: 14px;
+  padding: 10px;
+  text-align:center;
+}
+#dayDoneModal .kpi .n{ font-weight: 900; font-size: 18px; }
+#dayDoneModal .kpi .l{ font-size: 12px; opacity: .75; margin-top: 2px; }
+#dayDoneModal .actions{
+  padding: 14px 16px;
+  display:flex; gap:10px; justify-content:flex-end;
+  border-top: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.78);
+}
+#dayDoneModal .btnx{
+  appearance:none; border:0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+#dayDoneModal .btn-primary{
+  background: linear-gradient(135deg, #7c5cff, #23a6ff);
+  color:#fff;
+  box-shadow: 0 12px 30px rgba(124,92,255,.25);
+}
+#dayDoneModal .btn-ghost{
+  background: rgba(0,0,0,.06);
+  color: rgba(31,42,68,.9);
+}
+#dayDoneModal .close{
+  width:38px; height:38px; border-radius: 14px;
+  border:1px solid rgba(0,0,0,.07);
+  background: rgba(255,255,255,.7);
+  cursor:pointer;
+}
+@media (prefers-reduced-motion: no-preference){
+  #dayDoneModalBackdrop.showing #dayDoneModal{
+    animation: popIn .22s ease-out both;
+  }
+  @keyframes popIn{
+    from{ transform: translateY(10px) scale(.98); opacity:.0; }
+    to{ transform: translateY(0) scale(1); opacity:1; }
+  }
+}
+</style>
+
+
+<style>
+/* =======================
+   ✅ DÍA COMPLETADO (UI)
+   ======================= */
+.day-completed{
+  border: 1px solid rgba(43,213,118,.35) !important;
+  box-shadow: 0 10px 30px rgba(43,213,118,.10) !important;
+}
+.day-completed .day-title::after{
+  content: " · Completado ✅";
+  color: rgba(43,213,118,.95);
+  font-weight: 800;
+}
+</style>
+
 </head>
 
 <body>
@@ -1788,6 +1915,7 @@ const DAYS = [
           }
         }
         updateActiveBar();
+    try{ maybeCelebrateDayDone(); }catch(_e){}
       }
 
       function activeCounts(){
@@ -2967,6 +3095,8 @@ function fmtMMSS(sec){
           }
 
           updateActiveBar();
+          try{ maybeCelebrateDayDone(); }catch(_e){}
+
         }
       });
 
@@ -3042,6 +3172,285 @@ function fmtMMSS(sec){
       </button>
     </div>
   </div>
+
+
+<div id="dayDoneModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="dayDoneTitle">
+  <div id="dayDoneModal">
+    <header>
+      <div class="title" id="dayDoneTitle">
+        <span class="badge">🎉</span>
+        <span>¡Felicidades! Completaste el día</span>
+      </div>
+      <button class="close" id="dayDoneCloseBtn" aria-label="Cerrar">✕</button>
+    </header>
+    <div class="body">
+      <div id="dayDoneMsg" style="font-weight:700;"></div>
+      <div class="kpis">
+        <div class="kpi"><div class="n" id="dayDoneKpi1">—</div><div class="l">Ejercicios</div></div>
+        <div class="kpi"><div class="n" id="dayDoneKpi2">—</div><div class="l">Series totales</div></div>
+        <div class="kpi"><div class="n" id="dayDoneKpi3">—</div><div class="l">Min estimados</div></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btnx btn-ghost" id="dayDoneOkBtn">Seguir viendo</button>
+      <button class="btnx btn-ghost" id="dayDoneMarkBtn">Marcar día ✅</button>
+      <button class="btnx btn-primary" id="dayDoneNextBtn">Ir al siguiente día</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* =======================
+   MODAL FELICITACIONES DÍA
+   ======================= */
+function showDayDoneModal(payload){
+  const bd = document.getElementById("dayDoneModalBackdrop");
+  if(!bd) return;
+  const msg = document.getElementById("dayDoneMsg");
+  const k1 = document.getElementById("dayDoneKpi1");
+  const k2 = document.getElementById("dayDoneKpi2");
+  const k3 = document.getElementById("dayDoneKpi3");
+
+  const dayName = payload?.dayName || "Tu entrenamiento";
+  const phrasePool = [
+    "¡Excelente trabajo! 💪",
+    "¡Sigue así, vas increíble! 🚀",
+    "¡Un día más, más fuerte! 🔥",
+    "¡Disciplina = resultados! 🏆",
+    "¡Orgullo total! 👏"
+  ];
+  const phrase = phrasePool[Math.floor(Math.random()*phrasePool.length)];
+
+  if(msg) msg.textContent = `${dayName} completado al 100%. ${phrase}`;
+  if(k1) k1.textContent = String(payload?.exCount ?? "—");
+  if(k2) k2.textContent = String(payload?.setCount ?? "—");
+  if(k3) k3.textContent = String(payload?.mins ?? "—");
+
+  bd.style.display = "flex";
+  bd.classList.add("showing");
+  // 🎉 PRO: confetti + jingle
+  confettiBurst(1400);
+  playDayDoneJingle();
+}
+
+function hideDayDoneModal(){
+  const bd = document.getElementById("dayDoneModalBackdrop");
+  if(!bd) return;
+  bd.classList.remove("showing");
+  bd.style.display = "none";
+}
+
+
+function playDayDoneJingle(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.6, now + 0.02);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
+    master.connect(ctx.destination);
+
+    const freqs = [523.25, 659.25, 783.99]; // C5 E5 G5
+    freqs.forEach((f, i)=>{
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(f, now);
+      g.gain.setValueAtTime(0.0, now);
+      g.gain.linearRampToValueAtTime(0.38, now + 0.03 + i*0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+      o.connect(g);
+      g.connect(master);
+      o.start(now);
+      o.stop(now + 1.05);
+    });
+
+    // auto close context
+    setTimeout(()=>{ try{ ctx.close(); }catch(_e){} }, 1200);
+  }catch(_e){}
+}
+
+function confettiBurst(ms=1400){
+  const canvas = document.getElementById("confettiCanvas");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(!ctx) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.display = "block";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const N = 140;
+  const parts = Array.from({length:N}).map(()=>{
+    const x = w * (0.25 + Math.random()*0.5);
+    const y = h * (0.20 + Math.random()*0.15);
+    const vx = (Math.random()-0.5) * 6;
+    const vy = - (2 + Math.random()*6);
+    const g = 0.18 + Math.random()*0.18;
+    const r = 2 + Math.random()*4;
+    const rot = Math.random()*Math.PI;
+    const vr = (Math.random()-0.5)*0.2;
+    // colors: use palette close to brand
+    const cols = ["#7c5cff","#23a6ff","#2bd576","#ffd36e","#ff5a67"];
+    const c = cols[Math.floor(Math.random()*cols.length)];
+    return {x,y,vx,vy,g,r,rot,vr,c,life: 1.0};
+  });
+
+  let t0 = performance.now();
+  function draw(now){
+    const dt = Math.min(33, now - t0);
+    t0 = now;
+    ctx.clearRect(0,0,w,h);
+
+    parts.forEach(p=>{
+      p.vy += p.g * (dt/16);
+      p.x += p.vx * (dt/16);
+      p.y += p.vy * (dt/16);
+      p.rot += p.vr * (dt/16);
+      p.life -= 0.012 * (dt/16);
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r, -p.r, p.r*2.2, p.r*1.4);
+      ctx.restore();
+    });
+
+    if(performance.now() - start < ms){
+      requestAnimationFrame(draw);
+    }else{
+      canvas.style.display = "none";
+    }
+  }
+  const start = performance.now();
+  requestAnimationFrame(draw);
+}
+
+function markDayCompletedUI(dayEl){
+  if(!dayEl) return;
+  dayEl.classList.add("day-completed");
+  // also try to update any status pill if exists
+  const pill = dayEl.querySelector(".status-pill, .day-status, .pill.status");
+  if(pill) pill.textContent = "Completado ✅";
+}
+
+
+function getActiveDayKey(){
+  const active = document.querySelector(".ex.active") || document.querySelector(".ex[data-active='true']");
+  if(!active) return null;
+  return active.getAttribute("data-daykey") || active.getAttribute("data-day") || null;
+}
+
+function getDayExercisesByKey(dayKey){
+  if(!dayKey) return [];
+  return Array.from(document.querySelectorAll(`.ex[data-daykey="${dayKey}"]`));
+}
+
+function computeDayStats(cards){
+  const exCount = cards.length;
+
+  let setCount = 0;
+  let mins = 0;
+
+  cards.forEach(c=>{
+    // sets: heurística con patrón "3x12"
+    let localSets = 0;
+    const txt = (c.textContent || "").match(/(\d+)\s*x\s*\d+/i);
+    if(txt) localSets = parseInt(txt[1],10) || 0;
+
+    const ds = c.getAttribute("data-series") || c.getAttribute("data-sets");
+    if(ds && String(ds).trim()) localSets = parseInt(ds,10) || localSets;
+
+    setCount += localSets;
+
+    // mins: intenta data-descanso o chips "min"
+    const m1 = (c.textContent || "").match(/(\d+)\s*min/i);
+    if(m1) mins += parseInt(m1[1],10) || 0;
+  });
+
+  if(!mins) mins = exCount * 2;
+  return { exCount, setCount, mins };
+}
+
+function isDayFullyDone(cards){
+  if(!cards.length) return false;
+  return cards.every(c=>{
+    const id = c.getAttribute("data-exid") || c.getAttribute("data-id") || c.id || "";
+    return !!doneMap[id];
+  });
+}
+
+function maybeCelebrateDayDone(){
+  const dayKey = getActiveDayKey();
+  const cards = getDayExercisesByKey(dayKey);
+  if(!cards.length) return;
+  if(!isDayFullyDone(cards)) return;
+
+  // Evitar repetir el modal para el mismo día (por semana)
+  const flagKey = `mahfit_daydone_${dayKey}_${weekKey || ""}`;
+  if(localStorage.getItem(flagKey) === "1") return;
+  localStorage.setItem(flagKey, "1");
+
+  // Nombre de día desde el propio ejercicio activo
+  const active = document.querySelector(".ex.active") || cards[0];
+  const dayLabel = active?.getAttribute("data-daylabel") || active?.getAttribute("data-day") || "Día completado";
+
+  const stats = computeDayStats(cards);
+  showDayDoneModal({ dayName: dayLabel, ...stats });
+}
+
+document.addEventListener("click", (e)=>{
+  const bd = document.getElementById("dayDoneModalBackdrop");
+  if(!bd) return;
+  const t = e.target;
+
+  if(t?.id === "dayDoneCloseBtn" || t?.id === "dayDoneOkBtn"){
+    hideDayDoneModal();
+  }
+  if(t?.id === "dayDoneMarkBtn"){
+    const dayEl = getActiveDayContainer();
+    if(dayEl) markDayCompletedUI(dayEl);
+    hideDayDoneModal();
+  }
+  if(t?.id === "dayDoneNextBtn"){
+    hideDayDoneModal();
+    // intenta ir al siguiente día: busca el siguiente data-daykey en el DOM
+    const dayKey = getActiveDayKey();
+    if(!dayKey) return;
+    const keys = Array.from(new Set(Array.from(document.querySelectorAll(".ex[data-daykey]")).map(x=>x.getAttribute("data-daykey"))));
+    const idx = keys.indexOf(dayKey);
+    const nextKey = keys[idx+1];
+    if(nextKey){
+      const nextEl = document.querySelector(`.ex[data-daykey="${nextKey}"]`);
+      if(nextEl) nextEl.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+  }
+});
+
+// cerrar clickeando fuera
+document.addEventListener("mousedown", (e)=>{
+  const bd = document.getElementById("dayDoneModalBackdrop");
+  const modal = document.getElementById("dayDoneModal");
+  if(!bd || bd.style.display !== "flex") return;
+  if(modal && !modal.contains(e.target) && e.target === bd){
+    hideDayDoneModal();
+  }
+});
+</script>
+
+
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:10000;display:none;"></canvas>
 
 </body>
 </html>
