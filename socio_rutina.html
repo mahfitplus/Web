@@ -1107,6 +1107,19 @@
       transform: translateX(-50%) translateY(0);
     }
 
+
+/* ✅ Técnica en pasos (lista pro) */
+#techBody .tech-ol{
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.35;
+}
+#techBody .tech-ol li{ margin: 6px 0; }
+#techBody .tech-p{
+  white-space: pre-line;
+  line-height: 1.35;
+}
+
 </style>
 
 <style>
@@ -2672,13 +2685,42 @@ function fmtMMSS(sec){
       $("#techClose").addEventListener("click", ()=> closeTech());
       techModal.addEventListener("click", (e)=>{ if(e.target===techModal) closeTech(); });
 
+      
+      function escapeHtml(str){
+        return String(str)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;")
+          .replace(/'/g,"&#039;");
+      }
+
+      function stepsToListHTML(raw=""){
+        const s = String(raw || "").trim();
+        if(!s) return '<div class="tech-p">—</div>';
+
+        // separa por "1." "2." "3." etc.
+        const parts = s
+          .split(/\s*(?=\d+\s*[.\)])/g)
+          .map(x => x.trim())
+          .filter(Boolean)
+          .map(x => x.replace(/^\d+\s*[.\)]\s*/, ""));
+
+        if(parts.length <= 1){
+          // si no venía numerado, respeta saltos si existen
+          return `<div class="tech-p">${escapeHtml(s).replace(/\n/g,"<br>")}</div>`;
+        }
+
+        return `<ol class="tech-ol">${parts.map(p=>`<li>${escapeHtml(p)}</li>`).join("")}</ol>`;
+      }
+
       function openTech(title, text){
         techTitleEl.textContent = title || "Técnica";
-        techBodyEl.textContent = text || "";
+        techBodyEl.innerHTML = stepsToListHTML(text || "");
         techModal.classList.add("active");
         techModal.setAttribute("aria-hidden","false");
         document.body.style.overflow="hidden";
       }
+
       function closeTech(){
         techModal.classList.remove("active");
         techModal.setAttribute("aria-hidden","true");
