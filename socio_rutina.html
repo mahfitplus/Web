@@ -1381,6 +1381,7 @@
 }
 </style>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -3494,7 +3495,7 @@ function fmtMMSS(sec){
           const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type":"text/plain;charset=utf-8" },
-            body: JSON.stringify({ action:"LOG_WORKOUT_SET", ...payload })
+            body: JSON.stringify({ resource:"WORKOUT_SETS_LOG", data: payload, action:"LOG_WORKOUT_SET" })
           });
           const data = await res.json().catch(()=> ({}));
           if(data && (data.ok || data.status === "ok")) return { ok:true, data };
@@ -3503,6 +3504,171 @@ function fmtMMSS(sec){
           return { ok:false, error:String(e) };
         }
       }
+
+      
+      // --- 📈 HISTORIAL + GRÁFICO (Chart.js) ---
+      let rpeChart = null;
+      let rpeChartMode = "peso"; // "peso" | "vol"
+      let _rpeHistCache = null;  // cache local en memoria por sesión
+
+      function calcVol_(row){
+        const w = Number(row.peso_kg || row.pesoKg || 0);
+        const r = Number(row.reps || 0);
+        const s = Number(row.series || 0);
+        const v = w * r * s;
+        return isFinite(v) ? v : 0;
+      }
+
+      async function fetchWorkoutSetsLog_(){
+        if(_rpeHistCache) return { ok:true, rows:_rpeHistCache };
+
+        const url = (typeof API_URL !== "undefined" && API_URL) ? API_URL : (window.API_URL || "");
+        if(!url) return { ok:false, error:"no_api" };
+
+        const sep = url.includes("?") ? "&" : "?";
+        const full = url + sep + "resource=WORKOUT_SETS_LOG&ts=" + Date.now(); // cache-bust
+
+        try{
+          const res = await fetch(full, { method:"GET" });
+          const data = await res.json().catch(()=> ({}));
+          const rows = data.workout_sets_log || data.workoutSetsLog || data.rows || [];
+          _rpeHistCache = Array.isArray(rows) ? rows : [];
+          return { ok: !!data.ok, rows: _rpeHistCache };
+        }catch(e){
+          return { ok:false, error:String(e) };
+        }
+      }
+
+      function destroyRpeChart_(){
+        try{ if(rpeChart){ rpeChart.destroy(); } }catch(e){}
+        rpeChart = null;
+      }
+
+      function setChartTabUI_(mode){
+        rpeChartMode = mode;
+        const bPeso = document.getElementById("rpeTabPeso");
+        const bVol  = document.getElementById("rpeTabVol");
+        if(bPeso && bVol){
+          if(mode === "peso"){
+            bPeso.classList.add("primary");
+            bVol.classList.remove("primary");
+          }else{
+            bVol.classList.add("primary");
+            bPeso.classList.remove("primary");
+          }
+        }
+      }
+
+      function renderKpis_(rows){
+        const k = document.getElementById("rpeKpis");
+        if(!k) return;
+        k.innerHTML = "";
+        if(!rows.length) return;
+
+        const last = rows[rows.length-1];
+        const lastW = (last.peso_kg ?? last.pesoKg ?? "") !== "" ? (last.peso_kg ?? last.pesoKg) : "—";
+        const lastR = (last.reps ?? "") !== "" ? last.reps : "—";
+        const lastS = (last.series ?? "") !== "" ? last.series : "—";
+        const lastV = calcVol_(last);
+
+        const mk = (icon, label, val)=>(
+          `<span class="badge" style="display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);font-weight:900;font-size:12px;">
+            <span style="opacity:.75">${icon}</span> ${label}: <span style="opacity:.9">${val}</span>
+          </span>`
+        );
+
+        k.insertAdjacentHTML("beforeend", mk("🏋️", "Peso", `${lastW} kg`));
+        k.insertAdjacentHTML("beforeend", mk("🔁", "Reps", `${lastR}`));
+        k.insertAdjacentHTML("beforeend", mk("📦", "Series", `${lastS}`));
+        k.insertAdjacentHTML("beforeend", mk("📈", "Volumen", `${Math.round(lastV)}`));
+      }
+
+      function renderExerciseChart_(rows){
+        const cv = document.getElementById("rpeChart");
+        const empty = document.getElementById("rpeChartEmpty");
+        if(!cv) return;
+
+        destroyRpeChart_();
+
+        if(!rows.length){
+          if(empty) empty.style.display = "block";
+          return;
+        }else{
+          if(empty) empty.style.display = "none";
+        }
+
+        const sorted = rows.slice().sort((a,b)=>{
+          const ta = Number(a.timestamp || 0);
+          const tb = Number(b.timestamp || 0);
+          if(ta && tb) return ta - tb;
+          return String(a.fecha||"").localeCompare(String(b.fecha||""));
+        });
+
+        const labels = sorted.map(r=>{
+          const f = String(r.fecha||"").slice(0,10);
+          return f || "—";
+        });
+
+        const peso = sorted.map(r=>{
+          const w = Number(r.peso_kg ?? r.pesoKg);
+          return isFinite(w) ? w : null;
+        });
+
+        const vol = sorted.map(r=> calcVol_(r));
+
+        const dataset = (rpeChartMode === "vol")
+          ? { label:"Volumen", data: vol }
+          : { label:"Peso (kg)", data: peso };
+
+        rpeChart = new Chart(cv, {
+          type: "line",
+          data: { labels, datasets: [dataset] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            interaction: { mode:"index", intersect:false },
+            elements: { point: { radius: 3, hoverRadius: 4 } },
+            scales: {
+              x: { ticks: { maxRotation:0, autoSkip:true, maxTicksLimit: 7 } },
+              y: { beginAtZero: false }
+            }
+          }
+        });
+      }
+
+      async function loadAndRenderExerciseHistory_(rutSocio, exid){
+        const res = await fetchWorkoutSetsLog_();
+        if(!res.ok) return;
+
+        const rowsAll = res.rows || [];
+        const rows = rowsAll.filter(r=>{
+          const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
+          const ex  = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
+          return rut === String(rutSocio||"").trim() && ex === String(exid||"").trim();
+        });
+
+        renderKpis_(rows);
+        renderExerciseChart_(rows);
+
+        const bPeso = document.getElementById("rpeTabPeso");
+        const bVol  = document.getElementById("rpeTabVol");
+        if(bPeso && !bPeso._bound){
+          bPeso._bound = true;
+          bPeso.addEventListener("click", ()=>{
+            setChartTabUI_("peso");
+            renderExerciseChart_(rows);
+          });
+        }
+        if(bVol && !bVol._bound){
+          bVol._bound = true;
+          bVol.addEventListener("click", ()=>{
+            setChartTabUI_("vol");
+            renderExerciseChart_(rows);
+          });
+        }
+      }
+
 
       function openRPE(exid, name, dayKey){
         rpeCtx = { exid, name, dayKey };
@@ -3513,6 +3679,7 @@ function fmtMMSS(sec){
         const sub = document.getElementById("rpeSub");
         const w = document.getElementById("rpeWeight");
         const r = document.getElementById("rpeReps");
+        const s = document.getElementById("rpeSeries");
         const n = document.getElementById("rpeNote");
 
         if(sub) sub.textContent = `Ejercicio: ${name || "—"}`;
@@ -3521,6 +3688,7 @@ function fmtMMSS(sec){
         const last = getLastSet(exid);
         if(w) w.value = (last?.peso_kg ?? "");
         if(r) r.value = (last?.reps ?? "");
+        if(s) s.value = (last?.series ?? "");
         if(n) n.value = "";
 
         if(bd){
@@ -3561,6 +3729,7 @@ function fmtMMSS(sec){
 
           const peso_kg = normNum(document.getElementById("rpeWeight")?.value);
           const reps = normInt(document.getElementById("rpeReps")?.value);
+          const series = normInt(document.getElementById("rpeSeries")?.value);
           const comentario = (document.getElementById("rpeNote")?.value || "").trim();
 
           // Guardar local RPE
@@ -3569,7 +3738,7 @@ function fmtMMSS(sec){
           writeJSON(LS_RPE_KEY, map);
 
           // Guardar último set local (prefill futuro)
-          setLastSet(rpeCtx.exid, { peso_kg, reps });
+          setLastSet(rpeCtx.exid, { peso_kg, reps, series });
 
           // 2x "hard" sugerencia
           const hist = readJSON(LS_RPE_HISTORY_KEY, []);
@@ -3587,6 +3756,7 @@ function fmtMMSS(sec){
             ejercicio_id: rpeCtx.exid || "",
             ejercicio_nombre: rpeCtx.name || "",
             peso_kg: (peso_kg === "" ? "" : peso_kg),
+            series: (series === "" ? "" : series),
             reps: (reps === "" ? "" : reps),
             rpe: rpeSelected,
             comentario: comentario,
@@ -4057,7 +4227,7 @@ document.addEventListener("mousedown", (e)=>{
       <div id="rpeSub" style="font-weight:900; opacity:.92;">Ejercicio: —</div>
       <div style="margin-top:6px; font-size:12px; opacity:.75;" id="rpeMeta">Completa tu registro para llevar historial.</div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:12px;">
         <label style="display:block;">
           <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Peso usado (kg)</div>
           <input id="rpeWeight" inputmode="decimal" placeholder="Ej: 75" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:900;">
@@ -4066,6 +4236,12 @@ document.addEventListener("mousedown", (e)=>{
           <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Reps reales</div>
           <input id="rpeReps" inputmode="numeric" placeholder="Ej: 12" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:900;">
         </label>
+      
+        <label style="display:block;">
+          <div style="font-weight:900; font-size:12px; opacity:.8; margin-bottom:6px;">Series reales</div>
+          <input id="rpeSeries" inputmode="numeric" placeholder="Ej: 3" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(0,0,0,.10); background:rgba(0,0,0,.03); font-weight:900;">
+        </label>
+
       </div>
 
       <div style="margin-top:12px; font-weight:900; opacity:.86;">Esfuerzo (RPE)</div>
@@ -4087,6 +4263,34 @@ document.addEventListener("mousedown", (e)=>{
 
       <div style="margin-top:10px; font-size:12px; opacity:.75;">
         Tip: si marcas “Difícil” 2 veces seguidas, sugeriremos ajustar carga/volumen.
+      </div>
+
+      <!-- 📈 Evolución (peso / volumen) -->
+      <div id="rpeChartSection" style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(0,0,0,.08);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="font-weight:1000; opacity:.88;">Evolución</div>
+          <div style="display:flex; gap:8px;">
+            <button class="rpeBtn primary" id="rpeTabPeso" style="padding:8px 10px; font-size:12px;">Peso</button>
+            <button class="rpeBtn" id="rpeTabVol" style="padding:8px 10px; font-size:12px;">Volumen</button>
+          </div>
+        </div>
+
+        <div id="rpeKpis" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+
+        <div style="margin-top:10px; background:rgba(0,0,0,.03); border:1px solid rgba(0,0,0,.06); border-radius:16px; padding:10px;">
+          <div style="position:relative; height:160px;">
+            <canvas id="rpeChart"></canvas>
+          </div>
+          <div id="rpeChartEmpty" style="display:none; text-align:center; font-size:12px; opacity:.7; padding:10px 0;">
+            Aún no hay registros para este ejercicio.
+          </div>
+        </div>
+
+        <div style="margin-top:8px; font-size:11px; opacity:.7;">
+          Volumen = peso × reps × series (por sesión).
+        </div>
+      </div>
+
       </div>
     </div>
   </div>
