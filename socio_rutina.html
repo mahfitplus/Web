@@ -2999,9 +2999,13 @@ function fmtMMSS(sec){
           let exHtml = "";
           if(ejercicios.length){
             exHtml = ejercicios.map((e, exIdx)=>{
-              const name = e.ejercicio || "Ejercicio";
-              const id = exId(dayIdx, exIdx, name);
-              const isDone = !!doneMap[id];
+              const name = (e.nombre || e.ejercicio_nombre || e.ejercicioNombre || e.ejercicio || e.name || "Ejercicio");
+              const slotId = exId(dayIdx, exIdx, name);
+              const isDone = !!doneMap[slotId];
+
+              const info = findExerciseInfo(e) || {};
+              const exDbId = String(e.exId || e.ejercicio_id || e.ejercicioId || e.exerciseId || info.exId || info.id || "").trim();
+              const exid = exDbId || slotId;
 
               const series = e.series ? `${e.series}x` : "";
               const reps = e.reps ? `${e.reps}` : "";
@@ -3010,7 +3014,6 @@ function fmtMMSS(sec){
               const obs = e.obs ? String(e.obs) : "";
               const restSecs = parseRestToSecs(descanso) ?? 60;
 
-              const info = findExerciseInfo(e) || {};
               const muscle = String(info.musculo||info.muscle||e.musculo||e.muscle||"").trim();
               const mediaGif = String(info.mediaUrlGif||info.media_url_gif||"").trim();
               const mediaImg = String(info.mediaUrl||info.media_url||"").trim();
@@ -3030,7 +3033,7 @@ function fmtMMSS(sec){
                 </div>` : "";
 
               return `
-                <div class="ex" data-daykey="${escapeAttr(dayKey)}" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-musculo="${escapeAttr(muscle)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
+                <div class="ex" data-daykey="${escapeAttr(dayKey)}" data-exid="${escapeAttr(slotId)}" data-exdbid="${escapeAttr(exid)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-musculo="${escapeAttr(muscle)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
                   <div class="ex-left">
                     <div class="check ${isDone ? "done":""}" title="Marcar realizado" role="button" tabindex="0" data-action="toggle">
                       <i class="fas ${isDone ? "fa-check" : "fa-minus"}" aria-hidden="true"></i>
@@ -3044,6 +3047,7 @@ function fmtMMSS(sec){
 
                       <div class="ex-meta">
                         ${(series || reps) ? `<span class="tag"><i class="fas fa-layer-group" aria-hidden="true"></i>${escapeHtml(series)}${escapeHtml(reps)}</span>` : ""}
+                        ${muscle ? `<span class="tag"><i class="fas fa-dumbbell" aria-hidden="true"></i>${escapeHtml(muscle)}</span>` : ""}
                         ${carga ? `<span class="tag"><i class="fas fa-weight-hanging" aria-hidden="true"></i>${escapeHtml(carga)}</span>` : ""}
                         ${descanso ? `<span class="tag"><i class="fas fa-stopwatch" aria-hidden="true"></i>${escapeHtml(descanso)}</span>` : ""}
                         ${obs ? `<span class="tag"><i class="fas fa-note-sticky" aria-hidden="true"></i>${escapeHtml(obs)}</span>` : ""}
@@ -3229,8 +3233,8 @@ function fmtMMSS(sec){
         const card = btn.closest(".ex");
         if(!card) return;
         const id = card.getAttribute("data-exid");
-
-        if(action === "rest"){
+        const exdbid = card.getAttribute("data-exdbid") || id;
+if(action === "rest"){
           const secs = Number(btn.getAttribute("data-rest")) || 60;
           const name = btn.getAttribute("data-name") || "Descanso";
           try{ sfxRest(); }catch(_e){}
@@ -3281,7 +3285,7 @@ function fmtMMSS(sec){
                 const nm = card.querySelector(".ex-name")?.textContent || card.querySelector(".ex-title")?.textContent || "Ejercicio";
                 const dk = card.getAttribute("data-daykey") || card.getAttribute("data-day") || "";
                 const muscle = card.getAttribute("data-musculo") || "";
-                openRPE(id, nm, dk, muscle);
+                openRPE(exdbid, nm, dk, muscle);
               }catch(_e){}
               gotoNextPending({ allowWrap:false, scroll:true });
             }else{
@@ -3663,14 +3667,16 @@ let _rpeHistRows = [];
         });
       }
 
-      async function loadAndRenderExerciseHistory_(rutSocio, exid, exName){
+      async function loadAndRenderExerciseHistory_(rutSocio, exid, exName, reqId){
+  const myReq = (reqId==null) ? _rpeReqId : reqId;
   try{
     // ✅ Limpia inmediatamente el gráfico anterior
     renderExerciseChart_([]);
     renderKpis_([]);
 
     const res = await fetchWorkoutSetsLog_();
-    if(!res.ok){
+    if(myReq !== _rpeReqId) return;
+if(!res.ok){
       renderExerciseChart_([]);
       return;
     }
@@ -3695,7 +3701,7 @@ let _rpeHistRows = [];
 
       return byId || byName;
     });
-
+    if(myReq !== _rpeReqId) return;
     renderKpis_(rows);
     renderExerciseChart_(rows);
 
@@ -3749,9 +3755,9 @@ try{
   const rutSocio = (window.user?.rut || window.user?.rut_socio || window.user?.id || "").toString().trim();
   if(rutSocio && exid){
     if(!_rpeHistCache) {
-      fetchWorkoutSetsLog_().then(()=> loadAndRenderExerciseHistory_(rutSocio, exid)).catch(()=>{});
+      fetchWorkoutSetsLog_().then(()=> loadAndRenderExerciseHistory_(rutSocio, exid, name, _rpeReqId)).catch(()=>{});
     } else {
-      loadAndRenderExerciseHistory_(rutSocio, exid).catch(()=>{});
+      loadAndRenderExerciseHistory_(rutSocio, exid, name, _rpeReqId).catch(()=>{});
     }
   }
 }catch(_e){}
@@ -3870,8 +3876,19 @@ try{
             if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
             haptic(18);
 
-            // refrescar gráfico/historial del ejercicio (sin recargar toda la página)
-            try{ await loadAndRenderExerciseHistory_(payload.rut_socio, payload.ejercicio_id); }catch(_e){}
+           // ✅ PRO: refrescar gráfico/historial con lo ÚLTIMO sí o sí
+try{
+  // 1) invalidar caché para que el GET traiga el registro recién guardado
+  _rpeHistCache = null;
+
+  // 2) refrescar con ID + nombre (filtro robusto)
+  await loadAndRenderExerciseHistory_(
+    payload.rut_socio,
+    payload.ejercicio_id,
+    payload.ejercicio_nombre
+  );
+}catch(_e){}
+
 
             // cerrar luego de un mini delay para que se alcance a leer
             setTimeout(()=>{ closeRPE(); }, 700);
@@ -4390,3 +4407,4 @@ document.addEventListener("mousedown", (e)=>{
 
 </body>
 </html>
+
