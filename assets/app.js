@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbyrhomW_sCNnAmh9Z_RXH3v4Mj09mPmuzqSUYgxx3iwws0cC4a6923XyK25cK8F38Xvsw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwsI6q30YHCImLpGcVdl0qn_LDEv2MUyI56KjRZjnRw5TyPZKBGsf2oUQnMkok_0dvhAg/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -371,7 +371,9 @@ function getCardioLog(){ return LS.get("mahfit_cardio_log", []); }
 function setCardioLog(v){ LS.set("mahfit_cardio_log", v); }
 
 function getBodyLog(){ return LS.get("mahfit_body_log", []); }
-function setBodyLog(v){ LS.set("mahfit_body_log", v); // ✅ WORKOUT_SETS_LOG (historial por ejercicio)
+function setBodyLog(v){ LS.set("mahfit_body_log", v); }
+
+// ✅ WORKOUT_SETS_LOG (historial por ejercicio)
 function getWorkoutSetsLog(){ return LS.get("mahfit_workout_sets_log", []); }
 function setWorkoutSetsLog(v){ LS.set("mahfit_workout_sets_log", v); }
 
@@ -384,7 +386,6 @@ function workoutSetsForExercise(rutSocio, ejercicioId){
   );
 }
 
-}
 
 // ✅ NUEVO: EVALUATIONS cache
 function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
