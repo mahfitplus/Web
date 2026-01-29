@@ -1648,6 +1648,9 @@
       const user = window.requireAuth("SOCIO");
       if(!user) return;
 
+
+      // ✅ asegurar acceso global para el modal de registro
+      window.user = user;
       $("#btnBack").addEventListener("click", () => { window.location.href = "socio.html"; });
       $("#btnPrint").addEventListener("click", () => { window.print(); });
 
@@ -3485,6 +3488,8 @@ function fmtMMSS(sec){
       }
 
       async function postLogWorkoutSet(payload){
+        // ✅ URL de tu WebApp (Apps Script)
+        const API_URL = "https://script.google.com/macros/s/AKfycbwsI6q30YHCImLpGcVdl0qn_LDEv2MUyI56KjRZjnRw5TyPZKBGsf2oUQnMkok_0dvhAg/exec";
         // Usa API_URL del archivo o la que venga desde app.js (window.API_URL)
         const url = (typeof API_URL !== "undefined" && API_URL) ? API_URL : (window.API_URL || "");
         if(!url){
@@ -3494,13 +3499,29 @@ function fmtMMSS(sec){
         try{
           const res = await fetch(url, {
             method: "POST",
+            // ⚠️ IMPORTANTE: usar text/plain evita preflight CORS
             headers: { "Content-Type":"text/plain;charset=utf-8" },
             body: JSON.stringify({ resource:"WORKOUT_SETS_LOG", data: payload, action:"LOG_WORKOUT_SET" })
           });
-          const data = await res.json().catch(()=> ({}));
-          if(data && (data.ok || data.status === "ok")) return { ok:true, data };
-          return { ok:false, data };
+
+          const status = res.status;
+          const raw = await res.text().catch(()=>"");
+
+          // intenta JSON; si viene HTML/login, caerá al fallback
+          let data = {};
+          try{ data = raw ? JSON.parse(raw) : {}; }catch(_e){ data = {}; }
+
+          if(data && (data.ok === true || data.status === "ok")){
+            return { ok:true, status, data };
+          }
+
+          // construye mejor mensaje de error
+          const serverErr = (data && (data.error || data.message)) ? String(data.error || data.message) : "";
+          const hint = raw && !serverErr ? raw.slice(0, 180) : "";
+          const msg = serverErr || (status ? `HTTP ${status}` : "") || (hint ? hint : "Respuesta no válida");
+          return { ok:false, status, data, error: msg };
         }catch(e){
+          // típico: TypeError Failed to fetch (CORS / red / permisos)
           return { ok:false, error:String(e) };
         }
       }
@@ -3691,6 +3712,8 @@ function fmtMMSS(sec){
         if(s) s.value = (last?.series ?? "");
         if(n) n.value = "";
 
+        clearRpeStatus_();
+
         if(bd){
           bd.style.display = "flex";
           document.body.style.overflow = "hidden";
@@ -3702,6 +3725,26 @@ function fmtMMSS(sec){
         if(bd) bd.style.display = "none";
         document.body.style.overflow = "";
         rpeCtx = null;
+        clearRpeStatus_();
+      }
+
+      // ✅ Estado visual (Guardando / OK / Error)
+      function setRpeStatus_(type, msg, loading){
+        const el = document.getElementById("rpeStatus");
+        if(!el) return;
+        el.style.display = "flex";
+        el.classList.remove("ok","err","info");
+        if(type) el.classList.add(type);
+        const icon = loading ? '<span class="spin" aria-hidden="true"></span>' : '';
+        const safe = (msg||"").toString();
+        el.innerHTML = icon + `<div style="line-height:1.25;">${safe}</div>`;
+      }
+      function clearRpeStatus_(){
+        const el = document.getElementById("rpeStatus");
+        if(!el) return;
+        el.style.display = "none";
+        el.classList.remove("ok","err","info");
+        el.innerHTML = "";
       }
 
       document.addEventListener("click", async (e)=>{
@@ -3719,6 +3762,7 @@ function fmtMMSS(sec){
         }
 
         if(t?.id === "rpeSkip"){
+          clearRpeStatus_();
           showToast("Registro omitido");
           haptic(10);
           return closeRPE();
@@ -3763,20 +3807,20 @@ function fmtMMSS(sec){
             timestamp: Date.now()
           };
 
-          // Si no hay rut, igual guarda local y no revienta
+          // Si no hay RUT, muestra error y NO cierres el modal (para que el usuario lo vea)
           if(!payload.rut_socio){
-            showToast("Guardado local (sin RUT)");
-            if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
-            haptic(18);
-            closeRPE();
+            setRpeStatus_("err","❌ No se detectó tu RUT. Cierra sesión y vuelve a ingresar.", false);
+            showToast("No se detectó tu RUT", 1800);
+            haptic(8);
             return;
           }
-
-          // Enviar al backend
+// Enviar al backend
           const btn = t;
           const oldTxt = btn.textContent;
-          btn.textContent = "Guardando...";
+          btn.textContent = "Guardando…";
           btn.disabled = true;
+
+          setRpeStatus_("info", "Guardando tu registro…", true);
 
           const res = await postLogWorkoutSet(payload);
 
@@ -3784,15 +3828,22 @@ function fmtMMSS(sec){
           btn.textContent = oldTxt;
 
           if(res.ok){
+            setRpeStatus_("ok", "✅ Guardado con éxito", false);
             showToast("Registro guardado ✅");
             if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
             haptic(18);
-            closeRPE();
+
+            // refrescar gráfico/historial del ejercicio (sin recargar toda la página)
+            try{ await loadAndRenderExerciseHistory_(payload.rut_socio, payload.ejercicio_id); }catch(_e){}
+
+            // cerrar luego de un mini delay para que se alcance a leer
+            setTimeout(()=>{ closeRPE(); }, 700);
           }else{
-            showToast("No se pudo guardar (offline).");
+            const errMsg = (res && res.error) ? String(res.error) : "Error al guardar. Revisa conexión/permisos.";
+            setRpeStatus_("err", "❌ " + errMsg, false);
+            showToast("No se pudo guardar ❌");
             haptic(12);
-            // Deja guardado local igual
-            closeRPE();
+            // no cierro automáticamente para que vea el error y pueda reintentar
           }
         }
       });
@@ -4260,6 +4311,8 @@ document.addEventListener("mousedown", (e)=>{
         <button class="rpeBtn" id="rpeSkip" style="flex:1;">Omitir</button>
         <button class="rpeBtn primary" id="rpeSave" style="flex:1;">Guardar</button>
       </div>
+
+      <div id="rpeStatus" class="rpe-status" aria-live="polite" style="display:none;"></div>
 
       <div style="margin-top:10px; font-size:12px; opacity:.75;">
         Tip: si marcas “Difícil” 2 veces seguidas, sugeriremos ajustar carga/volumen.
