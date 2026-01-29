@@ -3011,6 +3011,7 @@ function fmtMMSS(sec){
               const restSecs = parseRestToSecs(descanso) ?? 60;
 
               const info = findExerciseInfo(e) || {};
+              const muscle = String(info.musculo||info.muscle||e.musculo||e.muscle||"").trim();
               const mediaGif = String(info.mediaUrlGif||info.media_url_gif||"").trim();
               const mediaImg = String(info.mediaUrl||info.media_url||"").trim();
               const media = (mediaGif || mediaImg).trim();
@@ -3029,7 +3030,7 @@ function fmtMMSS(sec){
                 </div>` : "";
 
               return `
-                <div class="ex" data-daykey="${escapeAttr(dayKey)}" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
+                <div class="ex" data-daykey="${escapeAttr(dayKey)}" data-exid="${escapeAttr(id)}" data-daylabel="${escapeAttr(dia)}" data-dayidx="${dayIdx}" data-exidx="${exIdx}" data-name="${escapeAttr(name)}" data-musculo="${escapeAttr(muscle)}" data-series="${escapeAttr(String(e.series||""))}" data-reps="${escapeAttr(String(e.reps||""))}" data-carga="${escapeAttr(String(e.carga||""))}" data-descanso="${escapeAttr(String(e.descanso||""))}" data-obs="${escapeAttr(String(e.obs||""))}">
                   <div class="ex-left">
                     <div class="check ${isDone ? "done":""}" title="Marcar realizado" role="button" tabindex="0" data-action="toggle">
                       <i class="fas ${isDone ? "fa-check" : "fa-minus"}" aria-hidden="true"></i>
@@ -3051,7 +3052,7 @@ function fmtMMSS(sec){
                   </div>
 
                   <div class="ex-actions">
-                    <button class="mini warning" data-action="rest" data-rest="${restSecs}" data-name="${escapeAttr(name)}">
+                    <button class="mini warning" data-action="rest" data-rest="${restSecs}" data-name="${escapeAttr(name)}" data-musculo="${escapeAttr(muscle)}">
                       <i class="fas fa-stopwatch" aria-hidden="true"></i> Descanso
                     </button>
                     <button class="mini success" data-action="toggle">
@@ -3261,7 +3262,7 @@ function fmtMMSS(sec){
             const restBtn = card.querySelector("[data-action='rest']");
             const secs = Number(restBtn?.getAttribute("data-rest")) || Number(card.getAttribute("data-rest")) || 60;
             const nm = restBtn?.getAttribute("data-name")
-                    || card.querySelector(".name")?.textContent
+                    || card.querySelector(".ex-name")?.textContent
                     || card.querySelector(".ex-title")?.textContent
                     || "Descanso";
             openTimer(`Descanso · ${nm}`, secs);
@@ -3277,9 +3278,10 @@ function fmtMMSS(sec){
             if(next){
               // avanza al siguiente pendiente (sin wrap)
               try{
-                const nm = card.querySelector(".name")?.textContent || card.querySelector(".ex-title")?.textContent || "Ejercicio";
+                const nm = card.querySelector(".ex-name")?.textContent || card.querySelector(".ex-title")?.textContent || "Ejercicio";
                 const dk = card.getAttribute("data-daykey") || card.getAttribute("data-day") || "";
-                openRPE(id, nm, dk);
+                const muscle = card.getAttribute("data-musculo") || "";
+                openRPE(id, nm, dk, muscle);
               }catch(_e){}
               gotoNextPending({ allowWrap:false, scroll:true });
             }else{
@@ -3530,7 +3532,10 @@ function fmtMMSS(sec){
       // --- 📈 HISTORIAL + GRÁFICO (Chart.js) ---
       let rpeChart = null;
       let rpeChartMode = "peso"; // "peso" | "vol"
-      let _rpeHistCache = null;  // cache local en memoria por sesión
+      let _rpeHistCache = null;
+let _rpeReqId = 0;
+let _rpeHistRows = [];
+  // cache local en memoria por sesión
 
       function calcVol_(row){
         const w = Number(row.peso_kg || row.pesoKg || 0);
@@ -3658,52 +3663,71 @@ function fmtMMSS(sec){
         });
       }
 
-      async function loadAndRenderExerciseHistory_(rutSocio, exid){
-        const res = await fetchWorkoutSetsLog_();
-        if(!res.ok) return;
+      async function loadAndRenderExerciseHistory_(rutSocio, exid, exName){
+  try{
+    // ✅ Limpia inmediatamente el gráfico anterior
+    renderExerciseChart_([]);
+    renderKpis_([]);
 
-        const rowsAll = res.rows || [];
-        const rows = rowsAll.filter(r=>{
-          const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
-          const ex  = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
-          return rut === String(rutSocio||"").trim() && ex === String(exid||"").trim();
-        });
+    const res = await fetchWorkoutSetsLog_();
+    if(!res.ok){
+      renderExerciseChart_([]);
+      return;
+    }
 
-        renderKpis_(rows);
-        renderExerciseChart_(rows);
+    const rowsAll = res.rows || [];
+    const rutNeed = String(rutSocio||"").trim();
+    const exIdNeed = String(exid||"").trim();
+    const exNameNeed = String(exName||"").trim().toLowerCase();
 
-        const bPeso = document.getElementById("rpeTabPeso");
-        const bVol  = document.getElementById("rpeTabVol");
-        if(bPeso && !bPeso._bound){
-          bPeso._bound = true;
-          bPeso.addEventListener("click", ()=>{
-            setChartTabUI_("peso");
-            renderExerciseChart_(rows);
-          });
-        }
-        if(bVol && !bVol._bound){
-          bVol._bound = true;
-          bVol.addEventListener("click", ()=>{
-            setChartTabUI_("vol");
-            renderExerciseChart_(rows);
-          });
-        }
-      }
+    // ✅ FILTRO ROBUSTO:
+    // - primero por rut
+    // - luego por (ejercicio_id == exid) OR (ejercicio_nombre == exName)
+    const rows = rowsAll.filter(r=>{
+      const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
+      if(rut !== rutNeed) return false;
+
+      const rid = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
+      const rnm = String(r.ejercicio_nombre ?? r.ejercicioNombre ?? r.nombre ?? "").trim().toLowerCase();
+
+      const byId = exIdNeed && rid === exIdNeed;
+      const byName = exNameNeed && rnm === exNameNeed;
+
+      return byId || byName;
+    });
+
+    renderKpis_(rows);
+    renderExerciseChart_(rows);
+
+  }catch(e){
+    // si falla, al menos no deja pegado el chart viejo
+    renderExerciseChart_([]);
+  }
+}
 
 
-      function openRPE(exid, name, dayKey){
-        rpeCtx = { exid, name, dayKey };
+
+      function openRPE(exid, name, dayKey, muscle){
+// ✅ Limpia evolución anterior y arma "token" para evitar mezclas
+_rpeReqId++;
+_rpeHistRows = [];
+try{ renderKpis_([]); }catch(_e){}
+try{ renderExerciseChart_([]); }catch(_e){}
+
+        rpeCtx = { exid, name, dayKey, muscle };
         rpeSelected = "mid";
         setRpeUI("mid");
 
         const bd = document.getElementById("rpeBackdrop");
         const sub = document.getElementById("rpeSub");
+        const mus = document.getElementById("rpeMuscle");
         const w = document.getElementById("rpeWeight");
         const r = document.getElementById("rpeReps");
         const s = document.getElementById("rpeSeries");
         const n = document.getElementById("rpeNote");
 
         if(sub) sub.textContent = `Ejercicio: ${name || "—"}`;
+        if(mus) mus.textContent = muscle ? `Músculo: ${muscle}` : "";
 
         // Prefill con última vez
         const last = getLastSet(exid);
@@ -3718,6 +3742,19 @@ function fmtMMSS(sec){
           bd.style.display = "flex";
           document.body.style.overflow = "hidden";
         }
+
+
+// ✅ Auto-cargar evolución al abrir (sin botón)
+try{
+  const rutSocio = (window.user?.rut || window.user?.rut_socio || window.user?.id || "").toString().trim();
+  if(rutSocio && exid){
+    if(!_rpeHistCache) {
+      fetchWorkoutSetsLog_().then(()=> loadAndRenderExerciseHistory_(rutSocio, exid)).catch(()=>{});
+    } else {
+      loadAndRenderExerciseHistory_(rutSocio, exid).catch(()=>{});
+    }
+  }
+}catch(_e){}
       }
 
       function closeRPE(){
@@ -4276,6 +4313,7 @@ document.addEventListener("mousedown", (e)=>{
     </header>
     <div class="body">
       <div id="rpeSub" style="font-weight:900; opacity:.92;">Ejercicio: —</div>
+        <div id="rpeMuscle" style="margin-top:4px;font-size:12px;opacity:.70;"></div>
       <div style="margin-top:6px; font-size:12px; opacity:.75;" id="rpeMeta">Completa tu registro para llevar historial.</div>
 
       <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:12px;">
