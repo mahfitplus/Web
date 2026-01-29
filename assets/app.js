@@ -261,19 +261,34 @@ async function apiGet(resource){
 }
 
 async function apiPost(resource, data){
-  const payload = { resource, data };
+  const body = {
+    resource: String(resource || "").toUpperCase(),
+    data: data || {}
+  };
+
   const r = await fetch(API_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // ✅ compat
-    body: JSON.stringify(payload),
+    method: "POST",
+    headers: { "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
   });
+
   const t = await r.text();
-  let j = null;
-  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
-  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  if(j && j.ok === false) throw new Error(j.error || "API error");
+
+  let j;
+  try{
+    j = JSON.parse(t);
+  }catch(e){
+    console.error("API RAW:", t);
+    throw new Error("Respuesta API no JSON");
+  }
+
+  if(!j.ok){
+    throw new Error(j.error || "API error");
+  }
+
   return j;
 }
+
 
 
 // ---------------- EXERCISES helpers (Base) ----------------
