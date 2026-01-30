@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbwsI6q30YHCImLpGcVdl0qn_LDEv2MUyI56KjRZjnRw5TyPZKBGsf2oUQnMkok_0dvhAg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxIFk4gUiUXF_twLYm6x7g6au6sMaV_2HpywrP0f98a1uxKDS1GXEsfhpvpNyYG2IGDGw/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -1285,10 +1285,73 @@ async function refreshLogs(){
   }
 })();
 
+/* =========================================================
+   ✅ RM helpers (Rutinas) — WORKOUT_SETS_LOG
+   - Usa e1rm guardado en la hoja (RM "oficial")
+   - Requiere columnas: e1rm, rpe, timestamp
+   ========================================================= */
+
+// Último RM registrado por ejercicio (por timestamp)
+function getLastRMForExercise(rutSocio, ejercicioId){
+  const rows = workoutSetsForExercise(rutSocio, ejercicioId)
+    .filter(r => Number(r.e1rm) > 0)
+    .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
+  return rows[0] || null;
+}
+
+// Mejor RM histórico por ejercicio
+function getBestRMForExercise(rutSocio, ejercicioId){
+  const rows = workoutSetsForExercise(rutSocio, ejercicioId)
+    .filter(r => Number(r.e1rm) > 0);
+  if(!rows.length) return null;
+  return rows.reduce((best, r) =>
+    Number(r.e1rm) > Number(best.e1rm) ? r : best
+  );
+}
+
+// Sugerencias de carga (%RM)
+function rmSuggestions(e1rm){
+  const rm = Number(e1rm);
+  if(!rm) return null;
+  return {
+    pct70: Math.round(rm * 0.70),
+    pct80: Math.round(rm * 0.80)
+  };
+}
+
+// Detecta estado: progreso / fatiga (simple)
+function detectRMStatus(rutSocio, ejercicioId){
+  const rows = workoutSetsForExercise(rutSocio, ejercicioId)
+    .filter(r => Number(r.e1rm) > 0)
+    .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
+
+  if(rows.length < 2) return null;
+
+  const last = rows[0];
+  const prev = rows[1];
+
+  const delta = Number(last.e1rm) - Number(prev.e1rm);
+  const rpe = String(last.rpe || "").toLowerCase();
+
+  if(delta > 0 && rpe === "optimo"){
+    return { type:"progress", delta };
+  }
+  if(delta < 0 && rpe === "pesado"){
+    return { type:"fatigue", delta };
+  }
+  return null;
+}
+
 // ---------------- Exponer helpers globales ----------------
 // ✅ WORKOUT_SETS_LOG exposed
 window.getWorkoutSetsLog = getWorkoutSetsLog;
 window.workoutSetsForExercise = workoutSetsForExercise;
+
+// ✅ RM helpers (Rutinas)
+window.getLastRMForExercise = getLastRMForExercise;
+window.getBestRMForExercise = getBestRMForExercise;
+window.rmSuggestions = rmSuggestions;
+window.detectRMStatus = detectRMStatus;
 
 window.API_URL = API_URL;
 window.apiGet = apiGet;
