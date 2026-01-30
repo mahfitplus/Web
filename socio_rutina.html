@@ -1253,6 +1253,31 @@
   border: 1px solid rgba(0,0,0,.08);
 }
 
+
+/* ===== RM en Rutinas ===== */
+.ex-rmline{
+  margin-top:6px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.ex-rm-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 9px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:rgba(255,255,255,.75);
+  font-weight:900;
+  font-size:12px;
+  color: rgba(31,42,68,.95);
+}
+.ex-rm-pill .muted{opacity:.7;font-weight:800;}
+.ex-rm-pill.good{border-color: rgba(43,213,118,.28); background: rgba(43,213,118,.10);}
+.ex-rm-pill.warn{border-color: rgba(255,174,51,.30); background: rgba(255,174,51,.12);}
+.ex-rm-pill.bad{border-color: rgba(255,88,88,.28); background: rgba(255,88,88,.10);}
+
 </style>
 
 <style>
@@ -3041,6 +3066,7 @@ function fmtMMSS(sec){
 
                     <div class="ex-info">
                       <div class="ex-name">${escapeHtml(name)}</div>
+                      <div class="ex-rmline" data-rmline="1" data-exdbid="${escapeAttr(exid)}"></div>
 
                       ${thumb}
                       ${tech}
@@ -3110,6 +3136,7 @@ function fmtMMSS(sec){
         });
 
         wrap.innerHTML = `<div class="days-accordion">${parts.join("")}</div>`;
+        try{ hydrateRoutineRM_(); }catch(_e){}
         renderFeedback();
         mountFeedbackIntoStartedDay();
         // ✅ refresca estado de Entrenamiento Activo
@@ -3452,7 +3479,7 @@ if(action === "rest"){
       
       // RPE + Peso/Reps/Nota (registro por ejercicio)
       let rpeCtx = null; // { exid, dayKey, name }
-      let rpeSelected = "mid";
+      let rpeSelected = "optimo";
 
       function normNum(v){
         if(v==null) return "";
@@ -3479,8 +3506,156 @@ if(action === "rest"){
         writeJSON(LS_WEIGHT_MAP, map);
       }
 
+      // Guarda último set local con historial mínimo (para RM/progreso en Rutinas)
+      function updateLastSetWithRm(exid, obj){
+        const map = readJSON(LS_WEIGHT_MAP, {});
+        const prev = map?.[exid] || null;
+        const now = Date.now();
+        map[exid] = {
+          ...obj,
+          at: now,
+          prev_e1rm: Number(prev?.e1rm || 0) || 0,
+          prev_rpe: String(prev?.rpe || ""),
+          prev_at: Number(prev?.at || 0) || 0
+        };
+        writeJSON(LS_WEIGHT_MAP, map);
+      }
+
+      function roundToStep_(v, step=2.5){
+        v = Number(v);
+        if(!isFinite(v) || v<=0) return 0;
+        const s = Number(step) > 0 ? Number(step) : 1;
+        return Math.round(v / s) * s;
+      }
+
+      function rpeLabel_(v){
+        const s = String(v||"").toLowerCase();
+        if(s==="liviano") return "Liviano";
+        if(s==="optimo" || s==="óptimo") return "Óptimo";
+        if(s==="pesado") return "Muy pesado";
+        return s || "—";
+      }
+
+      function rmTrendBadge_(cur, prev, rpe){
+        const c = Number(cur||0), p = Number(prev||0);
+        if(!(c>0) || !(p>0)) return { text:"", cls:"" };
+
+        // umbral: 2% o 2 kg (lo que sea mayor)
+        const thr = Math.max(p*0.02, 2);
+        const delta = c - p;
+
+        const r = String(rpe||"").toLowerCase();
+        if(delta >= thr && (r==="optimo" || r==="óptimo")){
+          return { text:`📈 Progreso +${Math.round(delta)}kg`, cls:"good" };
+        }
+        if(delta <= -thr && r==="pesado"){
+          return { text:`😮‍💨 Fatiga ${Math.round(delta)}kg`, cls:"bad" };
+        }
+        // neutro: pequeño cambio
+        return { text:`↔️ Estable ${Math.round(delta)}kg`, cls:"warn" };
+      }
+
+      // Pintar RM y sugerencias debajo del ejercicio en "Mi Rutina"
+            // Pintar RM y sugerencias debajo del ejercicio en "Mi Rutina"
+      // Fuente preferida: WORKOUT_SETS_LOG (Sheets) vía helpers de app.js
+      // Fallback: último set guardado local (LS_WEIGHT_MAP)
+      function hydrateRoutineRM_(){
+        const root = document.getElementById("routineWrap");
+        if(!root) return;
+
+        const rutSocio = String((window.user?.rut || window.user?.rut_socio || window.user?.id || "") || "").trim();
+
+        root.querySelectorAll('.ex [data-rmline="1"]').forEach(line=>{
+          const exdbid = line.getAttribute("data-exdbid") || "";
+          const exslot = line.closest(".ex")?.getAttribute("data-exid") || "";
+          const exName = line.closest(".ex")?.getAttribute("data-name") || "";
+          const exid = (exdbid || exslot || "").trim();
+          if(!exid) return;
+
+          line.innerHTML = "";
+
+          // 1) Preferido: último RM real guardado en WORKOUT_SETS_LOG
+          let lastRMRow = null;
+          try{
+            if(rutSocio && typeof window.getLastRMForExercise === "function"){
+              // usamos exid "db" cuando exista (ejercicio_id), sino el slotId
+              lastRMRow = window.getLastRMForExercise(rutSocio, exdbid || exslot);
+              // fallback por nombre si tu dataset histórico lo guardó así
+              if(!lastRMRow && typeof window.workoutSetsForExercise === "function"){
+                // ya está filtrado por ejercicioId, así que no hacemos nada aquí
+              }
+            }
+          }catch(_e){}
+
+          // 2) Fallback: último set guardado localmente en el modal
+          let lastLocal = null;
+          try{ lastLocal = getLastSet(exid); }catch(_e){}
+
+          // Resolver e1rm + rpe + prev_e1rm
+          let e1rm = 0, rpe = "", prev_e1rm = 0;
+
+          if(lastRMRow && Number(lastRMRow.e1rm) > 0){
+            e1rm = Number(lastRMRow.e1rm) || 0;
+            rpe = String(lastRMRow.rpe || "");
+            // prev: buscamos el segundo más reciente del log
+            try{
+              if(typeof window.workoutSetsForExercise === "function" && rutSocio){
+                const rows = window.workoutSetsForExercise(rutSocio, exdbid || exslot)
+                  .filter(r => Number(r.e1rm) > 0)
+                  .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
+                prev_e1rm = Number(rows?.[1]?.e1rm || 0) || 0;
+              }
+            }catch(_e){}
+          }else if(lastLocal && (Number(lastLocal?.e1rm || lastLocal?.rm_avg || 0) > 0)){
+            e1rm = Number(lastLocal?.e1rm || lastLocal?.rm_avg || 0) || 0;
+            rpe = String(lastLocal?.rpe || "");
+            prev_e1rm = Number(lastLocal?.prev_e1rm || 0) || 0;
+          }else{
+            return; // no hay RM para mostrar
+          }
+
+          const p70 = roundToStep_(e1rm * 0.70, 2.5);
+          const p80 = roundToStep_(e1rm * 0.80, 2.5);
+
+          // Badge progreso/fatiga: si tenemos helper, úsalo; si no, usa heurística local
+          let trend = { text:"", cls:"" };
+          try{
+            if(rutSocio && typeof window.detectRMStatus === "function"){
+              const st = window.detectRMStatus(rutSocio, exdbid || exslot);
+              if(st && st.type === "progress") trend = { text:`📈 Progreso +${Math.round(st.delta)}kg`, cls:"good" };
+              if(st && st.type === "fatigue")  trend = { text:`😮‍💨 Fatiga ${Math.round(st.delta)}kg`, cls:"bad" };
+            }else{
+              trend = rmTrendBadge_(e1rm, prev_e1rm, rpe);
+            }
+          }catch(_e){
+            trend = rmTrendBadge_(e1rm, prev_e1rm, rpe);
+          }
+
+          // RM
+          line.insertAdjacentHTML("beforeend",
+            `<span class="ex-rm-pill"><span class="muted">🎯 RM</span> ${Math.round(e1rm)} kg</span>`
+          );
+
+          // sugerencias
+          line.insertAdjacentHTML("beforeend",
+            `<span class="ex-rm-pill"><span class="muted">70%</span> ${p70} kg · <span class="muted">80%</span> ${p80} kg</span>`
+          );
+
+          // estado (progreso/fatiga) + RPE
+          if(trend.text){
+            line.insertAdjacentHTML("beforeend",
+              `<span class="ex-rm-pill ${trend.cls}">${trend.text} · <span class="muted">RPE</span> ${rpeLabel_(rpe)}</span>`
+            );
+          }else if(rpe){
+            line.insertAdjacentHTML("beforeend",
+              `<span class="ex-rm-pill"><span class="muted">RPE</span> ${rpeLabel_(rpe)}</span>`
+            );
+          }
+        });
+      }
+
       function setRpeUI(val){
-        rpeSelected = val || "mid";
+        rpeSelected = val || "optimo";
         const row = document.getElementById("rpeRow");
         if(!row) return;
         row.querySelectorAll("[data-rpe]").forEach(btn=>{
@@ -3535,8 +3710,8 @@ if(action === "rest"){
       
       // --- 📈 HISTORIAL + GRÁFICO (Chart.js) ---
       let rpeChart = null;
-      let rpeChartMode = "peso"; // "peso" | "vol"
-      let _rpeHistCache = null;
+      let rpeChartMode = "peso"; // "peso" | "vol" | "rm"
+let _rpeHistCache = null;
 let _rpeReqId = 0;
 let _rpeHistRows = [];
   // cache local en memoria por sesión
@@ -3548,6 +3723,74 @@ let _rpeHistRows = [];
         const v = w * r * s;
         return isFinite(v) ? v : 0;
       }
+
+      // ===== 1RM estimado =====
+      // Epley: e1RM = peso * (1 + reps/30)
+      function calcRM_Epley_(rowOrWeight, repsMaybe){
+        let w, r;
+        if(typeof rowOrWeight === "object" && rowOrWeight){
+          w = Number(rowOrWeight.peso_kg ?? rowOrWeight.pesoKg ?? 0);
+          r = Number(rowOrWeight.reps ?? 0);
+        }else{
+          w = Number(rowOrWeight ?? 0);
+          r = Number(repsMaybe ?? 0);
+        }
+        if(!isFinite(w) || !isFinite(r) || w <= 0 || r <= 0) return 0;
+        const repsClamped = Math.min(Math.max(r, 1), 15);
+        const rm = w * (1 + repsClamped / 30);
+        return isFinite(rm) ? rm : 0;
+      }
+
+      // Brzycki: 1RM = peso * 36 / (37 - reps)
+      function calcRM_Brzycki_(rowOrWeight, repsMaybe){
+        let w, r;
+        if(typeof rowOrWeight === "object" && rowOrWeight){
+          w = Number(rowOrWeight.peso_kg ?? rowOrWeight.pesoKg ?? 0);
+          r = Number(rowOrWeight.reps ?? 0);
+        }else{
+          w = Number(rowOrWeight ?? 0);
+          r = Number(repsMaybe ?? 0);
+        }
+        if(!isFinite(w) || !isFinite(r) || w <= 0 || r <= 0) return 0;
+        const repsClamped = Math.min(Math.max(r, 1), 15);
+        const denom = (37 - repsClamped);
+        if(denom <= 0) return 0;
+        const rm = w * 36 / denom;
+        return isFinite(rm) ? rm : 0;
+      }
+
+      // Promedio simple (opcional) para mostrar 1 valor "estable"
+      function calcRM_Avg_(rowOrWeight, repsMaybe){
+        const a = calcRM_Epley_(rowOrWeight, repsMaybe);
+        const b = calcRM_Brzycki_(rowOrWeight, repsMaybe);
+        if(a && b) return (a + b) / 2;
+        return a || b || 0;
+      }
+
+
+
+      function updateRmLive_(){
+        const w = normNum(document.getElementById("rpeWeight")?.value);
+        const r = normInt(document.getElementById("rpeReps")?.value);
+        const el = document.getElementById("rmLive");
+        if(!el) return;
+
+        const e = calcRM_Epley_(w || 0, r || 0);
+        const b = calcRM_Brzycki_(w || 0, r || 0);
+
+        if(e <= 0 && b <= 0){
+          el.textContent = "🎯 RM estimado: —";
+          return;
+        }
+
+        // Dos fórmulas, una vista clara
+        const eTxt = e > 0 ? `${Math.round(e)} kg` : "—";
+        const bTxt = b > 0 ? `${Math.round(b)} kg` : "—";
+        el.textContent = `🎯 RM Epley: ${eTxt}  |  RM Brzycki: ${bTxt}`;
+      }
+
+
+
 
       async function fetchWorkoutSetsLog_(){
         if(_rpeHistCache) return { ok:true, rows:_rpeHistCache };
@@ -3576,17 +3819,17 @@ let _rpeHistRows = [];
 
       function setChartTabUI_(mode){
         rpeChartMode = mode;
+
         const bPeso = document.getElementById("rpeTabPeso");
         const bVol  = document.getElementById("rpeTabVol");
-        if(bPeso && bVol){
-          if(mode === "peso"){
-            bPeso.classList.add("primary");
-            bVol.classList.remove("primary");
-          }else{
-            bVol.classList.add("primary");
-            bPeso.classList.remove("primary");
-          }
-        }
+        const bRm   = document.getElementById("rpeTabRm");
+
+        const all = [bPeso, bVol, bRm].filter(Boolean);
+        all.forEach(b => b.classList.remove("primary"));
+
+        if(mode === "peso" && bPeso) bPeso.classList.add("primary");
+        if(mode === "vol"  && bVol)  bVol.classList.add("primary");
+        if(mode === "rm"   && bRm)   bRm.classList.add("primary");
       }
 
       function renderKpis_(rows){
@@ -3600,6 +3843,8 @@ let _rpeHistRows = [];
         const lastR = (last.reps ?? "") !== "" ? last.reps : "—";
         const lastS = (last.series ?? "") !== "" ? last.series : "—";
         const lastV = calcVol_(last);
+        const lastRM_E = calcRM_Epley_(last);
+        const lastRM_B = calcRM_Brzycki_(last);
 
         const mk = (icon, label, val)=>(
           `<span class="badge" style="display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);font-weight:900;font-size:12px;">
@@ -3611,6 +3856,8 @@ let _rpeHistRows = [];
         k.insertAdjacentHTML("beforeend", mk("🔁", "Reps", `${lastR}`));
         k.insertAdjacentHTML("beforeend", mk("📦", "Series", `${lastS}`));
         k.insertAdjacentHTML("beforeend", mk("📈", "Volumen", `${Math.round(lastV)}`));
+        k.insertAdjacentHTML("beforeend", mk("🎯", "RM Epley", `${Math.round(lastRM_E)} kg`));
+        k.insertAdjacentHTML("beforeend", mk("🎯", "RM Brzycki", `${Math.round(lastRM_B)} kg`));
       }
 
       function renderExerciseChart_(rows){
@@ -3646,17 +3893,35 @@ let _rpeHistRows = [];
 
         const vol = sorted.map(r=> calcVol_(r));
 
-        const dataset = (rpeChartMode === "vol")
-          ? { label:"Volumen", data: vol }
-          : { label:"Peso (kg)", data: peso };
+        const rmE = sorted.map(r=>{
+          const v = calcRM_Epley_(r);
+          return v ? Math.round(v) : null;
+        });
+
+        const rmB = sorted.map(r=>{
+          const v = calcRM_Brzycki_(r);
+          return v ? Math.round(v) : null;
+        });
+
+        let datasets;
+        if(rpeChartMode === "vol"){
+          datasets = [{ label:"Volumen", data: vol }];
+        }else if(rpeChartMode === "rm"){
+          datasets = [
+            { label:"RM Epley (kg)", data: rmE },
+            { label:"RM Brzycki (kg)", data: rmB }
+          ];
+        }else{
+          datasets = [{ label:"Peso (kg)", data: peso }];
+        }
 
         rpeChart = new Chart(cv, {
           type: "line",
-          data: { labels, datasets: [dataset] },
+          data: { labels, datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { legend: { display: (rpeChartMode === "rm") } },
             interaction: { mode:"index", intersect:false },
             elements: { point: { radius: 3, hoverRadius: 4 } },
             scales: {
@@ -3702,6 +3967,7 @@ if(!res.ok){
       return byId || byName;
     });
     if(myReq !== _rpeReqId) return;
+    _rpeHistRows = rows;
     renderKpis_(rows);
     renderExerciseChart_(rows);
 
@@ -3721,8 +3987,8 @@ try{ renderKpis_([]); }catch(_e){}
 try{ renderExerciseChart_([]); }catch(_e){}
 
         rpeCtx = { exid, name, dayKey, muscle };
-        rpeSelected = "mid";
-        setRpeUI("mid");
+        rpeSelected = "optimo";
+        setRpeUI("optimo");
 
         const bd = document.getElementById("rpeBackdrop");
         const sub = document.getElementById("rpeSub");
@@ -3741,6 +4007,8 @@ try{ renderExerciseChart_([]); }catch(_e){}
         if(r) r.value = (last?.reps ?? "");
         if(s) s.value = (last?.series ?? "");
         if(n) n.value = "";
+
+        try{ updateRmLive_(); }catch(_e){}
 
         clearRpeStatus_();
 
@@ -3796,11 +4064,16 @@ try{
         if(t?.id === "rpeClose") return closeRPE();
         if(t?.id === "rpeBackdrop" && e.target === t) return closeRPE();
 
+        if(t?.id === "rpeTabPeso"){ setChartTabUI_("peso"); return renderExerciseChart_(_rpeHistRows || []); }
+        if(t?.id === "rpeTabVol"){ setChartTabUI_("vol"); return renderExerciseChart_(_rpeHistRows || []); }
+        if(t?.id === "rpeTabRm"){ setChartTabUI_("rm"); return renderExerciseChart_(_rpeHistRows || []); }
+
+
         const pick = t?.closest?.("[data-rpe]");
         if(pick){
           const val = pick.getAttribute("data-rpe");
           setRpeUI(val);
-          haptic(val === "hard" ? 26 : (val === "mid" ? 18 : 12));
+          haptic(val === "pesado" ? 26 : (val === "optimo" ? 18 : 12));
           return;
         }
 
@@ -3825,7 +4098,23 @@ try{
           writeJSON(LS_RPE_KEY, map);
 
           // Guardar último set local (prefill futuro)
-          setLastSet(rpeCtx.exid, { peso_kg, reps, series });
+          // Calcular RM y guardar último set local (para mostrar en Rutinas)
+          const rmE = Math.round(calcRM_Epley_(peso_kg || 0, reps || 0) || 0);
+          const rmB = Math.round(calcRM_Brzycki_(peso_kg || 0, reps || 0) || 0);
+          const rmAvg = (rmE>0 && rmB>0) ? Math.round((rmE + rmB)/2) : (rmE>0 ? rmE : (rmB>0 ? rmB : 0));
+
+          updateLastSetWithRm(rpeCtx.exid, { 
+            peso_kg, reps, series,
+            rpe: rpeSelected,
+            e1rm: rmAvg,
+            rm_epley: rmE,
+            rm_brzycki: rmB,
+            rm_avg: rmAvg,
+            rm_method: "avg"
+          });
+
+          // refrescar RM en la lista de Rutina (si está visible)
+          try{ hydrateRoutineRM_(); }catch(_e){}
 
           // 2x "hard" sugerencia
           const hist = readJSON(LS_RPE_HISTORY_KEY, []);
@@ -3833,7 +4122,7 @@ try{
           while(hist.length > 30) hist.shift();
           writeJSON(LS_RPE_HISTORY_KEY, hist);
           const lastTwo = hist.slice(-2).filter(x=>x.exid === rpeCtx.exid);
-          const suggest = (lastTwo.length === 2 && lastTwo.every(x=>x.val === "hard"));
+          const suggest = (lastTwo.length === 2 && lastTwo.every(x=>x.val === "pesado"));
 
           // Payload para Sheets
           const payload = {
@@ -3848,6 +4137,12 @@ try{
             rpe: rpeSelected,
             comentario: comentario,
             timestamp: Date.now()
+          ,
+            e1rm: (rmAvg || ""),
+            rm_method: "avg",
+            rm_epley: (rmE || ""),
+            rm_brzycki: (rmB || ""),
+            rm_avg: (rmAvg || "")
           };
 
           // Si no hay RUT, muestra error y NO cierres el modal (para que el usuario lo vea)
@@ -3873,7 +4168,7 @@ try{
           if(res.ok){
             setRpeStatus_("ok", "✅ Guardado con éxito", false);
             showToast("Registro guardado ✅");
-            if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Difícil).", 2200);
+            if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Muy pesado).", 2200);
             haptic(18);
 
            // ✅ PRO: refrescar gráfico/historial con lo ÚLTIMO sí o sí
@@ -4316,6 +4611,11 @@ document.addEventListener("mousedown", (e)=>{
     hideDayDoneModal();
   }
 });
+
+
+// RM live listeners
+try{ document.getElementById("rpeWeight")?.addEventListener("input", updateRmLive_); }catch(_e){}
+try{ document.getElementById("rpeReps")?.addEventListener("input", updateRmLive_); }catch(_e){}
 </script>
 
 
@@ -4350,11 +4650,13 @@ document.addEventListener("mousedown", (e)=>{
 
       </div>
 
+      <div id="rmLive" style="margin-top:10px; font-weight:1000; font-size:13px; opacity:.9;">🎯 RM estimado: —</div>
+
       <div style="margin-top:12px; font-weight:900; opacity:.86;">Esfuerzo (RPE)</div>
       <div class="rpeRow" id="rpeRow" style="margin-top:10px;">
-        <button class="rpeBtn" data-rpe="easy">😌 Fácil</button>
-        <button class="rpeBtn primary" data-rpe="mid">😐 Medio</button>
-        <button class="rpeBtn" data-rpe="hard">😮‍💨 Difícil</button>
+        <button class="rpeBtn" data-rpe="liviano">🟢 Liviano (1–5)</button>
+        <button class="rpeBtn primary" data-rpe="optimo">🔵 Óptimo (6–8)</button>
+        <button class="rpeBtn" data-rpe="pesado">🔴 Muy pesado (9–10)</button>
       </div>
 
       <label style="display:block; margin-top:12px;">
@@ -4366,11 +4668,10 @@ document.addEventListener("mousedown", (e)=>{
         <button class="rpeBtn" id="rpeSkip" style="flex:1;">Omitir</button>
         <button class="rpeBtn primary" id="rpeSave" style="flex:1;">Guardar</button>
       </div>
-
       <div id="rpeStatus" class="rpe-status" aria-live="polite" style="display:none;"></div>
 
       <div style="margin-top:10px; font-size:12px; opacity:.75;">
-        Tip: si marcas “Difícil” 2 veces seguidas, sugeriremos ajustar carga/volumen.
+        Tip: si marcas “Muy pesado” 2 veces seguidas, sugeriremos ajustar carga/volumen.
       </div>
 
       <!-- 📈 Evolución (peso / volumen) -->
@@ -4380,6 +4681,7 @@ document.addEventListener("mousedown", (e)=>{
           <div style="display:flex; gap:8px;">
             <button class="rpeBtn primary" id="rpeTabPeso" style="padding:8px 10px; font-size:12px;">Peso</button>
             <button class="rpeBtn" id="rpeTabVol" style="padding:8px 10px; font-size:12px;">Volumen</button>
+            <button class="rpeBtn" id="rpeTabRm" style="padding:8px 10px; font-size:12px;">RM</button>
           </div>
         </div>
 
