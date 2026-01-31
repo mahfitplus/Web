@@ -1254,30 +1254,28 @@
 }
 
 
-/* ===== RM en Rutinas ===== */
-.ex-rmline{
-  margin-top:6px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
+/* ===== RPE Modal scroll-friendly (mobile) ===== */
+#rpeModal{
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
 }
-.ex-rm-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 9px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
-  background:rgba(255,255,255,.75);
-  font-weight:900;
-  font-size:12px;
-  color: rgba(31,42,68,.95);
+#rpeModal > header{
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 2;
 }
-.ex-rm-pill .muted{opacity:.7;font-weight:800;}
-.ex-rm-pill.good{border-color: rgba(43,213,118,.28); background: rgba(43,213,118,.10);}
-.ex-rm-pill.warn{border-color: rgba(255,174,51,.30); background: rgba(255,174,51,.12);}
-.ex-rm-pill.bad{border-color: rgba(255,88,88,.28); background: rgba(255,88,88,.10);}
-
+#rpeModal > .body{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+}
+/* (Opcional) suaviza el scroll del resto de modales si comparten .body */
+@media (max-width: 520px){
+  #rpeModal{ width: min(520px, 94vw); }
+}
 </style>
 
 <style>
@@ -3066,7 +3064,6 @@ function fmtMMSS(sec){
 
                     <div class="ex-info">
                       <div class="ex-name">${escapeHtml(name)}</div>
-                      <div class="ex-rmline" data-rmline="1" data-exdbid="${escapeAttr(exid)}"></div>
 
                       ${thumb}
                       ${tech}
@@ -3136,7 +3133,6 @@ function fmtMMSS(sec){
         });
 
         wrap.innerHTML = `<div class="days-accordion">${parts.join("")}</div>`;
-        try{ hydrateRoutineRM_(); }catch(_e){}
         renderFeedback();
         mountFeedbackIntoStartedDay();
         // ✅ refresca estado de Entrenamiento Activo
@@ -3504,154 +3500,6 @@ if(action === "rest"){
         const map = readJSON(LS_WEIGHT_MAP, {});
         map[exid] = obj;
         writeJSON(LS_WEIGHT_MAP, map);
-      }
-
-      // Guarda último set local con historial mínimo (para RM/progreso en Rutinas)
-      function updateLastSetWithRm(exid, obj){
-        const map = readJSON(LS_WEIGHT_MAP, {});
-        const prev = map?.[exid] || null;
-        const now = Date.now();
-        map[exid] = {
-          ...obj,
-          at: now,
-          prev_e1rm: Number(prev?.e1rm || 0) || 0,
-          prev_rpe: String(prev?.rpe || ""),
-          prev_at: Number(prev?.at || 0) || 0
-        };
-        writeJSON(LS_WEIGHT_MAP, map);
-      }
-
-      function roundToStep_(v, step=2.5){
-        v = Number(v);
-        if(!isFinite(v) || v<=0) return 0;
-        const s = Number(step) > 0 ? Number(step) : 1;
-        return Math.round(v / s) * s;
-      }
-
-      function rpeLabel_(v){
-        const s = String(v||"").toLowerCase();
-        if(s==="liviano") return "Liviano";
-        if(s==="optimo" || s==="óptimo") return "Óptimo";
-        if(s==="pesado") return "Muy pesado";
-        return s || "—";
-      }
-
-      function rmTrendBadge_(cur, prev, rpe){
-        const c = Number(cur||0), p = Number(prev||0);
-        if(!(c>0) || !(p>0)) return { text:"", cls:"" };
-
-        // umbral: 2% o 2 kg (lo que sea mayor)
-        const thr = Math.max(p*0.02, 2);
-        const delta = c - p;
-
-        const r = String(rpe||"").toLowerCase();
-        if(delta >= thr && (r==="optimo" || r==="óptimo")){
-          return { text:`📈 Progreso +${Math.round(delta)}kg`, cls:"good" };
-        }
-        if(delta <= -thr && r==="pesado"){
-          return { text:`😮‍💨 Fatiga ${Math.round(delta)}kg`, cls:"bad" };
-        }
-        // neutro: pequeño cambio
-        return { text:`↔️ Estable ${Math.round(delta)}kg`, cls:"warn" };
-      }
-
-      // Pintar RM y sugerencias debajo del ejercicio en "Mi Rutina"
-            // Pintar RM y sugerencias debajo del ejercicio en "Mi Rutina"
-      // Fuente preferida: WORKOUT_SETS_LOG (Sheets) vía helpers de app.js
-      // Fallback: último set guardado local (LS_WEIGHT_MAP)
-      function hydrateRoutineRM_(){
-        const root = document.getElementById("routineWrap");
-        if(!root) return;
-
-        const rutSocio = String((window.user?.rut || window.user?.rut_socio || window.user?.id || "") || "").trim();
-
-        root.querySelectorAll('.ex [data-rmline="1"]').forEach(line=>{
-          const exdbid = line.getAttribute("data-exdbid") || "";
-          const exslot = line.closest(".ex")?.getAttribute("data-exid") || "";
-          const exName = line.closest(".ex")?.getAttribute("data-name") || "";
-          const exid = (exdbid || exslot || "").trim();
-          if(!exid) return;
-
-          line.innerHTML = "";
-
-          // 1) Preferido: último RM real guardado en WORKOUT_SETS_LOG
-          let lastRMRow = null;
-          try{
-            if(rutSocio && typeof window.getLastRMForExercise === "function"){
-              // usamos exid "db" cuando exista (ejercicio_id), sino el slotId
-              lastRMRow = window.getLastRMForExercise(rutSocio, exdbid || exslot);
-              // fallback por nombre si tu dataset histórico lo guardó así
-              if(!lastRMRow && typeof window.workoutSetsForExercise === "function"){
-                // ya está filtrado por ejercicioId, así que no hacemos nada aquí
-              }
-            }
-          }catch(_e){}
-
-          // 2) Fallback: último set guardado localmente en el modal
-          let lastLocal = null;
-          try{ lastLocal = getLastSet(exid); }catch(_e){}
-
-          // Resolver e1rm + rpe + prev_e1rm
-          let e1rm = 0, rpe = "", prev_e1rm = 0;
-
-          if(lastRMRow && Number(lastRMRow.e1rm) > 0){
-            e1rm = Number(lastRMRow.e1rm) || 0;
-            rpe = String(lastRMRow.rpe || "");
-            // prev: buscamos el segundo más reciente del log
-            try{
-              if(typeof window.workoutSetsForExercise === "function" && rutSocio){
-                const rows = window.workoutSetsForExercise(rutSocio, exdbid || exslot)
-                  .filter(r => Number(r.e1rm) > 0)
-                  .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
-                prev_e1rm = Number(rows?.[1]?.e1rm || 0) || 0;
-              }
-            }catch(_e){}
-          }else if(lastLocal && (Number(lastLocal?.e1rm || lastLocal?.rm_avg || 0) > 0)){
-            e1rm = Number(lastLocal?.e1rm || lastLocal?.rm_avg || 0) || 0;
-            rpe = String(lastLocal?.rpe || "");
-            prev_e1rm = Number(lastLocal?.prev_e1rm || 0) || 0;
-          }else{
-            return; // no hay RM para mostrar
-          }
-
-          const p70 = roundToStep_(e1rm * 0.70, 2.5);
-          const p80 = roundToStep_(e1rm * 0.80, 2.5);
-
-          // Badge progreso/fatiga: si tenemos helper, úsalo; si no, usa heurística local
-          let trend = { text:"", cls:"" };
-          try{
-            if(rutSocio && typeof window.detectRMStatus === "function"){
-              const st = window.detectRMStatus(rutSocio, exdbid || exslot);
-              if(st && st.type === "progress") trend = { text:`📈 Progreso +${Math.round(st.delta)}kg`, cls:"good" };
-              if(st && st.type === "fatigue")  trend = { text:`😮‍💨 Fatiga ${Math.round(st.delta)}kg`, cls:"bad" };
-            }else{
-              trend = rmTrendBadge_(e1rm, prev_e1rm, rpe);
-            }
-          }catch(_e){
-            trend = rmTrendBadge_(e1rm, prev_e1rm, rpe);
-          }
-
-          // RM
-          line.insertAdjacentHTML("beforeend",
-            `<span class="ex-rm-pill"><span class="muted">🎯 RM</span> ${Math.round(e1rm)} kg</span>`
-          );
-
-          // sugerencias
-          line.insertAdjacentHTML("beforeend",
-            `<span class="ex-rm-pill"><span class="muted">70%</span> ${p70} kg · <span class="muted">80%</span> ${p80} kg</span>`
-          );
-
-          // estado (progreso/fatiga) + RPE
-          if(trend.text){
-            line.insertAdjacentHTML("beforeend",
-              `<span class="ex-rm-pill ${trend.cls}">${trend.text} · <span class="muted">RPE</span> ${rpeLabel_(rpe)}</span>`
-            );
-          }else if(rpe){
-            line.insertAdjacentHTML("beforeend",
-              `<span class="ex-rm-pill"><span class="muted">RPE</span> ${rpeLabel_(rpe)}</span>`
-            );
-          }
-        });
       }
 
       function setRpeUI(val){
@@ -4098,23 +3946,7 @@ try{
           writeJSON(LS_RPE_KEY, map);
 
           // Guardar último set local (prefill futuro)
-          // Calcular RM y guardar último set local (para mostrar en Rutinas)
-          const rmE = Math.round(calcRM_Epley_(peso_kg || 0, reps || 0) || 0);
-          const rmB = Math.round(calcRM_Brzycki_(peso_kg || 0, reps || 0) || 0);
-          const rmAvg = (rmE>0 && rmB>0) ? Math.round((rmE + rmB)/2) : (rmE>0 ? rmE : (rmB>0 ? rmB : 0));
-
-          updateLastSetWithRm(rpeCtx.exid, { 
-            peso_kg, reps, series,
-            rpe: rpeSelected,
-            e1rm: rmAvg,
-            rm_epley: rmE,
-            rm_brzycki: rmB,
-            rm_avg: rmAvg,
-            rm_method: "avg"
-          });
-
-          // refrescar RM en la lista de Rutina (si está visible)
-          try{ hydrateRoutineRM_(); }catch(_e){}
+          setLastSet(rpeCtx.exid, { peso_kg, reps, series });
 
           // 2x "hard" sugerencia
           const hist = readJSON(LS_RPE_HISTORY_KEY, []);
@@ -4137,12 +3969,6 @@ try{
             rpe: rpeSelected,
             comentario: comentario,
             timestamp: Date.now()
-          ,
-            e1rm: (rmAvg || ""),
-            rm_method: "avg",
-            rm_epley: (rmE || ""),
-            rm_brzycki: (rmB || ""),
-            rm_avg: (rmAvg || "")
           };
 
           // Si no hay RUT, muestra error y NO cierres el modal (para que el usuario lo vea)
