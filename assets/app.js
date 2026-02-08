@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbxIFk4gUiUXF_twLYm6x7g6au6sMaV_2HpywrP0f98a1uxKDS1GXEsfhpvpNyYG2IGDGw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwGrqLZnsMxj85qt6HpXOhWQHsHLg6c3KJEWbilI5ymQDsc7VLiuKS-lh0qvY8FrJC0xg/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -62,7 +62,7 @@ const LS = {
   del(key){ localStorage.removeItem(key); }
 };
 
-function normalizeRut(r){ return String(r || "").trim().toUpperCase(); }
+function normalizeRut(r){ return String(r||"").trim().toLowerCase().replace(/[^0-9k]/g,""); }
 
 // ✅ Normaliza texto (minúsculas + sin acentos) para matching de ejercicios
 function mhfNormText(s){
@@ -71,6 +71,17 @@ function mhfNormText(s){
     .toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
+
+function normalizeExerciseName(name){
+  return String(name||"")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
 function nowISO(){ return new Date().toISOString(); }
 
 // ✅ Helpers fecha / ids (PRO)
@@ -260,11 +271,30 @@ async function apiGet(resource){
   return j;
 }
 
-async function apiPost(resource, data){
-  const body = {
-    resource: String(resource || "").toUpperCase(),
-    data: data || {}
-  };
+/**
+ * apiPost (flexible)
+ * - apiPost("EXERCISES", {...})
+ * - apiPost({ resource:"EXERCISES", data:{...} })
+ * - apiPost({ action:"LOG_WORKOUT_SET", data:{...} }) // ✅ tu backend prioriza action
+ */
+async function apiPost(resourceOrEnvelope, data){
+  let envelope;
+  if (typeof resourceOrEnvelope === "object" && resourceOrEnvelope){
+    envelope = Object.assign({}, resourceOrEnvelope);
+    if(envelope.resource) envelope.resource = String(envelope.resource || "").toUpperCase();
+    if(envelope.action) envelope.action = String(envelope.action || "").toUpperCase();
+    envelope.data = envelope.data || {};
+  } else {
+    envelope = {
+      resource: String(resourceOrEnvelope || "").toUpperCase(),
+      data: data || {}
+    };
+  }
+
+  // ✅ body final: si viene action, envía action; si no, envía resource
+  const body = envelope.action
+    ? { action: envelope.action, data: envelope.data }
+    : { resource: envelope.resource, data: envelope.data };
 
   const r = await fetch(API_URL, {
     method: "POST",
@@ -273,20 +303,20 @@ async function apiPost(resource, data){
   });
 
   const t = await r.text();
-
   let j;
-  try{
-    j = JSON.parse(t);
-  }catch(e){
+  try{ j = JSON.parse(t); }
+  catch(e){
     console.error("API RAW:", t);
     throw new Error("Respuesta API no JSON");
   }
 
-  if(!j.ok){
-    throw new Error(j.error || "API error");
-  }
-
+  if(!j.ok) throw new Error(j.error || "API error");
   return j;
+}
+
+// Conveniencia: post por action (para endpoints tipo LOG_WORKOUT_SET)
+function apiPostAction(action, data){
+  return apiPost({ action, data: data || {} });
 }
 
 
@@ -393,12 +423,32 @@ function getWorkoutSetsLog(){ return LS.get("mahfit_workout_sets_log", []); }
 function setWorkoutSetsLog(v){ LS.set("mahfit_workout_sets_log", v); }
 
 // filtra por socio + ejercicio
-function workoutSetsForExercise(rutSocio, ejercicioId){
-  const r = normalizeRut(rutSocio);
-  return (getWorkoutSetsLog() || []).filter(x =>
-    normalizeRut(x.rut_socio) === r &&
-    String(x.ejercicio_id) === String(ejercicioId)
-  );
+function workoutSetsForExercise(rutSocio, ejercicioId, ejercicioNombre){
+  const rutN = normalizeRut(rutSocio);
+  const id = String(ejercicioId||"").trim();
+  const idLower = id.toLowerCase();
+  const nameN = mhfNormText(ejercicioNombre||"");
+
+  const rows = (window.__CACHE__ && Array.isArray(window.__CACHE__.workout_sets_log))
+    ? window.__CACHE__.workout_sets_log
+    : (Array.isArray(window.__WORKOUT_SETS_LOG__) ? window.__WORKOUT_SETS_LOG__ : []);
+
+  const out = (rows||[]).filter(x=>{
+    if(normalizeRut(x.rut_socio || x.rutSocio) !== rutN) return false;
+
+    const xid = String(x.ejercicio_id || x.ejercicioId || "").trim();
+    if(id && xid === id) return true;
+    if(id && xid && xid.toLowerCase().includes(idLower)) return true;
+
+    if(nameN){
+      const xn = mhfNormText(x.ejercicio_nombre || x.ejercicioNombre || x.ejercicio || "");
+      if(xn && xn === nameN) return true;
+    }
+    return false;
+  });
+
+  out.sort((a,b)=> Number(b.timestamp||b.ts||0) - Number(a.timestamp||a.ts||0));
+  return out;
 }
 
 
@@ -1421,6 +1471,12 @@ window.toNumClean = toNumClean;
 // === MAH FIT | EVALUATION PHOTOS exposed ===
 window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
+
+// ✅ Expose API helpers / auth (necesario para ejercicios.html)
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+window.apiPostAction = apiPostAction;
+window.requireAuth = requireAuth;
 window.API_URL = API_URL;
 
 // ✅ helper público (no rompe nada)
