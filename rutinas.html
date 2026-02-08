@@ -1,8 +1,47 @@
 
 <!-- MAH FIT BOOT MODE: core (cache-first, lazy heavy data) -->
 <script>
-  window.MAHFIT_BOOT_MODE = "core";
+  
+// ✅ Fallback PRO: si EXERCISES no quedó en cache (0 cargados), los traemos directo por API.
+async function ensureExercisesLoaded_(){
+  try{
+    // Si app.js expone getExercises()
+    const current = (typeof getExercises === "function") ? (getExercises() || []) : (window.__EXERCISES__ || []);
+    if(Array.isArray(current) && current.length > 0) return current;
+
+    // Intentar apiGet si existe
+    if(typeof apiGet === "function"){
+      const res = await apiGet("EXERCISES");
+      const arr = res && (res.exercises || res.EXERCISES || res.data || res.items) ? (res.exercises || res.EXERCISES || res.data || res.items) : [];
+      if(Array.isArray(arr) && arr.length){
+        if(typeof setExercises === "function") setExercises(arr);
+        window.__EXERCISES__ = arr;
+        return arr;
+      }
+    }
+
+    // Último recurso: fetch directo al GAS (si existe API_URL / BASE_API_URL)
+    const urlBase = (typeof API_URL === "string" && API_URL) ? API_URL : (typeof BASE_API_URL === "string" ? BASE_API_URL : "");
+    if(urlBase){
+      const url = urlBase + (urlBase.includes("?") ? "&" : "?") + "resource=EXERCISES";
+      const r = await fetch(url, { method:"GET", cache:"no-store" });
+      const j = await r.json();
+      const arr = j && (j.exercises || j.EXERCISES) ? (j.exercises || j.EXERCISES) : [];
+      if(Array.isArray(arr) && arr.length){
+        if(typeof setExercises === "function") setExercises(arr);
+        window.__EXERCISES__ = arr;
+        return arr;
+      }
+    }
+  }catch(err){
+    console.warn("[ensureExercisesLoaded_] no se pudo cargar EXERCISES", err);
+  }
+  return [];
+}
+
+window.MAHFIT_BOOT_MODE = "core";
 </script>
+
 
 <!doctype html>
 <html lang="es">
@@ -35,6 +74,3164 @@
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       min-height:100vh;
     }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .logo{
+      width:38px;height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--pri),var(--pri2));
+      box-shadow:0 8px 18px rgba(124,92,255,.25);
+    }
+    h1{ margin:0; font-size:18px; letter-spacing:.4px; }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:var(--mut);
+      font-size:12px;
+
+    .db-badge{
+      display:flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      user-select:none;
+    }
+    .db-dot{
+      width:10px;height:10px;border-radius:999px;
+      background:#666;
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    }
+    .db-dot.connecting{ background:#ffd36e; }
+    .db-dot.on{ background:var(--ok); }
+    .db-dot.off{ background:var(--bad); }
+
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:14px;
+      color:rgba(255,255,255,.92);
+      letter-spacing:.4px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    label{
+      font-size:12px;
+      color:var(--mut);
+      display:block;
+      margin-bottom:4px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{ min-height:90px; resize:vertical; }
+    .col{ flex:1; min-width:160px; }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      color:#fff;
+      font-weight:600;
+      background:linear-gradient(135deg,var(--pri),var(--pri2));
+      box-shadow:0 10px 20px rgba(35,166,255,.15);
+      transition:transform .06s ease, filter .12s ease;
+    }
+    .btn:hover{ filter:brightness(1.05); }
+    .btn:active{ transform:scale(.98); }
+    .btn.ghost{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:none;
+      color:rgba(255,255,255,.85);
+    }
+    .btn.danger{
+      background:rgba(255,90,103,.12);
+      border:1px solid rgba(255,90,103,.35);
+      color:#ffd8dc;
+      box-shadow:none;
+    }
+    .btn.small{ padding:7px 10px; border-radius:10px; font-size:12px; }
+
+    .hr{ height:1px; background:var(--line); margin:10px 0; }
+
+    .notice{
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px dashed rgba(255,255,255,.14);
+      color:rgba(255,255,255,.75);
+      font-size:12px;
+    }
+
+    .daysArea{ display:flex; flex-direction:column; gap:12px; }
+    .dayCard{
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:12px;
+      position:relative;
+    }
+    .dayHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .dayTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:.3px;
+    }
+    .dayBadges{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .chip{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:rgba(255,255,255,.78);
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+    }
+    .chip.on{
+      background:rgba(43,213,118,.14);
+      border-color:rgba(43,213,118,.35);
+      color:#d9ffe9;
+    }
+
+    .focusGrid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);
+  margin-bottom:12px;
+}
+.pillToggle{
+  display:inline-flex;
+  align-items:center;
+  cursor:pointer;
+  user-select:none;
+}
+.pillToggle input{ display:none; }
+.pillToggle span{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.78);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.2px;
+  transition:transform .06s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+}
+.pillToggle:hover span{ filter:brightness(1.08); }
+.pillToggle:active span{ transform:scale(.98); }
+.pillToggle input:checked + span{
+  background:rgba(124,92,255,.18);
+  border-color:rgba(124,92,255,.55);
+  color:#fff;
+  box-shadow:0 10px 22px rgba(124,92,255,.14);
+}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0 8px;
+      font-size:12px;
+    }
+    th{
+      color:rgba(255,255,255,.55);
+      font-weight:600;
+      text-align:left;
+      padding:0 8px;
+      font-size:11px;
+    }
+    td{
+      padding:10px 8px;
+      background:rgba(255,255,255,.03);
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+    }
+    td:first-child{
+      border-left:1px solid var(--line);
+      border-top-left-radius:14px;
+      border-bottom-left-radius:14px;
+    }
+    td:last-child{
+      border-right:1px solid var(--line);
+      border-top-right-radius:14px;
+      border-bottom-right-radius:14px;
+    }
+    .tblInput{
+      width:100%;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.15);
+      color:rgba(255,255,255,.88);
+      outline:none;
+      font-size:12px;
+    }
+    .tblSmall{ max-width:90px; }
+    .tblMid{ max-width:130px; }
+    .tblBig{ min-width:160px; }
+
+    .rightCol{ display:flex; flex-direction:column; gap:16px; }
+
+    .preview{
+      display:none;
+      margin-top:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      white-space:pre-wrap;
+      color:rgba(255,255,255,.84);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
+
+    .lastCard{
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+    .lastHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .lastTitle{ font-weight:800; letter-spacing:.2px; }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
+    .pillMini{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:rgba(255,255,255,.86);
+    }
+    .mutedLine{
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      margin-top:6px;
+      line-height:1.35;
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.55);
+      z-index:9999;
+      padding:18px;
+    }
+    .modalBox{
+      width:min(980px, 100%);
+      max-height:85vh;
+      overflow:auto;
+      background:rgba(10,14,20,.95);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.50);
+      padding:14px;
+    }
+    .modalTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .modalTitle{ font-weight:900; letter-spacing:.3px; }
+
+    .socPreviewCard{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .socMeta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+    }
+    .socMeta b{ color:rgba(255,255,255,.92); }
+
+    .collapseDay{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.18);
+      margin-bottom:10px;
+      overflow:hidden;
+    }
+    .collapseHead{
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+    }
+    .collapseBody{
+      display:none;
+      padding:10px 12px 12px;
+      border-top:1px solid var(--line);
+    }
+    .exList{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:8px;
+    }
+    .exItem{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+    }
+    .exItem b{ color:#fff; }
+
+    /* Cardio block look */
+    .cardioBox{
+      padding:10px 12px;
+      border-radius:14px;
+      background:rgba(35,166,255,.08);
+      border:1px solid rgba(35,166,255,.22);
+      margin-bottom:12px;
+    }
+    .cardioGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .6fr .6fr .6fr .6fr .6fr;
+      gap:10px;
+      align-items:end;
+      margin-top:8px;
+    }
+    @media (max-width: 980px){
+      .cardioGrid{ grid-template-columns: 1fr 1fr; }
+    }
+    .hintMini{
+      font-size:11px;
+      color:rgba(255,255,255,.72);
+      margin-top:6px;
+      line-height:1.25;
+    }
+
+    /* Mini modal for media preview */
+    .imgModal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.65);
+      z-index:10000;
+      padding:18px;
+    }
+    .imgBox{
+      width:min(980px, 100%);
+      max-height:85vh;
+      overflow:auto;
+      background:rgba(10,14,20,.96);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.55);
+      padding:12px;
+    }
+    .imgTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .imgTop b{ letter-spacing:.2px; }
+    .imgWrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.20);
+    }
+    .imgWrap img{ width:100%; height:auto; display:block; }
+  
+    /* ===== Modal overlay (RM Graph) ===== */
+    .modalOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999; }
+    .modalCard{ width:min(720px, 96vw); max-height:92vh; background:rgba(10,14,20,.98); border:1px solid var(--line); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
+    .modalHeader{ padding:12px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); position:sticky; top:0; background:inherit; z-index:2; }
+    .modalBody{ padding:14px; overflow:auto; -webkit-overflow-scrolling:touch; }
+    .iconBtn{ border:1px solid var(--line); background:rgba(255,255,255,.06); color:rgba(255,255,255,.85); padding:6px 10px; border-radius:12px; cursor:pointer; }
+    .lastLogActions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:6px; }
+    .miniBtn{ border:1px solid var(--line); background:rgba(255,255,255,.06); color:rgba(255,255,255,.85); padding:6px 10px; border-radius:12px; cursor:pointer; font-size:11px; font-weight:800; }
+    
+  
+  /* ✅ Modal: limitar altura + scroll interno */
+  .mfModal{ max-height: 90vh; overflow: hidden; }
+  .mfModalBody{ max-height: calc(90vh - 64px); overflow: auto; padding-right: 6px; }
+  .mfModalBody::-webkit-scrollbar{ width: 10px; }
+  .mfModalBody::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
+  .mfModalBody::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); border-radius: 999px; }
+
+
+  /* ✅ FIX: evitar que la imagen se "coma" el modal y genere scroll gigante */
+  .mfModal{
+    height: 86vh;
+    max-height: 86vh;
+  }
+  .mfModalHead{ position: sticky; top: 0; z-index: 2; background: linear-gradient(180deg, rgba(15,20,32,.95), rgba(15,20,32,.70)); backdrop-filter: blur(10px); }
+  .mfModalBody{
+    max-height: calc(86vh - 64px);
+    overflow: hidden; /* el scroll lo maneja el panel derecho */
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .mfMediaWrap{
+    height: calc(86vh - 64px);
+    max-height: calc(86vh - 64px);
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .mfMedia{
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* nunca agrandar hacia abajo */
+    background: #0b0f18;
+  }
+  .mfPanel{
+    height: calc(86vh - 64px);
+    max-height: calc(86vh - 64px);
+    overflow: auto;
+    padding-right: 6px;
+  }
+  .mfPanel::-webkit-scrollbar{ width: 10px; }
+  .mfPanel::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
+  .mfPanel::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); border-radius: 999px; }
+  @media (max-width: 980px){
+    .mfModal{ height: 92vh; max-height: 92vh; }
+    .mfModalBody{ grid-template-columns: 1fr; }
+    .mfMediaWrap{ height: 42vh; max-height: 42vh; }
+    .mfPanel{ height: calc(92vh - 64px - 42vh); max-height: calc(92vh - 64px - 42vh); }
+  }
+
+
+.mfChartWrap{height:260px;max-height:260px;}
+.mfChartWrap canvas{width:100% !important; height:100% !important;}
+
+
+    /* =========================================================
+       PRO SPACING + TABLE (match screenshot style)
+       - Only visual; no functional changes
+    ========================================================= */
+    .notice{ margin-bottom:14px !important; padding:14px 16px; border-radius:14px; }
+
+    .focusGrid{
+      padding:14px;
+      gap:10px;
+      border-radius:16px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      margin:12px 0 16px;
+    }
+
+    .pillToggle span{
+      padding:10px 16px;
+      font-size:12px;
+      letter-spacing:.15px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .pillToggle span:hover{ filter:brightness(1.08); }
+    .pillToggle input:checked + span{
+      background:rgba(124,92,255,.22);
+      border-color:rgba(124,92,255,.60);
+      box-shadow:0 12px 26px rgba(124,92,255,.18), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    /* Table: flat grid with clean dividers */
+    .dayCard table{
+      width:100%;
+      border-collapse:separate !important;
+      border-spacing:0 !important;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:12px;
+    }
+    .dayCard thead th{
+      padding:14px 12px !important;
+      font-size:11px !important;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      color:rgba(255,255,255,.55);
+      background:rgba(255,255,255,.02);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      white-space:nowrap;
+    }
+    .dayCard tbody td{
+      padding:14px 12px !important;
+      background:transparent !important;
+      border:0 !important;
+      border-bottom:1px solid rgba(255,255,255,.08) !important;
+      vertical-align:middle;
+    }
+    .dayCard tbody tr:last-child td{ border-bottom:0 !important; }
+    .dayCard tbody tr:hover td{ background:rgba(255,255,255,.03) !important; }
+
+    /* Remove old “pill row” borders/radius if any */
+    .dayCard td:first-child,
+    .dayCard td:last-child{
+      border-radius:0 !important;
+      border-left:0 !important;
+      border-right:0 !important;
+    }
+
+    /* Action buttons inside table: compact pills */
+    .dayCard .btn,
+    .dayCard button{
+      border-radius:12px;
+    }
+
+
+    /* =========================================================
+   LOOK EXACTO (Focus + Table) como screenshot
+   (Solo visual, no toca lógica)
+========================================================= */
+
+/* Card día */
+.dayCard{
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+/* Bloque "Enfocado" */
+.dayCard .notice{
+  margin: 10px 0 12px !important;
+  padding: 14px 16px !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* Chips de enfoque (arriba del día) */
+.dayBadges .chip{
+  padding: 6px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.dayBadges .chip.on{
+  background: rgba(124,92,255,.16);
+  border-color: rgba(124,92,255,.50);
+  color: #fff;
+}
+
+/* Contenedor de botones músculo */
+.focusGrid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.16);
+  border: 1px solid rgba(255,255,255,.10);
+  margin: 0 0 14px;
+}
+
+/* Botón músculo */
+.pillToggle span{
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12px;
+  border-radius: 12px;                 /* <- en tu screenshot no es 9999, es rect redondeado */
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.75);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Seleccionado (morado como la captura) */
+.pillToggle input:checked + span{
+  background: rgba(124,92,255,.16);
+  border-color: rgba(124,92,255,.70);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(124,92,255,.12), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* =======================
+   TABLA estilo screenshot
+======================= */
+.dayCard table{
+  width: 100%;
+  border-collapse: collapse !important;  /* <- importante para “grid plano” */
+  border-spacing: 0 !important;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(0,0,0,.14);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.dayCard thead th{
+  padding: 14px 12px !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.02);
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  white-space: nowrap;
+}
+
+.dayCard tbody td{
+  padding: 14px 12px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  vertical-align: middle;
+}
+
+.dayCard tbody tr:hover td{
+  background: rgba(255,255,255,.03) !important;
+}
+
+.dayCard tbody tr:last-child td{
+  border-bottom: 0 !important;
+}
+
+/* Inputs dentro de la tabla */
+.dayCard .tblInput{
+  border-radius: 12px;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Botones "Ver / Quitar" como píldoras */
+.dayCard .btn.ghost.small{
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  font-weight: 800;
+}
+.dayCard .btn.ghost.small:hover{ filter: brightness(1.08); }
+
+
+
+:root{
+  --bg0:#0a0e14;
+  --bg1:#0f1623;
+  --card:#121b2a;
+  --line:rgba(255,255,255,.10);
+  --txt:rgba(255,255,255,.90);
+  --mut:rgba(255,255,255,.65);
+  --pri:#7c5cff;
+  --pri2:#23a6ff;
+  --ok:#2bd576;
+  --bad:#ff5a67;
+  --shadow:0 18px 45px rgba(0,0,0,.55);
+  --radius:18px;
+}
+
+*{ box-sizing:border-box }
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #1a1c2c 0%, transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, #1b1035 0%, transparent 55%),
+    linear-gradient(180deg,var(--bg0),var(--bg1));
+  color:var(--txt);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+
+/* =========================
+   CONTENEDOR CENTRAL
+========================= */
+.wrap{
+  max-width:1680px;        /* 🔥 MÁS ANCHO */
+  margin:0 auto;
+  padding:18px;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.brand{ display:flex; align-items:center; gap:10px; }
+.logo{
+  width:40px;height:40px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--pri),var(--pri2));
+  box-shadow:0 10px 22px rgba(124,92,255,.35);
+}
+h1{ margin:0;font-size:18px }
+
+/* =========================
+   GRID PRINCIPAL
+========================= */
+.grid{
+  display:grid;
+  grid-template-columns:380px minmax(0,1fr); /* 🔥 panel derecho domina */
+  gap:18px;
+  margin-top:18px;
+}
+@media(max-width:1100px){
+  .grid{ grid-template-columns:1fr }
+}
+
+/* =========================
+   CARDS
+========================= */
+.card{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+.card h2{
+  margin:0 0 10px;
+  font-size:14px;
+  letter-spacing:.3px;
+}
+
+label{
+  font-size:12px;
+  color:var(--mut);
+  display:block;
+  margin-bottom:4px;
+}
+input,select,textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.25);
+  color:var(--txt);
+}
+textarea{ resize:vertical; min-height:80px }
+
+.row{ display:flex; gap:10px; flex-wrap:wrap }
+.col{ flex:1; min-width:160px }
+
+.hr{ height:1px; background:var(--line); margin:12px 0 }
+
+/* =========================
+   BOTONES
+========================= */
+.btn{
+  border:none;
+  cursor:pointer;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:700;
+  color:#fff;
+  background:linear-gradient(135deg,var(--pri),var(--pri2));
+}
+.btn.ghost{
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--line);
+}
+.btn.danger{
+  background:rgba(255,90,103,.15);
+  border:1px solid rgba(255,90,103,.4);
+}
+.btn.small{ padding:8px 12px;font-size:12px }
+
+/* =========================
+   PANEL DERECHO
+========================= */
+.rightCol{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+/* =========================
+   DÍA
+========================= */
+.dayCard{
+  background:rgba(0,0,0,.18);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+
+.dayHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.dayTitle{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-weight:800;
+}
+
+.chip{
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--line);
+  font-size:11px;
+}
+.chip.on{
+  background:rgba(124,92,255,.22);
+  border-color:rgba(124,92,255,.65);
+  color:#fff;
+}
+
+/* =========================
+   ENFOQUE
+========================= */
+.notice{
+  margin:10px 0;
+  padding:14px 16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);
+  font-size:12px;
+}
+
+.focusGrid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(0,0,0,.18);
+  border:1px solid var(--line);
+  margin-bottom:14px;
+}
+
+.pillToggle input{ display:none }
+.pillToggle span{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  font-size:12px;
+  font-weight:800;
+  color:var(--mut);
+}
+.pillToggle input:checked + span{
+  background:rgba(124,92,255,.22);
+  border-color:rgba(124,92,255,.7);
+  color:#fff;
+}
+
+/* =========================
+   TABLA
+========================= */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:rgba(0,0,0,.15);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+}
+thead th{
+  padding:14px 12px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--mut);
+  background:rgba(255,255,255,.02);
+}
+tbody td{
+  padding:14px 12px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+tbody tr:hover td{
+  background:rgba(255,255,255,.03);
+}
+
+
+
+
+
+
+</style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Constructor de Rutinas</h1>
+          <div class="pill">MAH FIT · Personalizados</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin:0">
+        <div class="row" style="margin:0; align-items:center;">
+          <div class="db-badge" title="Estado de conexión" style="margin-right:8px;">
+            <span id="dbDot" class="db-dot connecting"></span>
+            <span id="dbText">Conectando…</span>
+          </div>
+        </div>
+
+       
+        <button class="btn  small" id="btnEjercicios">+ Agregar Ejercicios</button>
+        <button class="btn ghost small" id="btnVolver">Volver</button>
+        <button class="btn danger small" id="btnLogout">Salir</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left -->
+      <div class="card">
+        <h2>Datos de la Rutina</h2>
+
+        <div class="row">
+          <div class="col">
+            <label>Socio</label>
+            <input id="socioSearch" placeholder="Buscar socio por nombre o RUT..." />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Selecciona Socio</label>
+            <select id="socioSelect"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Nivel</label>
+            <select id="nivel">
+              <option value="Principiante">Principiante</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Objetivo</label>
+            <select id="objetivo">
+              <option value="Hipertrofia">Hipertrofia</option>
+              <option value="Fuerza">Fuerza</option>
+              <option value="Pérdida de grasa">Pérdida de grasa</option>
+              <option value="Rendimiento">Rendimiento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Fecha (opcional)</label>
+            <input id="fecha" placeholder="Ej: 2026-01-10" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Notas (opcional)</label>
+            <textarea id="notas" placeholder="Indicaciones generales, técnica, RIR, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Agregar Días</h2>
+        <div class="row">
+          <div class="col" style="max-width:120px">
+            <label>Día</label>
+            <select id="dayPicker">
+              <option value="1">Día 1</option>
+              <option value="2">Día 2</option>
+              <option value="3">Día 3</option>
+              <option value="4">Día 4</option>
+              <option value="5">Día 5</option>
+              <option value="6">Día 6</option>
+              <option value="7">Día 7</option>
+            </select>
+          </div>
+          <div class="col" style="max-width:180px; align-self:flex-end;">
+            <button class="btn" id="btnAddDay">Agregar día</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <b>Tip:</b> define el <b>Cardio</b> (opcional) y el <b>Enfoque</b> por día (músculos principales) y agrega ejercicios con series/reps/carga/descanso.
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Acciones</h2>
+
+        <div class="footerBtns">
+          <button class="btn" id="btnGuardar">Guardar Rutina</button>
+          <button class="btn ghost" id="btnVista">Vista Socio</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Plantillas</h2>
+
+        <div class="row">
+          <div class="col">
+            <label>Buscar Plantilla</label>
+            <input id="tplSearch" placeholder="Ej: Hipertrofia 4 días..." />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Selecciona Plantilla</label>
+            <select id="tplSelect"></select>
+          </div>
+        </div>
+
+        <div class="footerBtns">
+          <button class="btn ghost" id="btnCargarPlantilla">Cargar Plantilla</button>
+          <button class="btn" id="btnGuardarPlantilla">Guardar como Plantilla</button>
+        </div>
+
+        <p id="msg" style="margin:10px 0 0 0; font-size:12px; color:rgba(255,255,255,.75)"></p>
+        <div class="preview" id="previewBox"></div>
+
+        <div class="hr"></div>
+
+        <h2>Última rutina encontrada</h2>
+        <div class="lastCard" id="lastRoutineBox">
+          <div class="mutedLine">Selecciona un socio para ver su última rutina.</div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="rightCol">
+        <div class="card">
+          <h2>Días de entrenamiento</h2>
+          <div class="daysArea" id="daysContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Vista Socio -->
+  <div class="modal" id="vistaModal">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div class="modalTitle">Vista Socio</div>
+        <button class="btn ghost small" id="btnCerrarVista">Cerrar</button>
+      </div>
+      <div id="vistaContenido"></div>
+    </div>
+  </div>
+
+  <!-- Modal Media -->
+  <div class="imgModal" id="imgModal">
+    <div class="imgBox">
+      <div class="imgTop">
+        <b id="imgTitle">Ejercicio</b>
+        <button class="btn ghost small" id="btnCloseImg">Cerrar</button>
+      </div>
+    
+      <div class="mutedLine" id="imgHint" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================================
+    // Loader robusto: intenta rutas comunes para app.js
+    // (funciona en local sin GitHub)
+    // ==========================================================
+    function loadScriptTry(urls){
+      return new Promise((resolve, reject)=>{
+        let i = 0;
+        function next(){
+          if(i >= urls.length) return reject(new Error("No se pudo cargar app.js. Probé: " + urls.join(" , ")));
+          const src = urls[i++];
+          const s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = ()=> resolve(src);
+          s.onerror = ()=> next();
+          document.head.appendChild(s);
+        }
+        next();
+      });
+    }
+  </script>
+
+  <script>
+    function $(sel){ return document.querySelector(sel); }
+    function showMsg(el, msg, ok=false){
+      if(!el) return;
+      el.textContent = msg;
+      el.style.color = ok ? "#a7ffb3" : "#ffb0b0";
+    }
+    function nowISO(){ return new Date().toISOString(); }
+
+    function uid(){
+      try{
+        if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+      }catch{}
+      return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+
+    // ==========================================================
+    // Base de ejercicios: viene desde Sheets (EXERCISES)
+    // - Se agrupa por músculo
+    // - Cada fila tiene su propio <datalist> único
+    // ==========================================================
+    let EX_BY_MUSCLE = {};   // { "Pectoral": [ {nombre, mediaUrl, maq, tecnica, tags}, ... ] }
+    let MUSCLES = [];        // ["Pectoral", "Hombros", ...]
+
+    function normalizeMuscle(m){ return String(m||"").trim(); }
+    function normalizeName(n){ return String(n||"").trim(); }
+
+    function buildExerciseIndex(){
+      
+  // asegúrate de tener EXERCISES antes de indexar
+  // (si cache está vacío, los baja por API)
+  // Nota: buildExerciseIndex puede llamarse desde init; ahí sí usamos await vía wrapper.
+const rows = (typeof getExercises === "function") ? (getExercises() || []) : [];
+      const active = rows.filter(r => (r.activo === false) ? false : true);
+
+      const map = {};
+      active.forEach(r=>{
+        const mus = normalizeMuscle(r.musculo);
+        const nom = normalizeName(r.nombre);
+        if(!mus || !nom) return;
+
+        if(!map[mus]) map[mus] = [];
+        map[mus].push({
+          exId: r.exId || r.id || "",
+          nombre: nom,
+          musculo: mus,
+          maq: r.maq || "",
+          tecnica: r.tecnica || "",
+          tags: r.tags || "",
+          mediaUrlGif: r.mediaUrlGif || r.media_url_gif || r.gifUrl || r.mediaGif || "",
+          mediaUrl: r.mediaUrl || r.media || r.url || ""
+        });
+      });
+
+      // ordenar alfabético
+      Object.keys(map).forEach(k=>{
+        map[k].sort((a,b)=> a.nombre.localeCompare(b.nombre, "es"));
+      });
+
+      EX_BY_MUSCLE = map;
+      MUSCLES = Object.keys(EX_BY_MUSCLE).sort((a,b)=> a.localeCompare(b, "es"));
+
+      // Si por alguna razón no hay ejercicios cargados, caemos a una base mínima (para que nunca quede vacío)
+      if(MUSCLES.length === 0){
+        EX_BY_MUSCLE = { "Pectoral": [], "Hombros": [], "Espalda": [], "Bíceps": [], "Tríceps": [], "Piernas": [], "Glúteos": [], "Abdominales/Core": [] };
+        MUSCLES = Object.keys(EX_BY_MUSCLE);
+      }
+    }
+
+    function findExercise(muscle, name){
+      const m = normalizeMuscle(muscle);
+      const n = normalizeName(name).toLowerCase();
+      const list = EX_BY_MUSCLE[m] || [];
+      return list.find(x => String(x.nombre).toLowerCase() === n) || null;
+    }
+
+// ======================================================
+// Últimos registros del socio por EJERCICIO_ID + gráfico
+// ======================================================
+let __WORKOUT_SETS_LOG_CACHE = null;
+let __LASTLOG_INDEX = {};   // { "<rut>|<exId>": [logs asc by timestamp] }
+let __rmChart = null;
+
+
+function parseLogsResponse_(res){
+  if(!res) return [];
+  if(Array.isArray(res)) return res;
+  const cand = res.data || res.items || res.rows ||
+    res.WORKOUT_SETS_LOG || res.workout_sets_log ||
+    res.logs || res.records || res.result || res.results;
+  if(Array.isArray(cand)) return cand;
+  if(cand && Array.isArray(cand.data)) return cand.data;
+  if(cand && Array.isArray(cand.items)) return cand.items;
+  if(cand && Array.isArray(cand.rows)) return cand.rows;
+
+  // búsqueda recursiva de primer array de objetos que parezcan logs
+  const seen = new Set();
+  function isLogArray(a){
+    if(!Array.isArray(a) || !a.length) return false;
+    const o = a[0];
+    if(!o || typeof o !== "object") return false;
+    const keys = Object.keys(o).map(k=>k.toLowerCase());
+    const hit = ["peso_kg","peso","kg","reps","series","ejercicio_nombre","ejercicio_id","timestamp","e1rm","rm_avg"].filter(k=>keys.includes(k)).length;
+    return hit >= 2;
+  }
+  function walk(obj, depth=0){
+    if(!obj || typeof obj !== "object" || depth>6) return null;
+    if(seen.has(obj)) return null;
+    seen.add(obj);
+    for(const k of Object.keys(obj)){
+      const v = obj[k];
+      if(Array.isArray(v)){
+        if(isLogArray(v)) return v;
+        for(const it of v){
+          const got = walk(it, depth+1);
+          if(got) return got;
+        }
+      }else if(v && typeof v==="object"){
+        const got = walk(v, depth+1);
+        if(got) return got;
+      }
+    }
+    return null;
+  }
+  const found = walk(res,0);
+  return Array.isArray(found) ? found : [];
+}
+
+async function fetchWorkoutSetsLog_(){
+  if(__WORKOUT_SETS_LOG_CACHE) return __WORKOUT_SETS_LOG_CACHE;
+  const r = await apiGet("WORKOUT_SETS_LOG");
+  __WORKOUT_SETS_LOG_CACHE = parseLogsResponse_(r);
+  window.__WORKOUT_SETS_LOG = __WORKOUT_SETS_LOG_CACHE; // para otros modales / fallbacks
+  return __WORKOUT_SETS_LOG_CACHE;
+}
+
+
+function weightFromLog_(l){
+  if(!l) return 0;
+  const w = Number(l.peso_kg ?? l.peso ?? l.weight ?? l.carga ?? 0);
+  if(Number.isFinite(w) && w > 0 && w < 5000) return w;
+  return 0;
+}
+
+function rmFromLog_(l){
+  if(!l) return 0;
+
+  // 1) si viene e1RM calculado desde backend
+  const e1 = Number(l.e1rm ?? l.e1RM ?? l.E1RM ?? l.e1rm_avg ?? 0);
+  if(Number.isFinite(e1) && e1 > 0 && e1 < 2000) return e1;
+
+  // 2) si vienen campos rm_avg / epley / brzycki
+  const avg = Number(l.rm_avg ?? l.rmAvg ?? 0);
+  if(Number.isFinite(avg) && avg > 0 && avg < 2000) return avg;
+
+  const e = Number(l.rm_epley ?? l.rmEpley ?? 0);
+  const b = Number(l.rm_brzycki ?? l.rmBrzycki ?? 0);
+  if(Number.isFinite(e) && Number.isFinite(b) && e > 0 && b > 0){
+    const m = (e + b) / 2;
+    if(m < 2000) return m;
+  }
+  if(Number.isFinite(e) && e>0 && e<5000) return e
+  if(Number.isFinite(b) && b>0 && b<5000) return b
+
+  // 3) fallback: calcular desde peso_kg y reps
+  const w = Number(l.peso_kg ?? l.peso ?? l.weight ?? l.carga ?? 0);
+  const r = Number(l.reps ?? l.rep ?? l.repeticiones ?? 0);
+  if(Number.isFinite(w) && Number.isFinite(r) && w > 0 && r > 0 && r < 50){
+    const epley = w * (1 + r/30);
+    const brzy = (r < 37) ? (w * 36 / (37 - r)) : 0;
+    const m = (brzy > 0) ? (epley + brzy)/2 : epley;
+    if(m > 0 && m < 2000) return m;
+  }
+
+  return 0;
+}
+
+function labelFromLog_(l){
+  // fecha preferente (puede venir ISO)
+  const f = l?.fecha ?? l?.date ?? "";
+  if(f){
+    const d = new Date(f);
+    if(!isNaN(d.getTime())) return d.toLocaleDateString();
+  }
+  // timestamp numérico o string
+  const ts = l?.timestamp;
+  if(ts != null){
+    const n = Number(ts);
+    const d = new Date(Number.isFinite(n) ? n : Date.parse(String(ts)));
+    if(!isNaN(d.getTime())) return d.toLocaleDateString();
+  }
+  return "";
+}
+
+
+function suggest7080_(rm){
+  const v = Number(rm||0);
+  if(!v) return null;
+  return { p70: Math.round(v*0.70), p80: Math.round(v*0.80) };
+}
+
+function borgLabel_(rpe){
+  const v = String(rpe||"").toLowerCase();
+  if(!v) return "";
+  if(v.includes("liv")) return "Liviano";
+  if(v.includes("opt") || v.includes("perf") || v.includes("mid")) return "Óptimo";
+  if(v.includes("pes") || v.includes("hard") || v.includes("dif")) return "Muy pesado";
+  return rpe;
+}
+
+function getLogsKey_(rut, exId){
+  return `${String(rut||"")}||${String(exId||"")}`;
+}
+
+async function buildLastLogIndexForRut_(rut){
+  const logs = await fetchWorkoutSetsLog_();
+  __LASTLOG_INDEX = {};
+  logs
+    .filter(x => String(x.rut_socio||"") === String(rut||"") && String(x.ejercicio_id||"").trim() !== "")
+    .forEach(x=>{
+      const key = getLogsKey_(x.rut_socio, x.ejercicio_id);
+      if(!__LASTLOG_INDEX[key]) __LASTLOG_INDEX[key] = [];
+      __LASTLOG_INDEX[key].push(x);
+    });
+
+  Object.keys(__LASTLOG_INDEX).forEach(k=>{
+    __LASTLOG_INDEX[k].sort((a,b)=> Number(a.timestamp||0) - Number(b.timestamp||0));
+  });
+}
+
+function lastTwoLogs_(rut, exId){
+  const key = getLogsKey_(rut, exId);
+  const arr = __LASTLOG_INDEX[key] || [];
+  if(arr.length === 0) return { last:null, prev:null };
+  const last = arr[arr.length-1];
+  const prev = arr.length >= 2 ? arr[arr.length-2] : null;
+  return { last, prev };
+}
+
+function computeStatus_(last, prev){
+  if(!last || !prev) return "";
+  const rmL = rmFromLog_(last);
+  const rmP = rmFromLog_(prev);
+  const delta = rmL - rmP;
+  const rpe = borgLabel_(last.rpe);
+  if(delta >= 1 && (rpe.includes("Óptimo") || rpe.includes("Liviano"))) return "📈 Progreso";
+  if(delta <= -1 && rpe.includes("Muy pesado")) return "😵 Fatiga";
+  return "";
+}
+
+function ensureLastLogBox_(tr){
+  let box = tr.querySelector(".lastLogBox");
+  if(!box){
+    box = document.createElement("div");
+    box.className = "lastLogBox";
+    box.innerHTML = '<div class="lastLogRow"></div><div class="lastLogActions"></div>';
+    const td = tr.querySelector("td:nth-child(2)"); // celda del input ejercicio
+    (td || tr).appendChild(box);
+  }
+  return box;
+}
+
+function attachLastLogToRow_(tr, rut, exId, exName){
+  const box = ensureLastLogBox_(tr);
+  const row = box.querySelector(".lastLogRow");
+  const actions = box.querySelector(".lastLogActions");
+  if(!row || !actions) return;
+
+  // Si aún no hay socio o ejercicio, mostramos ayuda
+  if(!rut){
+    row.innerHTML = '<span class="mutedLine">Selecciona un socio para ver registros.</span>';
+    actions.innerHTML = "";
+    return;
+  }
+
+  // 1) Intento principal por exId
+  let useExId = String(exId||"").trim();
+  let useName = String(exName||"").trim();
+
+  // 2) Si no hay exId, intenta resolverlo por nombre usando la base EXERCISES
+  if(!useExId && useName && Array.isArray(window.__EXERCISES) && window.__EXERCISES.length){
+    const n = normalizeName(useName);
+    const found = window.__EXERCISES.find(x => normalizeName(x.nombre) === n);
+    if(found && found.exId) useExId = String(found.exId).trim();
+  }
+
+  // 3) Si hay exId pero no tiene registros, intenta fallback:
+  //    - primero por exId encontrado en EXERCISES usando el nombre actual
+  //    - si aún nada, por nombre (ejercicio_nombre) en WORKOUT_SETS_LOG
+  let last = null, prev = null, pickedBy = "id";
+
+  if(useExId){
+    const pair = lastTwoLogs_(rut, useExId);
+    last = pair.last; prev = pair.prev;
+  }
+
+  if(!last && useName){
+    // fallback a exId por nombre (si el input fue editado y cambió)
+    if(Array.isArray(window.__EXERCISES) && window.__EXERCISES.length){
+      const n = normalizeName(useName);
+      const found = window.__EXERCISES.find(x => normalizeName(x.nombre) === n);
+      const altId = found && found.exId ? String(found.exId).trim() : "";
+      if(altId && altId !== useExId){
+        const pair2 = lastTwoLogs_(rut, altId);
+        if(pair2.last){
+          useExId = altId;
+          last = pair2.last; prev = pair2.prev;
+          pickedBy = "id(name)";
+        }
+      }
+    }
+
+    // fallback por nombre directo en logs (para logs antiguos con ejercicio_id distinto)
+    if(!last && Array.isArray(window.__WORKOUT_SETS_LOG) && window.__WORKOUT_SETS_LOG.length){
+      const target = normalizeName(useName);
+      const rows = window.__WORKOUT_SETS_LOG
+        .filter(r => normRut_(r.rut_socio) === normRut_(rut))
+        .filter(r => normalizeName(r.ejercicio_nombre || r.ejercicio || "") === target)
+        .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
+      if(rows.length){
+        last = rows[0] || null;
+        prev = rows[1] || null;
+        pickedBy = "nombre";
+      }
+    }
+  }
+
+  if(!last){
+    row.innerHTML = '<span class="mutedLine">Sin registros recientes para este ejercicio.</span>';
+    actions.innerHTML = "";
+    return;
+  }
+
+  // RM: preferimos rm_avg -> e1rm -> promedio (rm_epley/rm_brzycki)
+  const rm = Math.round(rmFromLog_(last) || 0);
+  const s = rm ? suggest7080_(rm) : null;
+  const status = computeStatus_(last, prev);
+
+  const peso = (last.peso_kg ?? last.peso ?? "");
+  const reps = (last.reps ?? "");
+  const series = (last.series ?? "");
+  const rpe = borgLabel_(last.rpe) || "-";
+
+  // RM detallado si existe
+  const rmE = Number(last.rm_epley || 0) ? Math.round(Number(last.rm_epley)) : 0;
+  const rmB = Number(last.rm_brzycki || 0) ? Math.round(Number(last.rm_brzycki)) : 0;
+  const rmAvg = Number(last.rm_avg || 0) ? Math.round(Number(last.rm_avg)) : 0;
+  const e1rm = Number(last.e1rm || 0) ? Math.round(Number(last.e1rm)) : 0;
+
+  row.innerHTML = `
+    <span><b>Último:</b> ${peso!==""?peso:"-"} kg · ${reps!==""?reps:"-"} reps · ${series!==""?series:"-"} series · ${rpe}</span>
+    ${rm ? `<span><b>🎯 RM:</b> ${rm} kg</span>` : ``}
+    ${(rmAvg||e1rm||rmE||rmB) ? `<span class="mutedLine">RM det.: ${rmAvg?("avg "+rmAvg):""}${rmAvg&&e1rm?" · ":""}${e1rm?("e1RM "+e1rm):""}${(rmAvg||e1rm)&&(rmE||rmB)?" · ":""}${rmE?("Epley "+rmE):""}${rmE&&rmB?" · ":""}${rmB?("Brzycki "+rmB):""}</span>` : ``}
+    ${s ? `<span><b>70/80%:</b> ${s.p70} · ${s.p80} kg</span>` : ``}
+    ${status ? `<span><b>${status}</b></span>` : ``}
+    <span class="mutedLine">match: ${pickedBy}${useExId?(" · id "+useExId):""}</span>
+  `;
+
+  actions.innerHTML = `
+    <button class="miniBtn" type="button" data-seegraph="1">📈 Ver gráfico</button>
+  `;
+
+  const btn = actions.querySelector('[data-seegraph="1"]');
+  if(btn){
+    btn.onclick = ()=> openRmGraph_(rut, useExId || "", useName || last.ejercicio_nombre || "Ejercicio");
+  }
+}
+
+async function openRmGraph_(rut, exId, title){
+  const modal = document.getElementById("rmGraphModal");
+  const t = document.getElementById("rmGraphTitle");
+  const hint = document.getElementById("rmGraphHint");
+  const canvas = document.getElementById("rmGraphCanvas");
+  if(!modal || !canvas) return;
+
+  t && (t.textContent = title || "Evolución del ejercicio");
+  hint && (hint.textContent = "");
+
+  const key = getLogsKey_(rut, exId);
+  const arr = (__LASTLOG_INDEX[key] || []).slice(-14);
+  setKpis_(arr); // últimas 14
+  const labels = arr.map(x => labelFromLog_(x));
+  const wVals = arr.map(x => Math.round(weightFromLog_(x)));
+  const rVals = arr.map(x => {
+    const r = Number(x.reps ?? x.rep ?? x.repeticiones ?? 0);
+    return Number.isFinite(r) ? r : 0;
+  });
+  const sVals = arr.map(x => {
+    const s = Number(x.series ?? x.sets ?? 0);
+    return Number.isFinite(s) ? s : 0;
+  });
+
+  const vmaxW = Math.max(0, ...wVals.filter(v => Number.isFinite(v) && v>0));
+  const vmaxRS = Math.max(0, ...rVals, ...sVals);
+
+  if(typeof Chart === "undefined"){
+    hint && (hint.textContent = "Chart no está disponible (revisa que Chart.js esté cargado en app.js).");
+  }else{
+    const ctx = canvas.getContext("2d");
+    if(__rmChart) __rmChart.destroy();
+    __rmChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          { label:"Peso (kg)", data: wVals, tension:.3, borderWidth: 2, pointRadius: 3, yAxisID:"y" },
+          { label:"Reps", data: rVals, tension:.3, borderWidth: 2, pointRadius: 3, yAxisID:"y1" },
+          { label:"Series", data: sVals, tension:.3, borderWidth: 2, pointRadius: 3, yAxisID:"y1" }
+        ]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 250 },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            labels: { boxWidth: 14, boxHeight: 8, padding: 10, font: { size: 11 } }
+          },
+          tooltip: {
+            padding: 10,
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 6, font: { size: 10 } },
+            grid: { display: false }
+          },
+          y: {
+            position: "left",
+            suggestedMin: 0,
+            suggestedMax: vmaxW ? Math.ceil(vmaxW * 1.25 / 5) * 5 : 100,
+            ticks: { font: { size: 10 }, maxTicksLimit: 5 }
+          },
+          y1: {
+            position: "right",
+            suggestedMin: 0,
+            suggestedMax: vmaxRS ? Math.ceil(vmaxRS * 1.5) : 20,
+            ticks: { font: { size: 10 }, maxTicksLimit: 5 },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+  }
+
+  modal.style.display = "flex";
+}
+
+function closeRmGraph(){
+  const modal = document.getElementById("rmGraphModal");
+  if(modal) modal.style.display = "none";
+  if(__rmChart){ try{ __rmChart.destroy(); }catch{} __rmChart = null; }
+}
+
+    // ----------------------------------------------------------
+    // UI Day Template (incluye Cardio)
+    // ----------------------------------------------------------
+    function dayCardTemplate(dayNum){
+      const cardioOptions = (EX_BY_MUSCLE["Cardio"] || []).map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join("");
+      return `
+        <div class="dayCard" data-day="${dayNum}">
+          <div class="dayHead">
+            <div class="dayTitle">
+              <span>DÍA ${dayNum}</span>
+              <div class="dayBadges" id="badges-${dayNum}">
+                <span class="chip">Enfocado</span>
+              </div>
+            </div>
+            <div class="row" style="margin:0">
+              <button class="btn ghost small" data-addex="${dayNum}">+ Ejercicio</button>
+              <button class="btn danger small" data-removeday="${dayNum}">Quitar Día</button>
+            </div>
+          </div>
+
+          <!-- CARDIO -->
+          <div class="cardioBox">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+              <div>
+                <b>Ejercicio Cardiovascular</b>
+                <div class="hintMini">Opcional · Se reflejará en el panel del socio (Cardio semanal / Hoy / Por día)</div>
+              </div>
+              <span class="chip" title="Si no eliges tipo, se considera 'Sin cardio'">Cardio</span>
+            </div>
+
+            <div class="cardioGrid">
+              <div>
+                <label>Tipo</label>
+                <select class="tblInput" data-cardio-tipo="${dayNum}">
+                  <option value="">— Sin cardio —</option>
+                  ${cardioOptions || `
+                    <option value="Trotadora">Trotadora</option>
+                    <option value="Elíptica">Elíptica</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Escaladora">Escaladora</option>
+                    <option value="Remo">Remo</option>
+                    <option value="Caminata inclinada">Caminata inclinada</option>
+                    <option value="HIIT">HIIT</option>
+                  `}
+                </select>
+              </div>
+
+              <div>
+                <label>Duración (min)</label>
+                <input class="tblInput" inputmode="numeric" placeholder="20" data-cardio-min="${dayNum}">
+              </div>
+
+              <div>
+                <label>Zona</label>
+                <select class="tblInput" data-cardio-zona="${dayNum}">
+                  <option value="">—</option>
+                  <option value="Z1">Z1</option>
+                  <option value="Z2">Z2</option>
+                  <option value="Z3">Z3</option>
+                  <option value="Z4">Z4</option>
+                  <option value="Z5">Z5</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Intensidad</label>
+                <select class="tblInput" data-cardio-int="${dayNum}">
+                  <option value="">—</option>
+                  <option value="Suave">Suave</option>
+                  <option value="Moderada">Moderada</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Kcal (est.)</label>
+                <input class="tblInput" inputmode="numeric" placeholder="200" data-cardio-kcal="${dayNum}">
+              </div>
+
+              <div>
+                <label>FC prom / máx</label>
+                <div style="display:flex;gap:8px">
+                  <input class="tblInput" inputmode="numeric" placeholder="130" data-cardio-fcavg="${dayNum}">
+                  <input class="tblInput" inputmode="numeric" placeholder="160" data-cardio-fcmax="${dayNum}">
+                </div>
+              </div>
+            </div>
+
+            <div class="row" style="margin:10px 0 0 0">
+              <div class="col">
+                <label>Notas cardio</label>
+                <input class="tblInput" placeholder="Ej: post entrenamiento / ayunas / RPE 7" data-cardio-notas="${dayNum}">
+              </div>
+            </div>
+          </div>
+
+          <!-- ENFOQUE -->
+          <div class="notice" style="margin-bottom:10px">
+            <b>Enfocado</b><br/>
+            Selecciona uno o más músculos para el enfoque del día.
+          </div>
+
+          <div class="focusGrid" id="focus-${dayNum}">
+            ${MUSCLES.map(m => `
+              <label class="pillToggle">
+                <input type="checkbox" data-focus="${dayNum}" value="${m}"/>
+                <span>${m}</span>
+              </label>
+            `).join("")}
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>MÚSCULO</th>
+                <th>EJERCICIO</th>
+                <th>N° MAQ/VAR</th>
+                <th>OBS.</th>
+                <th>SERIES</th>
+                <th>REPS</th>
+                <th>CARGA</th>
+                <th>DESCANSO</th>
+                <th>MEDIA</th>
+                <th>ACCIÓN</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-${dayNum}"></tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function rowTemplate(dayNum){
+      const muscleOptions = MUSCLES.map(m => `<option value="${m}">${m}</option>`).join("");
+      const dlId = `dl_${dayNum}_${uid().slice(0,8)}`;
+      return `
+        <tr data-row="${dlId}">
+          <td>
+            <select class="tblInput tblBig" data-muscle="${dayNum}">
+              ${muscleOptions}
+            </select>
+          </td>
+
+          <td>
+            <input class="tblInput tblBig" list="${dlId}" placeholder="Escribe o elige" data-ex="${dayNum}" autocomplete="off"/>
+            <datalist id="${dlId}"></datalist>
+          </td>
+
+          <td><input class="tblInput tblSmall" placeholder="N° maq / variante" data-maq="${dayNum}"/></td>
+          <td><input class="tblInput tblMid" placeholder="Técnica / tempo / RIR.." data-obs="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="3" data-series="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="8-12" data-reps="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="kg" data-carga="${dayNum}"/></td>
+          <td><input class="tblInput tblSmall" placeholder="Ej: 1:30" data-desc="${dayNum}"/></td>
+
+          <td>
+            <button class="btn ghost small" data-media="${dayNum}" title="Ver imagen/video del ejercicio">Ver</button>
+          </td>
+
+          <td><button class="btn ghost small" data-delrow="${dayNum}">Quitar</button></td>
+        </tr>
+      `;
+    }
+
+    function updateRowDatalist(tr, muscle){
+      const input = tr.querySelector(`input[data-ex]`);
+      const dlId = input?.getAttribute("list");
+      const dl = dlId ? document.getElementById(dlId) : null;
+      if(!dl) return;
+
+      const list = EX_BY_MUSCLE[normalizeMuscle(muscle)] || [];
+      dl.innerHTML = list.map(ex => `<option value="${ex.nombre}"></option>`).join("");
+    }
+
+    function updateFocusBadges(dayNum){
+      const box = document.getElementById(`badges-${dayNum}`);
+      const checked = [...document.querySelectorAll(`input[data-focus="${dayNum}"]:checked`)].map(x=>x.value);
+      if(!box) return;
+
+      if(checked.length === 0){
+        box.innerHTML = `<span class="chip">Enfocado</span>`;
+        return;
+      }
+      box.innerHTML = checked.map(m=>`<span class="chip on">${m}</span>`).join("");
+    }
+
+    function wireDayActions(){
+      document.querySelectorAll("[data-addex]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const d = btn.getAttribute("data-addex");
+          document.querySelector(`#tbody-${d}`).insertAdjacentHTML("beforeend", rowTemplate(d));
+          wireRowActions(d);
+        };
+      });
+
+      document.querySelectorAll("[data-removeday]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const d = btn.getAttribute("data-removeday");
+          const card = document.querySelector(`.dayCard[data-day="${d}"]`);
+          if(card) card.remove();
+          addedDays.delete(String(d));
+        };
+      });
+
+      document.querySelectorAll("input[data-focus]").forEach(ch=>{
+        ch.onchange = ()=>{
+          const d = ch.getAttribute("data-focus");
+          updateFocusBadges(d);
+        };
+      });
+    }
+
+    function openMediaModal(title, url){
+      const modal = $("#imgModal");
+      const img = $("#imgEl");
+      const hint = $("#imgHint");
+      $("#imgTitle").textContent = title || "Ejercicio";
+
+      if(!url){
+        img.removeAttribute("src");
+        hint.textContent = "Este ejercicio no tiene mediaUrl registrado en la base de datos.";
+      }else{
+        img.src = url;
+        hint.textContent = url;
+      }
+
+      modal.style.display = "flex";
+    }
+    function closeMediaModal(){ $("#imgModal").style.display = "none"; }
+
+    function wireRowActions(dayNum){
+      // quitar fila
+      document.querySelectorAll(`[data-delrow="${dayNum}"]`).forEach(btn=>{
+        btn.onclick = ()=> btn.closest("tr")?.remove();
+      });
+
+      // cambio músculo -> actualizar datalist de esa fila
+      document.querySelectorAll(`select[data-muscle="${dayNum}"]`).forEach(sel=>{
+        const tr = sel.closest("tr");
+        if(!tr) return;
+
+        // primera carga
+        updateRowDatalist(tr, sel.value);
+
+        sel.onchange = ()=>{
+          updateRowDatalist(tr, sel.value);
+
+          // si ya había ejercicio escrito, lo validamos contra el nuevo músculo
+          const exIn = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          if(exIn && exIn.value){
+            const match = findExercise(sel.value, exIn.value);
+            if(!match){
+              // no borramos automáticamente (para no molestar), pero avisamos visualmente
+              exIn.style.borderColor = "rgba(255,90,103,.55)";
+            }else{
+              exIn.style.borderColor = "rgba(255,255,255,.10)";
+            }
+          }
+        };
+      });
+
+      // cuando el usuario escribe/elige un ejercicio, validamos y (si existe) autocompletamos maq/obs base (opcional)
+      document.querySelectorAll(`input[data-ex="${dayNum}"]`).forEach(inp=>{
+        const tr = inp.closest("tr");
+        const musSel = tr?.querySelector(`select[data-muscle="${dayNum}"]`);
+
+        const validate = ()=>{
+          const muscle = musSel?.value || "";
+          const exName = inp.value || "";
+          if(!muscle || !exName) return;
+
+          const match = findExercise(muscle, exName);
+          if(match){
+            inp.style.borderColor = "rgba(255,255,255,.10)";
+            // guardar ejercicio_id en el input (para matching 100% exacto)
+            inp.dataset.exid = String(match.exId || "");
+            // mostrar último registro del socio (si hay socio seleccionado)
+            const rutSel = document.getElementById("socioSelect")?.value || "";
+            if(rutSel) attachLastLogToRow_(tr, rutSel, inp.dataset.exid, exName);
+
+            // si el usuario no llenó "maq/obs", ponemos sugerencias (sin pisar si ya escribió)
+            const maq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+            const obs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+            if(maq && !maq.value && match.maq) maq.value = match.maq;
+            if(obs && !obs.value && match.tecnica) obs.value = match.tecnica;
+          }else{
+            // sigue dejando texto libre, pero marcamos suave
+            inp.style.borderColor = "rgba(255,90,103,.55)";
+            delete inp.dataset.exid;
+          }
+        };
+
+        inp.addEventListener("change", validate);
+        inp.addEventListener("blur", validate);
+      });
+
+      // botón media
+      document.querySelectorAll(`button[data-media="${dayNum}"]`).forEach(btn=>{
+        btn.onclick = ()=>{
+          const tr = btn.closest("tr");
+          const muscle = tr?.querySelector(`select[data-muscle="${dayNum}"]`)?.value || "";
+          const exName = tr?.querySelector(`input[data-ex="${dayNum}"]`)?.value || "";
+          const match = findExercise(muscle, exName);
+          const url = (match && (match.mediaUrlGif || match.mediaUrl)) ? (match.mediaUrlGif || match.mediaUrl) : "";
+          openMediaModal(exName || "Ejercicio", url);
+        };
+      });
+    }
+
+    // Helpers cardio
+    function readCardioForDay(dayNum){
+      const tipo = document.querySelector(`[data-cardio-tipo="${dayNum}"]`)?.value || "";
+      const min = document.querySelector(`[data-cardio-min="${dayNum}"]`)?.value || "";
+      const zona = document.querySelector(`[data-cardio-zona="${dayNum}"]`)?.value || "";
+      const intensidad = document.querySelector(`[data-cardio-int="${dayNum}"]`)?.value || "";
+      const kcal = document.querySelector(`[data-cardio-kcal="${dayNum}"]`)?.value || "";
+      const fcavg = document.querySelector(`[data-cardio-fcavg="${dayNum}"]`)?.value || "";
+      const fcmax = document.querySelector(`[data-cardio-fcmax="${dayNum}"]`)?.value || "";
+      const notas = document.querySelector(`[data-cardio-notas="${dayNum}"]`)?.value || "";
+      if(!tipo) return null;
+      return { tipo, min, zona, intensidad, kcal, fcavg, fcmax, notas };
+    }
+
+    function writeCardioForDay(dayNum, cardio){
+      const setVal = (sel, val)=>{ const el = document.querySelector(sel); if(el) el.value = (val ?? ""); };
+      if(!cardio){
+        setVal(`[data-cardio-tipo="${dayNum}"]`, "");
+        setVal(`[data-cardio-min="${dayNum}"]`, "");
+        setVal(`[data-cardio-zona="${dayNum}"]`, "");
+        setVal(`[data-cardio-int="${dayNum}"]`, "");
+        setVal(`[data-cardio-kcal="${dayNum}"]`, "");
+        setVal(`[data-cardio-fcavg="${dayNum}"]`, "");
+        setVal(`[data-cardio-fcmax="${dayNum}"]`, "");
+        setVal(`[data-cardio-notas="${dayNum}"]`, "");
+        return;
+      }
+      setVal(`[data-cardio-tipo="${dayNum}"]`, cardio.tipo || "");
+      setVal(`[data-cardio-min="${dayNum}"]`, cardio.min || "");
+      setVal(`[data-cardio-zona="${dayNum}"]`, cardio.zona || "");
+      setVal(`[data-cardio-int="${dayNum}"]`, cardio.intensidad || "");
+      setVal(`[data-cardio-kcal="${dayNum}"]`, cardio.kcal || "");
+      setVal(`[data-cardio-fcavg="${dayNum}"]`, cardio.fcavg || "");
+      setVal(`[data-cardio-fcmax="${dayNum}"]`, cardio.fcmax || "");
+      setVal(`[data-cardio-notas="${dayNum}"]`, cardio.notas || "");
+    }
+
+    function collectRoutine(){
+      const socioVal = $("#socioSelect").value;
+      const socio = getUsers().find(u=>String(u.rut) === String(socioVal));
+      if(!socio) throw new Error("Selecciona un socio válido.");
+
+      const meta = {
+        nivel: $("#nivel").value,
+        objetivo: $("#objetivo").value,
+        fecha: $("#fecha").value || "",
+        notas: $("#notas").value || ""
+      };
+
+      const dias = [];
+      document.querySelectorAll(".dayCard").forEach(card=>{
+        const d = card.getAttribute("data-day");
+        const enfoque = [...document.querySelectorAll(`input[data-focus="${d}"]:checked`)].map(x=>x.value);
+        const cardio = readCardioForDay(d);
+
+        const ejercicios = [];
+        const tbody = document.getElementById(`tbody-${d}`);
+        [...tbody.querySelectorAll("tr")].forEach(tr=>{
+          const musculo = tr.querySelector(`select[data-muscle="${d}"]`)?.value || "";
+          const ejercicio = tr.querySelector(`input[data-ex="${d}"]`)?.value || "";
+          const maq = tr.querySelector(`input[data-maq="${d}"]`)?.value || "";
+          const obs = tr.querySelector(`input[data-obs="${d}"]`)?.value || "";
+          const series = tr.querySelector(`input[data-series="${d}"]`)?.value || "";
+          const reps = tr.querySelector(`input[data-reps="${d}"]`)?.value || "";
+          const carga = tr.querySelector(`input[data-carga="${d}"]`)?.value || "";
+          const descanso = tr.querySelector(`input[data-desc="${d}"]`)?.value || "";
+
+          // si existe mediaUrl en la base, lo guardamos (para socio.html / vista)
+          const match = (musculo && ejercicio) ? findExercise(musculo, ejercicio) : null;
+          const mediaUrl = match?.mediaUrl || "";
+
+          if(musculo && ejercicio){
+            ejercicios.push({ musculo, ejercicio, maq, obs, series, reps, carga, descanso, mediaUrl });
+          }
+        });
+
+        dias.push({ dia:`Día ${d}`, enfoque, cardio, ejercicios });
+      });
+
+      if(dias.length === 0) throw new Error("Debes agregar al menos 1 día.");
+
+      return {
+        socio: { rut: socio.rut, nombre: socio.nombre },
+        meta,
+        dias
+      };
+    }
+
+    function formatRutinaText(routine, profName){
+      let out = "";
+      out += `RUTINA DE ENTRENAMIENTO\n`;
+      out += `Socio: ${routine.socio.nombre} (${routine.socio.rut})\n`;
+      out += `Nivel: ${routine.meta.nivel}\n`;
+      out += `Objetivo: ${routine.meta.objetivo}\n`;
+      if(routine.meta.fecha) out += `Fecha: ${routine.meta.fecha}\n`;
+      if(routine.meta.notas) out += `Notas: ${routine.meta.notas}\n`;
+      out += `Profesor: ${profName}\n`;
+      out += `\n==============================\n\n`;
+
+      routine.dias.forEach(day=>{
+        out += `${day.dia}\n`;
+        if(day.cardio){
+          const c = day.cardio;
+          out += `Cardio: ${c.tipo} · ${c.min || "-"} min · Zona: ${c.zona || "-"} · Int: ${c.intensidad || "-"} · Kcal: ${c.kcal || "-"} · FC: ${c.fcavg || "-"} / ${c.fcmax || "-"}\n`;
+          if(c.notas) out += `Notas cardio: ${c.notas}\n`;
+        }
+        if(day.enfoque?.length) out += `Enfoque: ${day.enfoque.join(" + ")}\n`;
+        out += `\n`;
+
+        day.ejercicios.forEach((e, i)=>{
+          out += `${i+1}. ${e.musculo} - ${e.ejercicio} | Series: ${e.series} | Reps: ${e.reps} | Carga: ${e.carga} | Desc: ${e.descanso}\n`;
+          if(e.maq) out += `   Maq/Var: ${e.maq}\n`;
+          if(e.obs) out += `   Obs: ${e.obs}\n`;
+          if(e.mediaUrl) out += `   Media: ${e.mediaUrl}\n`;
+        });
+        out += `\n------------------------------\n\n`;
+      });
+
+      return out;
+    }
+
+    function showLastRoutineBoxPretty(lastV2){
+      const box = $("#lastRoutineBox");
+      if(!lastV2){
+        box.innerHTML = `<div class="mutedLine">Este socio no tiene rutina guardada aún.</div>`;
+        return;
+      }
+
+      const r = lastV2.routine || lastV2;
+      const m = r.meta || {};
+      const dias = Array.isArray(r.dias) ? r.dias.length : 0;
+      const actualizado = lastV2.actualizadoEn || lastV2.creadoEn || "";
+
+      box.innerHTML = `
+        <div class="lastHead">
+          <div class="lastTitle">Última rutina encontrada</div>
+          <div class="pills">
+            <span class="pillMini">Nivel: <b>${m.nivel || "-"}</b></span>
+            <span class="pillMini">Días: <b>${dias}</b></span>
+          </div>
+        </div>
+
+        <div class="mutedLine"><b>Últ. Modificación:</b> ${actualizado ? new Date(actualizado).toLocaleString() : "-"}</div>
+        <div class="mutedLine"><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+
+        <div style="margin-top:10px">
+          <button class="btn" id="btnCargarUltima">Cargar para editar</button>
+        </div>
+      `;
+
+      $("#btnCargarUltima").onclick = ()=>{
+        try{
+          loadRoutineIntoBuilder(r);
+          showMsg($("#msg"), "✅ Rutina cargada. Puedes editar y volver a guardar.", true);
+        }catch(err){
+          showMsg($("#msg"), err.message, false);
+        }
+      };
+    }
+
+    function clearBuilderDays(){
+      $("#daysContainer").innerHTML = "";
+      addedDays.clear();
+    }
+
+    function extractDayNumber(dayLabel){
+      const m = String(dayLabel || "").match(/\d+/);
+      return m ? String(m[0]) : "1";
+    }
+
+    function addDayIfNotExists(dayNum){
+      if(addedDays.has(String(dayNum))) return;
+      $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(dayNum));
+      addedDays.add(String(dayNum));
+      wireDayActions();
+      updateFocusBadges(dayNum);
+    }
+
+    function loadRoutineIntoBuilder(routine){
+      $("#nivel").value = routine.meta?.nivel || "Principiante";
+      $("#objetivo").value = routine.meta?.objetivo || "Hipertrofia";
+      $("#fecha").value = routine.meta?.fecha || "";
+      $("#notas").value = routine.meta?.notas || "";
+
+      clearBuilderDays();
+
+      const dias = Array.isArray(routine.dias) ? routine.dias : [];
+      if(dias.length === 0){
+        $("#dayPicker").value = "1";
+        $("#btnAddDay").click();
+        return;
+      }
+
+      dias.forEach(day=>{
+        const dayNum = extractDayNumber(day.dia);
+        addDayIfNotExists(dayNum);
+
+        writeCardioForDay(dayNum, day.cardio || null);
+
+        const enfoqueArr = Array.isArray(day.enfoque) ? day.enfoque : [];
+        enfoqueArr.forEach(m=>{
+          const cb = document.querySelector(`input[data-focus="${dayNum}"][value="${m}"]`);
+          if(cb) cb.checked = true;
+        });
+        updateFocusBadges(dayNum);
+
+        const tbody = document.getElementById(`tbody-${dayNum}`);
+        tbody.innerHTML = "";
+
+        (day.ejercicios || []).forEach(ex=>{
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(dayNum));
+          wireRowActions(dayNum);
+
+          const tr = tbody.querySelector("tr:last-child");
+          if(!tr) return;
+
+          const selM = tr.querySelector(`select[data-muscle="${dayNum}"]`);
+          const inEx = tr.querySelector(`input[data-ex="${dayNum}"]`);
+          const inMaq = tr.querySelector(`input[data-maq="${dayNum}"]`);
+          const inObs = tr.querySelector(`input[data-obs="${dayNum}"]`);
+          const inSeries = tr.querySelector(`input[data-series="${dayNum}"]`);
+          const inReps = tr.querySelector(`input[data-reps="${dayNum}"]`);
+          const inCarga = tr.querySelector(`input[data-carga="${dayNum}"]`);
+          const inDesc = tr.querySelector(`input[data-desc="${dayNum}"]`);
+
+          if(selM){
+            selM.value = ex.musculo || selM.value;
+            updateRowDatalist(tr, selM.value);
+          }
+          if(inEx) inEx.value = ex.ejercicio || "";
+          if(inMaq) inMaq.value = ex.maq || "";
+          if(inObs) inObs.value = ex.obs || "";
+          if(inSeries) inSeries.value = ex.series || "";
+          if(inReps) inReps.value = ex.reps || "";
+          if(inCarga) inCarga.value = ex.carga || "";
+          if(inDesc) inDesc.value = ex.descanso || "";
+        });
+      });
+    }
+
+    function renderVistaSocio(routine, profesorNombre){
+      const cont = $("#vistaContenido");
+      const m = routine.meta || {};
+      const dias = routine.dias || [];
+
+      cont.innerHTML = `
+        <div class="socPreviewCard">
+          <div class="socMeta">
+            <div><b>Socio:</b> ${routine.socio?.nombre || "-"} (${routine.socio?.rut || "-"})</div>
+            <div><b>Nivel:</b> ${m.nivel || "-"}</div>
+            <div><b>Objetivo:</b> ${m.objetivo || "-"}</div>
+            <div><b>Fecha:</b> ${m.fecha || "-"}</div>
+          </div>
+          ${m.notas ? `<div class="mutedLine" style="margin-top:10px"><b>Notas:</b> ${m.notas}</div>` : ``}
+          <div class="mutedLine" style="margin-top:8px"><b>Profesor:</b> ${profesorNombre || "-"}</div>
+        </div>
+
+        ${dias.map((d, idx)=>`
+          <div class="collapseDay" data-cday="${idx}">
+            <div class="collapseHead">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <b style="letter-spacing:.2px">${d.dia || `Día ${idx+1}`}</b>
+                ${(d.enfoque||[]).map(x=>`<span class="chip on">${x}</span>`).join("")}
+                ${(d.enfoque||[]).length===0 ? `<span class="chip">Sin enfoque</span>` : ``}
+                ${d.cardio ? `<span class="chip" style="border-color:rgba(35,166,255,.35);background:rgba(35,166,255,.10)">Cardio</span>` : ``}
+              </div>
+              <span style="opacity:.8">Abrir/Cerrar</span>
+            </div>
+
+            <div class="collapseBody" id="cbody-${idx}">
+              ${
+                d.cardio
+                ? `
+                  <div class="exItem" style="border-left:4px solid #23a6ff">
+                    <b>Cardio:</b> ${d.cardio.tipo || "-"}<br/>
+                    <span style="opacity:.88">
+                      Duración: <b>${d.cardio.min || "-"}</b> min ·
+                      Zona: <b>${d.cardio.zona || "-"}</b> ·
+                      Intensidad: <b>${d.cardio.intensidad || "-"}</b> ·
+                      Kcal: <b>${d.cardio.kcal || "-"}</b><br/>
+                      FC prom/máx: <b>${d.cardio.fcavg || "-"}</b> / <b>${d.cardio.fcmax || "-"}</b>
+                    </span>
+                    ${d.cardio.notas ? `<div style="opacity:.78;margin-top:6px">Notas: ${d.cardio.notas}</div>` : ``}
+                  </div>
+                `
+                : `<div class="mutedLine">Cardio: <b>-</b></div>`
+              }
+
+              ${
+                (d.ejercicios||[]).length === 0
+                ? `<div class="mutedLine" style="margin-top:10px">No hay ejercicios cargados para este día.</div>`
+                : `<div class="exList" style="margin-top:10px">
+                    ${(d.ejercicios||[]).map((e,i)=>`
+                      <div class="exItem">
+                        <b>${i+1}. ${e.ejercicio || "-"}</b> — <span style="opacity:.85">${e.musculo || "-"}</span><br/>
+                        <span style="opacity:.85">
+                          Series: <b>${e.series||"-"}</b> · Reps: <b>${e.reps||"-"}</b> · Carga: <b>${e.carga||"-"}</b> · Descanso: <b>${e.descanso||"-"}</b>
+                        </span>
+                        ${e.maq ? `<div style="opacity:.78;margin-top:6px">Maq/Var: ${e.maq}</div>` : ``}
+                        ${e.obs ? `<div style="opacity:.78;margin-top:6px">Obs: ${e.obs}</div>` : ``}
+                        ${e.mediaUrl ? `<div style="opacity:.78;margin-top:6px">Media: <a href="${e.mediaUrl}" target="_blank" rel="noopener" style="color:#9bd4ff">Abrir</a></div>` : ``}
+                      </div>
+                    `).join("")}
+                  </div>`
+              }
+            </div>
+          </div>
+        `).join("")}
+      `;
+
+      cont.querySelectorAll(".collapseDay").forEach(cd=>{
+        const idx = cd.getAttribute("data-cday");
+        const head = cd.querySelector(".collapseHead");
+        const body = cd.querySelector(`#cbody-${idx}`);
+        head.onclick = ()=> body.style.display = (body.style.display === "block") ? "none" : "block";
+      });
+    }
+
+    function openVistaModal(){ $("#vistaModal").style.display = "flex"; }
+    function closeVistaModal(){ $("#vistaModal").style.display = "none"; }
+
+    function filterSocios(q){
+      q = String(q||"").toLowerCase().trim();
+      const users = getUsers().filter(u=>{
+        const rol = String(u.rol || u.role || "").toUpperCase().trim();
+        const activo = (u.activo === false) ? false : true;
+        return rol === "SOCIO" && activo;
+      });
+      if(!q) return users;
+      return users.filter(u =>
+        (u.nombre||"").toLowerCase().includes(q) ||
+        (u.rut||"").toLowerCase().includes(q)
+      );
+    }
+
+    async function preloadCoreData(){
+      if(typeof window.preloadCoreData === "function"){
+        try{ await window.preloadCoreData(); return; }catch(e){ console.warn(e); }
+      }
+      if(typeof window.syncDown === "function"){
+        try{ await window.syncDown(); return; }catch(e){ console.warn(e); }
+      }
+    }
+
+    // ✅ Guardado REAL (await)
+    async function saveRutinaV2Online({rutSocio, routine, creadoPorRut}){
+      const payload = {
+        rutSocio: String(rutSocio||"").trim().toUpperCase(),
+        routine_json: JSON.stringify(routine),
+        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
+        actualizadoEn: nowISO()
+      };
+      await apiPost("RUTINAS_V2", payload);
+
+      const list = getRutinasV2();
+      const idx = list.findIndex(x => String(x.rutSocio||"").toUpperCase() === payload.rutSocio);
+      const localObj = {
+        rutSocio: payload.rutSocio,
+        routine,
+        creadoPorRut: payload.creadoPorRut,
+        actualizadoEn: payload.actualizadoEn
+      };
+      if(idx >= 0) list[idx] = localObj; else list.push(localObj);
+      setRutinasV2(list);
+    }
+
+    async function saveRutinaTxtOnline({rutSocio, titulo, detalle, creadoPorRut}){
+      const payload = {
+        rutSocio: String(rutSocio||"").trim().toUpperCase(),
+        titulo: titulo || "",
+        detalle: detalle || "",
+        creadoPorRut: String(creadoPorRut||"").trim().toUpperCase(),
+        creadoEn: nowISO()
+      };
+      await apiPost("RUTINAS_TXT", payload);
+
+      const rutinas = getRutinas();
+      const idx = rutinas.findIndex(r => String(r.rutSocio||"").toUpperCase() === payload.rutSocio);
+      const localObj = { id: (idx>=0 ? rutinas[idx].id : uid()), ...payload };
+      if(idx >= 0) rutinas[idx] = localObj; else rutinas.push(localObj);
+      setRutinas(rutinas);
+    }
+
+    const addedDays = new Set();
+
+    async function mainInit(){
+      const msgEl = $("#msg");
+
+      // Auth
+      let me = requireAuth("FUNCIONARIO");
+      if(!me) return;
+
+      await preloadCoreData();
+
+      // **IMPORTANTE**: construimos el índice después del syncDown
+      await ensureExercisesLoaded_();
+  buildExerciseIndex();
+$("#btnVolver").onclick = ()=> window.location.href = "funcionario.html";
+   $("#btnEjercicios").onclick = ()=> window.open("ejercicios.html","_blank");
+      $("#btnLogout").onclick = ()=>{
+        localStorage.removeItem("mahfit_session");
+        window.location.href = "index.html";
+      };
+
+      $("#btnCerrarVista").onclick = closeVistaModal;
+      $("#vistaModal").addEventListener("click", (e)=>{
+        if(e.target.id === "vistaModal") closeVistaModal();
+      });
+
+      $("#btnCloseImg").onclick = closeMediaModal;
+      $("#imgModal").addEventListener("click", (e)=>{
+        if(e.target.id === "imgModal") closeMediaModal();
+      });
+
+      const socioSelect = $("#socioSelect");
+      const search = $("#socioSearch");
+
+      function renderSocios(list){
+        const current = socioSelect.value || "";
+        socioSelect.innerHTML = "";
+        list.forEach(u=>{
+          const opt = document.createElement("option");
+          opt.value = u.rut;
+          opt.textContent = `${u.nombre} (${u.rut})`;
+          socioSelect.appendChild(opt);
+        });
+        if(current && [...socioSelect.options].some(o=>o.value===current)){
+          socioSelect.value = current;
+        }
+      }
+
+      renderSocios(filterSocios(""));
+
+      search.addEventListener("input", ()=> renderSocios(filterSocios(search.value)));
+      search.addEventListener("keydown", (e)=>{ if(e.key==="Enter") e.preventDefault(); });
+
+      socioSelect.addEventListener("change", ()=>{
+        const rut = socioSelect.value;
+        // indexar registros del socio para matching por ejercicio_id
+        buildLastLogIndexForRut_(rut).then(()=>{
+          document.querySelectorAll('input[data-ex]').forEach(inp=>{
+            const tr = inp.closest('tr');
+            const exId = inp.dataset.exid || "";
+            if(tr && rut && exId) attachLastLogToRow_(tr, rut, exId, inp.value||"");
+          });
+        });
+
+        const last = rutinaV2DeSocio(rut);
+        showLastRoutineBoxPretty(last);
+      });
+
+      $("#btnAddDay").onclick = ()=>{
+        const d = String($("#dayPicker").value);
+        if(addedDays.has(d)){
+          showMsg(msgEl, `⚠️ Día ${d} ya está agregado.`, false);
+          return;
+        }
+        $("#daysContainer").insertAdjacentHTML("beforeend", dayCardTemplate(d));
+        addedDays.add(d);
+        wireDayActions();
+        updateFocusBadges(d);
+
+        // agregamos una fila por defecto para que aparezca la lista al tiro
+        const tbody = document.getElementById(`tbody-${d}`);
+        if(tbody){
+          tbody.insertAdjacentHTML("beforeend", rowTemplate(d));
+          wireRowActions(d);
+        }
+
+        showMsg(msgEl, `Agregado: Día ${d}`, true);
+      };
+
+      $("#dayPicker").value = "1";
+      $("#btnAddDay").click();
+
+      setTimeout(()=>{
+        const rut = socioSelect.value;
+        if(rut){
+          const last = rutinaV2DeSocio(rut);
+          showLastRoutineBoxPretty(last);
+        }
+      }, 150);
+
+      // ✅ GUARDAR RUTINA
+      $("#btnGuardar").onclick = async ()=>{
+        try{
+          showMsg(msgEl, "Guardando rutina…", true);
+
+          const routine = collectRoutine();
+          const rutinaId = uid();
+
+          await apiPost("RUTINAS_ITEMS", {
+            rutinaId,
+            routine,
+            profesorRut: me.rut,
+            profesorNombre: me.nombre
+          });
+
+          await saveRutinaV2Online({
+            rutSocio: routine.socio.rut,
+            routine,
+            creadoPorRut: me.rut
+          });
+
+          const txt = formatRutinaText(routine, me.nombre);
+          await saveRutinaTxtOnline({
+            rutSocio: routine.socio.rut,
+            titulo: `Rutina ${routine.meta.nivel} (${routine.dias.length} días)`,
+            detalle: txt,
+            creadoPorRut: me.rut
+          });
+
+          if(typeof syncDown === "function"){
+            try{ await syncDown(); }catch(e){ console.warn("syncDown falló:", e); }
+          }
+
+          const last = rutinaV2DeSocio(routine.socio.rut);
+          showLastRoutineBoxPretty(last);
+
+          showMsg(msgEl, "✅ Rutina guardada. El socio ya la puede ver en su panel.", true);
+        }catch(err){
+          console.error(err);
+          const msg = (err && err.message) ? err.message : String(err);
+          showMsg(msgEl, "⛔ Error al guardar: " + msg, false);
+        }
+      };
+
+      $("#btnVista").onclick = ()=>{
+        try{
+          const routine = collectRoutine();
+          renderVistaSocio(routine, me.nombre);
+          openVistaModal();
+        }catch(err){
+          showMsg(msgEl, err.message, false);
+        }
+      };
+
+      // Plantillas
+      const tplSearch = $("#tplSearch");
+      const tplSelect = $("#tplSelect");
+      let plantillasCache = [];
+
+      function normalizeTplJson(x){
+        if(!x) return null;
+        if(typeof x === "string"){
+          try{ return JSON.parse(x); }catch{ return null; }
+        }
+        return x;
+      }
+
+      function plantillaToOptionText(p){
+        const n = p.nombrePlantilla || "Plantilla sin nombre";
+        const niv = p.nivel || "-";
+        const obj = p.objetivo || "-";
+        const d = p.dias || "-";
+        const vis = (String(p.visibility || "").toUpperCase() === "PUBLICA") ? "🌍" : "🔒";
+        return `${vis} ${n} · ${obj} · ${niv} · ${d} días`;
+      }
+
+      function renderPlantillas(q){
+        q = String(q||"").toLowerCase().trim();
+        const list = !q ? plantillasCache : plantillasCache.filter(p =>
+          String(p.nombrePlantilla||"").toLowerCase().includes(q) ||
+          String(p.objetivo||"").toLowerCase().includes(q) ||
+          String(p.nivel||"").toLowerCase().includes(q)
+        );
+
+        const current = tplSelect.value || "";
+        tplSelect.innerHTML = "";
+
+        list.forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value = p.templateId;
+          opt.textContent = plantillaToOptionText(p);
+          tplSelect.appendChild(opt);
+        });
+
+        if(current && [...tplSelect.options].some(o=>o.value === current)){
+          tplSelect.value = current;
+        }
+      }
+
+      async function cargarPlantillasDesdeSheets(){
+        try{
+          const resp = await apiGet("PLANTILLAS_V2");
+          const rows = (resp && resp.plantillas_v2) ? resp.plantillas_v2 : [];
+
+          const myRut = String(me.rut || "").trim().toUpperCase();
+          plantillasCache = rows.filter(p=>{
+            const vis = String(p.visibility||"").toUpperCase();
+            const owner = String(p.ownerRut||"").trim().toUpperCase();
+            return vis === "PUBLICA" || owner === myRut;
+          }).map(p=>{
+            return {
+              templateId: p.templateId || p.id || uid(),
+              nombrePlantilla: p.nombrePlantilla || p.nombre || "",
+              nivel: p.nivel || "",
+              objetivo: p.objetivo || "",
+              dias: Number(p.dias || 0),
+              visibility: p.visibility || "PRIVADA",
+              ownerRut: p.ownerRut || "",
+              ownerNombre: p.ownerNombre || "",
+              template_json: p.template_json ?? p.template ?? null,
+              creadoEn: p.creadoEn || "",
+              actualizadoEn: p.actualizadoEn || ""
+            };
+          });
+
+          renderPlantillas("");
+        }catch(e){
+          console.error(e);
+          showMsg(msgEl, "⚠️ No pude cargar plantillas (revisa API / permisos).", false);
+        }
+      }
+
+      tplSearch?.addEventListener("input", ()=> renderPlantillas(tplSearch.value));
+
+      $("#btnCargarPlantilla").onclick = ()=>{
+        try{
+          const id = tplSelect.value;
+          const tpl = plantillasCache.find(p => String(p.templateId) === String(id));
+          if(!tpl) throw new Error("Selecciona una plantilla válida.");
+
+          const tplRoutine = normalizeTplJson(tpl.template_json);
+          if(!tplRoutine) throw new Error("La plantilla no tiene template_json válido.");
+
+          loadRoutineIntoBuilder({
+            meta: tplRoutine.meta || {},
+            dias: tplRoutine.dias || []
+          });
+
+          showMsg(msgEl, "📋 Plantilla cargada. Ahora puedes editar y guardar al socio.", true);
+        }catch(err){
+          showMsg(msgEl, err.message, false);
+        }
+      };
+
+      $("#btnGuardarPlantilla").onclick = async ()=>{
+        try{
+          const r = collectRoutine();
+          const nombre = prompt("Nombre de la plantilla:", `${r.meta.objetivo} ${r.dias.length} días · ${r.meta.nivel}`) || "";
+          if(!nombre.trim()) throw new Error("Debes colocar un nombre de plantilla.");
+
+          const vis = (prompt('Visibilidad: escribe "PUBLICA" o "PRIVADA"', "PRIVADA") || "PRIVADA").trim().toUpperCase();
+          const visibility = (vis === "PUBLICA") ? "PUBLICA" : "PRIVADA";
+
+          const templateRoutine = { meta: r.meta, dias: r.dias };
+
+          await apiPost("PLANTILLAS_V2", {
+            templateId: uid(),
+            nombrePlantilla: nombre.trim(),
+            nivel: r.meta.nivel,
+            objetivo: r.meta.objetivo,
+            dias: r.dias.length,
+            visibility,
+            ownerRut: String(me.rut||"").trim().toUpperCase(),
+            ownerNombre: me.nombre || "",
+            template_json: JSON.stringify(templateRoutine),
+            creadoEn: nowISO(),
+            actualizadoEn: nowISO()
+          });
+
+          showMsg(msgEl, "✅ Plantilla guardada. Recargando lista…", true);
+          await cargarPlantillasDesdeSheets();
+        }catch(err){
+          showMsg(msgEl, err.message, false);
+        }
+      };
+
+      await cargarPlantillasDesdeSheets();
+      showMsg(msgEl, `✅ Base de ejercicios: ${Object.values(EX_BY_MUSCLE).reduce((a,b)=>a+b.length,0)} cargados.`, true);
+    }
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      const msgEl = $("#msg");
+
+      try{
+        // intenta varias rutas según tu estructura local:
+        // - assets/app.js (si rutinas.html está en Web/ y assets/ al lado)
+        // - Web/assets/app.js (si rutinas.html está un nivel arriba y Web/ contiene assets/)
+        // - ./assets/app.js (seguro)
+        // - ../assets/app.js (si rutinas.html está dentro de una subcarpeta)
+        const loadedFrom = await loadScriptTry([
+          "assets/app.js",
+          "./assets/app.js",
+          "Web/assets/app.js",
+          "../assets/app.js",
+          "/Web/assets/app.js"
+        ]);
+
+        // sanity: aseguramos que existen funciones críticas
+        if(typeof requireAuth !== "function" || typeof apiGet !== "function"){
+          throw new Error("app.js cargó desde: " + loadedFrom + " pero faltan funciones (requireAuth/apiGet). Revisa que sea el app.js correcto.");
+        }
+
+        await mainInit();
+      }catch(err){
+        console.error(err);
+        showMsg(msgEl, "⛔ " + (err.message || String(err)), false);
+
+        // fallback: pinta conexión como caída si existen elementos
+        try{
+          const dot = document.getElementById("dbDot");
+          const txt = document.getElementById("dbText");
+          if(dot) dot.className = "db-dot off";
+          if(txt) txt.textContent = "Sin app.js";
+        }catch{}
+      }
+    });
+  </script>
+
+<div class="modalOverlay" id="rmGraphModal" style="display:none;">
+  <div class="modalCard">
+    <div class="modalHeader">
+      <b id="rmGraphTitle">Evolución del ejercicio</b>
+      <button class="iconBtn" onclick="closeRmGraph()">✕</button>
+    </div>
+    <div class="modalBody">
+      <canvas id="rmGraphCanvas" height="180" style="width:100%;max-width:100%"></canvas>
+      <div class="mutedLine" id="rmGraphHint" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ✅ Chart.js para gráficos en modal -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- ✅ MODAL PRO: Imagen + KPIs + Evolución -->
+<style>
+  .mfModalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
+  .mfModal{width:min(1100px,96vw);max-height:min(86vh,820px);overflow:hidden;background:rgba(18,27,42,.92);border:1px solid rgba(255,255,255,.10);
+    border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);backdrop-filter:blur(10px)}
+  .mfModalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10)}
+  .mfModalHead h3{margin:0;font-size:16px;color:rgba(255,255,255,.92)}
+  .mfClose{border:none;cursor:pointer;border-radius:12px;padding:8px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.9);font-weight:700}
+  .mfModalBody{display:grid;grid-template-columns: 1.05fr .95fr;gap:14px;padding:14px}
+  @media (max-width: 980px){ .mfModalBody{grid-template-columns:1fr} }
+  .mfPanel{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px}
+  .mfMediaWrap{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.25)}
+  .mfMedia{width:100%;height:420px;object-fit:contain;display:block;background:#0a0e14}
+  @media (max-width: 980px){ .mfMedia{height:320px} }
+  .mfUrl{margin-top:8px;font-size:11px;opacity:.75;word-break:break-all}
+  .mfKpis{display:grid;grid-template-columns: repeat(3,1fr);gap:10px;margin-bottom:10px}
+  @media (max-width: 980px){ .mfKpis{grid-template-columns: repeat(2,1fr)} }
+  .mfKpi{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px}
+  .mfKpi .l{font-size:11px;opacity:.72}
+  .mfKpi .v{font-size:16px;font-weight:800;margin-top:2px}
+  .mfHint{font-size:12px;opacity:.80;line-height:1.35}
+  .mfTable{width:100%;border-collapse:separate;border-spacing:0 8px}
+  .mfTable th{font-size:11px;text-align:left;opacity:.7;padding:0 8px}
+  .mfTable td{padding:10px 8px;background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+  .mfTable tr td:first-child{border-left:1px solid rgba(255,255,255,.08);border-radius:12px 0 0 12px}
+  .mfTable tr td:last-child{border-right:1px solid rgba(255,255,255,.08);border-radius:0 12px 12px 0}
+  .mfEmpty{opacity:.75;font-size:13px}
+
+  /* ✅ Modal: limitar altura + scroll interno */
+  .mfModal{ max-height: 90vh; overflow: hidden; }
+  .mfModalBody{ max-height: calc(90vh - 64px); overflow: auto; padding-right: 6px; }
+  .mfModalBody::-webkit-scrollbar{ width: 10px; }
+  .mfModalBody::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
+  .mfModalBody::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); border-radius: 999px; }
+
+
+  /* ✅ FIX: evitar que la imagen se "coma" el modal y genere scroll gigante */
+  .mfModal{
+    height: 86vh;
+    max-height: 86vh;
+  }
+  .mfModalHead{ position: sticky; top: 0; z-index: 2; background: linear-gradient(180deg, rgba(15,20,32,.95), rgba(15,20,32,.70)); backdrop-filter: blur(10px); }
+  .mfModalBody{
+    max-height: calc(86vh - 64px);
+    overflow: hidden; /* el scroll lo maneja el panel derecho */
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .mfMediaWrap{
+    height: calc(86vh - 64px);
+    max-height: calc(86vh - 64px);
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .mfMedia{
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* nunca agrandar hacia abajo */
+    background: #0b0f18;
+  }
+  .mfPanel{
+    height: calc(86vh - 64px);
+    max-height: calc(86vh - 64px);
+    overflow: auto;
+    padding-right: 6px;
+  }
+  .mfPanel::-webkit-scrollbar{ width: 10px; }
+  .mfPanel::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
+  .mfPanel::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); border-radius: 999px; }
+  @media (max-width: 980px){
+    .mfModal{ height: 92vh; max-height: 92vh; }
+    .mfModalBody{ grid-template-columns: 1fr; }
+    .mfMediaWrap{ height: 42vh; max-height: 42vh; }
+    .mfPanel{ height: calc(92vh - 64px - 42vh); max-height: calc(92vh - 64px - 42vh); }
+  }
+
+</style>
+
+<div class="mfModalBackdrop" id="mfBackdrop" aria-hidden="true">
+  <div class="mfModal" role="dialog" aria-modal="true" aria-labelledby="mfTitle">
+    <div class="mfModalHead">
+      <h3 id="mfTitle">Ejercicio</h3>
+      <button class="mfClose" id="mfCloseBtn">Cerrar</button>
+    </div>
+
+    <div class="mfModalBody">
+      <div class="mfPanel">
+        <div class="mfMediaWrap">
+          <img class="mfMedia" id="mfMedia" alt="Media ejercicio"/>
+        </div>
+        <div class="mfUrl" id="mfUrl"></div>
+      </div>
+
+      <div class="mfPanel">
+        <div class="mfKpis" id="mfKpis"></div>
+
+        <div class="mfHint" id="mfHint"></div>
+
+        <div class="mfChartWrap" style="margin-top:10px">
+          <canvas id="mfChart"></canvas>
+        </div>
+
+        <div style="margin-top:10px">
+          <table class="mfTable" id="mfTable">
+            <thead>
+              <tr>
+                <th>Fecha</th><th>Peso</th><th>Reps</th><th>Series</th><th>RM</th>
+              </tr>
+            </thead>
+            <tbody id="mfTbody"></tbody>
+          </table>
+          <div class="mfEmpty" id="mfEmpty" style="display:none">Sin registros para este ejercicio aún.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (q,root=document)=>root.querySelector(q);
+
+  function norm(s){
+    return (s ?? "").toString().trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  }
+  function toNum(x){
+    if(x===null||x===undefined||x==="") return null;
+    const n = Number(String(x).replace(",", ".").replace(/[^0-9.\-]/g,""));
+    return Number.isFinite(n) ? n : null;
+  }
+  function parseLogsResponse(res){
+    if(!res) return [];
+    // caso directo
+    if(Array.isArray(res)) return res;
+
+    // candidatos típicos
+    const cand =
+      res.data || res.items || res.rows ||
+      res.WORKOUT_SETS_LOG || res.workout_sets_log ||
+      res.logs || res.records || res.result || res.results;
+    if(Array.isArray(cand)) return cand;
+    if(cand && Array.isArray(cand.data)) return cand.data;
+    if(cand && Array.isArray(cand.items)) return cand.items;
+    if(cand && Array.isArray(cand.rows)) return cand.rows;
+
+    // búsqueda recursiva: encuentra el primer array de objetos "parecido a logs"
+    const seen = new Set();
+    function isLogArray(a){
+      if(!Array.isArray(a) || !a.length) return false;
+      const o = a[0];
+      if(!o || typeof o !== "object") return false;
+      const keys = Object.keys(o).map(k=>k.toLowerCase());
+      // heurística: tiene al menos 2 de estas claves
+      const hit = ["peso_kg","peso","kg","reps","series","ejercicio_nombre","ejercicio_id","timestamp","e1rm","rm_avg"].filter(k=>keys.includes(k)).length;
+      return hit >= 2;
+    }
+    function walk(obj, depth=0){
+      if(!obj || typeof obj !== "object" || depth>6) return null;
+      if(seen.has(obj)) return null;
+      seen.add(obj);
+      for(const k of Object.keys(obj)){
+        const v = obj[k];
+        if(Array.isArray(v)){
+          if(isLogArray(v)) return v;
+          // si no calza, igual recorre elementos (por si array contiene wrapper)
+          for(const it of v){
+            const got = walk(it, depth+1);
+            if(got) return got;
+          }
+        }else if(v && typeof v === "object"){
+          const got = walk(v, depth+1);
+          if(got) return got;
+        }
+      }
+      return null;
+    }
+    const found = walk(res, 0);
+    return Array.isArray(found) ? found : [];
+  }
+  function getExercisesSafe(){
+    try{
+      if(typeof getExercises==="function"){
+        const a = getExercises();
+        if(Array.isArray(a) && a.length) return a;
+      }
+    }catch(e){}
+    // variables globales comunes en tu proyecto
+    if(Array.isArray(window.__EXERCISES__) && window.__EXERCISES__.length) return window.__EXERCISES__;
+    if(Array.isArray(window.EXERCISES) && window.EXERCISES.length) return window.EXERCISES;
+    return [];
+  }
+  function findExerciseByName(name){
+    const exs = getExercisesSafe();
+    const n = norm(name);
+    if(!n) return null;
+    // intenta por "nombre" o "ejercicio_nombre"
+    return exs.find(ex => norm(ex.nombre || ex.ejercicio_nombre || ex.name) === n) || null;
+  }
+  function pickMediaUrl(ex){
+    if(!ex) return "";
+    return ex.mediaUrlGif || ex.media_url_gif || ex.mediaGif || ex.gifUrl ||
+           ex.mediaUrl || ex.media_url || ex.imageUrl || ex.imgUrl || "";
+  }
+
+  // Modal refs
+  const backdrop = $("#mfBackdrop");
+  const btnClose = $("#mfCloseBtn");
+  const mediaEl = $("#mfMedia");
+  const urlEl = $("#mfUrl");
+  const titleEl = $("#mfTitle");
+  const kpisEl = $("#mfKpis");
+  const hintEl = $("#mfHint");
+  const tbodyEl = $("#mfTbody");
+  const emptyEl = $("#mfEmpty");
+  let chart = null;
+
+  function openModal(){ backdrop.style.display="flex"; backdrop.setAttribute("aria-hidden","false"); }
+  function closeModal(){
+    backdrop.style.display="none"; backdrop.setAttribute("aria-hidden","true");
+    if(chart){ chart.destroy(); chart=null; }
+  }
+  btnClose?.addEventListener("click", closeModal);
+  backdrop?.addEventListener("click", (e)=>{ if(e.target===backdrop) closeModal(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && backdrop.style.display==="flex") closeModal(); });
+
+  async function ensureLogsLoaded(){
+    if(Array.isArray(window.__WORKOUT_SETS_LOG) && window.__WORKOUT_SETS_LOG.length) return window.__WORKOUT_SETS_LOG;
+    if(typeof apiGet === "function"){
+      const res = await apiGet("WORKOUT_SETS_LOG");
+      const arr = parseLogsResponse(res);
+      window.__WORKOUT_SETS_LOG = arr;
+      return arr;
+    }
+    // fallback fetch directo si hay API_URL
+    const urlBase = (typeof API_URL === "string" && API_URL) ? API_URL : (typeof BASE_API_URL === "string" ? BASE_API_URL : "");
+    if(urlBase){
+      const url = urlBase + (urlBase.includes("?") ? "&" : "?") + "resource=WORKOUT_SETS_LOG";
+      const r = await fetch(url, { method:"GET", cache:"no-store" });
+      const j = await r.json();
+      const arr = parseLogsResponse(j);
+      window.__WORKOUT_SETS_LOG = arr;
+      return arr;
+    }
+    return [];
+  }
+
+  function pickDate(log){
+    return log.fecha || log.date || log.dia || log.day || "";
+  }
+  function pickTimestamp(log){
+    return toNum(log.timestamp || log.ts || log.time || log.createdAt || log.created_at) || 0;
+  }
+  function pickPeso(log){ return toNum(log.peso_kg ?? log.peso ?? log.kg ?? log.weight ?? log.carga ?? log.load); }
+  function pickReps(log){ return toNum(log.reps ?? log.rep ?? log.repeticiones); }
+  function pickSeries(log){ return toNum(log.series ?? log.sets ?? log.serie); }
+  function pickRM(log){
+    // Prefer valores explícitos del backend, pero filtra basura (ej: timestamp)
+    const raw = toNum(log.rm_avg ?? log.e1rm ?? log.rm_brzycki ?? log.rm_epley ?? log.rm ?? log.one_rm ?? log.onerm);
+    if(raw != null && raw > 0 && raw < 5000) return raw;
+
+    // Fallback: calcula en el front con Epley + Brzycki (promedio)
+    const w = pickPeso(log);
+    const r = pickReps(log);
+    if(w==null || r==null) return null;
+
+    // Epley: w*(1 + reps/30)
+    const e = w * (1 + (r/30));
+    // Brzycki: w*36/(37-reps) (válida hasta 36 reps)
+    const b = (r>0 && r<37) ? (w * 36 / (37 - r)) : NaN;
+
+    const ee = (Number.isFinite(e) && e>0) ? e : NaN;
+    const bb = (Number.isFinite(b) && b>0) ? b : NaN;
+
+    let avg = NaN;
+    if(Number.isFinite(ee) && Number.isFinite(bb)) avg = (ee+bb)/2;
+    else if(Number.isFinite(ee)) avg = ee;
+    else if(Number.isFinite(bb)) avg = bb;
+
+    if(Number.isFinite(avg) && avg>0 && avg<5000) return avg;
+    return null;
+  }
+  function pickRPE(log){ return (log.rpe ?? log.RPE ?? log.esfuerzo ?? ""); }
+
+function parseDateFromLog_(log){
+  const raw = pickDate(log);
+  if(raw){
+    const s = String(raw);
+    // ISO completo (2026-01-29T03:00:00.000Z) u otro compatible
+    if(s.includes("T")){
+      const dt = new Date(s);
+      if(!isNaN(dt)) return dt;
+    }
+    // YYYY-MM-DD
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      const dt = new Date(s + "T00:00:00");
+      if(!isNaN(dt)) return dt;
+    }
+  }
+  const ts = pickTimestamp(log);
+  if(ts){
+    const dt = new Date(ts);
+    if(!isNaN(dt)) return dt;
+  }
+  return null;
+}
+function fmt1_(n){
+  const x = toNum(n);
+  if(x==null) return null;
+  return Math.round(x*10)/10;
+}
+function fmt1s_(n){
+  const x = fmt1_(n);
+  return (x==null) ? "—" : x.toFixed(1);
+}
+function fmtDateLabel_(log){
+  const dt = parseDateFromLog_(log);
+  if(!dt) return "";
+  return dt.toLocaleDateString("es-CL",{day:"2-digit",month:"2-digit"});
+}
+function fmtDateTime_(log){
+  const dt = parseDateFromLog_(log);
+  if(!dt) return "";
+  return dt.toLocaleString("es-CL",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+
+  function buildKPIs(last){
+    const peso = pickPeso(last);
+    const reps = pickReps(last);
+    const series = pickSeries(last);
+    const rm = pickRM(last);
+    const rpe = pickRPE(last);
+
+    const pct = (peso!=null && rm!=null && rm>0) ? Math.round((peso/rm)*100) : null;
+    const w70 = (rm!=null) ? Math.round(rm*0.70) : null;
+    const w80 = (rm!=null) ? Math.round(rm*0.80) : null;
+
+    const kpis = [
+      {l:"Peso (kg)", v: peso!=null? peso:"—"},
+      {l:"Reps", v: reps!=null? reps:"—"},
+      {l:"Series", v: series!=null? series:"—"},
+      {l:"RPE", v: rpe!==""? rpe:"—"},
+      {l:"RM (estim.)", v: rm!=null? fmt1s_(rm):"—"},
+      {l:"% del RM", v: pct!=null? (pct+"%"):"—"},
+    ];
+    kpisEl.innerHTML = kpis.map(k => `
+      <div class="mfKpi">
+        <div class="l">${k.l}</div>
+        <div class="v">${k.v}</div>
+      </div>
+    `).join("");
+
+    hintEl.innerHTML = `
+      <b>Objetivo rápido:</b><br/>
+      70% RM ≈ <b>${w70!=null? (w70+" kg"):"—"}</b> ·
+      80% RM ≈ <b>${w80!=null? (w80+" kg"):"—"}</b>
+    `;
+  }
+
+  function renderTable(logs){
+    tbodyEl.innerHTML = logs.slice(0,10).map(l=>{
+      const d = fmtDateTime_(l);
+      const peso = pickPeso(l);
+      const reps = pickReps(l);
+      const series = pickSeries(l);
+      const rm = pickRM(l);
+      return `
+        <tr>
+          <td>${d || "—"}</td>
+          <td>${peso!=null? peso:"—"}</td>
+          <td>${reps!=null? reps:"—"}</td>
+          <td>${series!=null? series:"—"}</td>
+          <td>${rm!=null? fmt1s_(rm):"—"}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function drawChart(logs){
+    const ctx = $("#mfChart").getContext("2d");
+    const ordered = [...logs].reverse(); // ya vienen desc -> los damos vuelta para x asc
+    const labels = ordered.map((l,idx)=>{
+      const lab = fmtDateLabel_(l);
+      if(lab) return lab;
+      return ("#" + (idx+1));
+    });
+    const dataPeso = ordered.map(pickPeso);
+    const dataReps = ordered.map(pickReps);
+    const dataSeries = ordered.map(pickSeries);
+
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          { label:"Peso (kg)", data:dataPeso, spanGaps:true, tension:.25 },
+                    { label:"Reps", data:dataReps, spanGaps:true, tension:.25 },
+          { label:"Series", data:dataSeries, spanGaps:true, tension:.25 },
+        ]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.85)", font:{size:11} } } },
+        scales:{
+          x:{ ticks:{ color:"rgba(255,255,255,.65)", font:{size:10} }, grid:{ color:"rgba(255,255,255,.06)" } },
+          y:{ ticks:{ color:"rgba(255,255,255,.65)", font:{size:10} }, grid:{ color:"rgba(255,255,255,.06)" } },
+        }
+      }
+    });
+  }
+
+  async function showExerciseModalFromRow(tr){
+    const exName = tr?.querySelector("input[data-ex]")?.value?.trim();
+    if(!exName){
+      alert("Primero selecciona un ejercicio en la fila 🙂");
+      return;
+    }
+
+    // asegurar ejercicios cargados (tu helper está arriba del archivo)
+    if(typeof ensureExercisesLoaded_ === "function") await ensureExercisesLoaded_();
+
+    const ex = findExerciseByName(exName);
+    const mediaUrl = pickMediaUrl(ex);
+
+    titleEl.textContent = exName;
+    mediaEl.src = mediaUrl || "";
+    urlEl.textContent = mediaUrl || "(sin mediaUrl en EXERCISES para este ejercicio)";
+
+    // logs
+    const all = await ensureLogsLoaded();
+    const nid = norm(ex?.id || ex?.ejercicio_id || ex?.exercise_id || "");
+    const nname = norm(exName);
+
+    const filtered = (all || []).filter(l=>{
+      // 1) match por nombre en campos típicos
+      const ln = norm(l.ejercicio_nombre || l.ejercicio || l.nombre || l.exercise_name || l.exercise || "");
+      // 2) match por id (muchas veces tu ejercicio_id trae el nombre dentro)
+      const lid = norm(l.ejercicio_id || l.exercise_id || l.id || l.logId || "");
+      if((ln && ln === nname) || (nid && lid === nid) || (nid && lid && lid.includes(nid))) return true;
+      // 3) ultra-robusto: match por cualquier campo string que sea igual/contenga el nombre
+      // (sirve si el backend cambió headers: "ejercicio nombre", "exerciseName", etc.)
+      const vals = Object.values(l).filter(v => typeof v === "string" || typeof v === "number");
+      const joined = norm(vals.join(" "));
+      if(joined && (joined.includes(nname))) return true;
+      return false;
+    }).sort((a,b)=> (pickTimestamp(b)-pickTimestamp(a)) || (String(pickDate(b)).localeCompare(String(pickDate(a))))); 
+
+    if(chart){ chart.destroy(); chart=null; }
+
+    if(!filtered.length){
+      kpisEl.innerHTML = "";
+      hintEl.textContent = "";
+      tbodyEl.innerHTML = "";
+      emptyEl.style.display = "block";
+      emptyEl.textContent = "Sin registros para este ejercicio aún. (Total logs cargados: " + (all? all.length:0) + ")";
+    }else{
+      emptyEl.style.display = "none";
+      buildKPIs(filtered[0]);
+      renderTable(filtered);
+      drawChart(filtered.slice(0,14)); // últimos 14
+    }
+
+    openModal();
+  }
+
+  // ✅ Delegación GLOBAL: sirve aunque la tabla se renderice dinámicamente
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest('[data-media]');
+    if(!btn) return;
+    // solo el botón "Ver" de la tabla (evita choques si hay otros data-media)
+    if(btn.tagName !== "BUTTON") return;
+    const tr = btn.closest("tr");
+    if(!tr) return;
+    e.preventDefault();
+    showExerciseModalFromRow(tr);
+  });
+
+})();
+</script>
+
+</body>
+</html>    }
     .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
 
     .topbar{
@@ -1743,3 +4940,4 @@
   </script>
 </body>
 </html>
+
