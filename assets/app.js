@@ -1395,6 +1395,7 @@ function detectRMStatus(rutSocio, ejercicioId){
 // ---------------- Exponer helpers globales ----------------
 // ✅ WORKOUT_SETS_LOG exposed
 window.getWorkoutSetsLog = getWorkoutSetsLog;
+window.setWorkoutSetsLog = setWorkoutSetsLog;
 window.workoutSetsForExercise = workoutSetsForExercise;
 
 // ✅ RM helpers (Rutinas)
