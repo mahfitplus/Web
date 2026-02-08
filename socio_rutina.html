@@ -3640,27 +3640,59 @@ let _rpeHistRows = [];
 
 
 
-      async function fetchWorkoutSetsLog_(){
-        if(_rpeHistCache) return { ok:true, rows:_rpeHistCache };
+      
+async function fetchWorkoutSetsLog_(){
+  // 1) Cache en memoria (por sesión)
+  if(_rpeHistCache) return { ok:true, rows:_rpeHistCache };
 
-        const url = (typeof API_URL !== "undefined" && API_URL) ? API_URL : (window.API_URL || "");
-        if(!url) return { ok:false, error:"no_api" };
-
-        const sep = url.includes("?") ? "&" : "?";
-        const full = url + sep + "resource=WORKOUT_SETS_LOG&ts=" + Date.now(); // cache-bust
-
-        try{
-          const res = await fetch(full, { method:"GET" });
-          const data = await res.json().catch(()=> ({}));
-          const rows = data.workout_sets_log || data.workoutSetsLog || data.rows || [];
-          _rpeHistCache = Array.isArray(rows) ? rows : [];
-          return { ok: !!data.ok, rows: _rpeHistCache };
-        }catch(e){
-          return { ok:false, error:String(e) };
-        }
+  // 2) Si app.js ya tiene el log en caché/localStorage, úsalo (evita depender del GET)
+  try{
+    if(typeof window.getWorkoutSetsLog === "function"){
+      const local = window.getWorkoutSetsLog() || [];
+      if(Array.isArray(local) && local.length){
+        _rpeHistCache = local.slice();
+        return { ok:true, rows:_rpeHistCache, source:"local" };
       }
+    }
+    if(window.__CACHE__ && Array.isArray(window.__CACHE__.workout_sets_log) && window.__CACHE__.workout_sets_log.length){
+      _rpeHistCache = window.__CACHE__.workout_sets_log.slice();
+      return { ok:true, rows:_rpeHistCache, source:"cache" };
+    }
+    if(Array.isArray(window.__WORKOUT_SETS_LOG__) && window.__WORKOUT_SETS_LOG__.length){
+      _rpeHistCache = window.__WORKOUT_SETS_LOG__.slice();
+      return { ok:true, rows:_rpeHistCache, source:"window" };
+    }
+  }catch(_e){}
 
-      function destroyRpeChart_(){
+  // 3) Intentar via apiGet (app.js) si existe
+  try{
+    if(typeof window.apiGet === "function"){
+      const data = await window.apiGet("WORKOUT_SETS_LOG");
+      const rows = data?.workout_sets_log || data?.workoutSetsLog || data?.rows || data?.data || [];
+      _rpeHistCache = Array.isArray(rows) ? rows : [];
+      return { ok: !!(data && (data.ok === true || data.status === "ok")), rows:_rpeHistCache, source:"apiGet" };
+    }
+  }catch(_e){}
+
+  // 4) Fallback: GET directo al WebApp
+  const url = (typeof API_URL !== "undefined" && API_URL) ? API_URL : (window.API_URL || "");
+  if(!url) return { ok:false, error:"no_api" };
+
+  const sep = url.includes("?") ? "&" : "?";
+  const full = url + sep + "resource=WORKOUT_SETS_LOG&ts=" + Date.now(); // cache-bust
+
+  try{
+    const res = await fetch(full, { method:"GET" });
+    const data = await res.json().catch(()=> ({}));
+    const rows = data.workout_sets_log || data.workoutSetsLog || data.rows || [];
+    _rpeHistCache = Array.isArray(rows) ? rows : [];
+    return { ok: !!(data && (data.ok === true || data.status === "ok")), rows: _rpeHistCache, source:"get" };
+  }catch(e){
+    return { ok:false, error:String(e) };
+  }
+}
+
+function destroyRpeChart_(){
         try{ if(rpeChart){ rpeChart.destroy(); } }catch(e){}
         rpeChart = null;
       }
@@ -3794,26 +3826,41 @@ if(!res.ok){
       return;
     }
 
-    const rowsAll = res.rows || [];
-    const rutNeed = String(rutSocio||"").trim();
-    const exIdNeed = String(exid||"").trim();
-    const exNameNeed = String(exName||"").trim().toLowerCase();
+    
+const rowsAll = res.rows || [];
+const rutNeed = String(rutSocio||"").trim();
 
-    // ✅ FILTRO ROBUSTO:
-    // - primero por rut
-    // - luego por (ejercicio_id == exid) OR (ejercicio_nombre == exName)
-    const rows = rowsAll.filter(r=>{
-      const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
-      if(rut !== rutNeed) return false;
+const exIdNeed = String(exid||"").trim();
+const exIdNeedLow = exIdNeed.toLowerCase();
 
-      const rid = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
-      const rnm = String(r.ejercicio_nombre ?? r.ejercicioNombre ?? r.nombre ?? "").trim().toLowerCase();
+const normTxt = (v)=> String(v||"")
+  .toLowerCase()
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
+  .replace(/\s+/g, " ")
+  .trim();
 
-      const byId = exIdNeed && rid === exIdNeed;
-      const byName = exNameNeed && rnm === exNameNeed;
+const exNameNeedN = normTxt(exName);
 
-      return byId || byName;
-    });
+// ✅ FILTRO ULTRA ROBUSTO:
+// - primero por rut
+// - luego por ID (igualdad o includes) OR por nombre (normalizado)
+const rows = rowsAll.filter(r=>{
+  const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
+  if(rut !== rutNeed) return false;
+
+  const rid = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
+  const ridLow = rid.toLowerCase();
+
+  const rnmN = normTxt(r.ejercicio_nombre ?? r.ejercicioNombre ?? r.nombre ?? "");
+
+  const byId = exIdNeed && (rid === exIdNeed || (ridLow && ridLow.includes(exIdNeedLow)));
+  const byName = exNameNeedN && (
+    rnmN === exNameNeedN ||
+    (rnmN && exNameNeedN && (rnmN.includes(exNameNeedN) || exNameNeedN.includes(rnmN)))
+  );
+
+  return byId || byName;
+});
     if(myReq !== _rpeReqId) return;
     _rpeHistRows = rows;
     renderKpis_(rows);
@@ -3997,12 +4044,29 @@ try{
             if(suggest) showToast("Sugerencia: ajusta carga/volumen (2x Muy pesado).", 2200);
             haptic(18);
 
-           // ✅ PRO: refrescar gráfico/historial con lo ÚLTIMO sí o sí
+           
+// ✅ PRO: reflejar el registro altiro (aunque el GET falle)
 try{
-  // 1) invalidar caché para que el GET traiga el registro recién guardado
-  _rpeHistCache = null;
+  const rowNew = { ...payload };
 
-  // 2) refrescar con ID + nombre (filtro robusto)
+  // 1) Empujar a cache en memoria
+  if(Array.isArray(_rpeHistCache)) _rpeHistCache.push(rowNew);
+
+  // 2) Empujar a cache global/local (si existe)
+  try{
+    if(Array.isArray(window.__WORKOUT_SETS_LOG__)) window.__WORKOUT_SETS_LOG__.push(rowNew);
+  }catch(_e){}
+
+  try{
+    if(typeof window.getWorkoutSetsLog === "function" && typeof window.setWorkoutSetsLog === "function"){
+      const list = (window.getWorkoutSetsLog() || []).slice();
+      list.push(rowNew);
+      window.setWorkoutSetsLog(list);
+    }
+  }catch(_e){}
+
+  // 3) Forzar recarga de historial desde servidor (para asegurar consistencia)
+  _rpeHistCache = null;
   await loadAndRenderExerciseHistory_(
     payload.rut_socio,
     payload.ejercicio_id,
