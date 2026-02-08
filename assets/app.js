@@ -11,7 +11,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbwGrqLZnsMxj85qt6HpXOhWQHsHLg6c3KJEWbilI5ymQDsc7VLiuKS-lh0qvY8FrJC0xg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbytzYbgMKaLb0RIYlrHk1wmIpAGfO9Ca_R_av2TIb-JoNf4jBdRd9qno01p3XBN24I-Kg/exec";
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
