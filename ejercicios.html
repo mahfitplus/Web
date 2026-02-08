@@ -268,6 +268,17 @@
       padding:16px;
     }
     .backdrop.show{display:flex}
+    
+    /* ✅ Confirmación de eliminación (siempre por encima del modal de edición) */
+    #deleteChoice{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.72);
+      display:none; align-items:center; justify-content:center;
+      z-index:80; /* mayor que .backdrop (60) */
+      padding:16px;
+    }
+    #deleteChoice.show{display:flex}
+
     .modal{
       width:min(980px, 100%);
       border-radius:24px;
@@ -461,6 +472,32 @@
     </div>
   </div>
   <div id="toast" style="position:fixed;right:16px;bottom:16px;z-index:90;display:flex;flex-direction:column;gap:10px;"></div>
+<div id="deleteChoice">
+  <div class="modal" style="max-width:520px;">
+    <div class="modalHead">
+      <div>
+        <div class="modalTitle">Eliminar ejercicio</div>
+        <div class="modalHint">Elige una opción</div>
+      </div>
+      <button class="xbtn" id="dcClose" type="button">×</button>
+    </div>
+    <div class="modalBody">
+      <div style="color:#cbd5e1;line-height:1.5;font-size:13px;">
+        <div style="font-weight:900;color:#e5e7eb;margin-bottom:6px;">¿Qué quieres hacer?</div>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;">
+          <li><b>Desactivar</b>: deja el registro en la hoja pero pone <b>activo = 0</b> (reversible).</li>
+          <li><b>Eliminar definitivo</b>: borra la fila de la hoja (no reversible).</li>
+        </ul>
+        <div style="margin-top:10px;color:#94a3b8;">Ejercicio: <span id="dcId" style="font-weight:900;color:#e5e7eb;"></span></div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn" id="dcCancel" type="button">Cancelar</button>
+      <button class="btn danger" id="dcSoft" type="button">Desactivar</button>
+      <button class="btn danger" id="dcHard" type="button" style="border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.14);">Eliminar definitivo</button>
+    </div>
+  </div>
+</div>
 
   <script src="./assets/app.js" onerror="console.warn('assets/app.js no cargó (revisa la ruta)')"></script>
 
@@ -621,7 +658,11 @@
       btnSave.style.opacity = on ? "1" : ".55";
       btnSave.style.cursor = on ? "pointer" : "not-allowed";
       // eliminar/desactivar solo cuando hay exId real
-      try{ btnDelete.style.display = (on && current && current.exId) ? "" : "none"; }catch(e){}
+      try{
+        const id = String((current && current.exId) || "");
+        const canDelete = /^EX_/i.test(id);
+        btnDelete.style.display = (on && canDelete) ? "" : "none";
+      }catch(e){}
       mInfoHint.textContent = on ? "Modo: editar" : "Modo: info";
     }
 
@@ -845,17 +886,104 @@
 
     async function softDelete(){
       if(!current) return;
+      const id = String(current.exId||"");
+      if(!/^EX_/i.test(id)){
+        showToast("Este ejercicio es de la base original y no se puede eliminar.", "bad");
+        return;
+      }
       const ok = confirm("Esto NO borra la fila. Solo marca activo=0. ¿Continuar?");
       if(!ok) return;
+
+      const prevTxt = btnDelete.textContent;
+      btnDelete.disabled = true;
+      btnDelete.style.opacity = ".65";
+      btnDelete.textContent = "Desactivando…";
+      showToast("Desactivando…", "warn");
+
       try{
         await apiPost("EXERCISES", { exId: current.exId, activo: 0 });
-        closeModal();
+
+        // refresca datos
         await load();
+
+        // reubica current (si aún existe)
+        const refreshed = ALL.find(x => String(x.exId||"") === String(id));
+        if(refreshed){
+          current = refreshed;
+          fillForm(refreshed);
+          setMediaPreview(pickMedia(refreshed));
+          mBadge.textContent = `${norm(refreshed.musculo)||"—"} · ${norm(refreshed.maq)||"—"}`;
+        }
+        showToast("✅ Desactivado (activo=0)", "ok");
+
+        // deja el modal en modo info (solo lectura)
+        setEditEnabled(false);
+
       } catch(err){
         console.error(err);
+        showToast("No pude desactivar: " + (err && err.message ? err.message : err), "bad");
         alert("No pude desactivar.\n\n" + (err && err.message ? err.message : err));
+      } finally {
+        btnDelete.disabled = false;
+        btnDelete.style.opacity = "1";
+        btnDelete.textContent = prevTxt;
       }
     }
+
+    async function hardDelete(){
+      if(!current) return;
+      const id = String(current.exId||"");
+      if(!/^EX_/i.test(id)){
+        showToast("Este ejercicio es de la base original y no se puede eliminar definitivo.", "bad");
+        return;
+      }
+      const ok = confirm("⚠️ ELIMINAR DEFINITIVO\n\nEsto borrará la fila de la hoja y NO se puede deshacer.\n\n¿Eliminar definitivamente " + id + "?");
+      if(!ok) return;
+
+      showToast("Eliminando definitivo…", "warn");
+      btnDelete.disabled = true;
+      btnDelete.textContent = "Eliminando…";
+      try{
+        // Requiere backend: endpoint POST action/resource = EXERCISES_HARD_DELETE
+        await apiPost("EXERCISES_HARD_DELETE", { exId: id });
+        showToast("✅ Eliminado definitivo", "ok");
+        closeModal();
+        await load();
+      }catch(err){
+        console.error(err);
+        showToast("No pude eliminar definitivo: " + (err && err.message ? err.message : err), "bad");
+        alert("No pude eliminar definitivo.\n\n" + (err && err.message ? err.message : err));
+      }finally{
+        btnDelete.disabled = false;
+        btnDelete.textContent = "Eliminar (desactivar)";
+      }
+    }
+
+    function openDeleteChoice(){
+      if(!current) return;
+      const id = String(current.exId||"");
+      // Solo mostramos opciones si es EX_
+      if(!/^EX_/i.test(id)){
+        showToast("Este ejercicio es de la base original y no se puede eliminar.", "bad");
+        return;
+      }
+      const dc = document.getElementById("deleteChoice");
+      const dcId = document.getElementById("dcId");
+      if(dcId) dcId.textContent = id;
+      if(dc){
+        dc.style.display = "";
+        dc.classList.add("show");
+      }
+    }
+
+    function closeDeleteChoice(){
+      const dc = document.getElementById("deleteChoice");
+      if(dc){
+        dc.classList.remove("show");
+        dc.style.display = "none";
+      }
+    }
+
 
     // ========= Events =========
     elQ.addEventListener("input", () => apply());
@@ -893,7 +1021,26 @@
 
     btnEditMode.addEventListener("click", () => { if(!bd.classList.contains("show")) return; setEditEnabled(true); showToast("Modo edición activado", "warn"); });
     btnSave.addEventListener("click", save);
-    btnDelete.addEventListener("click", softDelete);
+    btnDelete.addEventListener("click", openDeleteChoice);
+
+    // Dialog Eliminar (Desactivar / Definitivo)
+    const dc = document.getElementById("deleteChoice");
+    const dcClose = document.getElementById("dcClose");
+    const dcCancel = document.getElementById("dcCancel");
+    const dcSoft = document.getElementById("dcSoft");
+    const dcHard = document.getElementById("dcHard");
+
+    function bindDC(el, fn){ if(el) el.addEventListener("click", fn); }
+
+    bindDC(dcClose, closeDeleteChoice);
+    bindDC(dcCancel, closeDeleteChoice);
+    bindDC(dcSoft, async ()=>{ closeDeleteChoice(); await softDelete(); });
+    bindDC(dcHard, async ()=>{ closeDeleteChoice(); await hardDelete(); });
+
+    if(dc){
+      dc.addEventListener("click", (e)=>{ if(e.target === dc) closeDeleteChoice(); });
+    }
+
 
     elGrid.addEventListener("click", (e) => {
       const t = e.target;
