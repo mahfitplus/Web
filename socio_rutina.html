@@ -3556,7 +3556,16 @@ if(action === "rest"){
       }
 
       
-      // --- 📈 HISTORIAL + GRÁFICO (Chart.js) ---
+      
+      // --- ✅ RUT NORMALIZADO (para que coincidan registros antiguos con guión y nuevos sin guión) ---
+      function normalizeRut_(rut){
+        return String(rut || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^0-9k]/g, "");
+      }
+
+// --- 📈 HISTORIAL + GRÁFICO (Chart.js) ---
       let rpeChart = null;
       let rpeChartMode = "peso"; // "peso" | "vol" | "rm"
 let _rpeHistCache = null;
@@ -3828,7 +3837,7 @@ if(!res.ok){
 
     
 const rowsAll = res.rows || [];
-const rutNeed = String(rutSocio||"").trim();
+const rutNeed = normalizeRut_(rutSocio);
 
 const exIdNeed = String(exid||"").trim();
 const exIdNeedLow = exIdNeed.toLowerCase();
@@ -3845,7 +3854,7 @@ const exNameNeedN = normTxt(exName);
 // - primero por rut
 // - luego por ID (igualdad o includes) OR por nombre (normalizado)
 const rows = rowsAll.filter(r=>{
-  const rut = String(r.rut_socio ?? r.rutSocio ?? "").trim();
+  const rut = normalizeRut_(r.rut_socio ?? r.rutSocio ?? "");
   if(rut !== rutNeed) return false;
 
   const rid = String(r.ejercicio_id ?? r.ejercicioId ?? "").trim();
@@ -3915,7 +3924,7 @@ try{ renderExerciseChart_([]); }catch(_e){}
 
 // ✅ Auto-cargar evolución al abrir (sin botón)
 try{
-  const rutSocio = (window.user?.rut || window.user?.rut_socio || window.user?.id || "").toString().trim();
+  const rutSocio = normalizeRut_((window.user?.rut || window.user?.rut_socio || window.user?.id || ""));
   if(rutSocio && exid){
     if(!_rpeHistCache) {
       fetchWorkoutSetsLog_().then(()=> loadAndRenderExerciseHistory_(rutSocio, exid, name, _rpeReqId)).catch(()=>{});
@@ -4006,7 +4015,7 @@ try{
           // Payload para Sheets
           const payload = {
             fecha: getTodayISO(),
-            rut_socio: (window.user?.rut || window.user?.rut_socio || window.user?.id || "").toString(),
+            rut_socio: normalizeRut_((window.user?.rut || window.user?.rut_socio || window.user?.id || "")),
             dia: rpeCtx.dayKey || "",
             ejercicio_id: rpeCtx.exid || "",
             ejercicio_nombre: rpeCtx.name || "",
