@@ -425,31 +425,39 @@ function setWorkoutSetsLog(v){ LS.set("mahfit_workout_sets_log", v); }
 // filtra por socio + ejercicio
 function workoutSetsForExercise(rutSocio, ejercicioId, ejercicioNombre){
   const rutN = normalizeRut(rutSocio);
-  const id = String(ejercicioId||"").trim();
-  const idLower = id.toLowerCase();
-  const nameN = mhfNormText(ejercicioNombre||"");
+  const idN  = String(ejercicioId || "").toLowerCase();
+  const nameN = mhfNormText(ejercicioNombre || "");
 
-  const rows = (window.__CACHE__ && Array.isArray(window.__CACHE__.workout_sets_log))
-    ? window.__CACHE__.workout_sets_log
-    : (Array.isArray(window.__WORKOUT_SETS_LOG__) ? window.__WORKOUT_SETS_LOG__ : []);
+  const rows = (window.__CACHE__?.workout_sets_log)
+    || window.getWorkoutSetsLog?.()
+    || [];
 
-  const out = (rows||[]).filter(x=>{
-    if(normalizeRut(x.rut_socio || x.rutSocio) !== rutN) return false;
+  return rows.filter(r => {
+    // 1️⃣ RUT
+    if (normalizeRut(r.rut_socio || r.rutSocio) !== rutN) return false;
 
-    const xid = String(x.ejercicio_id || x.ejercicioId || "").trim();
-    if(id && xid === id) return true;
-    if(id && xid && xid.toLowerCase().includes(idLower)) return true;
+    const rid = String(r.ejercicio_id || "").toLowerCase();
+    const rname = mhfNormText(r.ejercicio_nombre || "");
 
-    if(nameN){
-      const xn = mhfNormText(x.ejercicio_nombre || x.ejercicioNombre || x.ejercicio || "");
-      if(xn && xn === nameN) return true;
+    // 2️⃣ Match por ID (nuevo o legacy)
+    if (idN && rid && (rid === idN || rid.includes(idN) || idN.includes(rid))) {
+      return true;
     }
-    return false;
-  });
 
-  out.sort((a,b)=> Number(b.timestamp||b.ts||0) - Number(a.timestamp||a.ts||0));
-  return out;
+    // 3️⃣ Match por nombre flexible
+    if (nameN && rname && (
+      rname === nameN ||
+      rname.includes(nameN) ||
+      nameN.includes(rname)
+    )) {
+      return true;
+    }
+
+    return false;
+  })
+  .sort((a,b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
 }
+
 
 
 // ✅ NUEVO: EVALUATIONS cache
