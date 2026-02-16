@@ -8,10 +8,76 @@
    - ✅ NUEVO: EVALUATIONS (evaluaciones corporales + informe)
    - ✅ UPDATE: compat masaMuscularPct (para gráficos + socio.html)
    - ✅ NUEVO: EVALUATION PHOTOS (Drive upload + URLs en EVALUATIONS)
+   - ✅ FIX CRÍTICO: apiPost ÚNICO + token SIEMPRE (arregla "No autorizado" al guardar perfil)
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL = "https://script.google.com/macros/s/AKfycbytzYbgMKaLb0RIYlrHk1wmIpAGfO9Ca_R_av2TIb-JoNf4jBdRd9qno01p3XBN24I-Kg/exec";
+const API_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbwxxetYZHZbHWou4jFE7_yOs-7yaz_jHVuXbHxV87JqU8kc7gk3s9PLrMQ5n0djk5RzdA/exec";
+
+// ================= AUTH TOKEN (MAH FIT PRO) =================
+const TOKEN_KEY = "MAHFIT_TOKEN";
+const USER_KEY  = "MAHFIT_USER";
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || "";
+}
+function setToken(token, user) {
+  localStorage.setItem(TOKEN_KEY, token || "");
+  if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+function getUserSession() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); } catch(e){ return null; }
+}
+
+// ================= COMPAT (admin.html antiguo) =================
+// admin.html / vistas históricas usan estas funciones y la key "mahfit_session".
+// Mantenerlas evita que se rompan botones (Salir) y visores/modales.
+function setUserSession(token, user){
+  // token+user (nuevo esquema)
+  setToken(token, user);
+  // snapshot legacy
+  try {
+    const legacy = {
+      token: token || "",
+      rut: user && user.rut ? String(user.rut) : "",
+      rol: user && user.rol ? String(user.rol) : "",
+      user: user || null,
+      at: new Date().toISOString()
+    };
+    localStorage.setItem("mahfit_session", JSON.stringify(legacy));
+  } catch(e){}
+}
+
+function clearUserSession(){
+  clearToken();
+  try { localStorage.removeItem("mahfit_session"); } catch(e){}
+}
+
+function getSession(){
+  // prefer nuevo
+  const u = getUserSession();
+  if(u) return u;
+  // fallback legacy
+  try { return JSON.parse(localStorage.getItem("mahfit_session") || "null"); } catch(e){ return null; }
+}
+
+// Permite override: localStorage.MAHFIT_API_URL o window.MAHFIT_API_URL
+function getApiUrl_(){
+  try {
+    return (localStorage.getItem("MAHFIT_API_URL") || window.MAHFIT_API_URL || API_URL_DEFAULT).trim();
+  } catch(e){
+    return (window.MAHFIT_API_URL || API_URL_DEFAULT).trim();
+  }
+}
+
+// ✅ compat: algunas partes llaman getApiUrl() (sin guión bajo)
+function getApiUrl(){
+  return getApiUrl_();
+}
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -63,6 +129,105 @@ const LS = {
 };
 
 function normalizeRut(r){ return String(r||"").trim().toLowerCase().replace(/[^0-9k]/g,""); }
+
+/* ======================= RUT VALIDATION (Chile) =======================
+   - Valida DV (módulo 11)
+   - Retorna canonical: XXXXXXXX-DV (sin puntos)
+====================================================================== */
+function rutParts(rutRaw){
+  const raw = String(rutRaw || "").trim().toLowerCase();
+  if(!raw) return null;
+  const clean = raw.replace(/\./g,"").replace(/\s+/g,"");
+  let body = "", dv = "";
+  if(clean.includes("-")){
+    const parts = clean.split("-");
+    body = (parts[0] || "").replace(/[^0-9]/g,"");
+    dv = String(parts[1] || "").replace(/[^0-9k]/g,"");
+  } else {
+    const only = clean.replace(/[^0-9k]/g,"");
+    if(only.length < 2) return null;
+    body = only.slice(0, -1).replace(/[^0-9]/g,"");
+    dv = only.slice(-1);
+  }
+  if(!body || !dv) return null;
+  return { body, dv: dv.toLowerCase() };
+}
+function rutDvCalc(bodyDigits){
+  const s = String(bodyDigits || "").replace(/[^0-9]/g,"");
+  if(!s) return "";
+  let sum = 0, mul = 2;
+  for(let i = s.length - 1; i >= 0; i--){
+    sum += Number(s[i]) * mul;
+    mul = (mul === 7) ? 2 : (mul + 1);
+  }
+  const mod = 11 - (sum % 11);
+  if(mod === 11) return "0";
+  if(mod === 10) return "k";
+  return String(mod);
+}
+function validateRutChile(rutRaw){
+  const p = rutParts(rutRaw);
+  if(!p) return { ok:false, error:"RUT inválido" };
+  const dv = rutDvCalc(p.body);
+  if(dv !== p.dv) return { ok:false, error:"Dígito verificador inválido" };
+  return { ok:true, canonical: `${p.body}-${dv.toUpperCase()}` };
+}
+function requireRutChile(rutRaw, label){
+  const v = validateRutChile(rutRaw);
+  if(!v.ok) throw new Error((label || "RUT") + ": " + v.error);
+  return v.canonical;
+}
+
+// ✅ COMPAT: algunas pantallas antiguas llaman validateRut_() y esperan { ok, fmt }
+function validateRut_(rutRaw){
+  const v = validateRutChile(rutRaw);
+  return v.ok ? { ok:true, fmt:v.canonical } : { ok:false, error:v.error };
+}
+
+// ✅ UTIL: si el usuario escribe SOLO cuerpo (sin DV), calculamos DV y devolvemos canonical
+function rutAutoComplete_(rutMaybeBody){
+  const s = String(rutMaybeBody||"").trim().replace(/\./g,"").replace(/\s+/g,"");
+  if(!s) return "";
+  if(s.includes("-")) return s;
+
+  const only = s.replace(/[^0-9kK]/g,"");
+  const body = only.replace(/[^0-9]/g,"");
+  if(body.length < 7) return only;
+
+  const dv = rutDvCalc(body);
+  return body + "-" + String(dv).toUpperCase();
+}
+
+// ✅ LOGIN HYBRID: detecta si el input es RUT válido (o RUT con DV incorrecto) o username
+function parseLoginIdentifier_(input){
+  const raw = String(input || "").trim();
+  if(!raw) return { ok:false, error:"Falta RUT/Usuario" };
+
+  const cleaned = raw.replace(/\./g,"").replace(/\s+/g,"");
+
+  // Username/correo/texto libre: contiene letras distintas a K o caracteres fuera de [0-9k-]
+  const onlyRutChars = /^[0-9kK\-]+$/.test(cleaned);
+  const hasNonKLetters = /[a-jl-zA-JL-Z]/.test(cleaned);
+
+  if(!onlyRutChars || hasNonKLetters){
+    return { ok:true, kind:"username", value: raw };
+  }
+
+  // Intento RUT
+  const parts = rutParts(cleaned);
+  if(parts && parts.body && parts.dv){
+    const dvCalc = rutDvCalc(parts.body);
+    if(String(dvCalc).toLowerCase() !== String(parts.dv).toLowerCase()){
+      const suggestion = `${parts.body}-${String(dvCalc).toUpperCase()}`;
+      return { ok:false, kind:"rut", error:"Dígito verificador inválido", suggestion };
+    }
+    return { ok:true, kind:"rut", canonical: `${parts.body}-${String(dvCalc).toUpperCase()}` };
+  }
+
+  // Si no calza como RUT, úsalo como username tal cual
+  return { ok:true, kind:"username", value: raw };
+}
+
 
 // ✅ Normaliza texto (minúsculas + sin acentos) para matching de ejercicios
 function mhfNormText(s){
@@ -124,7 +289,6 @@ function setDbStatus(status){
 }
 
 // ---------------- API helpers ----------------
-
 function parseISODate(d){
   const s = String(d || "").trim();
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -231,85 +395,101 @@ function visceralLabel(v){
 function renderPesoYVisceral(actual, anterior, tallaCm){
   // ===== PESO / IMC =====
   const bmiAct = calcBMI(actual.pesoKg, tallaCm);
-  const bmiAnt = anterior ? calcBMI(anterior.pesoKg, tallaCm) : null;
-
   document.getElementById("pesoVal").textContent = `${actual.pesoKg} kg`;
-  document.getElementById("pesoBadge").textContent =
-    `IMC ${bmiAct} · ${bmiLabel(bmiAct)}`;
-
-  document.getElementById("pesoCurr").style.left =
-    Math.min(100, (actual.pesoKg / 150) * 100) + "%";
-
+  document.getElementById("pesoBadge").textContent = `IMC ${bmiAct} · ${bmiLabel(bmiAct)}`;
+  document.getElementById("pesoCurr").style.left = Math.min(100, (actual.pesoKg / 150) * 100) + "%";
   if(anterior){
-    document.getElementById("pesoPrev").style.left =
-      Math.min(100, (anterior.pesoKg / 150) * 100) + "%";
+    document.getElementById("pesoPrev").style.left = Math.min(100, (anterior.pesoKg / 150) * 100) + "%";
   }
 
   // ===== GRASA VISCERAL =====
   document.getElementById("visVal").textContent = actual.grasaVisceral;
-  document.getElementById("visBadge").textContent =
-    visceralLabel(actual.grasaVisceral);
-
-  document.getElementById("visCurr").style.left =
-    Math.min(100, (actual.grasaVisceral / 20) * 100) + "%";
-
+  document.getElementById("visBadge").textContent = visceralLabel(actual.grasaVisceral);
+  document.getElementById("visCurr").style.left = Math.min(100, (actual.grasaVisceral / 20) * 100) + "%";
   if(anterior){
-    document.getElementById("visPrev").style.left =
-      Math.min(100, (anterior.grasaVisceral / 20) * 100) + "%";
+    document.getElementById("visPrev").style.left = Math.min(100, (anterior.grasaVisceral / 20) * 100) + "%";
   }
 }
 
-// ---------------- API helpers (GET/POST) ----------------
-async function apiGet(resource){
-  const url = `${API_URL}?resource=${encodeURIComponent(resource)}&_=${Date.now()}`;
-  const r = await fetch(url, { method:"GET", cache:"no-store" });
-  const t = await r.text();
-  let j = null;
-  try{ j = JSON.parse(t); }catch(e){ j = { ok:false, error:"Respuesta no JSON", raw:t }; }
-  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
-  if(j && j.ok === false) throw new Error(j.error || "API error");
-  return j;
+/* =========================================================
+   ✅ API (GET/POST) — FIX TOKEN
+   - Mantiene compat:
+     apiPost("USERS", {...})
+     apiPost({ action:"USERS", data:{...} })
+     apiPost({ resource:"USERS", data:{...} })
+   - Token SIEMPRE inyectado cuando includeToken=true (default)
+   - Envía token tanto top-level como dentro de data (por compat backend)
+   ========================================================= */
+
+async function apiGet(resource, params = {}, opts = {}) {
+  const includeToken = (opts.includeToken !== false); // default true
+  const token = includeToken ? getToken() : "";
+  const url = new URL(getApiUrl());
+  url.searchParams.set("resource", resource);
+  if (includeToken && token) url.searchParams.set("token", token);
+  Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
+
+  const res = await fetch(url.toString(), { method: "GET" });
+  const json = await res.json();
+
+  if (json && json.ok === false && /no autorizado|sesión inválida|expirada/i.test(String(json.error || ""))) {
+    clearToken();
+  }
+  return json;
 }
 
-/**
- * apiPost (flexible)
- * - apiPost("EXERCISES", {...})
- * - apiPost({ resource:"EXERCISES", data:{...} })
- * - apiPost({ action:"LOG_WORKOUT_SET", data:{...} }) // ✅ tu backend prioriza action
- */
-async function apiPost(resourceOrEnvelope, data){
-  let envelope;
-  if (typeof resourceOrEnvelope === "object" && resourceOrEnvelope){
-    envelope = Object.assign({}, resourceOrEnvelope);
-    if(envelope.resource) envelope.resource = String(envelope.resource || "").toUpperCase();
-    if(envelope.action) envelope.action = String(envelope.action || "").toUpperCase();
-    envelope.data = envelope.data || {};
+async function apiPost(resourceOrEnvelope, data = {}, opts = {}) {
+  const includeToken = (opts.includeToken !== false); // default true
+  const token = includeToken ? getToken() : "";
+
+  // 1) Normaliza envelope
+  let env;
+  if (resourceOrEnvelope && typeof resourceOrEnvelope === "object") {
+    env = Object.assign({}, resourceOrEnvelope);
+    // normaliza action/resource a UPPER (no rompe si tu router es case-insensitive)
+    if (env.resource) env.resource = String(env.resource || "").toUpperCase();
+    if (env.action) env.action = String(env.action || "").toUpperCase();
+    env.data = Object.assign({}, env.data || {});
   } else {
-    envelope = {
-      resource: String(resourceOrEnvelope || "").toUpperCase(),
-      data: data || {}
-    };
+    env = { resource: String(resourceOrEnvelope || "").toUpperCase(), data: Object.assign({}, data || {}) };
   }
 
-  // ✅ body final: si viene action, envía action; si no, envía resource
-  const body = envelope.action
-    ? { action: envelope.action, data: envelope.data }
-    : { resource: envelope.resource, data: envelope.data };
+  // merge data 2do arg si venía envelope
+  if (resourceOrEnvelope && typeof resourceOrEnvelope === "object" && data && typeof data === "object" && Object.keys(data).length) {
+    env.data = Object.assign({}, env.data || {}, data);
+  }
 
-  const r = await fetch(API_URL, {
+  // 2) Inyecta token (compat backend)
+  if (includeToken && token) {
+    env.token = env.token || token;
+    env.data = Object.assign({ token }, env.data || {}); // también dentro de data
+  }
+
+  // 3) Body final (tu backend puede leer action o resource)
+  const body = env.action
+    ? { action: env.action, data: env.data, token: env.token || "" }
+    : { resource: env.resource, data: env.data, token: env.token || "" };
+
+  const r = await fetch(getApiUrl_(), {
     method: "POST",
-    headers: { "Content-Type":"text/plain;charset=utf-8" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script-friendly
     body: JSON.stringify(body)
   });
 
   const t = await r.text();
   let j;
-  try{ j = JSON.parse(t); }
+  try { j = JSON.parse(t); }
   catch(e){
     console.error("API RAW:", t);
     throw new Error("Respuesta API no JSON");
   }
 
+  // Si sesión expirada: limpia token para forzar login
+  if (j && j.ok === false && /no autorizado|sesión inválida|expirada/i.test(String(j.error || ""))) {
+    clearToken();
+  }
+
+  // Mantiene comportamiento anterior: si ok=false lanza (para no romper pantallas que esperan throw)
   if(!j.ok) throw new Error(j.error || "API error");
   return j;
 }
@@ -319,11 +499,26 @@ function apiPostAction(action, data){
   return apiPost({ action, data: data || {} });
 }
 
-
+// Login / Me / Logout (integrado en tu UI)
+async function apiLogin(rut, pass) {
+  // LOGIN NO requiere token
+  const res = await apiPost("LOGIN", { rut, pass, token: "" }, { includeToken:false });
+  if (res && res.ok && res.token) setToken(res.token, res.user || null);
+  return res;
+}
+async function apiMe() {
+  // AUTH_ME requiere token
+  return apiPost("AUTH_ME", {}, { includeToken:true });
+}
+async function apiLogout() {
+  let res = null;
+  try { res = await apiPost("LOGOUT", {}, { includeToken:true }); } catch(e){}
+  clearToken();
+  return res;
+}
 
 // ---------------- EXERCISES helpers (Base) ----------------
 function exIdNew_(){
-  // ID estable y único (no dependas del nombre)
   return "EX_" + crypto.randomUUID().replace(/-/g,"").slice(0,10).toUpperCase();
 }
 
@@ -334,7 +529,6 @@ function findExerciseByName_(nombre){
 }
 
 async function upsertExercise_(ex){
-  // ex: { exId, nombre, musculo, maq, tecnica, mediaUrlGif, mediaUrl, estado }
   const payload = {
     exId: String(ex.exId || "").trim() || exIdNew_(),
     nombre: String(ex.nombre || "").trim(),
@@ -348,14 +542,12 @@ async function upsertExercise_(ex){
   };
   if(!payload.nombre) throw new Error("Falta nombre de ejercicio");
 
-  // intentar guardar remoto (si existe resource). Si falla, igual guardamos local.
   try{
     await apiPost("EXERCISES", payload);
   }catch(err){
     console.warn("[EXERCISES] No se pudo guardar remoto (se guardará local):", err && err.message ? err.message : err);
   }
 
-  // merge local cache
   const list = getExercises();
   const i = list.findIndex(x => String(x.exId).trim() === payload.exId);
   if(i >= 0) list[i] = { ...list[i], ...payload };
@@ -365,7 +557,6 @@ async function upsertExercise_(ex){
 }
 
 async function ensureExerciseInBase_(nombre, musculo="", maq=""){
-  // Si existe por nombre => devuelve; si no existe => crea pendiente
   const found = findExerciseByName_(nombre);
   if(found) return found;
 
@@ -380,7 +571,6 @@ async function ensureExerciseInBase_(nombre, musculo="", maq=""){
     estado: "pendiente",
   });
 }
-
 
 // ---------------- Cache local ----------------
 function getUsers(){ return LS.get("mahfit_users", []); }
@@ -404,7 +594,6 @@ function setRutinasV2(v){ LS.set("mahfit_rutinas_v2", v); }
 function getPlantillasV2(){ return LS.get("mahfit_plantillas_v2", []); }
 function setPlantillasV2(v){ LS.set("mahfit_plantillas_v2", v); }
 
-// ✅ EXERCISES (Base de ejercicios)
 function getExercises(){ return LS.get("mahfit_exercises", []); }
 function setExercises(v){ LS.set("mahfit_exercises", v); }
 
@@ -418,47 +607,37 @@ function setCardioLog(v){ LS.set("mahfit_cardio_log", v); }
 function getBodyLog(){ return LS.get("mahfit_body_log", []); }
 function setBodyLog(v){ LS.set("mahfit_body_log", v); }
 
-// ✅ WORKOUT_SETS_LOG (historial por ejercicio)
 function getWorkoutSetsLog(){ return LS.get("mahfit_workout_sets_log", []); }
 function setWorkoutSetsLog(v){ LS.set("mahfit_workout_sets_log", v); }
 
 // filtra por socio + ejercicio
 function workoutSetsForExercise(rutSocio, ejercicioId, ejercicioNombre){
   const rutN = normalizeRut(rutSocio);
-  const idN  = String(ejercicioId || "").toLowerCase();
-  const nameN = mhfNormText(ejercicioNombre || "");
+  const id = String(ejercicioId||"").trim();
+  const idLower = id.toLowerCase();
+  const nameN = mhfNormText(ejercicioNombre||"");
 
-  const rows = (window.__CACHE__?.workout_sets_log)
-    || window.getWorkoutSetsLog?.()
-    || [];
+  const rows = (window.__CACHE__ && Array.isArray(window.__CACHE__.workout_sets_log))
+    ? window.__CACHE__.workout_sets_log
+    : (Array.isArray(window.__WORKOUT_SETS_LOG__) ? window.__WORKOUT_SETS_LOG__ : []);
 
-  return rows.filter(r => {
-    // 1️⃣ RUT
-    if (normalizeRut(r.rut_socio || r.rutSocio) !== rutN) return false;
+  const out = (rows||[]).filter(x=>{
+    if(normalizeRut(x.rut_socio || x.rutSocio) !== rutN) return false;
 
-    const rid = String(r.ejercicio_id || "").toLowerCase();
-    const rname = mhfNormText(r.ejercicio_nombre || "");
+    const xid = String(x.ejercicio_id || x.ejercicioId || "").trim();
+    if(id && xid === id) return true;
+    if(id && xid && xid.toLowerCase().includes(idLower)) return true;
 
-    // 2️⃣ Match por ID (nuevo o legacy)
-    if (idN && rid && (rid === idN || rid.includes(idN) || idN.includes(rid))) {
-      return true;
+    if(nameN){
+      const xn = mhfNormText(x.ejercicio_nombre || x.ejercicioNombre || x.ejercicio || "");
+      if(xn && xn === nameN) return true;
     }
-
-    // 3️⃣ Match por nombre flexible
-    if (nameN && rname && (
-      rname === nameN ||
-      rname.includes(nameN) ||
-      nameN.includes(rname)
-    )) {
-      return true;
-    }
-
     return false;
-  })
-  .sort((a,b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+  });
+
+  out.sort((a,b)=> Number(b.timestamp||b.ts||0) - Number(a.timestamp||a.ts||0));
+  return out;
 }
-
-
 
 // ✅ NUEVO: EVALUATIONS cache
 function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
@@ -524,11 +703,7 @@ function getWorkoutLogById(logId){
 
 /* =========================================================
    === MAH FIT | EVALUATION PHOTOS ===
-   - Convierte <input type=file> a base64
-   - (Opcional) comprime a JPG (más liviano)
-   - Sube a Drive vía resource: EVALUATIONS_PHOTO_UPLOAD
    ========================================================= */
-
 function fileToDataURL(file){
   return new Promise((resolve, reject)=>{
     const fr = new FileReader();
@@ -538,7 +713,6 @@ function fileToDataURL(file){
   });
 }
 
-// ✅ compresión simple (sin librerías). Si algo falla, cae al dataURL original.
 async function compressImageDataURL(dataURL, { maxW=1080, quality=0.82 } = {}){
   try{
     const img = new Image();
@@ -551,7 +725,6 @@ async function compressImageDataURL(dataURL, { maxW=1080, quality=0.82 } = {}){
 
     const w = img.naturalWidth || img.width;
     const h = img.naturalHeight || img.height;
-
     const scale = (w > maxW) ? (maxW / w) : 1;
     const nw = Math.round(w * scale);
     const nh = Math.round(h * scale);
@@ -562,7 +735,6 @@ async function compressImageDataURL(dataURL, { maxW=1080, quality=0.82 } = {}){
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, nw, nh);
 
-    // force jpg para peso
     const out = canvas.toDataURL("image/jpeg", quality);
     return out;
   }catch(e){
@@ -575,16 +747,6 @@ function inferMimeFromDataURL(dataURL){
   return (m && m[1]) ? m[1] : "image/jpeg";
 }
 
-/**
- * Sube UNA foto (frente/perfil/espalda) y actualiza EVALUATIONS en Sheets
- * @param {Object} params
- *  - rutSocio (obligatorio)
- *  - evalId (obligatorio)
- *  - fecha (yyyy-mm-dd) (opcional)
- *  - slot: "frente"|"perfil"|"espalda" (obligatorio)
- *  - file: File (desde input) (obligatorio)
- *  - compress: boolean (default true)
- */
 async function uploadEvaluationPhoto({ rutSocio, evalId, fecha, slot, file, compress=true }){
   if(!rutSocio) throw new Error("Falta rutSocio");
   if(!evalId) throw new Error("Falta evalId");
@@ -592,15 +754,11 @@ async function uploadEvaluationPhoto({ rutSocio, evalId, fecha, slot, file, comp
   if(!file) throw new Error("Falta file");
   const f = safeStr(fecha, isoLocalDate()).trim();
 
-  // 1) file -> dataURL
   let dataURL = await fileToDataURL(file);
-
-  // 2) (opcional) comprimir
   if(compress){
     dataURL = await compressImageDataURL(dataURL, { maxW: 1080, quality: 0.82 });
   }
 
-  // 3) post
   const mimeType = inferMimeFromDataURL(dataURL);
 
   const res = await apiPost("EVALUATIONS_PHOTO_UPLOAD", {
@@ -612,17 +770,10 @@ async function uploadEvaluationPhoto({ rutSocio, evalId, fecha, slot, file, comp
     fileBase64: dataURL
   });
 
-  // 4) refrescar cache (para tener URLs)
-  //    (barato y te asegura que se vea en UI)
   await refreshEvaluations().catch(()=>{});
-
   return res;
 }
 
-/**
- * Sube hasta 3 fotos en orden (frente/perfil/espalda)
- * files: { frente?:File, perfil?:File, espalda?:File }
- */
 async function uploadEvaluationPhotos3({ rutSocio, evalId, fecha, files, compress=true, onProgress }){
   const slots = ["frente","perfil","espalda"];
   const out = [];
@@ -638,8 +789,6 @@ async function uploadEvaluationPhotos3({ rutSocio, evalId, fecha, files, compres
 }
 
 // ---------------- Sync DOWN (Sheets -> cache) ----------------
-
-// ---------------- Sync DOWN (CORE) ----------------
 // ✅ Login-only: solo USERS (rápido para index.html)
 async function syncDownLogin(){
   const u = await apiGet("USERS");
@@ -651,7 +800,6 @@ async function syncDownLogin(){
     rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false || x.activo === 0 || String(x.activo) === "0") ? false : true,
 
-    // plan (por si el login lo usa)
     planTipo: x.planTipo ?? "",
     planInicio: x.planInicio ?? "",
     planFin: x.planFin ?? "",
@@ -661,7 +809,6 @@ async function syncDownLogin(){
     planPrecioFinal: Number(x.planPrecioFinal ?? 0),
     planPagado: Number(x.planPagado ?? 0),
 
-    // perfil (se conserva, no pesa)
     telefono: x.telefono ?? "",
     fechaNacimiento: x.fechaNacimiento ?? "",
     sexo: (x.sexo ?? "").toString().trim().toUpperCase(),
@@ -700,7 +847,6 @@ async function syncDownCore(){
 
   return true;
 }
-
 
 async function syncDown(){
   const u = await apiGet("USERS");
@@ -801,7 +947,7 @@ async function syncDown(){
     };
   }));
 
-  // ✅ EXERCISES (Base de ejercicios) — opcional (no rompe si aún no existe el resource)
+  // ✅ EXERCISES
   try{
     const ex = await apiGet("EXERCISES");
     const list = (ex.exercises || ex.EXERCISES || []).map(x => ({
@@ -817,11 +963,10 @@ async function syncDown(){
     })).filter(x=>x.exId && x.nombre);
     setExercises(list);
   }catch(err){
-    // Si todavía no existe la hoja/resource, no frenamos el syncDown
     console.warn("[EXERCISES] syncDown omitido:", err && err.message ? err.message : err);
   }
 
-  // ✅ WORKOUT_SETS_LOG (historial por ejercicio) — opcional (no rompe si aún no existe)
+  // ✅ WORKOUT_SETS_LOG
   try{
     const ws = await apiGet("WORKOUT_SETS_LOG");
     setWorkoutSetsLog(ws.workout_sets_log || []);
@@ -829,10 +974,7 @@ async function syncDown(){
     console.warn("[WORKOUT_SETS_LOG] syncDown omitido:", err && err.message ? err.message : err);
   }
 
-
-
-
-  // ✅ LOGS PRO (con fallback logId/id)
+  // ✅ LOGS PRO
   const wl = await apiGet("WORKOUT_LOG");
   setWorkoutLog((wl.workout_log || []).map(x => {
     const rutSocio = normalizeRut(x.rutSocio);
@@ -854,7 +996,7 @@ async function syncDown(){
     entryId: String(x.entryId ?? "").trim(),
   })).filter(x=>x.entryId));
 
-  // ✅ EVALUATIONS (incluye compat + trae URLs si existen)
+  // ✅ EVALUATIONS
   const ev = await apiGet("EVALUATIONS");
   setEvaluations((ev.evaluations || []).map(x => {
     const mmPct = (x.masaMuscularPct ?? x.masaMuscularKg ?? "");
@@ -890,7 +1032,6 @@ async function syncDown(){
       creadoEn: x.creadoEn ?? "",
       actualizadoEn: x.actualizadoEn ?? "",
 
-      // ✅ fotos (si tu sheet ya tiene esas columnas)
       photoFolderId: x.photoFolderId ?? "",
       fotoFrenteId: x.fotoFrenteId ?? "",
       fotoPerfilId: x.fotoPerfilId ?? "",
@@ -902,31 +1043,85 @@ async function syncDown(){
   }).filter(x=>x.evalId && x.rutSocio));
 }
 
-// ---------------- Auth (SINCRÓNICO) ----------------
+// ---------------- Auth (TOKEN + SESSION) ----------------
 function requireAuth(expectedRole){
-  const s = getSession();
-  if(!s){ window.location.href = "index.html"; return null; }
+  // 1) Intenta sesión local (legacy)
+  let s = getSession();
 
-  const user = getUsers().find(u => normalizeRut(u.rut) === normalizeRut(s.rut));
-  if(!user || user.activo === false){
+  // 2) Fallback: si hay token, usa el user cacheado por token (LOGIN guarda USER_KEY)
+  const tokUser = getUserSession && typeof getUserSession === "function" ? getUserSession() : null;
+
+  if(!s){
+    if(tokUser && tokUser.rut){
+      s = { rut: tokUser.rut, rol: tokUser.rol, at: nowISO() };
+      try { LS.set("mahfit_session", s); } catch(e){}
+    } else {
+      window.location.href = "index.html";
+      return null;
+    }
+  }
+
+  // 3) Intenta encontrar el usuario completo en cache local (USERS / USERS_LITE)
+  const rutN = normalizeRut(s.rut);
+  let user = (getUsers() || []).find(u => normalizeRut(u.rut) === rutN) || null;
+
+  // 4) Fallback: si no existe en cache local, construye un user mínimo desde tokUser (evita rebote)
+  if(!user && tokUser && normalizeRut(tokUser.rut) === rutN){
+    user = {
+      rut: rutN,
+      rol: String(tokUser.rol || s.rol || ""),
+      nombre: String(tokUser.nombre || ""),
+      tenantId: String(tokUser.tenantId || ""),
+      activo: true
+    };
+    // upsert mínimo en cache local para que el resto del UI no reviente
+    try{
+      const users = (getUsers() || []).slice();
+      users.push(user);
+      setUsers(users);
+    }catch(e){}
+  }
+
+  // 5) Si definitivamente no hay usuario, a login
+  if(!user){
     clearSession();
     window.location.href = "index.html";
     return null;
   }
 
+  if(user.activo === false){
+    clearSession();
+    window.location.href = "index.html";
+    return null;
+  }
+
+  // 6) Role gate
   if(expectedRole){
-    const allowed = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
-    if(!allowed.includes(user.rol) && !allowed.includes(normalizeRut(user.rut))){
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+    const allowed = Array.isArray(expectedRole) ? expectedRole.slice() : [expectedRole];
+    if(allowed.includes("ADMIN") && !allowed.includes("SUPER_ADMIN")) allowed.push("SUPER_ADMIN");
+
+    const urol = String(user.rol||"").toUpperCase();
+    if(!allowed.includes(urol) && !allowed.includes(normalizeRut(user.rut))){
+      window.location.href = (urol === "FUNCIONARIO") ? "funcionario.html" : (urol === "SUPER_ADMIN" ? "admin.html" : "socio.html");
       return null;
     }
   }
+
   return user;
 }
 
+
 // ---------------- Login/Register ----------------
 function registerUser({rut, nombre, email, pass, rol}){
-  rut = normalizeRut(rut);
+  // ✅ VALIDAR RUT + AUTOCOMPLETAR DV si escriben solo cuerpo
+  const typed = String(rut || "").trim();
+  const candidate = rutAutoComplete_(typed); // si viene "19228778" => "19228778-2"
+  const v = validateRutChile(candidate);
+  if(!v.ok) throw new Error("RUT: " + v.error);
+
+  // guardamos normalizado como antes: "192287782" (body+dv, sin puntos/guion)
+  rut = normalizeRut(v.canonical);
+
   if(!rut || !nombre || !pass) throw new Error("Completa Usuario/RUT, nombre y clave.");
 
   const users = getUsers();
@@ -970,6 +1165,7 @@ function registerUser({rut, nombre, email, pass, rol}){
   users.push(user);
   setUsers(users);
 
+  // Sync a Sheets vía API (si falla, igual queda en local y se verá en "Pendientes")
   apiPost("USERS", user).catch(console.error);
   return user;
 }
@@ -988,6 +1184,14 @@ function initIndex(){
   const loginForm = document.getElementById("loginForm");
   const msgLogin  = document.getElementById("msgLogin");
 
+  
+  // ✅ UX (SIN autocorregir DV):
+  // Antes se sugería/corregía automáticamente el DV al salir del campo (blur),
+  // pero eso cambiaba el número escrito (ej: ...6 -> ...2).
+  // Ahora NO modificamos el input; solo validamos al enviar el formulario.
+  const loginRutInput = document.getElementById("loginRut");
+
+
   function showMsg(txt, ok=false){
     if(!msgLogin) return;
     msgLogin.textContent = txt;
@@ -996,23 +1200,61 @@ function initIndex(){
 
   const s = getSession();
   if(s){
-    const u = getUsers().find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
+    let u = (getUsers()||[]).find(x => normalizeRut(x.rut) === normalizeRut(s.rut));
+    // fallback por token (por si aún no sincroniza USERS_LITE)
+    if(!u){
+      const tu = (typeof getUserSession === "function") ? getUserSession() : null;
+      if(tu && tu.rut && normalizeRut(tu.rut) === normalizeRut(s.rut)){
+        u = { rut: normalizeRut(tu.rut), rol: String(tu.rol||""), nombre: String(tu.nombre||""), tenantId: String(tu.tenantId||""), activo:true };
+      }
+    }
     if(u){
-      window.location.href = (u.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      const r = String(u.rol||'').toUpperCase();
+      window.location.href = (r === "SUPER_ADMIN") ? "admin.html" : ((r === "FUNCIONARIO") ? "funcionario.html" : "socio.html");
       return;
     }
   }
 
-  loginForm?.addEventListener("submit", (e)=>{
+  loginForm?.addEventListener("submit", async (e)=>{
     e.preventDefault();
     try{
-      const rut = document.getElementById("loginRut")?.value || "";
-      const pass = document.getElementById("loginPass")?.value || "";
-      const user = login({ rut, pass });
-      showMsg("Ingreso correcto…", true);
-      window.location.href = (user.rol === "FUNCIONARIO") ? "funcionario.html" : "socio.html";
+      const elRut  = document.getElementById("loginRut");
+      const elPass = document.getElementById("loginPass");
+      const rutRaw = String(elRut?.value || "").trim();
+      const pass   = String(elPass?.value || "");
+      if(!rutRaw) throw new Error("Falta RUT");
+      if(!pass)   throw new Error("Falta contraseña");
+
+      
+      // ✅ LOGIN PERMISIVO (SIN VALIDAR DV):
+      // - Si el identificador contiene letras fuera de K/k o caracteres extraños -> se trata como username (se envía tal cual).
+      // - Si parece RUT (solo números + opcional K/k y guión) -> se envía limpio (sin puntos/espacios), PERO sin validar DV.
+      const cleaned = rutRaw.replace(/\./g,"").replace(/\s+/g,"");
+      const onlyRutChars = /^[0-9kK\-]+$/.test(cleaned);
+      const hasNonKLetters = /[a-jl-zA-JL-Z]/.test(cleaned);
+
+      const rutCanonical = (!onlyRutChars || hasNonKLetters)
+        ? String(rutRaw).trim()
+        : cleaned; // puede venir con o sin guión/DV; backend decide
+
+const res = await apiLogin(rutCanonical, pass);
+      const u = res && res.user ? res.user : null;
+      if(!u) throw new Error("Respuesta inválida del servidor");
+
+      setSession({
+        rut: String(u.rut || rutCanonical),
+        rol: String(u.rol || ""),
+        nombre: String(u.nombre || ""),
+        tenantId: String(u.tenantId || "")
+      });
+
+      const rol = String(u.rol || "").toUpperCase();
+      if(rol === "SUPER_ADMIN") window.location.href = "admin.html";
+      else if(rol === "FUNCIONARIO") window.location.href = "funcionario.html";
+      else window.location.href = "socio.html";
+
     }catch(err){
-      showMsg(err.message, false);
+      showMsg(String(err && err.message ? err.message : err), false);
     }
   });
 }
@@ -1138,53 +1380,15 @@ function evaluationsLastN(rut, n=12){
 }
 
 async function saveEvaluation(entry){
-
-  /* =========================================================
-   ✅ EVALUATIONS: guardar comentario (registro fotográfico)
-   - Guarda en Sheets (columna observaciones) por evalId
-   - Actualiza cache local para que se vea altiro
-   ========================================================= */
-async function saveEvaluationComment({ evalId, rutSocio, comentario }){
-  const id = String(evalId || "").trim();
-  const rut = normalizeRut(rutSocio || "");
-  const text = String(comentario ?? "").trim();
-
-  if(!id) throw new Error("Falta evalId");
-  if(!rut) throw new Error("Falta rutSocio");
-
-  // ✅ Usa el mismo endpoint EVALUATIONS (upsert/merge por evalId)
-  const patch = {
-    evalId: id,
-    rutSocio: rut,
-    observaciones: text,   // ✅ aquí queda el comentario
-    actualizadoEn: nowISO()
-  };
-
-  const res = await apiPost("EVALUATIONS", patch);
-
-  // ✅ Actualiza cache local (para que la UI refleje altiro)
-  const list = upsertLocalByKey(getEvaluations(), "evalId", patch);
-  setEvaluations(list);
-
-  return res;
-}
-
-
-
-
-
   const e = { ...(entry || {}) };
 
   e.rutSocio = normalizeRut(e.rutSocio || e.rut || "");
   e.fecha = safeStr(e.fecha, isoLocalDate()).trim();
-
   e.evalId = String(e.evalId ?? "").trim() || makeEvalId({ rutSocio: e.rutSocio, fecha: e.fecha });
 
-  // ✅ compat: si viene masaMuscularPct y no kg, copiamos
   if(e.masaMuscularPct !== undefined && (e.masaMuscularKg === undefined || e.masaMuscularKg === "")){
     e.masaMuscularKg = e.masaMuscularPct;
   }
-  // si viene kg y no pct, copiamos
   if(e.masaMuscularKg !== undefined && (e.masaMuscularPct === undefined || e.masaMuscularPct === "")){
     e.masaMuscularPct = e.masaMuscularKg;
   }
@@ -1197,18 +1401,9 @@ async function saveEvaluationComment({ evalId, rutSocio, comentario }){
   const list = upsertLocalByKey(getEvaluations(), "evalId", e);
   setEvaluations(list);
 
-  if(res && res.evalId) return res;
-  return { ok:true, evalId: e.evalId };
-
-
-
-
+  return (res && res.evalId) ? res : { ok:true, evalId: e.evalId };
 }
 
-
-/* =========================================================
-   ✅ EVALUATIONS: guardar comentario por control (evalId)
-   ========================================================= */
 async function saveEvaluationComment({ evalId, rutSocio, comentario }){
   const id = String(evalId || "").trim();
   const rut = normalizeRut(rutSocio || "");
@@ -1217,7 +1412,6 @@ async function saveEvaluationComment({ evalId, rutSocio, comentario }){
   if(!id) throw new Error("Falta evalId");
   if(!rut) throw new Error("Falta rutSocio");
 
-  // patch mínimo (upsert por evalId)
   const patch = {
     evalId: id,
     rutSocio: rut,
@@ -1225,16 +1419,13 @@ async function saveEvaluationComment({ evalId, rutSocio, comentario }){
     actualizadoEn: nowISO()
   };
 
-  // usa el resource estándar
   const res = await apiPost("EVALUATIONS", patch);
 
-  // refresca cache local altiro
   const list = upsertLocalByKey(getEvaluations(), "evalId", patch);
   setEvaluations(list);
 
   return res;
 }
-
 
 async function refreshEvaluations(){
   const ev = await apiGet("EVALUATIONS");
@@ -1272,7 +1463,6 @@ async function refreshEvaluations(){
       creadoEn: x.creadoEn ?? "",
       actualizadoEn: x.actualizadoEn ?? "",
 
-      // ✅ fotos
       photoFolderId: x.photoFolderId ?? "",
       fotoFrenteId: x.fotoFrenteId ?? "",
       fotoPerfilId: x.fotoPerfilId ?? "",
@@ -1285,9 +1475,6 @@ async function refreshEvaluations(){
   return true;
 }
 
-/* =========================================================
-   ✅ (Opcional) refreshLogs(): baja SOLO logs sin bajar todo
-   ========================================================= */
 async function refreshLogs(){
   const [wl,cl,bl] = await Promise.all([
     apiGet("WORKOUT_LOG"),
@@ -1314,15 +1501,16 @@ async function refreshLogs(){
 
 // ---------------- BOOT ----------------
 (async function boot(){
-  // Boot modes:
-  // - "login": solo USERS (rápido para index.html)
-  // - "core" : USERS + PLANES
-  // - "full" : todo (default)
-  // - "none" : no sincroniza (para páginas estáticas)
   const mode = String(window.MAHFIT_BOOT_MODE || "full").toLowerCase().trim();
 
   setDbStatus("connecting");
   try{
+    // ✅ Si no hay token aún (pantalla login), NO intentamos llamar endpoints protegidos.
+    if(!getToken()){
+      setDbStatus("connected");
+      return;
+    }
+
     if(mode === "none"){
       setDbStatus("connected");
       return;
@@ -1345,44 +1533,28 @@ async function refreshLogs(){
 
 /* =========================================================
    ✅ RM helpers (Rutinas) — WORKOUT_SETS_LOG
-   - Usa e1rm guardado en la hoja (RM "oficial")
-   - Requiere columnas: e1rm, rpe, timestamp
    ========================================================= */
-
-// Último RM registrado por ejercicio (por timestamp)
 function getLastRMForExercise(rutSocio, ejercicioId){
   const rows = workoutSetsForExercise(rutSocio, ejercicioId)
     .filter(r => Number(r.e1rm) > 0)
     .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
   return rows[0] || null;
 }
-
-// Mejor RM histórico por ejercicio
 function getBestRMForExercise(rutSocio, ejercicioId){
   const rows = workoutSetsForExercise(rutSocio, ejercicioId)
     .filter(r => Number(r.e1rm) > 0);
   if(!rows.length) return null;
-  return rows.reduce((best, r) =>
-    Number(r.e1rm) > Number(best.e1rm) ? r : best
-  );
+  return rows.reduce((best, r) => Number(r.e1rm) > Number(best.e1rm) ? r : best);
 }
-
-// Sugerencias de carga (%RM)
 function rmSuggestions(e1rm){
   const rm = Number(e1rm);
   if(!rm) return null;
-  return {
-    pct70: Math.round(rm * 0.70),
-    pct80: Math.round(rm * 0.80)
-  };
+  return { pct70: Math.round(rm * 0.70), pct80: Math.round(rm * 0.80) };
 }
-
-// Detecta estado: progreso / fatiga (simple)
 function detectRMStatus(rutSocio, ejercicioId){
   const rows = workoutSetsForExercise(rutSocio, ejercicioId)
     .filter(r => Number(r.e1rm) > 0)
     .sort((a,b)=> Number(b.timestamp||0) - Number(a.timestamp||0));
-
   if(rows.length < 2) return null;
 
   const last = rows[0];
@@ -1391,30 +1563,25 @@ function detectRMStatus(rutSocio, ejercicioId){
   const delta = Number(last.e1rm) - Number(prev.e1rm);
   const rpe = String(last.rpe || "").toLowerCase();
 
-  if(delta > 0 && rpe === "optimo"){
-    return { type:"progress", delta };
-  }
-  if(delta < 0 && rpe === "pesado"){
-    return { type:"fatigue", delta };
-  }
+  if(delta > 0 && rpe === "optimo") return { type:"progress", delta };
+  if(delta < 0 && rpe === "pesado") return { type:"fatigue", delta };
   return null;
 }
 
 // ---------------- Exponer helpers globales ----------------
-// ✅ WORKOUT_SETS_LOG exposed
 window.getWorkoutSetsLog = getWorkoutSetsLog;
-window.setWorkoutSetsLog = setWorkoutSetsLog;
 window.workoutSetsForExercise = workoutSetsForExercise;
 
-// ✅ RM helpers (Rutinas)
 window.getLastRMForExercise = getLastRMForExercise;
 window.getBestRMForExercise = getBestRMForExercise;
 window.rmSuggestions = rmSuggestions;
 window.detectRMStatus = detectRMStatus;
 
-window.API_URL = API_URL;
+window.API_URL = getApiUrl_();
+window.setApiUrl = (u)=>{ try{ localStorage.setItem("MAHFIT_API_URL", String(u||"").trim()); }catch(e){} window.API_URL = getApiUrl_(); };
 window.apiGet = apiGet;
 window.apiPost = apiPost;
+window.apiPostAction = apiPostAction;
 
 window.getUsers = getUsers;
 window.setUsers = setUsers;
@@ -1441,7 +1608,6 @@ window.setDbStatus = setDbStatus;
 
 window.rutinaV2DeSocio = rutinaV2DeSocio;
 
-// ✅ LOGS PRO exposed
 window.getWorkoutLog = getWorkoutLog;
 window.getCardioLog = getCardioLog;
 window.getBodyLog = getBodyLog;
@@ -1461,32 +1627,20 @@ window.makeWorkoutLogId = makeWorkoutLogId;
 window.makeCardioId = makeCardioId;
 window.makeBodyId = makeBodyId;
 
-// ✅ EVALUATIONS exposed
 window.getEvaluations = getEvaluations;
 window.setEvaluations = setEvaluations;
 window.getEvaluationsForRut = evaluationsForRut;
 window.lastEvaluationForRut = lastEvaluationForRut;
-
 
 window.saveEvaluationComment = saveEvaluationComment;
 
 window.refreshEvaluations = refreshEvaluations;
 window.makeEvalId = makeEvalId;
 
-// ✅ helpers para gráficos
 window.evaluationsLastN = evaluationsLastN;
 window.toNumClean = toNumClean;
 
-// === MAH FIT | EVALUATION PHOTOS exposed ===
 window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
 
-// ✅ Expose API helpers / auth (necesario para ejercicios.html)
-window.apiGet = apiGet;
-window.apiPost = apiPost;
-window.apiPostAction = apiPostAction;
-window.requireAuth = requireAuth;
-window.API_URL = API_URL;
-
-// ✅ helper público (no rompe nada)
 window.mhfNormText = mhfNormText;
