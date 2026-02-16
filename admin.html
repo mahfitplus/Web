@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Admin PRO</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Midnight Slate */
+      --bg:#0f172a;
+      --sidebar:#1e293b;
+      --surface:#334155;
+      --border:#475569;
+      --text:#f1f5f9;
+      --muted:#94a3b8;
+      --brand:#3b82f6;
+      --brand2:#2563eb;
+      --ok:#10b981;
+      --err:#ef4444;
+      --warn:#f59e0b;
+      --radius:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    body{background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
+
+    /* Sidebar */
+    aside{
+      width:260px;flex:0 0 260px;
+      background:var(--sidebar);
+      border-right:1px solid var(--border);
+      padding:24px;
+      display:flex;flex-direction:column;
+      box-shadow:4px 0 24px rgba(0,0,0,.22);
+      z-index:10;
+    }
+    .logo{display:flex;align-items:center;gap:12px;font-weight:900;font-size:22px;margin-bottom:34px}
+    .logo i{color:var(--brand);font-size:24px}
+    .logo span{color:#fff}
+    nav button{
+      width:100%;background:transparent;border:0;
+      color:var(--muted);
+      padding:12px 14px;border-radius:12px;
+      display:flex;align-items:center;gap:12px;
+      cursor:pointer;font-size:14px;font-weight:600;
+      transition:all .18s ease;
+      text-align:left;
+      margin-bottom:6px;
+    }
+    nav button:hover{background:rgba(59,130,246,.10);color:#fff;transform:translateX(4px)}
+    nav button.active{background:var(--brand);color:#fff;box-shadow:0 8px 18px rgba(59,130,246,.25)}
+    .nav-divider{height:1px;background:var(--border);opacity:.55;margin:12px 0}
+    .footer-nav{margin-top:auto;border-top:1px solid var(--border);padding-top:18px}
+
+    /* Main */
+    main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    header{
+      height:70px;flex:0 0 70px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 28px;
+      background:rgba(15,23,42,.85);
+      backdrop-filter: blur(10px);
+    }
+    .head-left{display:flex;flex-direction:column;gap:2px}
+    .head-title{font-weight:900;letter-spacing:.2px}
+    .head-sub{color:var(--muted);font-size:12px}
+    .status-badge{
+      font-size:12px;padding:6px 12px;border-radius:999px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      display:flex;align-items:center;gap:8px;color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+    .dot.ok{background:var(--ok)}
+    .dot.err{background:var(--err)}
+
+    .content{flex:1;overflow:auto;padding:22px 28px 34px}
+
+    /* Panels */
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.22);
+      margin-bottom:18px;
+    }
+    .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .panel-title{font-weight:900;display:flex;align-items:center;gap:10px}
+    .panel-title i{color:var(--brand)}
+    .panel-sub{color:var(--muted);font-size:12px;margin-top:3px}
+
+    /* Quick create */
+    .quick-grid{
+      display:grid;
+      grid-template-columns: 1.4fr 1fr 1.2fr 1fr .7fr 1fr;
+      gap:10px;
+      align-items:start;
+    }
+    .form-control{
+      width:100%;
+      padding:10px 12px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid var(--border);
+      color:#fff;
+      border-radius:10px;
+      outline:none;
+    }
+    .form-control:focus{border-color:rgba(59,130,246,.65)}
+    .hint{margin-top:6px;font-size:11px;color:var(--muted)}
+    .hint span{color:#fff;font-weight:800}
+    .quick-actions{margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .quick-status{min-height:18px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+    .qspin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:qspin .9s linear infinite;display:inline-block}
+    @keyframes qspin{to{transform:rotate(360deg)}}
+
+    .btn{
+      height:42px;padding:0 18px;border-radius:12px;border:none;
+      font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:10px;
+      font-size:14px;transition:all .18s ease;white-space:nowrap;
+    }
+    .btn-primary{background:var(--brand);color:#fff}
+    .btn-primary:hover{background:var(--brand2)}
+    .btn-secondary{background:rgba(255,255,255,.03);color:var(--text);border:1px solid var(--border)}
+    .btn-secondary:hover{background:rgba(255,255,255,.06)}
+    .btn-danger{background:rgba(239,68,68,.14);color:#fecaca;border:1px solid rgba(239,68,68,.35)}
+    .btn-danger:hover{background:rgba(239,68,68,.22)}
+    .btn-icon{width:36px;height:36px;padding:0;justify-content:center;border-radius:10px}
+
+    /* Users header (tabs like funcionario) */
+    .users-head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;
+    }
+    .tabs{
+      display:flex;gap:8px;align-items:center;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:6px;
+    }
+    .tab{
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      font-weight:800;
+      font-size:12px;
+      padding:8px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      display:flex;align-items:center;gap:8px;
+    }
+    .tab .count{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:2px 8px;border-radius:999px;font-size:11px;color:#fff}
+    .tab.active{background:rgba(59,130,246,.16);color:#fff;border:1px solid rgba(59,130,246,.35)}
+    .tab.active .count{background:rgba(59,130,246,.30);border-color:rgba(59,130,246,.45)}
+
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0 14px}
+    .search-box{
+      width:360px;max-width:100%;
+      display:flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:0 12px;
+      height:42px;
+    }
+    .search-box i{color:var(--muted)}
+    .search-box input{
+      background:transparent;border:0;outline:none;
+      color:#fff;width:100%;font-size:14px;
+    }
+    .role-filter{
+      min-width:180px;
+      height:42px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:#fff;
+      outline:none;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    /* Table */
+    .table-container{
+      background:rgba(255,255,255,.02);
+      border:1px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead th{
+      background:rgba(0,0,0,.22);
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      font-size:11px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+    }
+    tbody td{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(71,85,105,.7);
+      vertical-align:middle;
+    }
+    tbody tr:hover{background:rgba(255,255,255,.02)}
+    tbody tr:last-child td{border-bottom:none}
+
+    .user-info{display:flex;flex-direction:column;gap:2px}
+    .user-info .name{font-weight:900;color:#fff}
+    .user-info .sub{font-size:12px;color:var(--muted)}
+    .badge-role{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:6px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      border:1px solid transparent;
+      margin-bottom:6px;
+    }
+    .badge-role.admin{color:#60a5fa;background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.35)}
+    .badge-role.funcionario{color:#fbbf24;background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.35)}
+    .badge-role.socio{color:var(--muted);background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10)}
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+    .pill.active{background:rgba(16,185,129,.15);color:#34d399}
+    .pill.inactive{background:rgba(239,68,68,.15);color:#fca5a5}
+    .plan-pill{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      white-space:nowrap;
+    }
+    .plan-pill.good{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.25);color:#34d399}
+    .plan-pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.25);color:#fbbf24}
+    .plan-pill.bad{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#fca5a5}
+
+    .actions{display:flex;gap:10px;justify-content:flex-end;align-items:center}
+    .action-group{
+      display:flex;gap:8px;
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--border);
+      padding:6px 10px;
+      border-radius:12px;
+      align-items:center;
+    }
+    .btn-op{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:14px}
+    .btn-op:hover{color:#fff}
+    .btn-view{
+      background:#fff;border:0;color:var(--ok);
+      width:28px;height:28px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:12px;
+      transition:transform .15s ease;
+    }
+    .btn-view:hover{transform:scale(1.07)}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal-overlay.open{display:flex}
+    .modal{
+      width:650px;max-width:95vw;max-height:90vh;overflow:hidden;
+      border-radius:18px;border:1px solid var(--border);
+      background:rgba(15,23,42,.95);
+      box-shadow:0 25px 60px rgba(0,0,0,.55);
+      display:flex;flex-direction:column;
+    }
+    .modal-xl{width:95vw;height:90vh;max-width:1400px;background:transparent;border:none;box-shadow:none}
+    .modal-header{padding:14px 18px;background:rgba(30,41,59,.85);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-header h3{font-size:14px;font-weight:900;display:flex;align-items:center;gap:10px}
+    .modal-body{padding:18px;overflow:auto;display:grid;gap:12px}
+    .modal-footer{padding:14px 18px;background:rgba(30,41,59,.85);border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+    .xbtn{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px}
+    .xbtn:hover{color:#fff}
+
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .muted{color:var(--muted);font-size:12px}
+    .err{color:#fca5a5}
+    .ok{color:#34d399}
+
+    /* Viewer */
+    .viewer-container{flex:1;background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:center;overflow:hidden;border-radius:0 0 18px 18px}
+    .viewer-frame{width:100%;height:100%;border:none;background:#fff;border-radius:14px}
+    .viewer-frame.mobile-mode{
+      width:375px;height:812px;max-height:90vh;
+      border-radius:40px;border:12px solid #1e1e1e;
+      box-shadow:0 0 0 2px #444, 0 30px 60px rgba(0,0,0,.8);
+      background:#000;
+    }
+
+    @media (max-width: 1100px){
+      .quick-grid{grid-template-columns:1fr 1fr}
+      #qTenantWrap{grid-column:1 / -1}
+      .users-head{flex-direction:column;align-items:flex-start}
+      .tabs{width:100%;justify-content:space-between}
+      .search-box{width:100%}
+    }
+      /* === SaaS Actions (tal cual funcionario) === */
+    .actions-saas{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+    }
+    .actbtn{
+      height:40px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:#fff;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:all .18s ease;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    .actbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+    .actbtn.icon{width:44px}
+    .actbtn.renew{
+      padding:0 18px;
+      background:var(--brand);
+      border-color:rgba(59,130,246,.55);
+      font-weight:900;
+      min-width:120px;
+      justify-content:center;
+    }
+    .actbtn.renew:hover{background:var(--brand2)}
+    .actbtn.state{width:44px}
+    .actbtn.state.off{
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.35);
+    }
+    .actbtn.state.on{
+      background:rgba(16,185,129,.10);
+      border-color:rgba(16,185,129,.35);
+    }
+    .actbtn.state i{font-size:16px}
+    .actbtn.state.off i{color:#fca5a5}
+    .actbtn.state.on i{color:#34d399}
+
+    /* === Renew modal (funcionario-style) === */
+    .form-grid{display:grid;gap:10px;margin-top:10px}
+    .pill{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:7px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:#fff;font-weight:800;font-size:12px;
+    }
+    .pill.ok{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.10);color:#d1fae5}
+    .pill.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);color:#ffedd5}
+    .checkRow{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .checkRow input{width:16px;height:16px}
+    .msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px}
+    .msg.ok{color:#d1fae5}
+    .msg.bad{color:#fecaca}
+    .btn-ok{background:rgba(16,185,129,.16);color:#d1fae5;border:1px solid rgba(16,185,129,.35)}
+    .btn-ok:hover{background:rgba(16,185,129,.24)}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.10);color:var(--muted)}
+    .btn-ghost:hover{background:rgba(255,255,255,.06);color:#fff}
+    .btn-sm{height:36px;padding:0 12px;border-radius:10px;font-size:13px}
+
+
+
+    /* ==========================================================
+   SELECT DARK FIX DEFINITIVO (sin hover blanco)
+   ========================================================== */
+
+select,
+select.form-control,
+.role-filter{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(59,130,246,.45);
+  color:#ffffff;
+  font-weight:700;
+  cursor:pointer;
+  color-scheme: dark;
+}
+
+/* Focus azul elegante */
+select:focus{
+  border-color:#3b82f6;
+  box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
+
+/* Dropdown opciones */
+select option{
+  background:#0f172a !important;
+  color:#ffffff !important;
+  font-weight:600;
+}
+
+/* Opción seleccionada */
+select option:checked{
+  background:#1e293b !important;
+  color:#ffffff !important;
+}
+
+/* 🔥 CLAVE: eliminar hover blanco */
+select option:hover,
+select option:focus{
+  background:#1e293b !important;
+  color:#ffffff !important;
+}
+
+
+
+    /* =======================
+       SaaS Quota UI (Admin)
+       ======================= */
+    .kpi-row{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:12px;
+      margin:12px 0 14px;
+    }
+    @media (max-width: 980px){
+      .kpi-row{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .kpi{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.22);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      min-height:68px;
+    }
+    .kpi .ico{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      background: rgba(124,92,255,.16);
+      border:1px solid rgba(124,92,255,.25);
+      color: rgba(255,255,255,.92);
+      flex:0 0 auto;
+    }
+    .kpi .t{
+      display:flex;flex-direction:column;gap:2px;
+      min-width:0;
+    }
+    .kpi .lbl{ font-size:12px; color: var(--mut); }
+    .kpi .val{ font-size:18px; font-weight:900; letter-spacing:.2px; color: rgba(255,255,255,.92); }
+    .kpi .sub{ font-size:12px; color: rgba(255,255,255,.62); }
+
+    .alert-strip{
+      border:1px solid rgba(255,90,103,.35);
+      background: rgba(255,90,103,.10);
+      color: rgba(255,255,255,.88);
+      border-radius:14px;
+      padding:10px 12px;
+      margin: 0 0 12px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .alert-strip .aico{
+      width:34px;height:34px;border-radius:12px;
+      display:grid;place-items:center;
+      background: rgba(255,90,103,.18);
+      border:1px solid rgba(255,90,103,.30);
+      flex:0 0 auto;
+    }
+    .alert-strip .abody{ font-size:13px; line-height:1.35; color: rgba(255,255,255,.82); }
+    .alert-strip b{ color: rgba(255,255,255,.92); }
+
+    .quota{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:120px;
+    }
+    .quotaTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .quotaNum{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-size:12px;
+      font-weight:900;
+      color: rgba(255,255,255,.90);
+    }
+    .quotaNum.good{ border-color: rgba(43,213,118,.28); background: rgba(43,213,118,.12); }
+    .quotaNum.warn{ border-color: rgba(245,158,11,.28); background: rgba(245,158,11,.12); }
+    .quotaNum.bad{  border-color: rgba(255,90,103,.34); background: rgba(255,90,103,.12); }
+    .quotaRem{
+      font-size:12px;
+      color: rgba(255,255,255,.62);
+    }
+    .quotaBar{
+      width:100%;
+      height:8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .quotaBar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: rgba(124,92,255,.75);
+    }
+    tr.quota-full td{
+      background: rgba(255,90,103,.06) !important;
+    }
+
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="logo"><i class="fa-solid fa-dumbbell"></i> MAH<span>FIT</span></div>
+    <nav>
+      <button class="active"><i class="fa-solid fa-users-gear"></i> Gestión Usuarios</button>
+
+      <div class="nav-divider"></div>
+
+      <button onclick="openGenericViewer('ejercicios.html','Base de Ejercicios','fa-book-atlas')">
+        <i class="fa-solid fa-book-atlas"></i> Base de Ejercicios
+      </button>
+      <button onclick="openGenericViewer('rutinas.html','Gestor de Rutinas','fa-clipboard-list')">
+        <i class="fa-solid fa-clipboard-list"></i> Gestor Rutinas
+      </button>
+      <button onclick="openGenericViewer('evaluacion.html','Evaluaciones','fa-ruler-combined')">
+        <i class="fa-solid fa-ruler-combined"></i> Evaluaciones
+      </button>
+
+      <div class="footer-nav">
+        <button onclick="logoutNow()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header>
+      <div class="head-left">
+        <div class="head-title">Admin PRO</div>
+        <div class="head-sub">Solo SUPER_ADMIN · Multi-tenant · Usuarios · Planes</div>
+      </div>
+      <div class="status-badge" id="apiBadge" onclick="refreshAll(true)">
+        <span class="dot" id="apiDot"></span>
+        <span id="apiText">Conectando…</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Alta rápida -->
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title"><i class="fa-solid fa-user-plus"></i> Alta Rápida</div>
+            <div class="panel-sub">Crear socio o funcionario nuevo (SUPER_ADMIN)</div>
+          </div>
+          <div class="panel-sub">Crear socio o funcionario nuevo</div>
+        </div>
+
+        <div class="quick-grid">
+          <input id="qNombre" class="form-control" placeholder="Nombre Completo">
+          <div>
+            <input id="qRut" class="form-control" placeholder="RUT / sin guion">
+            <div class="hint">Se guardará como: <span id="qRutFmt">—</span></div>
+          </div>
+          <input id="qEmail" class="form-control" placeholder="Email (Opcional)">
+          <input id="qPass" class="form-control" placeholder="Contraseña" type="password">
+          <select id="qRol" class="form-control">
+            <option value="SOCIO" selected>SOCIO</option>
+            <option value="FUNCIONARIO">FUNCIONARIO</option>
+          </select>
+          <div id="qTenantWrap" style="display:none">
+            <input id="qTenant" class="form-control" placeholder="tenantId (auto para FUNCIONARIO)">
+            <div class="hint">Generado: <span id="qTenantSug">—</span></div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="btn btn-primary" id="qCreateBtn" onclick="quickCreate()"><i class="fa-solid fa-plus"></i> Crear</button>
+          <button class="btn btn-secondary" onclick="resetQuick()"><i class="fa-solid fa-rotate-left"></i> Limpiar</button>
+          <div class="quick-status" id="qStatus"></div>
+        </div>
+      </section>
+
+      <!-- Base de usuarios -->
+      <section class="panel">
+        <div class="users-head">
+          <div>
+            <div class="panel-title"><i class="fa-solid fa-database"></i> Base de Usuarios</div>
+            <div class="panel-sub">Búsqueda, filtros, estados y planes (estilo Funcionario)</div>
+          </div>
+
+          <div class="tabs" id="tabs">
+            <button class="tab active" data-tab="all" onclick="setTab('all')">Todos <span class="count" id="ctAll">0</span></button>
+            <button class="tab" data-tab="active" onclick="setTab('active')">Activos <span class="count" id="ctActive">0</span></button>
+            <button class="tab" data-tab="expired" onclick="setTab('expired')">Vencidos <span class="count" id="ctExpired">0</span></button>
+            <button class="tab" data-tab="inactive" onclick="setTab('inactive')">Inactivos <span class="count" id="ctInactive">0</span></button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="userSearch" placeholder="Buscar por nombre, RUT, rol…" oninput="renderUsers()">
+          </div>
+          <select class="role-filter" id="roleFilter" onchange="renderUsers()">
+            <option value="ALL" selected>Rol: Todos</option>
+            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+            <option value="FUNCIONARIO">FUNCIONARIO</option>
+            <option value="SOCIO">SOCIO</option>
+          </select>
+
+          <button class="btn btn-secondary" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+          <button class="btn btn-primary" onclick="openUserModal(null)"><i class="fa-solid fa-user-plus"></i> Nuevo Usuario</button>
+          <button class="btn btn-secondary" onclick="refreshAll(true)"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+        </div>
+
+        <div id="kpiRow" class="kpi-row"></div>
+        <div id="alertStrip" class="alert-strip" style="display:none"></div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr class="${rowQuotaClass}">
+                <th style="width:32%">Nombre</th>
+                <th style="width:14%">RUT</th>
+                <th style="width:14%">Rol</th>
+                <th style="width:14%">Cupo</th>
+                <th style="width:12%">Estado</th>
+                <th style="width:12%">Plan</th>
+                <th style="width:14%; text-align:right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody">
+              <tr><td colspan="7" class="muted">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal usuario -->
+  <div class="modal-overlay" id="userModalOv">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-pen"></i> <span id="userModalTitle">Usuario</span></h3>
+        <button class="xbtn" onclick="closeModal('userModalOv')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div>
+            <div class="muted">Nombre</div>
+            <input id="mNombre" class="form-control" placeholder="Nombre completo">
+          </div>
+          <div>
+            <div class="muted">RUT (sin puntos, con o sin guion)</div>
+            <input id="mRut" class="form-control" placeholder="Ej: 202287786 o 20228778-6" oninput="syncModalRutHint()">
+            <div class="hint">Se guardará como: <span id="mRutFmt">—</span></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="muted">Email</div>
+            <input id="mEmail" class="form-control" placeholder="correo@dominio.com">
+          </div>
+          <div>
+            <div class="muted">Contraseña</div>
+            <input id="mPass" class="form-control" placeholder="(solo si deseas cambiarla)" type="password">
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div>
+            <div class="muted">Rol</div>
+            <select id="mRol" class="form-control">
+              <option value="SOCIO">SOCIO</option>
+              <option value="FUNCIONARIO">FUNCIONARIO</option>
+              <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+            </select>
+          </div>
+          <div>
+            <div class="muted">Activo</div>
+            <select id="mActivo" class="form-control">
+              <option value="true" selected>TRUE</option>
+              <option value="false">FALSE</option>
+            </select>
+          </div>
+          <div>
+            <div class="muted">tenantId</div>
+            <input id="mTenant" class="form-control" placeholder="TENANT_xxx (opcional)">
+          </div>
+          <div id="mMaxSociosWrap" style="display:none;">
+            <div class="muted">Máx. Socios (solo FUNCIONARIO)</div>
+            <input id="mMaxSocios" type="number" min="0" step="1" class="form-control" placeholder="0 = sin cupo (control total)"/>
+          </div>
+        </div>
+
+        <div class="muted">createdBy</div>
+        <input id="mCreatedBy" class="form-control" placeholder="RUT creador (opcional)">
+
+        <div id="userModalMsg" class="muted"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('userModalOv')">Cancelar</button>
+        <button class="btn btn-primary" id="userSaveBtn" onclick="saveUser()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal renovar plan (funcionario-style) -->
+  <div class="modal-overlay" id="renewModalOv">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 style="display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-rotate"></i> Renovar Plan</h3>
+          <div class="panel-sub" id="mSub">—</div>
+        </div>
+        <button class="xbtn" onclick="closeModal('renewModalOv')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+          <select id="mPlanId" class="form-control"><option value="">(sin plan)</option></select>
+          <select id="mActivar" class="form-control">
+            <option value="1">Activar</option>
+            <option value="0">No activar</option>
+          </select>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <div>
+            <label style="font-size:11px; color:var(--muted)">Inicio</label>
+            <input id="mInicio" type="date" class="form-control" />
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--muted)">Duración</label>
+            <select id="mDias" class="form-control">
+              <option value="1">+ 1 día</option>
+              <option value="7">+ 7 días</option>
+              <option value="30" selected>+ 30 días (Mensual)</option>
+              <option value="90">+ 90 días (Trimestral)</option>
+              <option value="180">+ 180 días (Semestral)</option>
+              <option value="365">+ 365 días (Anual)</option>
+              <option value="0">Personalizado...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items:end;">
+          <div>
+            <label style="font-size:11px; color:var(--muted)">Fin Calculado</label>
+            <input id="mFin" type="date" class="form-control" />
+          </div>
+          <div id="mPreview" class="pill" style="text-align:center; padding:8px;">—</div>
+        </div>
+
+        <div style="height:1px; background:var(--border); margin:10px 0;"></div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <input id="mPrecioBase" class="form-control" type="number" placeholder="Precio Base" disabled />
+          <input id="mDescPct" class="form-control" type="number" placeholder="% Descuento" />
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <input id="mPrecioFinal" class="form-control" type="number" placeholder="Precio Final" disabled />
+          <input id="mPagado" class="form-control" type="number" placeholder="Monto Pagado" />
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+          <div id="mPrecioSug" class="pill">Base: —</div>
+          <div id="mPrecioResumen" class="pill ok">Final: —</div>
+        </div>
+
+        <div class="checkRow">
+          <input type="checkbox" id="mSendReceipt" />
+          <label for="mSendReceipt" style="font-size:13px; cursor:pointer;">Enviar comprobante al correo</label>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr auto;">
+          <input id="mReceiptEmail" class="form-control" type="email" placeholder="Correo destino" />
+          <button id="mSendNow" class="btn btn-ok btn-sm" type="button">Enviar Ahora</button>
+        </div>
+
+        <div id="mMsg" class="msg"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="mCancel" class="btn btn-secondary" onclick="closeModal('renewModalOv')">Cancelar</button>
+        <button id="mSave" class="btn btn-primary">Guardar Renovación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visor genérico -->
+  <div class="modal-overlay" id="viewerModalOv">
+    <div class="modal modal-xl">
+      <div class="modal-header" style="border-radius:18px 18px 0 0;">
+        <h3><i class="fa-solid" id="viewerIcon"></i> <span id="viewerTitle">Visor</span></h3>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-secondary btn-icon" title="Modo móvil" onclick="toggleMobileMode()"><i class="fa-solid fa-mobile-screen"></i></button>
+          <button class="btn btn-secondary btn-icon" title="Cerrar" onclick="closeModal('viewerModalOv')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="viewer-container">
+        <iframe id="viewerFrame" class="viewer-frame" src="about:blank"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    // =======================
+    // Admin PRO (SUPER_ADMIN)
+    // =======================
+
+    let ME = null;
+    let USERS = [];
+    let QUOTA = { countsByOwnerKey:{}, stats:{}, perFuncKey:{} };
+    let currentTab = "all";
+    let renewTarget = null;
+    let editingUser = null;
+    let mobileMode = false;
+
+    // --- RUT modo A (sin autocorrección DV): solo inserta guion si falta.
+    function rutLooseFormat(input){
+      const raw = String(input || "").trim().toUpperCase();
+      if(!raw) return "";
+      // Mantén K y números, permite guion
+      const cleaned = raw.replace(/[^0-9K\-]/g, "");
+      if(cleaned.includes("-")){
+        const parts = cleaned.split("-");
+        const body = (parts[0]||"").replace(/[^0-9]/g,"");
+        const dv = (parts[1]||"").replace(/[^0-9K]/g,"").slice(0,1);
+        if(body && dv) return body + "-" + dv;
+        return body || "";
+      }
+      const only = cleaned.replace(/[^0-9K]/g, "");
+      if(only.length >= 2){
+        const body = only.slice(0, -1).replace(/[^0-9]/g,"");
+        const dv = only.slice(-1);
+        return body + "-" + dv;
+      }
+      return only;
+    }
+
+    // --- Tenant automático para FUNCIONARIO: TENANT_NOMBRE_RUT (ej: TENANT_MATIAS_ACEVEDO_20228778-6)
+    function normalizeTenantName(name){
+      return String(name || "")
+        .trim()
+        .toUpperCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^A-Z0-9]+/g,"_")
+        .replace(/^_+|_+$/g,"");
+    }
+    function tenantTagFromName(nombre){
+      const first = String(nombre||"").trim().split(/\s+/)[0] || "";
+      return normalizeTenantName(first);
+    }
+    function tenantRutKey(rutInput){
+      const rutFmt = rutLooseFormat(rutInput); // puede venir con guion
+      return String(rutFmt||"").toUpperCase().replace(/[^0-9K]/g,""); // 20228778-6 -> 202287786
+    }
+    function autoTenantFrom(nombre, rutInput){
+      const namePart = tenantTagFromName(nombre);
+      const rutKey = tenantRutKey(rutInput);
+      if(!namePart || !rutKey) return "";
+      return `TENANT_${namePart}_${rutKey}`;
+    }
+
+
+    function setApi(ok, text){
+      const dot = document.getElementById("apiDot");
+      const t = document.getElementById("apiText");
+      dot.classList.toggle("ok", !!ok);
+      dot.classList.toggle("err", !ok);
+      t.textContent = text || (ok ? "Conectado" : "Sin conexión");
+    }
+
+    function isTruthy(v){
+      return !(String(v).toLowerCase() === "false" || v === 0 || String(v) === "0");
+    }
+
+    function roleClass(rol){
+      rol = String(rol||"").toUpperCase();
+      if(rol === "SUPER_ADMIN") return "admin";
+      if(rol === "FUNCIONARIO") return "funcionario";
+      return "socio";
+    }
+
+    function planInfo(u){
+      const planId = String(u.planId || u.planTipo || "").trim();
+      const finRaw = String(u.planFin || "").trim();
+      if(!planId) return { label:"SIN PLAN", cls:"" };
+
+      // fin puede venir como yyyy-mm-dd
+      const fin = finRaw ? new Date(finRaw) : null;
+      if(!fin || String(fin) === "Invalid Date") return { label: planId || "PLAN", cls:"" };
+
+      const today = new Date(); today.setHours(0,0,0,0);
+      fin.setHours(0,0,0,0);
+      const diffDays = Math.round((fin - today) / (1000*60*60*24));
+
+      if(diffDays < 0) return { label:`VENCIDO (${finRaw})`, cls:"bad", expired:true };
+      if(diffDays <= 7) return { label:`QUEDAN ${diffDays} DÍAS (${finRaw})`, cls:"warn" };
+      return { label:`QUEDAN ${diffDays} DÍAS (${finRaw})`, cls:"good" };
+    }
+
+    function tabCounts(list){
+      const total = list.length;
+      const active = list.filter(u => isTruthy(u.activo)).length;
+      const inactive = list.filter(u => !isTruthy(u.activo)).length;
+      const expired = list.filter(u => {
+        const p = planInfo(u);
+        return !!p.expired;
+      }).length;
+
+      document.getElementById("ctAll").textContent = String(total);
+      document.getElementById("ctActive").textContent = String(active);
+      document.getElementById("ctInactive").textContent = String(inactive);
+      document.getElementById("ctExpired").textContent = String(expired);
+    }
+
+    function setTab(tab){
+      currentTab = tab;
+      document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      renderUsers();
+    }
+
+    function getFilteredUsers(){
+      const q = String(document.getElementById("userSearch").value || "").trim().toLowerCase();
+      const rf = String(document.getElementById("roleFilter").value || "ALL").toUpperCase();
+
+      let list = USERS.slice();
+
+      // tab
+      if(currentTab === "active") list = list.filter(u => isTruthy(u.activo));
+      if(currentTab === "inactive") list = list.filter(u => !isTruthy(u.activo));
+      if(currentTab === "expired") list = list.filter(u => !!planInfo(u).expired);
+
+      // role
+      if(rf !== "ALL") list = list.filter(u => String(u.rol||"").toUpperCase() === rf);
+
+      // search
+      if(q){
+        list = list.filter(u => {
+          const name = String(u.nombre||"").toLowerCase();
+          const rut = String(u.rut||"").toLowerCase();
+          const email = String(u.email||"").toLowerCase();
+          const rol = String(u.rol||"").toLowerCase();
+          return name.includes(q) || rut.includes(q) || email.includes(q) || rol.includes(q);
+        });
+      }
+
+      // order: admins first, then funcionarios, then socios; also by name
+      const rank = r => (r==="SUPER_ADMIN"?0:(r==="FUNCIONARIO"?1:2));
+      list.sort((a,b)=>{
+        const ra = rank(String(a.rol||"").toUpperCase());
+        const rb = rank(String(b.rol||"").toUpperCase());
+        if(ra !== rb) return ra - rb;
+        return String(a.nombre||"").localeCompare(String(b.nombre||""), "es");
+      });
+
+      return list;
+    }
+
+    
+    // ---------------------------
+    // SaaS Quotas (FUNCIONARIO)
+    // - used: cantidad de SOCIOS cuyo createdBy == rutFuncionario
+    // - max: u.maxSocios (0 = sin cupo)
+    // ---------------------------
+    function quotaKey_(rutOrAny){
+      return tenantRutKey(rutOrAny); // 20228778-6 -> 202287786
+    }
+    function computeQuota_(){
+      const counts = {};
+      (USERS||[]).forEach(u=>{
+        const rol = String(u.rol||"").toUpperCase();
+        if(rol !== "SOCIO") return;
+        const cb = quotaKey_(u.createdBy||"");
+        if(!cb) return;
+        counts[cb] = (counts[cb]||0) + 1;
+      });
+
+      const perFunc = {};
+      let funcCount=0, socioCount=0;
+      let maxTotal=0, usedTotal=0;
+      let full=0, near=0;
+
+      (USERS||[]).forEach(u=>{
+        const rol = String(u.rol||"").toUpperCase();
+        if(rol === "SOCIO") socioCount++;
+
+        if(rol !== "FUNCIONARIO") return;
+        funcCount++;
+        const k = quotaKey_(u.rut||"");
+        const used = Number(counts[k]||0);
+        let max = Number(u.maxSocios ?? u.max_socios ?? 0);
+        if(!Number.isFinite(max) || max < 0) max = 0;
+
+        const remaining = (max > 0) ? Math.max(0, max - used) : 0;
+        const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
+
+        if(max === 0 || used >= max) full++;
+        else if(remaining <= 3) near++;
+
+        if(max > 0) maxTotal += max;
+        usedTotal += Math.min(used, max > 0 ? max : used); // para totales, si max=0 no suma cupo
+
+        perFunc[k] = { used, max, remaining, pct };
+      });
+
+      const freeTotal = Math.max(0, (maxTotal||0) - (usedTotal||0));
+
+      QUOTA = {
+        countsByOwnerKey: counts,
+        perFuncKey: perFunc,
+        stats: { funcCount, socioCount, maxTotal, usedTotal, freeTotal, full, near }
+      };
+    }
+
+    function renderKpis_(){
+      const el = document.getElementById("kpiRow");
+      if(!el) return;
+
+      const s = (QUOTA && QUOTA.stats) ? QUOTA.stats : {};
+      const funcCount = Number(s.funcCount||0);
+      const socioCount = Number(s.socioCount||0);
+      const usedTotal = Number(s.usedTotal||0);
+      const maxTotal  = Number(s.maxTotal||0);
+      const freeTotal = Number(s.freeTotal||0);
+
+      el.innerHTML = `
+        <div class="kpi">
+          <div class="ico"><i class="fa-solid fa-user-tie"></i></div>
+          <div class="t">
+            <div class="lbl">Funcionarios</div>
+            <div class="val">${funcCount}</div>
+            <div class="sub">Cuentas staff activas</div>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="ico" style="background:rgba(43,213,118,.14);border-color:rgba(43,213,118,.22)">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="t">
+            <div class="lbl">Socios</div>
+            <div class="val">${socioCount}</div>
+            <div class="sub">Total registrados</div>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="ico" style="background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.22)">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <div class="t">
+            <div class="lbl">Cupos usados</div>
+            <div class="val">${usedTotal} / ${maxTotal}</div>
+            <div class="sub">Uso global de cupos</div>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="ico" style="background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.22)">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="t">
+            <div class="lbl">Cupos libres</div>
+            <div class="val">${freeTotal}</div>
+            <div class="sub">Disponibles para crecer</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAlerts_(){
+      const el = document.getElementById("alertStrip");
+      if(!el) return;
+
+      const s = (QUOTA && QUOTA.stats) ? QUOTA.stats : {};
+      const full = Number(s.full||0);
+      const near = Number(s.near||0);
+
+      if(full <= 0 && near <= 0){
+        el.style.display = "none";
+        el.innerHTML = "";
+        return;
+      }
+
+      const parts = [];
+      if(full > 0) parts.push(`<b>${full}</b> funcionario(s) sin cupo / cupo lleno`);
+      if(near > 0) parts.push(`<b>${near}</b> funcionario(s) cerca del límite (≤ 3 cupos)`);
+
+      el.style.display = "flex";
+      el.innerHTML = `
+        <div class="aico"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="abody">
+          <div style="font-weight:900;margin-bottom:2px;">Alertas de Cupo</div>
+          <div>${parts.join(" · ")}</div>
+        </div>
+      `;
+    }
+function renderUsers(){
+      const tbody = document.getElementById("usersTbody");
+      const list = getFilteredUsers();
+
+      if(!list.length){
+        tbody.innerHTML = `<tr><td colspan="7" class="muted">No hay resultados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(u => {
+        const rol = String(u.rol||"").toUpperCase();
+        const rcls = roleClass(rol);
+        const activo = isTruthy(u.activo);
+        const p = planInfo(u);
+
+        const estadoHtml = activo ? `<span class="pill active">ACTIVO</span>` : `<span class="pill inactive">INACTIVO</span>`;
+        const planHtml = `<span class="plan-pill ${p.cls||""}">${escapeHtml(p.label)}</span>`;
+
+        // Cupo SaaS (solo FUNCIONARIO)
+        let cupoHtml = `<span class="muted">—</span>`;
+        let rowQuotaClass = "";
+        if(rol === "FUNCIONARIO"){
+          const k = quotaKey_(u.rut||"");
+          const q = (QUOTA && QUOTA.perFuncKey && QUOTA.perFuncKey[k]) ? QUOTA.perFuncKey[k] : { used:0, max:Number(u.maxSocios||0)||0, remaining:0, pct:0 };
+          const used = Number(q.used||0);
+          let max = Number(q.max||0);
+          if(!Number.isFinite(max) || max < 0) max = 0;
+
+          const remaining = (max > 0) ? Math.max(0, max - used) : 0;
+          const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
+
+          let cls = "good";
+          if(max === 0) cls = "bad";
+          else if(used >= max) cls = "bad";
+          else if(remaining <= 3) cls = "warn";
+
+          if(cls === "bad") rowQuotaClass = "quota-full";
+
+          cupoHtml = `
+            <div class="quota" title="${max===0 ? "Sin cupo (0) — control total desde admin" : ("Usados: "+used+" · Máx: "+max+" · Libres: "+remaining)}">
+              <div class="quotaTop">
+                <span class="quotaNum ${cls}">
+                  <i class="fa-solid fa-user-group"></i> ${used} / ${max}
+                </span>
+                <span class="quotaRem">${max===0 ? "sin cupo" : (remaining + " libres")}</span>
+              </div>
+              <div class="quotaBar"><i style="width:${pct}%"></i></div>
+            </div>
+          `;
+        }
+
+// Acciones:
+        // - izquierda: grupo operaciones (peso/rutinas/evaluaciones) + vista socio
+        // - derecha: renovar, activar/desactivar, editar, eliminar
+        const rutSafe = String(u.rut||"");
+
+        return `
+          <tr>
+            <td>
+              <div class="user-info">
+                <div class="name">${escapeHtml(u.nombre || "(sin nombre)")}</div>
+                <div class="sub">${escapeHtml(u.email || "")}</div>
+              </div>
+            </td>
+            <td>${escapeHtml(rutSafe)}</td>
+            <td>
+              <div class="badge-role ${rcls}">${escapeHtml(rol || "-")}</div>
+            </td>
+            <td>${cupoHtml}</td>
+            <td>${estadoHtml}</td>
+            <td>${planHtml}</td>
+            <td>
+              <div class="actions-saas">
+                <button class="actbtn icon" title="Perfil" onclick="openUserModal('${jsEsc(rutSafe)}')"><i class="fa-solid fa-id-card"></i></button>
+                <button class="actbtn renew" title="Renovar" onclick="openRenew('${jsEsc(rutSafe)}')">Renovar</button>
+                <button class="actbtn state ${activo ? 'on' : 'off'}" title="${activo ? 'Desactivar' : 'Activar'}" onclick="toggleActive('${jsEsc(rutSafe)}', ${activo ? 'false' : 'true'})">
+                  <i class="fa-solid ${activo ? 'fa-ban' : 'fa-circle-check'}"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function jsEsc(s){ return String(s ?? "").replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    // =======================
+    // API
+    // =======================
+    async function refreshAll(showToast){
+      try{
+        setApi(false, "Actualizando…");
+        // ✅ Modo producto: usamos USERS (full) para incluir maxSocios y columnas SaaS
+        const res = await apiGet("USERS");
+        const users = (res && (res.users || res.USERS || res.data)) ? (res.users || res.USERS || res.data) : [];
+        USERS = Array.isArray(users) ? users : [];
+        tabCounts(USERS);
+        computeQuota_();
+        renderKpis_();
+        renderUsers();
+        renderAlerts_();
+        setApi(true, "Conectado");
+      }catch(err){
+        console.error(err);
+        setApi(false, "Sin conexión");
+        const tbody = document.getElementById("usersTbody");
+        tbody.innerHTML = `<tr><td colspan="6" class="err">Error: ${escapeHtml(err && err.message ? err.message : String(err))}</td></tr>`;
+      }
+    }
+
+    async function impersonateSocio(rutSocio){
+      try{
+        // Solo SUPER_ADMIN (API lo valida)
+        const res = await apiPost("IMPERSONATE_SOCIO", { rutSocio: rutSocio });
+        if(!res || !res.ok || !res.token) throw new Error(res && res.error ? res.error : "No se pudo impersonar");
+        // Guardar token temporal para abrir socio.html
+        // Usamos setToken + setUserSession si existe (app.js)
+        if(typeof setToken === "function") setToken(res.token);
+        // Abrir socio.html en visor (evita salir del admin)
+        openGenericViewer("socio.html", "Vista Socio", "fa-user", { token: res.token });
+      }catch(err){
+        alert("Impersonate error: " + (err && err.message ? err.message : String(err)));
+      }
+    }
+
+    // =======================
+    // Quick Create
+    // =======================
+    function setQuickStatus(html){ document.getElementById("qStatus").innerHTML = html || ""; }
+
+    function syncQuickRutHint(){
+      const rutRaw = document.getElementById("qRut").value;
+      const nombre = document.getElementById("qNombre").value;
+      const rol = String(document.getElementById("qRol").value||"SOCIO").toUpperCase();
+
+      const v = rutLooseFormat(rutRaw);
+      document.getElementById("qRutFmt").textContent = v || "—";
+
+      // tenantId automático si es FUNCIONARIO
+      const wrap = document.getElementById("qTenantWrap");
+      const input = document.getElementById("qTenant");
+      const sugEl = document.getElementById("qTenantSug");
+
+      if(rol === "FUNCIONARIO"){
+        if(wrap) wrap.style.display = "block";
+        const sug = autoTenantFrom(nombre, rutRaw);
+        if(sugEl) sugEl.textContent = sug || "—";
+
+        // solo autocompletar si el usuario no lo tocó manualmente
+        if(input){
+          input.readOnly = true;
+          if(input.dataset.touched !== "1"){
+            input.value = sug || "";
+          }
+        }
+      } else {
+        if(wrap) wrap.style.display = "none";
+        if(input){
+          input.readOnly = false;
+          // no borramos valor para no perder si vuelve a FUNCIONARIO; pero limpiamos touched
+          input.dataset.touched = "";
+          input.value = "";
+        }
+        if(sugEl) sugEl.textContent = "—";
+      }
+    }
+    document.getElementById("qRut").addEventListener("input", syncQuickRutHint);
+    document.getElementById("qNombre").addEventListener("input", syncQuickRutHint);
+    document.getElementById("qRol").addEventListener("change", syncQuickRutHint);
+    document.getElementById("qTenant").addEventListener("input", ()=>{ document.getElementById("qTenant").dataset.touched = "1"; });
+
+
+    async function quickCreate(){
+      const btn = document.getElementById("qCreateBtn");
+      btn.disabled = true;
+      setQuickStatus(`<span class="qspin"></span> Creando…`);
+
+      try{
+        const nombre = String(document.getElementById("qNombre").value||"").trim();
+        const rutIn = String(document.getElementById("qRut").value||"").trim();
+        const email = String(document.getElementById("qEmail").value||"").trim();
+        const pass = String(document.getElementById("qPass").value||"");
+        const rol = String(document.getElementById("qRol").value||"SOCIO").trim().toUpperCase();
+        let tenantId = String(document.getElementById("qTenant").value||"").trim();
+
+        if(rol === "FUNCIONARIO"){
+          // forzamos tenant automático (readOnly), si quedó vacío por algún motivo lo recalculamos
+          if(!tenantId) tenantId = autoTenantFrom(nombre, rutIn);
+        }
+
+
+        if(!nombre) throw new Error("Falta nombre");
+        if(!rutIn) throw new Error("Falta RUT");
+        if(!pass) throw new Error("Falta contraseña");
+
+        const rutFmt = rutLooseFormat(rutIn);
+        if(!rutFmt || rutFmt.indexOf("-") === -1) throw new Error("RUT inválido (debe incluir DV: cuerpo-dv)");
+
+        const payload = {
+          rut: rutFmt,
+          nombre, email, pass,
+          rol,
+          tenantId
+        };
+
+        const res = await apiPost("USERS", payload);
+        if(!res || !res.ok) throw new Error(res && res.error ? res.error : "No se pudo crear");
+        setQuickStatus(`<i class="fa-solid fa-circle-check ok"></i> Creado/actualizado`);
+        resetQuick(false);
+        await refreshAll(false);
+      }catch(err){
+        console.error(err);
+        setQuickStatus(`<i class="fa-solid fa-triangle-exclamation err"></i> ${escapeHtml(err && err.message ? err.message : String(err))}`);
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    function resetQuick(clearStatus=true){
+      document.getElementById("qNombre").value = "";
+      document.getElementById("qRut").value = "";
+      document.getElementById("qEmail").value = "";
+      document.getElementById("qPass").value = "";
+      document.getElementById("qRol").value = "SOCIO";
+      const qt = document.getElementById("qTenant");
+      qt.value = "";
+      qt.dataset.touched = "";
+      qt.readOnly = false;
+      const qtw = document.getElementById("qTenantWrap");
+      if(qtw) qtw.style.display = "none";
+      const qts = document.getElementById("qTenantSug");
+      if(qts) qts.textContent = "—";
+      document.getElementById("qRutFmt").textContent = "—";
+      if(clearStatus) setQuickStatus("");
+    }
+
+    // =======================
+    // User modal
+    // =======================
+    function openUserModal(rut){
+      editingUser = null;
+      document.getElementById("userModalMsg").textContent = "";
+
+      if(rut){
+        const u = USERS.find(x => String(x.rut||"") === String(rut));
+        if(u) editingUser = Object.assign({}, u);
+      }
+
+      document.getElementById("userModalTitle").textContent = editingUser ? "Editar Usuario" : "Nuevo Usuario";
+      document.getElementById("mNombre").value = editingUser ? (editingUser.nombre||"") : "";
+      document.getElementById("mRut").value = editingUser ? (editingUser.rut||"") : "";
+      document.getElementById("mEmail").value = editingUser ? (editingUser.email||"") : "";
+      document.getElementById("mPass").value = "";
+      document.getElementById("mRol").value = editingUser ? String(editingUser.rol||"SOCIO").toUpperCase() : "SOCIO";
+      document.getElementById("mActivo").value = editingUser ? (isTruthy(editingUser.activo) ? "true" : "false") : "true";
+      document.getElementById("mTenant").value = editingUser ? (editingUser.tenantId||"") : "";
+      document.getElementById("mCreatedBy").value = editingUser ? (editingUser.createdBy||"") : "";
+      document.getElementById("mMaxSocios").value = editingUser ? (editingUser.maxSocios ?? editingUser.max_socios ?? 0) : 0;
+
+      syncModalRoleUI();
+      syncModalRutHint();
+      openModal("userModalOv");
+    }
+
+    function syncModalRoleUI(){
+      const rol = String(document.getElementById("mRol").value||"SOCIO").toUpperCase();
+      const wrap = document.getElementById("mMaxSociosWrap");
+      const isFunc = (rol === "FUNCIONARIO");
+      if(wrap) wrap.style.display = isFunc ? "" : "none";
+      // UX: si no es funcionario, reset a 0 para evitar basura
+      if(!isFunc){
+        const i = document.getElementById("mMaxSocios");
+        if(i) i.value = 0;
+      }
+    }
+
+    function syncModalRutHint(){
+      const v = rutLooseFormat(document.getElementById("mRut").value);
+      document.getElementById("mRutFmt").textContent = v || "—";
+    }
+
+    async function saveUser(){
+      const btn = document.getElementById("userSaveBtn");
+      btn.disabled = true;
+      document.getElementById("userModalMsg").textContent = "Guardando…";
+
+      try{
+        const nombre = String(document.getElementById("mNombre").value||"").trim();
+        const rutIn = String(document.getElementById("mRut").value||"").trim();
+        const email = String(document.getElementById("mEmail").value||"").trim();
+        const pass = String(document.getElementById("mPass").value||"");
+        const rol = String(document.getElementById("mRol").value||"SOCIO").trim().toUpperCase();
+        const activo = String(document.getElementById("mActivo").value||"true") === "true";
+        const tenantId = String(document.getElementById("mTenant").value||"").trim();
+        const createdBy = String(document.getElementById("mCreatedBy").value||"").trim();
+        if(rol === "FUNCIONARIO" && !tenantId) throw new Error("Falta tenantId (FUNCIONARIO)");
+
+        if(!nombre) throw new Error("Falta nombre");
+        if(!rutIn) throw new Error("Falta rut");
+
+        const rutFmt = rutLooseFormat(rutIn);
+        if(!rutFmt || rutFmt.indexOf("-") === -1) throw new Error("RUT inválido (debe incluir DV: cuerpo-dv)");
+
+        const payload = {
+          rut: rutFmt,
+          nombre,
+          email,
+          rol,
+          tenantId,
+          createdBy,
+          activo
+        };
+        if(rol === "FUNCIONARIO"){
+          const ms = Number(document.getElementById("mMaxSocios").value || 0);
+          payload.maxSocios = (Number.isFinite(ms) && ms >= 0) ? Math.floor(ms) : 0;
+        }
+        if(pass) payload.pass = pass;
+
+        const res = await apiPost("USERS", payload);
+        if(!res || !res.ok) throw new Error(res && res.error ? res.error : "No se pudo guardar");
+
+        document.getElementById("userModalMsg").innerHTML = `<span class="ok"><i class="fa-solid fa-circle-check"></i> Guardado</span>`;
+        closeModal("userModalOv");
+        await refreshAll(false);
+      }catch(err){
+        console.error(err);
+        document.getElementById("userModalMsg").innerHTML = `<span class="err"><i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(err && err.message ? err.message : String(err))}</span>`;
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    // =======================
+    // Toggle activo
+    // =======================
+    async function toggleActive(rut, targetActive){
+      if(!confirm((targetActive ? "Activar" : "Desactivar") + " usuario " + rut + "?")) return;
+      try{
+        const rutFmt = rutLooseFormat(rut);
+        if(!rutFmt || rutFmt.indexOf("-") === -1) throw new Error("RUT inválido (necesita DV para activar/desactivar)");
+        const res = await apiPost("USERS", { rut: rutFmt, activo: !!targetActive });
+        if(!res || !res.ok) throw new Error(res && res.error ? res.error : "No se pudo actualizar");
+        await refreshAll(false);
+      }catch(err){
+        alert("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    }
+
+    // =======================
+    // Delete (soft)
+    // =======================
+    async function deleteUser(rut){
+      if(!confirm("¿Eliminar usuario " + rut + "? (Recomendado: desactivar en vez de borrar)")) return;
+      try{
+        // No hay endpoint delete users en tu API (por seguridad).
+        // Estrategia segura: marcar activo=false + notas (si existiera). Aquí dejamos solo desactivar.
+        await toggleActive(rut, false);
+      }catch(err){
+        alert("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    }
+
+    // =======================
+    // Renew (funcionario-style)
+    // =======================
+    let RENEW_PLANES = null;
+
+    const mPlanId = document.getElementById("mPlanId");
+    const mActivar = document.getElementById("mActivar");
+    const mInicio = document.getElementById("mInicio");
+    const mDias = document.getElementById("mDias");
+    const mFin = document.getElementById("mFin");
+    const mPreview = document.getElementById("mPreview");
+    const mPrecioBase = document.getElementById("mPrecioBase");
+    const mDescPct = document.getElementById("mDescPct");
+    const mPrecioFinal = document.getElementById("mPrecioFinal");
+    const mPagado = document.getElementById("mPagado");
+    const mPrecioSug = document.getElementById("mPrecioSug");
+    const mPrecioResumen = document.getElementById("mPrecioResumen");
+    const mSendReceipt = document.getElementById("mSendReceipt");
+    const mReceiptEmail = document.getElementById("mReceiptEmail");
+    const mSendNow = document.getElementById("mSendNow");
+    const mMsg = document.getElementById("mMsg");
+    const mSub = document.getElementById("mSub");
+    const mSave = document.getElementById("mSave");
+
+    function clamp(n, a, b){ n = Number(n||0); return Math.max(a, Math.min(b, n)); }
+    function safe(v, d=""){ const s = (v===undefined||v===null) ? "" : String(v); return s.trim() ? s : d; }
+
+    function moneyCLP(n){
+      const x = Number(n||0);
+      try{ return x.toLocaleString("es-CL", {style:"currency", currency:"CLP", maximumFractionDigits:0}); }
+      catch(e){ return "$" + String(Math.round(x||0)); }
+    }
+
+    function ymdFromAny(v){
+      if(!v) return "";
+      if(v instanceof Date){
+        const y=v.getFullYear(), m=String(v.getMonth()+1).padStart(2,"0"), d=String(v.getDate()).padStart(2,"0");
+        return `${y}-${m}-${d}`;
+      }
+      const s = String(v).slice(0,10);
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      const m = String(v).match(/^(\d{2})-(\d{2})-(\d{4})$/);
+      if(m) return `${m[3]}-${m[2]}-${m[1]}`;
+      return "";
+    }
+
+    function addDaysToYMD(ymd, days){
+      if(!ymd) return "";
+      const [Y,M,D] = ymd.split("-").map(Number);
+      const dt = new Date(Date.UTC(Y, (M||1)-1, D||1));
+      dt.setUTCDate(dt.getUTCDate() + Number(days||0));
+      const y=dt.getUTCFullYear(), m=String(dt.getUTCMonth()+1).padStart(2,"0"), d=String(dt.getUTCDate()).padStart(2,"0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function diffDays(aYmd, bYmd){
+      if(!aYmd || !bYmd) return 0;
+      const [aY,aM,aD] = aYmd.split("-").map(Number);
+      const [bY,bM,bD] = bYmd.split("-").map(Number);
+      const a = Date.UTC(aY,(aM||1)-1,aD||1);
+      const b = Date.UTC(bY,(bM||1)-1,bD||1);
+      return Math.round((b-a) / 86400000);
+    }
+
+    function msgRenew(text, ok=null){
+      mMsg.textContent = text || "";
+      mMsg.className = "msg" + (ok===true ? " ok" : ok===false ? " bad" : "");
+    }
+
+    async function ensurePlanesLoaded(){
+      if(Array.isArray(RENEW_PLANES) && RENEW_PLANES.length) return RENEW_PLANES;
+      try{
+        const res = await apiGet("PLANES");
+        const planes = (res && (res.planes || res.PLANES || res.data)) ? (res.planes || res.PLANES || res.data) : [];
+        RENEW_PLANES = Array.isArray(planes) ? planes : [];
+      }catch(e){
+        RENEW_PLANES = [];
+      }
+      return RENEW_PLANES;
+    }
+
+    function planesActivos(){
+      const all = Array.isArray(RENEW_PLANES) ? RENEW_PLANES : [];
+      return all.filter(p => Number(p.activo ?? 1) === 1);
+    }
+
+    function fillPlanSelect(selectedId=""){
+      const planes = planesActivos();
+      mPlanId.innerHTML =
+        `<option value="">(sin plan)</option>` +
+        planes.map(p=>{
+          const label = `${p.nombre || p.planId} · ${Number(p.dias||0)} días · ${moneyCLP(p.precioCLP||p.precio||0)}`;
+          const pid = safe(p.planId, "");
+          const dias = Number(p.dias||0);
+          const precio = Number(p.precioCLP||p.precio||0);
+          return `<option value="${pid}" data-dias="${dias}" data-precio="${precio}">${label}</option>`;
+        }).join("");
+      mPlanId.value = selectedId || "";
+    }
+
+    function suggestedDaysByPlan(){
+      const opt = mPlanId.selectedOptions?.[0];
+      const d = Number(opt?.dataset?.dias || 0);
+      return d > 0 ? d : 30;
+    }
+
+    function refreshPriceUI(){
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(mDescPct.value, 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      mPrecioFinal.value = final;
+
+      mPrecioSug.textContent = `BASE: ${moneyCLP(base)} · DESC: ${pct}%`;
+      mPrecioResumen.textContent = `FINAL: ${moneyCLP(final)} · PAGADO: ${moneyCLP(Number(mPagado.value||0))}`;
+    }
+
+    function updatePreview(){
+      const d = diffDays(mInicio.value, mFin.value);
+      if(!mInicio.value || !mFin.value || d <= 0){
+        mPreview.textContent = "—";
+        mPreview.className = "pill";
+        return;
+      }
+      mPreview.textContent = `QUEDAN ${d} DÍAS`;
+      mPreview.className = "pill " + (d <= 5 ? "warn" : "ok");
+    }
+
+    async function openRenew(rut){
+      const u = USERS.find(x => String(x.rut||"") === String(rut)) || null;
+      renewTarget = u;
+      if(!u){
+        alert("No se encontró el usuario: " + rut);
+        return;
+      }
+
+      await ensurePlanesLoaded();
+
+      mSub.textContent = `${safe(u.nombre,"")} · ${safe(u.rut,"")}`;
+      const userPlanId = String(u.planId || "").trim().toUpperCase();
+      fillPlanSelect(userPlanId);
+
+      mActivar.value = "1";
+      mInicio.value = ymdFromAny(u.planInicio) || ymdFromAny(new Date());
+
+      const userFin = ymdFromAny(u.planFin);
+      if(userFin){
+        mFin.value = userFin;
+        const d = diffDays(mInicio.value, mFin.value);
+        if([1,7,30,90,180,365].includes(d)) mDias.value = String(d);
+        else mDias.value = "0";
+      }else{
+        const sug = suggestedDaysByPlan();
+        mDias.value = String([1,7,30,90,180,365].includes(sug) ? sug : 30);
+        mFin.value = addDaysToYMD(mInicio.value, Number(mDias.value||0));
+      }
+
+      const opt = mPlanId.selectedOptions?.[0];
+      const base = Number(opt?.dataset?.precio || u.planPrecioBase || 0);
+      mPrecioBase.value = base;
+
+      mDescPct.value = Number(u.planDescPct || 0);
+      mPagado.value = Number(u.planPagado || 0);
+
+      mReceiptEmail.value = String(u.email || "").trim();
+      mSendReceipt.checked = false;
+
+      refreshPriceUI();
+      updatePreview();
+      msgRenew("");
+      openModal("renewModalOv");
+    }
+
+    async function sendReceiptNow(){
+      if(!renewTarget) return;
+      const to = String(mReceiptEmail.value||"").trim();
+      if(!to){ msgRenew("❌ Escribe un correo destino.", false); return; }
+
+      const base = Number(mPrecioBase.value || 0);
+      const pct = clamp(mDescPct.value, 0, 100);
+      const final = Math.round(base * (1 - pct/100));
+      const pagado = Number(mPagado.value || 0);
+
+      const payload = {
+        to,
+        subject: "MAH FIT · Comprobante de pago",
+        nombre: renewTarget.nombre || "",
+        rut: renewTarget.rut || "",
+        planId: String(mPlanId.value||"").trim().toUpperCase(),
+        planInicio: String(mInicio.value||""),
+        planFin: String(mFin.value||""),
+        precioBase: base,
+        descPct: pct,
+        precioFinal: final,
+        pagado: pagado,
+        activo: (mActivar.value === "1")
+      };
+
+      try{
+        msgRenew("Enviando comprobante…", true);
+        await apiPost("send_receipt_email", payload);
+        msgRenew("✅ Comprobante enviado al correo", true);
+      }catch(e){
+        msgRenew("❌ No se pudo enviar: " + (e.message||e), false);
+      }
+    }
+
+    // listeners
+    mSendNow.addEventListener("click", sendReceiptNow);
+
+    mPlanId.addEventListener("change", ()=>{
+      const opt = mPlanId.selectedOptions?.[0];
+      const precio = Number(opt?.dataset?.precio || 0);
+      const diasSug = Number(opt?.dataset?.dias || 0);
+
+      mPrecioBase.value = precio || 0;
+      refreshPriceUI();
+
+      if(mDias.value !== "0"){
+        const use = [1,7,30,90,180,365].includes(diasSug) ? diasSug : Number(mDias.value||0);
+        if(use > 0){
+          mDias.value = String(use);
+          mFin.value = addDaysToYMD(mInicio.value, use);
+          updatePreview();
+        }
+      }
+    });
+
+    mDescPct.addEventListener("input", refreshPriceUI);
+    mPagado.addEventListener("input", refreshPriceUI);
+
+    mDias.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mInicio.addEventListener("change", ()=>{
+      if(mDias.value === "0"){ updatePreview(); return; }
+      const days = Number(mDias.value || 0);
+      mFin.value = addDaysToYMD(mInicio.value, days);
+      updatePreview();
+    });
+
+    mFin.addEventListener("change", updatePreview);
+
+    mSave.addEventListener("click", async ()=>{
+      if(!renewTarget) return;
+
+      const btn = mSave;
+      btn.disabled = true;
+      msgRenew("Guardando…", true);
+
+      try{
+        const rutFmt = rutLooseFormat(renewTarget.rut);
+        if(!rutFmt || rutFmt.indexOf("-") === -1) throw new Error("RUT inválido (necesita DV).");
+
+        const planId = safe(mPlanId.value,"").trim().toUpperCase();
+        const base = Number(mPrecioBase.value || 0);
+        const pct = clamp(mDescPct.value, 0, 100);
+        const final = Math.round(base * (1 - pct/100));
+        const pagado = Number(mPagado.value || 0);
+
+        const payload = {
+          rut: rutFmt,
+          planId,
+          planInicio: safe(mInicio.value,""),
+          planFin: safe(mFin.value,""),
+          planPrecioBase: base,
+          planDescPct: pct,
+          planPrecioFinal: final,
+          planPagado: pagado,
+          activo: (mActivar.value === "1")
+        };
+
+        await apiPost("users_plan_update", payload);
+
+        const u = USERS.find(x => String(x.rut||"") === String(renewTarget.rut));
+        if(u){
+          u.email = String(mReceiptEmail.value||u.email||"").trim();
+          await apiPost("USERS", u);
+        }
+
+        if(mSendReceipt.checked){
+          await sendReceiptNow();
+        }
+
+        msgRenew("✅ Renovación guardada", true);
+        closeModal("renewModalOv");
+        await refreshAll(false);
+      }catch(err){
+        console.error(err);
+        msgRenew("❌ " + (err && err.message ? err.message : String(err)), false);
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    // =======================
+    // CSV
+
+    // =======================
+    function exportCSV(){
+      const list = getFilteredUsers();
+      const rows = [["nombre","rut","email","rol","activo","planId","planTipo","planInicio","planFin","tenantId","createdBy"]];
+      list.forEach(u => rows.push([
+        u.nombre||"", u.rut||"", u.email||"", u.rol||"", isTruthy(u.activo) ? "1":"0",
+        u.planId||"", u.planTipo||"", u.planInicio||"", u.planFin||"",
+        u.tenantId||"", u.createdBy||""
+      ]));
+      const csv = rows.map(r => r.map(x => `"${String(x??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mahfit_users.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // =======================
+    // Modals & viewer
+    // =======================
+    function openModal(id){ document.getElementById(id).classList.add("open"); }
+    function closeModal(id){
+      document.getElementById(id).classList.remove("open");
+      if(id === "viewerModalOv"){
+        document.getElementById("viewerFrame").src = "about:blank";
+      }
+    }
+
+    function openGenericViewer(page, title, iconClass, params){
+      const icon = document.getElementById("viewerIcon");
+      icon.className = "fa-solid " + (iconClass || "fa-window-maximize");
+      document.getElementById("viewerTitle").textContent = title || "Visor";
+      const iframe = document.getElementById("viewerFrame");
+
+      // Construir URL con token actual + extra params (rutSocio, etc.)
+      const tok = (typeof getToken === "function") ? (getToken() || "") : "";
+      const url = new URL(page, window.location.href);
+      if(tok) url.searchParams.set("token", tok);
+      if(params && typeof params === "object"){
+        Object.keys(params).forEach(k => {
+          if(params[k] !== undefined && params[k] !== null && String(params[k]).trim() !== ""){
+            url.searchParams.set(k, String(params[k]));
+          }
+        });
+      }
+
+      iframe.classList.toggle("mobile-mode", !!mobileMode);
+      iframe.src = url.toString();
+      openModal("viewerModalOv");
+    }
+
+    function toggleMobileMode(){
+      mobileMode = !mobileMode;
+      const iframe = document.getElementById("viewerFrame");
+      iframe.classList.toggle("mobile-mode", !!mobileMode);
+    }
+
+    function logoutNow(){
+      try{
+        // app.js expone clearSession / logout? no seguro; hacemos hard logout
+        if(typeof setToken === "function") setToken("");
+        localStorage.removeItem("mahfit_token");
+        localStorage.removeItem("mahfit_user");
+        localStorage.removeItem("mahfit_session");
+      }catch(e){}
+      window.location.href = "index.html";
+    }
+
+    // =======================
+    // Init
+    // =======================
+    (async function init(){
+      // Solo SUPER_ADMIN
+      ME = requireAuth(["SUPER_ADMIN"]);
+      // Listeners modal
+      try{
+        const rolSel = document.getElementById("mRol");
+        if(rolSel) rolSel.addEventListener("change", syncModalRoleUI);
+      }catch(e){}
+
+      if(!ME) return;
+
+      try{
+        setApi(false, "Verificando…");
+        // Ping rápido (opcional)
+        setApi(true, "Conectado");
+      }catch(e){}
+
+      await refreshAll(false);
+      syncQuickRutHint();
+    })();
+  </script>
+</body>
+</html>
