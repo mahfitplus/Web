@@ -2,546 +2,451 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>MAH FIT | Acceso</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root{
-      --bg:#ffffff;
-      --surface:#ffffff;
-      --surface-2:#f8f9fa;
-      --surface-3:#f1f3f5;
-      --stroke:#e9ecef;
-      --stroke-2:#dee2e6;
+    :root {
+      /* Palette Moderna */
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --accent: #0ea5e9; 
+      
+      --bg-color: #f3f4f6;
+      --surface: rgba(255, 255, 255, 0.85);
+      --surface-hover: rgba(255, 255, 255, 0.95);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
 
-      --txt:#212529;
-      --txt-2:#495057;
-      --mut:#868e96;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-      --brand:#5a67d8;
-      --brand2:#7c5cff;
-      --brand-grad: linear-gradient(135deg, #5a67d8, #7c5cff);
-
-      --ok:#2bd576;
-      --bad:#ff6b6b;
-      --warn:#ffd166;
-
-      --radius:16px;
-      --radius-lg:20px;
-      --shadow:0 4px 12px rgba(0,0,0,.05);
-      --shadow-lg:0 8px 24px rgba(0,0,0,.08);
-      --shadow-xl:0 12px 32px rgba(0,0,0,.10);
-
-      --max:1150px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-top: env(safe-area-inset-top, 0px);
-      --transition: all .2s ease;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    *{ box-sizing:border-box; margin:0; padding:0; }
-    html,body{
-      height:100%;
-      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", sans-serif;
-      background: var(--bg);
-      color: var(--txt);
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      /* Fondo Animado */
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(239, 68, 68, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      background-size: cover;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      line-height:1.5;
-    }
-    a{ color:inherit; text-decoration:none; }
-    button{ font:inherit; cursor:pointer; border:none; background:none; }
-
-    body{
-      background:
-        radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.10), transparent 60%),
-        radial-gradient(900px 700px at 100% 0%, rgba(90,103,216,.10), transparent 55%),
-        linear-gradient(180deg, #fff, #fbfcff);
     }
 
-    .wrap{
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: calc(14px + var(--safe-top)) 18px calc(26px + var(--safe-bottom));
-    }
-
-    /* =========================
-   TOPBAR PRO
-   ========================= */
-.topbar{
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 10px 0;
-  background: rgba(255,255,255,.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 10px 30px rgba(0,0,0,.05);
-}
-
-.topbar-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
-
-/* Logo left */
-.brand{
-  display:flex;
-  align-items:baseline;
-  gap: 10px;
-  min-width: 220px;
-}
-.brandLogo{
-  display:flex;
-  align-items:baseline;
-  gap:6px;
-  font-weight: 1000;
-  letter-spacing: 1px;
-  line-height: 1;
-}
-.brandLogo .mah{ color:#111827; font-size:20px; padding-left: 5px; }
-.brandLogo .fit{ color:#23a6ff; font-size:20px; padding-left: 5px; }
-
-.brandText span{
-  display:block;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(0,0,0,.45);
-  margin-left: 2px;
-}
-
-/* Right side chips */
-.topRight{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  
-  flex-wrap: wrap;
-  justify-content:flex-end;
-}
-
-.statusChip,
-.sectionChip{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.85);
-  border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 8px 22px rgba(0,0,0,.06);
-  color: rgba(0,0,0,.72);
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.sectionChip{
-  background: rgba(90,103,216,.10);
-  border-color: rgba(90,103,216,.18);
-  color: rgba(60,65,190,.92);
-}
-.sectionChip i{
-  font-size: 13px;
-}
-
-/* DB DOT (compatible con app.js) */
-.db-dot{
-  width:10px; height:10px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.30);
-  box-shadow: 0 0 0 4px rgba(0,0,0,.06);
-}
-.db-dot.connecting{
-  background: #ffd166;
-  box-shadow: 0 0 0 4px rgba(255,209,102,.28);
-  animation: dbPulse 1.0s ease-in-out infinite;
-}
-.db-dot.connected{
-  background: #2bd576;
-  box-shadow: 0 0 0 4px rgba(43,213,118,.25);
-  animation:none;
-}
-.db-dot.error{
-  background: #ff6b6b;
-  box-shadow: 0 0 0 4px rgba(255,107,107,.22);
-  animation:none;
-}
-@keyframes dbPulse{
-  0%,100%{ transform:scale(1); opacity:.75; }
-  50%{ transform:scale(1.25); opacity:1; }
-}
-
-.statusText{
-  font-weight: 900;
-  letter-spacing: .1px;
-}
-
-/* Mobile tweak */
-@media(max-width:520px){
-  .brand{ min-width:auto; }
-  .brandText{ display:none; }   /* deja solo MAH FIT en móvil */
-  .statusChip, .sectionChip{ padding: 7px 10px; }
-}
-
-
-    /* app.js usa #dbDot y #dbText */
-    .db-dot{
-      width: 10px; height: 10px; border-radius: 999px;
-      background: var(--mut);
-      position: relative;
-      flex-shrink: 0;
-    }
-    .db-dot::after{
-      content:"";
-      position:absolute;
-      inset:-3px;
-      border-radius:999px;
-      background: rgba(134,142,150,.18);
-    }
-    .db-dot.connecting{ background: var(--warn); }
-    .db-dot.connecting::after{
-      background: rgba(255,209,102,.22);
-      animation: dbPulse 1.0s ease-in-out infinite;
-    }
-    .db-dot.connected{ background: var(--ok); }
-    .db-dot.connected::after{ background: rgba(43,213,118,.20); animation:none; }
-    .db-dot.error{ background: var(--bad); }
-    .db-dot.error::after{ background: rgba(255,107,107,.22); animation:none; }
-
-    @keyframes dbPulse{
-      0%,100%{ transform:scale(1); opacity:.75; }
-      50%{ transform:scale(1.25); opacity:1; }
-    }
-
-    .badge{
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--surface-2);
-      color: var(--txt-2);
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    /* CONTENIDO */
-    .heroTitle{ display:flex; flex-direction:column; gap:8px; margin: 10px 0 16px; }
-    .heroTitle h1{ font-size: 28px; letter-spacing: -0.3px; line-height:1.1; }
-    .heroTitle p{ color: var(--mut); font-weight: 650; max-width: 72ch; }
-
-    .card{
-      background: var(--surface);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      transition: var(--transition);
-    }
-    .card:hover{ box-shadow: var(--shadow-lg); }
-
-    .head{
-      padding: 16px 16px 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      border-bottom: 1px solid var(--stroke);
-    }
-    .head strong{ font-weight: 1000; letter-spacing: -0.2px; color: var(--txt); }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--surface-2);
-      color: var(--txt-2);
-      font-weight: 900;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .body{ padding: 16px; }
-
-    .loginOnly{ max-width: 760px; }
-
-    .form label{
-      display:block;
-      margin: 10px 0 6px;
-      color: var(--mut);
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing:.2px;
-    }
-    .input{
-      width:100%;
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke-2);
-      background: #fff;
-      color: var(--txt);
-      outline:none;
-      font-weight: 750;
-      transition: var(--transition);
-    }
-    .input:focus{
-      border-color: rgba(90,103,216,.55);
-      box-shadow: 0 0 0 3px rgba(90,103,216,.12);
-    }
-    .input::placeholder{ color: rgba(134,142,150,.85); font-weight: 650; }
-
-    .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media(max-width:520px){ .row{ grid-template-columns: 1fr; } }
-
-    .btn{
-      border: 1px solid var(--stroke-2);
-      background: var(--surface-2);
-      color: var(--txt);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight: 950;
-      letter-spacing:.1px;
-      transition: var(--transition);
-      user-select:none;
-      text-decoration:none;
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      gap: 8px;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-      background: var(--surface-3);
-    }
-    .btn:active{ transform: translateY(0px); }
-
-    .btn.primary{
-      border-color: rgba(90,103,216,.35);
-      background: var(--brand-grad);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(90,103,216,.25);
-    }
-    .btn.primary:hover{ box-shadow: 0 6px 16px rgba(90,103,216,.35); }
-
-    .btn.ghost{
-      background: #fff;
-      color: var(--txt-2);
-      border-color: var(--stroke-2);
-    }
-    .btn.ghost:hover{
-      background: var(--surface-2);
-      border-color: rgba(90,103,216,.25);
-    }
-    .btn.block{ width:100%; }
-
-    .miniActions{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    .miniActions .btn{ flex: 1; min-width: 190px; }
-
-    .hr{ height:1px; background: var(--stroke); margin: 14px 0; }
-
-    .notice{
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke);
-      background: var(--surface-2);
-      color: var(--txt-2);
-      font-size: 13px;
-      line-height: 1.45;
-      font-weight: 650;
-    }
-
-    .msg{ margin-top: 10px; font-size: 13px; font-weight: 950; }
-    .msg.ok{ color: #1f7a49; }
-    .msg.bad{ color: #8a2a2a; }
-
-    .footerHint{ margin-top: 12px; color: var(--mut); font-weight: 650; font-size: 12px; line-height: 1.4; }
-
-    /* botón reset discreto */
-    .supportLinkWrap{ margin-top: 10px; display:flex; justify-content:center; }
-    .supportLink{
-      background: transparent;
-      border:none;
-      color: var(--mut);
-      font-weight: 800;
-      font-size: 12px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      cursor:pointer;
-      transition: var(--transition);
-    }
-    .supportLink:hover{
-      background: var(--surface-2);
-      color: var(--txt-2);
-      box-shadow: var(--shadow);
-      transform: translateY(-1px);
-    }
-    .supportLink i{ color: var(--brand); }
-
-    /* =========================
-       MODALS (como tu captura)
-       ========================= */
-    .modalBack{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
+    /* === TOPBAR === */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
       z-index: 50;
-    }
-    .modalBack.show{ display:flex; }
-    .modal{
-      width: min(620px, 100%);
-      background: #fff;
-      border: 1px solid var(--stroke);
-      border-radius: 18px;
-      box-shadow: var(--shadow-xl);
-      overflow:hidden;
-      animation: slideUp .2s ease;
-    }
-    @keyframes slideUp{
-      from{ transform: translateY(12px); opacity: 0; }
-      to{ transform: translateY(0); opacity: 1; }
-    }
-    .modalHead{
-      padding: 16px 16px 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      border-bottom: 1px solid var(--stroke);
-      gap: 12px;
-    }
-    .modalHead strong{ font-weight: 1000; letter-spacing: -0.2px; }
-    .modalSub{
-      color: var(--mut);
-      font-weight: 650;
-      font-size: 13px;
-      margin-top: 4px;
-      line-height: 1.35;
-    }
-    .modalBody{ padding: 16px; }
-    .modalFoot{
-      padding: 12px 16px 16px;
-      display:flex;
-      justify-content:flex-end;
-      gap: 10px;
-      border-top: 1px solid var(--stroke);
-      flex-wrap: wrap;
-    }
-    .closeBtn{
-      width: 38px;height: 38px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke);
-      background: var(--surface-2);
-      display:flex;align-items:center;justify-content:center;
-      font-size: 18px;
-      color: var(--txt-2);
-      transition: var(--transition);
-    }
-    .closeBtn:hover{
-      background: var(--surface-3);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.5);
     }
 
-    /* ====== Password modal extras (del pw.html) ====== */
-    .pw-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
     }
-    @media (max-width: 720px){ .pw-grid{ grid-template-columns: 1fr; } }
+    .brandLogo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brandLogo .mah { color: var(--text-main); }
+    .brandLogo .fit { 
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brandText span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
 
-    .field{ display:flex; flex-direction:column; gap:8px; }
-    .hint{
+    .topRight {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .statusChip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 20px;
       font-size: 12px;
-      color: var(--mut);
-      margin-top: 2px;
-      line-height: 1.35;
-      font-weight: 650;
+      font-weight: 600;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
     }
-    .inputWrap{ position: relative; display:flex; align-items:center; }
-    .inputWrap input{
+
+    /* DB DOT */
+    .db-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      position: relative;
+    }
+    .db-dot::after {
+      content: ""; position: absolute; inset: -3px;
+      border-radius: 50%; opacity: 0.5;
+    }
+    .db-dot.connecting { background: var(--warning); }
+    .db-dot.connecting::after { background: var(--warning); animation: pulse 1.5s infinite; }
+    .db-dot.connected { background: var(--success); }
+    .db-dot.connected::after { background: var(--success); }
+    .db-dot.error { background: var(--danger); }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+
+    /* === MAIN LAYOUT === */
+    .main-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 90px 20px 40px; /* Top padding > topbar height */
       width: 100%;
-      padding: 12px 42px 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke-2);
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      perspective: 1000px;
+    }
+
+    /* === CARD DESIGN === */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      box-shadow: var(--shadow-xl);
+      animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .heroTitle {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .heroTitle h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .heroTitle p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* === FORM ELEMENTS === */
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+    
+    .input {
+      width: 100%;
+      padding: 12px 16px 12px 42px; /* Espacio para el icono */
+      border-radius: var(--radius-md);
+      border: 2px solid transparent; /* Truco para el borde gradiente o solido */
       background: #fff;
-      color: var(--txt);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08); /* Borde sutil */
+      font-size: 15px;
+      color: var(--text-main);
+      font-family: inherit;
+      transition: var(--transition);
       outline: none;
-      font-weight: 750;
-      transition: var(--transition);
     }
-    .inputWrap input:focus{
-      border-color: rgba(90,103,216,.55);
-      box-shadow: 0 0 0 3px rgba(90,103,216,.12);
+    .input:hover {
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+    }
+    .input:focus {
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+    }
+    .input:focus + i {
+      color: var(--primary);
     }
 
-    .toggleBtn{
-      position:absolute;
-      right: 8px;
-      height: 34px;
-      width: 34px;
-      border-radius: 10px;
-      border: 1px solid var(--stroke-2);
-      background: var(--surface-2);
-      color: var(--txt-2);
-      display:grid;
-      place-items:center;
+    /* Botones */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 15px;
       cursor: pointer;
-      user-select:none;
+      border: none;
       transition: var(--transition);
-    }
-    .toggleBtn:hover{
-      background: var(--surface-3);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
+      text-decoration: none;
+      width: 100%;
     }
 
-    /* Mensaje pw estilo “cajita” como tu pw.html */
-    #pwMsg.msg{
-      border-radius: 12px;
-      padding: 10px 12px;
-      border: 1px solid var(--stroke);
-      background: var(--surface-2);
-      color: var(--txt-2);
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
-    #pwMsg.msg.ok{
-      border-color: rgba(43,213,118,.35);
-      background: rgba(43,213,118,.10);
-      color: #1f7a49;
+    .btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.4);
     }
-    #pwMsg.msg.bad{
-      border-color: rgba(255,107,107,.35);
-      background: rgba(255,107,107,.10);
-      color: #8a2a2a;
+    .btn.primary:active { transform: translateY(0); }
+    /* Estado deshabilitado del botón */
+    .btn.primary:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+        filter: grayscale(0.2);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 8px;
+    }
+    .btn.ghost:hover {
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .miniActions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 10px;
+    }
+
+    /* Mensajes */
+    .msg {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      display: none; /* Oculto por defecto, JS lo muestra */
+    }
+    .msg:not(:empty) { display: block; animation: fadeIn 0.3s ease; }
+    .msg.ok { background: rgba(16, 185, 129, 0.1); color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .msg.bad { background: rgba(239, 68, 68, 0.1); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    /* Separadores y notas */
+    .hr {
+      height: 1px;
+      background: rgba(0,0,0,0.06);
+      margin: 24px 0;
+    }
+
+    .notice {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      background: rgba(243, 244, 246, 0.7);
+      padding: 12px;
+      border-radius: var(--radius-md);
+      line-height: 1.4;
+    }
+
+    .supportLinkWrap {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .supportLink {
+      background: none; border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: var(--transition);
+    }
+    .supportLink:hover { background: rgba(0,0,0,0.05); color: var(--text-main); }
+
+    /* === MODALS === */
+    .modalBack {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.3); /* Backdrop oscuro sutil */
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: none; /* JS controla esto */
+      align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modalBack.show {
+      display: flex; opacity: 1;
+    }
+    
+    .modal {
+      background: #fff;
+      width: 100%; max-width: 500px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modalBack.show .modal { transform: scale(1); }
+
+    .modalHead {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex; justify-content: space-between; align-items: flex-start;
+      background: #fafafa;
+    }
+    .modalHead strong { font-size: 18px; color: var(--text-main); display: block; margin-bottom: 4px; }
+    .modalSub { font-size: 13px; color: var(--text-muted); line-height: 1.3; }
+    
+    .closeBtn {
+      background: transparent; border: none;
+      font-size: 20px; color: var(--text-muted);
+      cursor: pointer; width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .closeBtn:hover { background: rgba(0,0,0,0.05); color: var(--danger); }
+
+    .modalBody { padding: 24px; }
+    .modalFoot {
+      padding: 16px 24px;
+      background: #fafafa;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex; justify-content: flex-end; gap: 12px;
+    }
+
+    /* Modal inputs override */
+    .modalBody .input { padding-left: 16px; } /* Sin iconos en modal inputs por defecto */
+    .modalBody .inputWrap { position: relative; }
+    .toggleBtn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; padding: 4px;
+    }
+
+    /* Login Button States (Loader) */
+    #loginBtn { position: relative; overflow: hidden; }
+    #loginBtn .btn-loader, #loginBtn .btn-result {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: inherit;
+    }
+    /* Clases de control para el botón */
+    #loginBtn.loading .btn-content { opacity: 0; }
+    #loginBtn.loading .btn-loader { display: flex !important; }
+    
+    #loginBtn.success { background: var(--success); }
+    #loginBtn.success .btn-content { opacity: 0; }
+    #loginBtn.success .btn-result { display: flex !important; }
+    
+    #loginBtn.error { background: var(--danger); }
+    #loginBtn.error .btn-content { opacity: 0; }
+    #loginBtn.error .btn-result { display: flex !important; }
+
+    /* Responsive adjustments */
+    @media(max-width: 520px) {
+      .topbar { padding: 0 16px; }
+      .brandText { display: none; }
+      .glass-card { padding: 24px; }
+      .miniActions { flex-direction: column; gap: 0; }
+      .miniActions .btn { justify-content: flex-start; }
+      .modalHead { padding: 16px; }
+      .modalBody { padding: 16px; }
     }
   </style>
+
+  <script>
+    // Configuraciones globales
+    window.MAHFIT_API_URL = "https://script.google.com/macros/s/AKfycbwxxetYZHZbHWou4jFE7_yOs-7yaz_jHVuXbHxV87JqU8kc7gk3s9PLrMQ5n0djk5RzdA/exec";
+    window.MAHFIT_BOOT_MODE = "none"; 
+  </script>
 </head>
 
 <body data-page="index">
-  <div class="wrap">
-    <!-- TOPBAR -->
-   <header class="topbar">
-  <div class="topbar-row">
 
+  <nav class="topbar">
     <div class="brand">
       <div class="brandLogo" aria-label="MAH FIT">
         <span class="mah">MAH</span><span class="fit">FIT</span>
@@ -552,516 +457,367 @@
     </div>
 
     <div class="topRight">
-      <!-- ✅ Estado conexión (no tocar IDs) -->
       <div class="statusChip" title="Estado de conexión">
         <span id="dbDot" class="db-dot connecting"></span>
-        <span id="dbText" class="statusText">Conectando…</span>
-      </div>
-
-      <!-- ✅ Sección actual -->
-      <div class="sectionChip">
-        <i class="fa-solid fa-right-to-bracket"></i>
-        <span>Acceso</span>
+        <span id="dbText" class="statusText" style="margin-left:4px;">Conectando…</span>
       </div>
     </div>
+  </nav>
 
-  </div>
-</header>
-
-
-    <!-- CONTENIDO -->
-    <main class="loginOnly">
+  <div class="main-wrap">
+    <div class="login-container">
+      
       <div class="heroTitle">
-        <h1>Tu plataforma de entrenamiento</h1>
-        <p>
-          Ingresa con tu <b>RUT/Usuario</b> y tu contraseña.
-          Si no puedes acceder, puedes cambiar tu contraseña o recuperar tu acceso.
-        </p>
+        <h1>Bienvenido</h1>
+        <p>Sistema de seguimiento para tus rutinas y pautas alimentarias.</p>
       </div>
 
-      <section>
-        <div class="card">
-          <div class="head">
-            <strong>Login</strong>
-            <span class="pill">RUT + clave</span>
+      <div class="glass-card">
+        <form id="loginForm" autocomplete="on">
+          
+          <div class="form-group">
+            <label for="loginRut">Usuario o RUT</label>
+            <div class="input-wrapper">
+              <input id="loginRut" class="input" placeholder="Ej: 12345678-9" autocomplete="username" />
+              <i class="fas fa-user"></i>
+            </div>
           </div>
 
-          <div class="body">
-            <form id="loginForm" class="form" autocomplete="on">
-              <div class="row">
-                <div>
-                  <label>Usuario o RUT</label>
-                  <input id="loginRut" class="input" placeholder="Ej: 12345678-9" autocomplete="username" />
-                </div>
-                <div>
-                  <label>Contraseña</label>
-                  <input id="loginPass" class="input" type="password" placeholder="Tu contraseña" autocomplete="current-password" />
-                </div>
-              </div>
-
-              <button class="btn primary block" type="submit" style="margin-top:14px;">
-                <i class="fas fa-right-to-bracket"></i> Ingresar
-              </button>
-
-              <div class="miniActions">
-                <button id="btnPwModal" class="btn ghost" type="button">
-                  <i class="fas fa-key"></i> Cambiar contraseña
-                </button>
-                <button id="btnForgot" class="btn ghost" type="button">
-                  <i class="fas fa-envelope"></i> Olvidé mi contraseña
-                </button>
-              </div>
-
-              <div id="msgLogin" class="msg"></div>
-
-              <div class="hr"></div>
-
-              <div class="notice">
-                <b>Registro:</b> Tu cuenta la crea administración (funcionario).<br/>
-                Si aún no tienes acceso, solicita tu registro.
-              </div>
-
-              <div class="supportLinkWrap">
-                <button id="resetBtn" class="supportLink" type="button">
-                  <i class="fas fa-rotate"></i> ¿No carga? Reiniciar datos
-                </button>
-              </div>
-
-              <div class="footerHint">
-                Tip: si cambiaste tu contraseña recientemente, vuelve a ingresar con la nueva clave.
-              </div>
-            </form>
+          <div class="form-group">
+            <label for="loginPass">Contraseña</label>
+            <div class="input-wrapper">
+              <input id="loginPass" class="input" type="password" placeholder="Tu contraseña" autocomplete="current-password" />
+              <i class="fas fa-lock"></i>
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
+
+          <button id="loginBtn" class="btn primary" type="submit" style="margin-top: 10px;">
+            <span class="btn-content">
+              <span>Ingresar a mi cuenta</span> <i class="fas fa-arrow-right" style="font-size:12px;"></i>
+            </span>
+            <span class="btn-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+            <span class="btn-result" style="display:none;"><i class="fas fa-check"></i></span>
+          </button>
+
+          <div class="miniActions">
+            <button id="btnForgot" class="btn ghost" type="button">
+              ¿Olvidaste tu contraseña?
+            </button>
+            <button id="btnPwModal" class="btn ghost" type="button">
+              Cambiar clave
+            </button>
+          </div>
+
+          <div id="msgLogin" class="msg"></div>
+
+          <div class="hr"></div>
+
+          <div class="notice">
+            <i class="fas fa-info-circle"></i> 
+            Si aún no tienes cuenta, solicita tu registro en administración.
+          </div>
+
+          <div class="supportLinkWrap">
+            <button id="resetBtn" class="supportLink" type="button">
+              <i class="fas fa-rotate-right"></i> Recargar datos
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
   </div>
 
-  <!-- Modal: Recuperar acceso -->
   <div id="forgotBack" class="modalBack" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal" role="dialog" aria-modal="true">
       <div class="modalHead">
         <div>
           <strong id="forgotTitle">Recuperar acceso</strong>
-          <div class="modalSub">
-            Ingresa tu RUT y el correo asociado a tu cuenta. Si coinciden, te enviaremos tu usuario y contraseña.
-          </div>
+          <div class="modalSub">Te enviaremos tus credenciales a tu correo.</div>
         </div>
-        <button id="forgotClose" class="closeBtn" type="button" aria-label="Cerrar">✕</button>
+        <button id="forgotClose" class="closeBtn" type="button">✕</button>
       </div>
 
       <div class="modalBody">
-        <div class="notice">
-          <b>Importante:</b> Por seguridad, solo enviamos el acceso al correo registrado oficialmente en tu cuenta.
+        <div class="form-group">
+          <label>Tu RUT / Usuario</label>
+          <input id="forgotRut" class="input" placeholder="Ej: 12345678-9" style="padding-left:16px;" />
+        </div>
+        <div class="form-group">
+          <label>Correo asociado</label>
+          <input id="forgotEmail" class="input" placeholder="Ej: nombre@correo.com" style="padding-left:16px;" />
         </div>
 
-        <div class="hr"></div>
-
-        <label style="display:block;margin:10px 0 6px;color:var(--mut);font-weight:900;font-size:12px;">
-          Tu RUT/Usuario
-        </label>
-        <input id="forgotRut" class="input" placeholder="Ej: 12345678-9" />
-
-        <label style="display:block;margin:10px 0 6px;color:var(--mut);font-weight:900;font-size:12px;">
-          Correo asociado
-        </label>
-        <input id="forgotEmail" class="input" placeholder="Ej: ma*****@gmail.com" />
-
-        <div id="forgotHint" class="footerHint"></div>
+        <div id="forgotHint" style="font-size:12px; color:var(--text-muted); margin-bottom:10px;"></div>
         <div id="forgotMsg" class="msg"></div>
       </div>
 
       <div class="modalFoot">
-        <button id="forgotSend" class="btn primary" type="button">
-          <i class="fas fa-paper-plane"></i> Enviar acceso
-        </button>
-        <button id="goPwFromForgot" class="btn ghost" type="button">
-          <i class="fas fa-key"></i> Cambiar contraseña
-        </button>
+        <button id="goPwFromForgot" class="btn ghost" type="button" style="width:auto;">Cambiar clave</button>
+        <button id="forgotSend" class="btn primary" type="button" style="width:auto;">Enviar acceso</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Cambiar contraseña (lógica igual a tu pw.html) -->
   <div id="pwBack" class="modalBack" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <div class="modal" role="dialog" aria-modal="true">
       <div class="modalHead">
         <div>
           <strong id="pwTitle">Cambiar contraseña</strong>
-          <div class="modalSub">Ingresa tu RUT/Usuario, tu contraseña actual y define una nueva.</div>
+          <div class="modalSub">Define una nueva clave segura.</div>
         </div>
-        <button id="pwClose" class="closeBtn" type="button" aria-label="Cerrar">✕</button>
+        <button id="pwClose" class="closeBtn" type="button">✕</button>
       </div>
 
       <div class="modalBody">
-        <div class="notice">
-          <b>Consejo:</b> usa 8+ caracteres y evita 1234/rut. Si olvidaste tu clave, usa “Recuperar acceso”.
-        </div>
-
         <form id="pwForm" autocomplete="off">
-          <div class="pw-grid">
-            <div class="field">
+          <div style="display:grid; gap:16px;">
+            <div class="form-group" style="margin:0;">
               <label>RUT / Usuario</label>
-              <div class="inputWrap">
-                <input id="pwRut" placeholder="Ej: 12345678-9" required />
-              </div>
-              <div class="hint">Debe coincidir con tu cuenta registrada.</div>
+              <input id="pwRut" class="input" placeholder="Ej: 12345678-9" required style="padding-left:16px;" />
             </div>
 
-            <div class="field">
+            <div class="form-group" style="margin:0;">
               <label>Contraseña actual</label>
               <div class="inputWrap">
-                <input id="pwOld" placeholder="Tu contraseña actual" type="password" required />
-                <button class="toggleBtn" type="button" data-toggle="pwOld" aria-label="Mostrar/Ocultar">👁</button>
+                <input id="pwOld" class="input" placeholder="Actual" type="password" required style="padding-left:16px;" />
+                <button class="toggleBtn" type="button" data-toggle="pwOld">👁</button>
               </div>
             </div>
 
-            <div class="field">
+            <div class="form-group" style="margin:0;">
               <label>Nueva contraseña</label>
               <div class="inputWrap">
-                <input id="pwNew" placeholder="Mín. 4 caracteres" type="password" required />
-                <button class="toggleBtn" type="button" data-toggle="pwNew" aria-label="Mostrar/Ocultar">👁</button>
+                <input id="pwNew" class="input" placeholder="Nueva clave" type="password" required style="padding-left:16px;" />
+                <button class="toggleBtn" type="button" data-toggle="pwNew">👁</button>
               </div>
-              <div class="hint" id="pwStrength">Tip: mezcla letras y números para mayor seguridad.</div>
+              <div class="hint" id="pwStrength" style="font-size:11px; color:var(--primary); margin-top:4px;">Mezcla letras y números.</div>
             </div>
 
-            <div class="field">
+            <div class="form-group" style="margin:0;">
               <label>Repetir nueva contraseña</label>
               <div class="inputWrap">
-                <input id="pwNew2" placeholder="Repite la nueva contraseña" type="password" required />
-                <button class="toggleBtn" type="button" data-toggle="pwNew2" aria-label="Mostrar/Ocultar">👁</button>
+                <input id="pwNew2" class="input" placeholder="Repite la clave" type="password" required style="padding-left:16px;" />
+                <button class="toggleBtn" type="button" data-toggle="pwNew2">👁</button>
               </div>
-              <div class="hint" id="pwMatchHint">Asegúrate que coincidan.</div>
+              <div class="hint" id="pwMatchHint" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
             </div>
           </div>
-
+          
           <div id="pwMsg" class="msg" style="display:none;"></div>
-
-          <div class="modalFoot" style="padding-left:0; padding-right:0; border-top:none; margin-top: 12px;">
-            <button id="pwGoForgot" class="btn ghost" type="button">
-              <i class="fas fa-envelope"></i> Recuperar acceso
-            </button>
-            <button class="btn primary" id="pwSave" type="submit">
-              <i class="fas fa-floppy-disk"></i> Guardar nueva contraseña
-            </button>
+          
+          <div class="modalFoot" style="margin-top:20px; padding:0; border:none; background:white;">
+            <button id="pwGoForgot" class="btn ghost" type="button" style="width:auto;">Recuperar</button>
+            <button class="btn primary" id="pwSave" type="submit" style="width:auto;">Guardar cambios</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- app.js -->
   <script>window.MAHFIT_BOOT_MODE="login";</script>
-  <script src="assets/app.js"></script>
-
   <script>
   (function(){
-    // Fallback loader: si assets/app.js no cargó (paths distintos), intentamos rutas alternativas.
-    const candidates = ["./assets/app.js","../assets/app.js","Web/assets/app.js","/Web/assets/app.js"];
+    const candidates = ["./assets/app.js", "./app.js", "../assets/app.js", "Web/assets/app.js"];
     function load(src){
       return new Promise((resolve, reject)=>{
         const s=document.createElement("script");
-        s.src=src;
-        s.onload=()=>resolve(src);
-        s.onerror=()=>reject(src);
+        s.src=src; s.onload=()=>resolve(src); s.onerror=()=>reject(src);
         document.head.appendChild(s);
       });
     }
     async function ensure(){
-      if(typeof window.requireAuth==="function" && typeof window.apiGet==="function"){
-        document.dispatchEvent(new Event("appjs-ready"));
-        return;
-      }
+      if(typeof window.requireAuth==="function") return; // Ya cargado
       for(const p of candidates){
-        try{
-          await load(p);
-          if(typeof window.requireAuth==="function" && typeof window.apiGet==="function"){
-            document.dispatchEvent(new Event("appjs-ready"));
-            return;
-          }
-        }catch(e){}
+        try{ await load(p); return; }catch(e){}
       }
-      console.warn("MAH FIT: app.js no pudo cargarse en ninguna ruta.");
-      document.dispatchEvent(new Event("appjs-missing"));
+      console.warn("MAH FIT: app.js no encontrado.");
     }
-    // Si el script principal cargó bien, esto será instantáneo.
     ensure();
   })();
   </script>
 
-
   <script>
     (function(){
+      // === ELEMENTOS GLOBALES ===
       const resetBtn = document.getElementById("resetBtn");
       const msgLogin = document.getElementById("msgLogin");
-
+      const loginBtn = document.getElementById("loginBtn");
+      const loginForm = document.getElementById("loginForm");
+      
       function setMsg(text, ok){
         if(!msgLogin) return;
         msgLogin.className = "msg " + (ok ? "ok" : "bad");
         msgLogin.textContent = text;
       }
 
+      // === LÓGICA DE ESTADO DEL BOTÓN (CARGANDO/RESET) ===
+      
+      // 1. Al enviar formulario: Mostrar carga y bloquear
+      loginForm?.addEventListener("submit", function(){
+        loginBtn.classList.add("loading");
+        loginBtn.disabled = true;
+      });
+
+      // 2. FUNCIÓN DE RESET DEL BOTÓN
+      function resetLoginButton() {
+        if(loginBtn.disabled) {
+          loginBtn.classList.remove("loading", "success", "error");
+          loginBtn.disabled = false;
+        }
+      }
+
+      // 3. OBSERVER: Vigila si aparece un error en el mensaje
+      // Si el app.js escribe un error en msgLogin, reseteamos el botón.
+      if(msgLogin){
+        const observer = new MutationObserver(function(mutations){
+          mutations.forEach(function(mutation){
+            if(msgLogin.style.display !== 'none' && msgLogin.classList.contains('bad')){
+              // Error detectado visualmente -> Soltar botón
+              resetLoginButton();
+              // Opcional: poner estado visual de error en el botón brevemente
+              loginBtn.classList.add("error");
+              setTimeout(()=> loginBtn.classList.remove("error"), 1000);
+            }
+          });
+        });
+        observer.observe(msgLogin, { attributes: true, attributeFilter: ['style', 'class'], childList: true, characterData: true });
+      }
+
+      // 4. RESET AL ESCRIBIR: Si el usuario corrige datos, reactivar botón
+      document.getElementById("loginRut")?.addEventListener("input", resetLoginButton);
+      document.getElementById("loginPass")?.addEventListener("input", resetLoginButton);
+
+
+      // === RESET LOCAL ===
       resetBtn?.addEventListener("click", ()=>{
         try{
-          localStorage.removeItem("mahfit_users");
-          localStorage.removeItem("mahfit_planes");
-          localStorage.removeItem("mahfit_rutinas");
-          localStorage.removeItem("mahfit_rutinas_v2");
-          localStorage.removeItem("mahfit_plantillas_v2");
-          localStorage.removeItem("mahfit_session");
+          localStorage.clear();
           setMsg("✅ Datos reiniciados. Recargando…", true);
           setTimeout(()=> location.reload(), 450);
-        }catch(e){
-          setMsg("❌ No se pudo reiniciar.", false);
-        }
+        }catch(e){ setMsg("❌ Error al reiniciar.", false); }
       });
 
-      // Helpers modal
-      function show(backEl){
-        backEl.classList.add("show");
-        backEl.style.display = "flex";
-        backEl.setAttribute("aria-hidden","false");
+      // === MODAL HELPERS ===
+      function show(el){ 
+        el.classList.add("show"); 
+        el.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
       }
-      function hide(backEl){
-        backEl.classList.remove("show");
-        backEl.style.display = "none";
-        backEl.setAttribute("aria-hidden","true");
-        document.body.style.overflow = "auto";
+      function hide(el){ 
+        el.classList.remove("show"); 
+        el.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
       }
 
-      // ==========================
-      // MODAL: RECUPERAR ACCESO
-      // ==========================
+      // --- FORGOT PASSWORD ---
       const forgotBack = document.getElementById("forgotBack");
-      const btnForgot = document.getElementById("btnForgot");
-      const forgotClose = document.getElementById("forgotClose");
-      const forgotRut = document.getElementById("forgotRut");
-      const forgotEmail = document.getElementById("forgotEmail");
-      const forgotSend = document.getElementById("forgotSend");
-      const forgotHint = document.getElementById("forgotHint");
-      const forgotMsg = document.getElementById("forgotMsg");
-
-      function setForgot(text, ok){
-        forgotMsg.className = "msg " + (ok ? "ok" : "bad");
-        forgotMsg.textContent = text;
-      }
-
-      function openForgot(){
+      document.getElementById("btnForgot")?.addEventListener("click", ()=>{
         show(forgotBack);
-
-        const preRut = (document.getElementById("loginRut")?.value || "").trim();
-        if(preRut) forgotRut.value = preRut;
-
-        forgotHint.textContent = "";
-        forgotMsg.textContent = "";
-        setTimeout(()=> forgotRut.focus(), 50);
-
-        try{
-          const users = window.getUsers ? window.getUsers() : [];
-          const u = users.find(x => String(x.rut||"").trim().toUpperCase() === String(forgotRut.value||"").trim().toUpperCase());
-          if(u && u.email){
-            const em = String(u.email).trim();
-            const at = em.indexOf("@");
-            let masked = em;
-            if(at > 2) masked = em.slice(0,2) + "***" + em.slice(at);
-            forgotHint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
-          }
-        }catch(e){}
-      }
-
-      btnForgot?.addEventListener("click", openForgot);
-      forgotClose?.addEventListener("click", ()=> hide(forgotBack));
-      forgotBack?.addEventListener("click", (e)=>{ if(e.target === forgotBack) hide(forgotBack); });
-
-      forgotRut?.addEventListener("input", ()=>{
-        forgotHint.textContent = "";
-        try{
-          const rut = String(forgotRut.value||"").trim().toUpperCase();
-          const users = window.getUsers ? window.getUsers() : [];
-          const u = users.find(x => String(x.rut||"").trim().toUpperCase() === rut);
-          if(u && u.email){
-            const em = String(u.email).trim();
-            const at = em.indexOf("@");
-            let masked = em;
-            if(at > 2) masked = em.slice(0,2) + "***" + em.slice(at);
-            forgotHint.textContent = "Correo asociado (pista): " + masked + " — completa tu correo real.";
-          }
-        }catch(e){}
+        const rutVal = document.getElementById("loginRut")?.value;
+        if(rutVal) document.getElementById("forgotRut").value = rutVal;
       });
+      document.getElementById("forgotClose")?.addEventListener("click", ()=> hide(forgotBack));
+      forgotBack?.addEventListener("click", (e)=>{ if(e.target===forgotBack) hide(forgotBack); });
 
+      const forgotSend = document.getElementById("forgotSend");
+      const forgotMsg = document.getElementById("forgotMsg");
+      
       forgotSend?.addEventListener("click", async ()=>{
-        const rut = String(forgotRut.value||"").trim();
-        const email = String(forgotEmail.value||"").trim();
-
-        if(!rut){ setForgot("❌ Debes ingresar tu RUT/Usuario.", false); return; }
-        if(!email){ setForgot("❌ Debes ingresar el correo asociado.", false); return; }
-
-        if(!window.apiPost){
-          setForgot("❌ Sin conexión con el servidor (apiPost no disponible).", false);
-          return;
+        const rut = document.getElementById("forgotRut").value.trim();
+        const email = document.getElementById("forgotEmail").value.trim();
+        if(!rut || !email) {
+          forgotMsg.className="msg bad"; forgotMsg.textContent="Faltan datos."; return;
         }
-
-        forgotSend.disabled = true;
-        forgotSend.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
-
-        try{
+        
+        if(!window.apiPost) { forgotMsg.textContent="Sin conexión."; return; }
+        
+        forgotSend.disabled = true; forgotSend.textContent = "Enviando...";
+        try {
           await window.apiPost("send_access_email", { rut, email });
-          setForgot("✅ Usuario y contraseña enviados exitosamente a tu correo registrado.", true);
-        }catch(err){
-          setForgot("❌ " + (err?.message || "No se pudo enviar. Verifica tus datos."), false);
-        }finally{
-          forgotSend.disabled = false;
-          forgotSend.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar acceso';
+          forgotMsg.className="msg ok"; forgotMsg.textContent="✅ Revisa tu correo.";
+        } catch(e) {
+          forgotMsg.className="msg bad"; forgotMsg.textContent="❌ " + (e.message || "Error");
+        } finally {
+          forgotSend.disabled = false; forgotSend.textContent = "Enviar acceso";
         }
       });
 
-      // ==========================
-      // MODAL: CAMBIAR CONTRASEÑA (MISMA LÓGICA QUE TU pw.html)
-      // ==========================
+      // --- CHANGE PASSWORD ---
       const pwBack = document.getElementById("pwBack");
-      const btnPwModal = document.getElementById("btnPwModal");
-      const pwClose = document.getElementById("pwClose");
-
-      const pwForm = document.getElementById("pwForm");
-      const pwMsg  = document.getElementById("pwMsg");
-      const pwSave = document.getElementById("pwSave");
-
-      const pwRut  = document.getElementById("pwRut");
-      const pwOld  = document.getElementById("pwOld");
-      const pwNew  = document.getElementById("pwNew");
-      const pwNew2 = document.getElementById("pwNew2");
-
-      const pwStrength = document.getElementById("pwStrength");
-      const pwMatchHint = document.getElementById("pwMatchHint");
-
-      function showPwMsg(text, ok){
-        pwMsg.style.display = "block";
-        pwMsg.className = "msg " + (ok ? "ok" : "bad");
-        pwMsg.textContent = text;
-      }
-
-      function openPw(){
+      document.getElementById("btnPwModal")?.addEventListener("click", ()=>{
         show(pwBack);
-
-        // Prellenar rut desde login
-        const preRut = (document.getElementById("loginRut")?.value || "").trim();
-        if(preRut) pwRut.value = preRut;
-
-        pwMsg.style.display = "none";
-        pwOld.value = "";
-        pwNew.value = "";
-        pwNew2.value = "";
-        pwStrength.textContent = "Tip: mezcla letras y números para mayor seguridad.";
-        pwMatchHint.textContent = "Asegúrate que coincidan.";
-
-        setTimeout(()=> pwOld.focus(), 80);
-      }
-
-      btnPwModal?.addEventListener("click", openPw);
-      pwClose?.addEventListener("click", ()=> hide(pwBack));
-      pwBack?.addEventListener("click", (e)=>{ if(e.target === pwBack) hide(pwBack); });
-
-      // botones cruzados
-      document.getElementById("goPwFromForgot")?.addEventListener("click", ()=>{
-        hide(forgotBack);
-        openPw();
+        const rutVal = document.getElementById("loginRut")?.value;
+        if(rutVal) document.getElementById("pwRut").value = rutVal;
+        document.getElementById("pwMsg").style.display="none";
       });
-      document.getElementById("pwGoForgot")?.addEventListener("click", ()=>{
-        hide(pwBack);
-        openForgot();
-      });
+      document.getElementById("pwClose")?.addEventListener("click", ()=> hide(pwBack));
+      pwBack?.addEventListener("click", (e)=>{ if(e.target===pwBack) hide(pwBack); });
 
-      // 👁 Toggle mostrar/ocultar (igual a tu pw.html)
-      document.querySelectorAll("[data-toggle]").forEach(btn=>{
+      // Cross buttons
+      document.getElementById("goPwFromForgot")?.addEventListener("click", ()=>{ hide(forgotBack); show(pwBack); });
+      document.getElementById("pwGoForgot")?.addEventListener("click", ()=>{ hide(pwBack); show(forgotBack); });
+
+      // Toggle Password Visibility
+      document.querySelectorAll(".toggleBtn").forEach(btn => {
         btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-toggle");
-          const input = document.getElementById(id);
-          if(!input) return;
-          input.type = (input.type === "password") ? "text" : "password";
-          btn.textContent = (input.type === "password") ? "👁" : "🙈";
+          const input = document.getElementById(btn.dataset.toggle);
+          if(input) {
+            input.type = input.type === "password" ? "text" : "password";
+            btn.style.color = input.type === "password" ? "var(--text-muted)" : "var(--primary)";
+          }
         });
       });
 
-      // Hints fuerza/coinicidencia (igual a tu pw.html)
-      function updateHints(){
-        const v = pwNew.value || "";
-        let score = 0;
-        if(v.length >= 8) score++;
-        if(/[A-Z]/.test(v)) score++;
-        if(/[0-9]/.test(v)) score++;
-        if(/[^a-zA-Z0-9]/.test(v)) score++;
+      // Password Hints
+      const pwNew = document.getElementById("pwNew");
+      const pwNew2 = document.getElementById("pwNew2");
+      const pwStrength = document.getElementById("pwStrength");
+      const pwMatchHint = document.getElementById("pwMatchHint");
 
-        const labels = [
-          "Tip: mezcla letras y números para mayor seguridad.",
-          "Bien: considera 8+ caracteres.",
-          "Mejor: agrega una MAYÚSCULA o símbolo.",
-          "Muy bien: buena combinación.",
-          "Excelente: contraseña fuerte."
-        ];
-        pwStrength.textContent = labels[Math.min(score, 4)];
-
-        const v2 = pwNew2.value || "";
-        if(!v && !v2){
-          pwMatchHint.textContent = "Asegúrate que coincidan.";
-          return;
-        }
-        if(v2.length === 0){
-          pwMatchHint.textContent = "Repítela para confirmar.";
-          return;
-        }
-        pwMatchHint.textContent = (v === v2) ? "✅ Coinciden." : "❌ No coinciden.";
+      function checkPw(){
+        const v = pwNew.value;
+        const v2 = pwNew2.value;
+        if(v.length > 5) pwStrength.textContent = "✅ Longitud correcta";
+        else pwStrength.textContent = "Usa al menos 6 caracteres";
+        
+        if(v2 && v !== v2) pwMatchHint.textContent = "❌ No coinciden";
+        else if(v2 && v === v2) pwMatchHint.textContent = "✅ Coinciden";
+        else pwMatchHint.textContent = "";
       }
-      pwNew.addEventListener("input", updateHints);
-      pwNew2.addEventListener("input", updateHints);
+      pwNew?.addEventListener("input", checkPw);
+      pwNew2?.addEventListener("input", checkPw);
 
-      // Submit (MISMO endpoint y payload)
-      pwForm?.addEventListener("submit", async (e)=>{
+      // Submit Change Password
+      document.getElementById("pwForm")?.addEventListener("submit", async (e)=>{
         e.preventDefault();
-        pwMsg.style.display = "none";
+        const msg = document.getElementById("pwMsg");
+        msg.style.display="none";
+        
+        const btn = document.getElementById("pwSave");
+        const rut = document.getElementById("pwRut").value;
+        const oldPass = document.getElementById("pwOld").value;
+        const newPass = document.getElementById("pwNew").value;
+        const newPass2 = document.getElementById("pwNew2").value;
 
-        try{
-          const rut = (pwRut.value || "").trim();
-          const oldPass = pwOld.value || "";
-          const newPass = pwNew.value || "";
-          const newPass2 = pwNew2.value || "";
+        if(newPass !== newPass2) {
+          msg.className="msg bad"; msg.textContent="Las contraseñas no coinciden."; msg.style.display="block"; return;
+        }
 
-          if(!rut) throw new Error("Debes ingresar tu RUT/Usuario.");
-          if(!oldPass) throw new Error("Debes ingresar tu contraseña actual.");
-          if(newPass !== newPass2) throw new Error("Las nuevas contraseñas no coinciden.");
-          if(newPass.length < 4) throw new Error("La nueva contraseña debe tener al menos 4 caracteres.");
-
-          if(!window.apiPost) throw new Error("Sin conexión con el servidor (apiPost no disponible).");
-
-          pwSave.disabled = true;
-          pwSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
-
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        try {
+          if(!window.apiPost) throw new Error("Sin conexión");
           await window.apiPost("change_password", { rut, oldPass, newPass });
-
-          showPwMsg("✅ Contraseña actualizada. Ya puedes ingresar.", true);
-
-          // Opcional: cerrar modal tras 900ms y enfocar login
-          setTimeout(()=>{
-            hide(pwBack);
-            const lp = document.getElementById("loginPass");
-            if(lp) lp.focus();
-          }, 900);
-
-        }catch(err){
-          showPwMsg("❌ " + (err?.message || err), false);
-        }finally{
-          pwSave.disabled = false;
-          pwSave.innerHTML = '<i class="fas fa-floppy-disk"></i> Guardar nueva contraseña';
+          msg.className="msg ok"; msg.textContent="✅ Contraseña cambiada."; msg.style.display="block";
+          setTimeout(()=> hide(pwBack), 1500);
+        } catch(err) {
+          msg.className="msg bad"; msg.textContent="❌ " + (err.message || "Error"); msg.style.display="block";
+        } finally {
+          btn.disabled = false; btn.textContent = "Guardar cambios";
         }
       });
-
-      // ESC para cerrar
-      document.addEventListener("keydown", (e)=>{
-        if(e.key === "Escape"){
-          if(forgotBack?.classList.contains("show")) hide(forgotBack);
-          if(pwBack?.classList.contains("show")) hide(pwBack);
-        }
-      });
+      
     })();
   </script>
 </body>
