@@ -103,6 +103,55 @@
     .pill.warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
     .pill.bad { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
+    /* --- QUOTA KPI (SaaS) --- */
+    .quotaKpi{
+      display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+      padding:8px 10px; border-radius:12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      min-width: 150px;
+    }
+    .quotaKpiTop{
+      font-size:13px; font-weight:800; letter-spacing:.2px; color:#fff;
+      display:flex; align-items:center; gap:8px;
+    }
+    .quotaKpiTop .sep{ opacity:.55; font-weight:700; }
+    .quotaKpiTop .big{ font-size:14px; }
+    .quotaKpiTop .badge{
+      font-size:11px; font-weight:800; padding:4px 8px; border-radius:999px;
+      border:1px solid var(--border); background: rgba(0,0,0,0.18);
+      color: var(--text-main);
+    }
+    .quotaKpiTop .badge.ok{ border-color: rgba(16,185,129,0.55); color:#34d399; background: rgba(16,185,129,0.08); }
+    .quotaKpiTop .badge.warn{ border-color: rgba(245,158,11,0.55); color:#fbbf24; background: rgba(245,158,11,0.08); }
+    .quotaKpiTop .badge.bad{ border-color: rgba(239,68,68,0.55); color:#f87171; background: rgba(239,68,68,0.08); }
+
+    .quotaKpiBottom{
+      font-size:11px; color: var(--text-muted);
+      display:flex; align-items:center; gap:8px;
+    }
+    .quotaKpiBottom .mut{ opacity:.9; }
+    .quotaShimmer{
+      position:relative; overflow:hidden;
+    }
+    .quotaShimmer::after{
+      content:"";
+      position:absolute; inset:-40% -60%;
+      background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.10), rgba(255,255,255,0.0));
+      transform: translateX(-30%);
+      animation: quotaShimmer 1.2s infinite;
+    }
+    @keyframes quotaShimmer{
+      0%{ transform: translateX(-60%); }
+      100%{ transform: translateX(60%); }
+    }
+    .quotaFlash{ animation: quotaFlash 450ms ease; }
+    @keyframes quotaFlash{
+      0%{ transform: translateY(0); }
+      35%{ transform: translateY(-1px); }
+      100%{ transform: translateY(0); }
+    }
+
     /* --- MODALS --- */
     .modalBack { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal { background: var(--bg); border: 1px solid var(--border); width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 0; display:flex; flex-direction:column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
@@ -183,7 +232,7 @@
           <i class="fa-solid fa-chart-simple" style="color:var(--brand)"></i>
           Cupo de socios
         </div>
-        <div id="quotaText" class="pill">—</div>
+        <div id="quotaText" class="quotaKpi"><span class="quotaKpiTop">—</span><span class="quotaKpiBottom">Cargando…</span></div>
       </div>
 
       <div style="background:var(--surface); border-radius:10px; height:12px; overflow:hidden; border:1px solid var(--border);">
@@ -1406,23 +1455,35 @@
 
       if(!qt || !qb || !qm || !qa) return;
 
-      const max = Number(__quota.max || 0);
-      if(!__quota.ok){
-        qt.textContent = "—";
+      const max = Number(__quota.max || 0);      if(!__quota.ok){
+        qt.classList.remove("quotaShimmer");
+        qt.innerHTML = `<span class="quotaKpiTop"><span class="big">—</span><span class="sep">/</span><span class="big">—</span><span class="badge warn">Cupo no disponible</span></span>
+                        <span class="quotaKpiBottom"><span class="mut">Sin conexión de cuota</span><span class="sep">·</span><span class="mut">Modo fail-open</span></span>`;
         qb.style.width = "0%";
         qb.style.background = "var(--brand)";
         qm.innerHTML = `<span class="pill warn">Cupo: no disponible</span>`;
-        qa.innerHTML = `<span class="pill warn">ℹ No se pudo cargar la cuota. Se permite crear (modo fail-open).</span>`;
+        qa.innerHTML = `<span class="pill warn">ℹ No se pudo cargar la cuota. Se permite crear (fail-open).</span>`;
         const isCreatingSocio = (rolSel && String(rolSel.value||"").toUpperCase() === "SOCIO");
         if(createBtn) createBtn.disabled = false;
         return;
-      }
-      const used = Number(__quota.used || 0);
+      }      const used = Number(__quota.used || 0);
       const left = Math.max(0, Number(__quota.left || 0));
 
-      qt.textContent = (max > 0) ? `${used} / ${max}` : `0 / 0`;
+      qt.classList.remove("quotaShimmer");
 
-      const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
+      const badgeCls = (left<=0 || used>=max || max<=0) ? "bad" : (left<=3 ? "warn" : "ok");
+      const badgeTxt = (max<=0) ? "Sin cupo" : (left<=0 ? "Sin cupos" : (left<=3 ? "Pocos cupos" : "Disponible"));
+
+      qt.innerHTML = `
+        <span class="quotaKpiTop">
+          <span class="big">${used}</span><span class="sep">/</span><span class="big">${max}</span>
+          <span class="badge ${badgeCls}">Disponibles: ${left}</span>
+        </span>
+        <span class="quotaKpiBottom">
+          <span class="mut">Usados: ${used}</span><span class="sep">·</span><span class="mut">Libres: ${left}</span>
+        </span>
+      `;
+const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
       qb.style.width = pct + "%";
 
       // Meta chips
@@ -1461,11 +1522,25 @@
         // Solo bloqueamos cuando está intentando crear SOCIO
         createBtn.disabled = isCreatingSocio && disable;
       }
+
+      // micro-animación "KPI actualizado"
+      qt.classList.remove("quotaFlash");
+      void qt.offsetWidth;
+      qt.classList.add("quotaFlash");
     }
 
     async function loadQuota_(){
+      // Estado "loading"
+      __quota.ok = false;
+      const qt = document.getElementById("quotaText");
+      if(qt){ qt.classList.add("quotaShimmer"); qt.innerHTML = `<span class="quotaKpiTop"><span class="big">—</span><span class="sep">/</span><span class="big">—</span><span class="badge warn">Cargando</span></span><span class="quotaKpiBottom"><span class="mut">Consultando cuota…</span></span>`; }
       try{
-        const res = await apiGet("FUNCIONARIO_QUOTA");
+        let res = null;
+        try{ res = await apiGet("FUNCIONARIO_QUOTA"); }catch(e){ res = null; }
+        // Fallback: algunos backends exponen cuota por POST/action
+        if(!(res && res.ok)){
+          try{ res = await apiPost("FUNCIONARIO_QUOTA", {}); }catch(e){ /* ignore */ }
+        }
         if(res && res.ok){
           __quota = {
             max: Number(res.maxSocios ?? res.max ?? 0) || 0,
