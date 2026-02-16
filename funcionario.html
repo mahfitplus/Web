@@ -1,744 +1,487 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAH FIT | Funcionario</title>
-  <link rel="stylesheet" href="assets/styles.css"/>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAH FIT | Funcionario Hub</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    :root{
-      --bg0:#0a0e14;
-      --bg1:#0f1623;
-      --card:#121b2a;
-      --line:rgba(255,255,255,.10);
-      --txt:rgba(255,255,255,.88);
-      --mut:rgba(255,255,255,.65);
-      --ok:#2bd576;
-      --warn:#ffd36e;
-      --bad:#ff5a67;
-      --pri:#7c5cff;
-      --pri2:#23a6ff;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:16px;
+    :root {
+      /* PALETA: Midnight Slate (Idéntica a Admin) */
+      --bg: #0f172a; --sidebar: #1e293b; --surface: #334155; --border: #475569;
+      --text-main: #f1f5f9; --text-muted: #94a3b8;
+      --brand: #3b82f6; --brand-hover: #2563eb; 
+      --accent-ok: #10b981; --accent-err: #ef4444; --accent-warn: #f59e0b; 
+      --radius: 8px; 
     }
 
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.20), transparent 60%),
-                  radial-gradient(900px 700px at 100% 0%, rgba(35,166,255,.18), transparent 55%),
-                  linear-gradient(180deg, var(--bg0), var(--bg1));
-      color: var(--txt);
-      min-height:100vh;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
-    .topbar{
-      position: sticky;
-      top:0;
-      z-index: 5;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 18px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(10,14,20,.75);
-      backdrop-filter: blur(12px);
+    /* --- SIDEBAR --- */
+    aside {
+      width: 250px; background: var(--sidebar); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 24px; flex-shrink: 0;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.2); z-index: 10;
     }
-    .brand{
-      display:flex;
-      gap:8px;
-      align-items:baseline;
-      letter-spacing:.7px;
-      font-weight: 1000;
-      user-select:none;
+    .logo { font-size: 22px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+    .logo i { color: var(--brand); font-size: 24px; }
+    
+    nav button {
+      background: transparent; border: none; width: 100%; text-align: left;
+      padding: 12px 14px; margin-bottom: 4px; border-radius: var(--radius);
+      color: var(--text-muted); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
     }
-    .brand .mah{ color:#fff; }
-    .brand .fit{ color: var(--pri2); }
+    nav button:hover { background: rgba(59, 130, 246, 0.1); color: #fff; transform: translateX(4px); }
+    nav button.active { background: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    
+    .nav-divider { height: 1px; background: var(--border); margin: 12px 0; opacity: 0.5; }
+    .footer-nav { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
 
-    .nav-right{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      color: var(--mut);
-      font-weight: 800;
-      font-size: 13px;
-    }
-    .badge{
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.86);
-      font-weight: 900;
-      letter-spacing:.4px;
-    }
+    /* --- MAIN --- */
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    
+    header { height: 70px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--bg); }
+    
+    /* Status Badge del Header */
+    .status-badge { font-size: 12px; padding: 6px 12px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); } 
+    .dot.connected { background: var(--accent-ok); box-shadow: 0 0 8px var(--accent-ok); } 
+    .dot.error { background: var(--accent-err); }
+    .dot.connecting { background: var(--accent-warn); animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-    .db-indicator{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(10px);
-    }
-    .db-dot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.45);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
-    }
-    .db-dot.connected{ background: var(--ok); box-shadow:0 0 0 3px rgba(43,213,118,.12); }
-    .db-dot.error{ background: var(--bad); box-shadow:0 0 0 3px rgba(255,90,103,.12); }
-    .db-dot.connecting{
-      background: rgba(255,255,255,.35);
-      box-shadow:0 0 0 3px rgba(255,255,255,.08);
-      animation: dbPulse 1.0s ease-in-out infinite;
-    }
-    @keyframes dbPulse{
-      0%,100%{ transform:scale(1); opacity:.75; }
-      50%{ transform:scale(1.25); opacity:1; }
-    }
-    .db-text{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(255,255,255,.85);
-      letter-spacing:.3px;
-      white-space:nowrap;
-    }
+    .content { padding: 32px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 24px; }
 
-    .wrap{
-      max-width: 1200px;
-      margin: 18px auto 60px;
-      padding: 0 18px;
-    }
+    /* --- CARDS & PANELS --- */
+    .panel { background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .panel-title { font-size: 16px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .panel-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-top: 4px; }
 
-    .col{
-      display:flex;
-      flex-direction:column;
-      gap: 16px;
-      min-width: 0;
-    }
+    /* --- FORMS & INPUTS --- */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .form-control { width: 100%; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); color: #fff; border-radius: 6px; outline: none; font-size: 14px; transition: 0.2s; }
+    .form-control:focus { border-color: var(--brand); }
+    .form-control:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .card{
-      background: rgba(18,27,42,.75);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .cardHead{
-      padding: 14px 14px 10px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .cardTitle{
-      font-weight:1000;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      font-size: 12px;
-      color: rgba(255,255,255,.90);
-    }
-    .muted{ color: var(--mut); font-size: 13px; font-weight:700; }
-    .cardBody{ padding: 14px; }
+    /* --- BUTTONS --- */
+    .btn { height: 40px; padding: 0 20px; border-radius: var(--radius); border: none; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; transition: all 0.2s; }
+    .btn-primary { background: var(--brand); color: #fff; } .btn-primary:hover { background: var(--brand-hover); }
+    .btn-secondary { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); } .btn-secondary:hover { background: var(--border); }
+    .btn-ok { background: rgba(16, 185, 129, 0.1); color: var(--accent-ok); border: 1px solid var(--accent-ok); } .btn-ok:hover { background: var(--accent-ok); color: #fff; }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--accent-err); border: 1px solid var(--accent-err); } .btn-danger:hover { background: var(--accent-err); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--text-muted); } .btn-ghost:hover { color: #fff; }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
 
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 520px){ .row{ grid-template-columns: 1fr; } }
+    /* --- FILTERS & TABS --- */
+    .toolbar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .search-box { flex: 1; max-width: 400px; position: relative; }
+    .search-box input { width: 100%; padding-left: 36px; }
+    .search-icon { position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 14px; }
 
-    input, select{
-      width:100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.28);
-      color: rgba(255,255,255,.92);
-      outline:none;
-      font-weight:800;
-    }
-    input::placeholder{ color: rgba(255,255,255,.40); font-weight:800; }
-    input:disabled, select:disabled{ opacity:.65; cursor:not-allowed; }
+    .tabs { display: flex; gap: 8px; background: var(--bg); padding: 4px; border-radius: var(--radius); border: 1px solid var(--border); }
+    .tab { padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: 0.2s; display: flex; gap: 6px; align-items: center; }
+    .tab:hover { color: #fff; }
+    .tab.active { background: var(--surface); color: var(--brand); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .count { background: rgba(255,255,255,0.1); padding: 0 6px; border-radius: 10px; font-size: 10px; }
 
-    .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.88);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight: 1000;
-      letter-spacing:.2px;
-      transition: transform .08s ease, background .12s ease, border .12s ease;
-      user-select:none;
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
-    .btn:active{ transform: translateY(0px); }
-    .btn.primary{
-      border-color: rgba(35,166,255,.35);
-      background: rgba(35,166,255,.14);
-    }
-    .btn.ghost{ background: transparent; }
-    .btn.small{ padding: 8px 10px; border-radius: 10px; font-size: 12px; }
-    .btn.danger{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.12); }
-    .btn.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.12); }
+    /* --- TABLE --- */
+    .table-container { background: var(--sidebar); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: rgba(0,0,0,0.2); padding: 14px 20px; text-align: left; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 11px; }
+    td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; } 
+    tr:hover { background: rgba(255,255,255,0.03); }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      color: rgba(255,255,255,.86);
-      font-weight: 900;
-      font-size: 12px;
-      white-space:nowrap;
-    }
-    .pill.ok{ border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10); }
-    .pill.warn{ border-color: rgba(255,211,110,.35); background: rgba(255,211,110,.10); }
-    .pill.bad{ border-color: rgba(255,90,103,.35); background: rgba(255,90,103,.10); }
+    /* PILLS */
+    .pill { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+    .pill.ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .pill.warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .pill.bad { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-    .filters{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-      align-items:center;
-    }
-    .filters input{ flex: 1; min-width: 220px; }
-    .filters select{ width: 220px; }
+    /* --- MODALS --- */
+    .modalBack { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: var(--bg); border: 1px solid var(--border); width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 0; display:flex; flex-direction:column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .modalHead, .modalFoot { padding: 16px 24px; background: var(--sidebar); border-color: var(--border); display: flex; align-items: center; flex-shrink: 0; }
+    .modalHead { justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .modalFoot { justify-content: flex-end; border-top: 1px solid var(--border); gap: 10px; }
+    .modalBody { padding: 24px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 16px; }
 
-    .tabs{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-    }
-    .tab{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.88);
-      font-weight: 1000;
-      cursor:pointer;
-      user-select:none;
-    }
-    .tab.active{
-      border-color: rgba(35,166,255,.40);
-      background: rgba(35,166,255,.18);
-    }
-    .tab .count{
-      min-width: 22px;
-      height: 22px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      font-size: 12px;
-    }
+    /* SUMMARY GRID (PERFIL) */
+    .summaryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .sumCard { background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 8px; text-align: center; }
+    .sumLabel { font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+    .sumValue { font-weight: 600; font-size: 13px; color: #fff; }
 
-    .tableWrap{
-      max-height: 520px;
-      overflow: auto;
-      border-top:1px solid rgba(255,255,255,.06);
-    }
-    table{
-      width:100%;
-      border-collapse: collapse;
-      min-width: 1040px;
-    }
-    th, td{
-      text-align:left;
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      font-weight: 800;
-      font-size: 13px;
-      vertical-align: middle;
-    }
-    th{
-      position: sticky;
-      top:0;
-      background: rgba(18,27,42,.92);
-      z-index: 1;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing:.6px;
-      color: rgba(255,255,255,.78);
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .actions{ display:flex; gap:8px; flex-wrap:wrap; }
-    .msg{ margin-top: 10px; font-weight: 900; font-size: 13px; }
-    .msg.ok{ color: rgba(170,255,200,.95); }
-    .msg.bad{ color: rgba(255,180,186,.95); }
+    /* MSG BOX */
+    .msg { margin-top: 10px; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 6px; display: none; }
+    .msg:not(:empty) { display: block; }
+    .msg.ok { background: rgba(16, 185, 129, 0.1); color: var(--accent-ok); border: 1px solid var(--accent-ok); }
+    .msg.bad, .msg.err { background: rgba(239, 68, 68, 0.1); color: var(--accent-err); border: 1px solid var(--accent-err); }
 
-    .modalBack{
-      position: fixed;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index: 20;
-    }
-    .modal{
-      width: min(740px, 100%);
-      background: rgba(18,27,42,.92);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      overflow:hidden;
-    }
-    .modalHead{
-      padding: 14px 14px 10px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    .modalHead strong{ font-weight: 1000; letter-spacing:.4px; }
-    .modalBody{ padding: 14px; }
-    .modalFoot{
-      padding: 12px 14px 14px;
-      display:flex;
-      gap: 10px;
-      justify-content:flex-end;
-      border-top: 1px solid rgba(255,255,255,.08);
-    }
+    /* Checkbox Row */
+    .checkRow { display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 10px; border-radius: 6px; border: 1px solid var(--border); }
+    .checkRow input { width: auto; accent-color: var(--brand); }
 
-    .miniTableWrap{
-      margin-top: 10px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: 14px;
-      overflow:auto;
-      max-height: 360px;
-    }
-    .miniTableWrap table{ min-width: 860px; }
-    .miniTableWrap th{ background: rgba(18,27,42,.96); }
-    .miniInp{
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.92);
-      font-weight: 900;
-      outline:none;
-    }
-
-    .checkRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-    }
-    .checkRow input{ width:auto; }
-
-    /* ✅ Perfil summary */
-    .summaryGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr; /* ✅ ahora 4 columnas */
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    @media (max-width: 980px){ .summaryGrid{ grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 620px){ .summaryGrid{ grid-template-columns: 1fr; } }
-
-    .sumCard{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      border-radius: 14px;
-      padding: 10px 12px;
-    }
-    .sumLabel{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.6px;
-      color: rgba(255,255,255,.62);
-      font-weight: 1000;
-    }
-    .sumValue{
-      margin-top: 6px;
-      font-weight: 1000;
-      color: rgba(255,255,255,.90);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-      word-break: break-word;
-    }
-    .divider{
-      margin: 12px 0;
-      height:1px;
-      background: rgba(255,255,255,.08);
+    /* Responsive */
+    @media (max-width: 768px) {
+        body { flex-direction: column; height: auto; overflow: auto; }
+        aside { width: 100%; padding: 16px; flex-direction: row; align-items: center; justify-content: space-between; overflow-x: auto; }
+        aside nav { display: flex; gap: 10px; }
+        aside nav button { width: auto; margin: 0; white-space: nowrap; }
+        .nav-divider { display: none; }
+        main { height: auto; }
+        .summaryGrid { grid-template-columns: 1fr 1fr; }
     }
   </style>
-
-<style>
-  html{background:#0a0e14;}
-</style>
-
 </head>
 
 <body data-page="funcionario">
 
-<header class="topbar">
-  <div class="brand"><span class="mah">MAH</span> <span class="fit">FIT</span></div>
+<aside>
+  <div class="logo"><i class="fa-solid fa-dumbbell"></i> MAH<span>FIT</span></div>
+  <nav>
+    <button class="active"><i class="fa-solid fa-users-gear"></i> Panel Funcionario</button>
+    
+    <div class="nav-divider"></div>
+    
+    <button id="btnRutinas"><i class="fa-solid fa-book-atlas"></i> Rutinas</button>
+    <button id="btnEvaluaciones"><i class="fa-solid fa-ruler-combined"></i> Evaluaciones</button>
+    <button id="btnPlanes"><i class="fa-solid fa-credit-card"></i> Planes</button>
+  </nav>
+  
+  <nav class="footer-nav">
+     <button id="btnLogout" style="color:var(--accent-err)"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+  </nav>
+</aside>
 
-  <div class="nav-right">
-    <div class="db-indicator">
-      <span id="dbDot" class="db-dot connecting"></span>
-      <span id="dbText" class="db-text">Conectando…</span>
+<main>
+  <header>
+    <div>
+        <h2 style="font-size:18px; font-weight:600;">Gestión de Socios</h2>
+        <div style="font-size:12px; color:var(--text-muted)">Hola, <b id="who">...</b> <span id="roleBadge" class="pill" style="margin-left:5px">FUNCIONARIO</span></div>
     </div>
+    
+    <div class="status-badge">
+        <div id="dbDot" class="dot connecting"></div>
+        <span id="dbText">Conectando...</span>
+    </div>
+  </header>
 
-    <span>Hola, <b id="who"></b></span>
-    <span id="roleBadge" class="badge"></span>
+  <div class="content">
 
-    <button id="btnRutinas" class="btn ghost small">Rutinas</button>
+    
 
-    <!-- ✅ NUEVO BOTÓN -->
-    <button id="btnEvaluaciones" class="btn ghost small">Evaluaciones</button>
-
-    <button id="btnPlanes" class="btn ghost small">Planes</button>
-    <button id="btnLogout" class="btn ghost small">Salir</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="col">
-
-    <!-- CREAR -->
-    <div class="card">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Crear Usuario</div>
-          <div class="muted">Socios y funcionarios</div>
+    <!-- PANEL CUPO (SaaS) -->
+    <div class="panel" id="quotaPanel" style="margin-bottom:14px;">
+      <div class="panel-header" style="margin-bottom:10px;">
+        <div class="panel-title">
+          <i class="fa-solid fa-chart-simple" style="color:var(--brand)"></i>
+          Cupo de socios
         </div>
-        <span class="pill">Alta rápida</span>
+        <div id="quotaText" class="pill">—</div>
       </div>
 
-      <div class="cardBody">
+      <div style="background:var(--surface); border-radius:10px; height:12px; overflow:hidden; border:1px solid var(--border);">
+        <div id="quotaBar" style="height:100%; width:0%; background:var(--accent-ok); transition:width .28s ease, background .28s ease;"></div>
+      </div>
+
+      <div id="quotaMeta" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;"></div>
+      <div id="quotaAlert" style="margin-top:8px; font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+        <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-user-plus" style="color:var(--brand)"></i> Alta Rápida</div>
+            <div class="panel-subtitle">Crear socio o funcionario nuevo</div>
+        </div>
         <form id="createUserForm">
-          <div class="row">
-            <input id="newNombre" placeholder="Nombre" required />
-            <input id="newRut" placeholder="RUT/Usuario (ej: 19.123.123-4)" required />
-          </div>
-
-          <div class="row">
-            <input id="newEmail" placeholder="Email (opcional)" />
-            <input id="newPass" placeholder="Clave" required />
-          </div>
-
-          <div class="row">
-            <select id="newRol">
-              <option value="SOCIO">SOCIO</option>
-              <option value="FUNCIONARIO">FUNCIONARIO</option>
-            </select>
-            <button class="btn primary" type="submit">Crear</button>
-          </div>
+            <div class="form-grid">
+                <input id="newNombre" class="form-control" placeholder="Nombre Completo" required />
+                <input id="newRut" class="form-control" placeholder="RUT / sin guion " required />
+                <input id="newEmail" class="form-control" placeholder="Email (Opcional)" />
+                <input id="newPass" class="form-control" placeholder="Contraseña" required />
+                <select id="newRol" class="form-control">
+                    <option value="SOCIO">Socio</option>
+                    <option value="FUNCIONARIO">Funcionario</option>
+                </select>
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Crear</button>
+            </div>
         </form>
-
         <div id="msgUser" class="msg"></div>
-      </div>
     </div>
 
-    <!-- CRM -->
-    <div class="card">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">CRM Usuarios</div>
-          <div class="muted">Activa/desactiva, perfil y renueva membresías</div>
-
-          <div class="filters">
-            <input id="userSearch" placeholder="Buscar por nombre, RUT, email, rol o estado..." />
-            <select id="roleFilter">
-              <option value="ALL">Todos</option>
-              <option value="SOCIO">Solo socios</option>
-              <option value="FUNCIONARIO">Solo funcionarios</option>
-            </select>
-          </div>
-
-          <div class="tabs">
-            <div class="tab active" data-tab="ALL">Todos <span class="count" id="cAll">0</span></div>
-            <div class="tab" data-tab="ACTIVE">Activos <span class="count" id="cActive">0</span></div>
-            <div class="tab" data-tab="EXPIRED">Vencidos <span class="count" id="cExpired">0</span></div>
-            <div class="tab" data-tab="INACTIVE">Inactivos <span class="count" id="cInactive">0</span></div>
-          </div>
+    <div class="panel" style="flex:1; display:flex; flex-direction:column;">
+        <div class="panel-header" style="margin-bottom:10px;">
+            <div class="panel-title">Base de Usuarios</div>
+            <div class="tabs">
+                <div class="tab active" data-tab="ALL">Todos <span class="count" id="cAll">0</span></div>
+                <div class="tab" data-tab="ACTIVE">Activos <span class="count" id="cActive">0</span></div>
+                <div class="tab" data-tab="EXPIRED">Vencidos <span class="count" id="cExpired">0</span></div>
+                <div class="tab" data-tab="INACTIVE">Inactivos <span class="count" id="cInactive">0</span></div>
+            </div>
         </div>
 
-        <span class="pill">Lista</span>
-      </div>
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input id="userSearch" class="form-control" placeholder="Buscar por nombre, RUT, rol..." />
+            </div>
+            <select id="roleFilter" class="form-control" style="width:150px;">
+                <option value="ALL">Rol: Todos</option>
+                <option value="SOCIO">Solo Socios</option>
+                <option value="FUNCIONARIO">Funcionarios</option>
+            </select>
+        </div>
 
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>NOMBRE</th>
-              <th>RUT/USUARIO</th>
-              <th>ROL</th>
-              <th>ESTADO</th>
-              <th>PLAN</th>
-              <th>ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody id="usersTbody"></tbody>
-        </table>
-      </div>
-
-      <div class="cardBody">
-        <div class="muted">Tip: “Inactivo” es desactivado manual. “Vencido” es plan vencido.</div>
-      </div>
+        <div class="table-container" style="flex:1; overflow:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RUT</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Plan</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTbody">
+                    <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted)">Cargando datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
   </div>
-</div>
+</main>
 
-<!-- MODAL RENOVAR -->
 <div id="modalBack" class="modalBack">
   <div class="modal">
     <div class="modalHead">
       <div>
-        <strong>Renovar plan</strong>
-        <div class="muted" id="mSub">—</div>
+        <h3 style="font-size:16px;">Renovar Plan</h3>
+        <div class="panel-subtitle" id="mSub">...</div>
       </div>
-      <button id="mClose" class="btn small ghost">✕</button>
+      <button id="mClose" class="btn btn-ghost btn-sm">✕</button>
     </div>
 
     <div class="modalBody">
-      <div class="row">
-        <select id="mPlanId">
-          <option value="">(sin plan)</option>
-        </select>
-
-        <select id="mActivar">
+      <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+        <select id="mPlanId" class="form-control"><option value="">(sin plan)</option></select>
+        <select id="mActivar" class="form-control">
           <option value="1">Activar</option>
           <option value="0">No activar</option>
         </select>
       </div>
 
-      <div class="row">
-        <input id="mInicio" type="date" />
-        <select id="mDias">
-          <option value="1">+ 1 día</option>
-          <option value="7">+ 7 días</option>
-          <option value="30">+ 30 días (Mensual)</option>
-          <option value="90">+ 90 días (Trimestral)</option>
-          <option value="180">+ 180 días (Semestral)</option>
-          <option value="365">+ 365 días (Anual)</option>
-          <option value="0">Personalizado…</option>
-        </select>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <div>
+            <label style="font-size:11px; color:var(--text-muted)">Inicio</label>
+            <input id="mInicio" type="date" class="form-control" />
+        </div>
+        <div>
+            <label style="font-size:11px; color:var(--text-muted)">Duración</label>
+            <select id="mDias" class="form-control">
+              <option value="1">+ 1 día</option>
+              <option value="30" selected>+ 30 días (Mensual)</option>
+              <option value="90">+ 90 días (Trimestral)</option>
+              <option value="180">+ 180 días (Semestral)</option>
+              <option value="365">+ 365 días (Anual)</option>
+              <option value="0">Personalizado...</option>
+            </select>
+        </div>
       </div>
 
-      <div class="row">
-        <input id="mFin" type="date" />
-        <div class="pill" id="mPreview" style="justify-content:center;">—</div>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items:end;">
+        <div>
+            <label style="font-size:11px; color:var(--text-muted)">Fin Calculado</label>
+            <input id="mFin" type="date" class="form-control" />
+        </div>
+        <div id="mPreview" class="pill" style="text-align:center; padding:8px;">—</div>
       </div>
 
-      <div class="row">
-        <input id="mPrecioBase" type="number" min="0" step="1" placeholder="Precio base (CLP)" disabled />
-        <input id="mDescPct" type="number" min="0" max="100" step="1" placeholder="Descuento % (0-100)" />
+      <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+
+      <div class="form-grid">
+        <input id="mPrecioBase" class="form-control" type="number" placeholder="Precio Base" disabled />
+        <input id="mDescPct" class="form-control" type="number" placeholder="% Descuento" />
       </div>
 
-      <div class="row">
-        <input id="mPrecioFinal" type="number" min="0" step="1" placeholder="Precio final (CLP)" disabled />
-        <input id="mPagado" type="number" min="0" step="1" placeholder="Monto pagado (CLP)" />
+      <div class="form-grid">
+        <input id="mPrecioFinal" class="form-control" type="number" placeholder="Precio Final" disabled />
+        <input id="mPagado" class="form-control" type="number" placeholder="Monto Pagado" />
       </div>
 
-      <div class="row">
-        <div class="pill" id="mPrecioSug" style="justify-content:center;">Base: —</div>
-        <div class="pill" id="mPrecioResumen" style="justify-content:center;">Final: —</div>
+      <div style="display:flex; justify-content:space-between;">
+        <div id="mPrecioSug" class="pill">Base: —</div>
+        <div id="mPrecioResumen" class="pill ok">Final: —</div>
       </div>
 
       <div class="checkRow">
         <input type="checkbox" id="mSendReceipt" />
-        <label for="mSendReceipt" style="cursor:pointer;font-weight:900;color:rgba(255,255,255,.88);">
-          Enviar comprobante al correo
-        </label>
+        <label for="mSendReceipt" style="font-size:13px; cursor:pointer;">Enviar comprobante al correo</label>
       </div>
 
-      <div class="row">
-        <input id="mReceiptEmail" type="email" placeholder="Correo destino (ej: socio@gmail.com)" />
-        <button id="mSendNow" class="btn ok" type="button">Enviar comprobante</button>
+      <div class="form-grid">
+        <input id="mReceiptEmail" class="form-control" type="email" placeholder="Correo destino" />
+        <button id="mSendNow" class="btn btn-ok btn-sm" type="button">Enviar Ahora</button>
       </div>
-
-      <div class="muted" style="margin-top:10px;">
-        Consejo: elige inicio + duración y el fin se calcula solo.
-      </div>
-
+      
       <div id="mMsg" class="msg"></div>
     </div>
 
     <div class="modalFoot">
-      <button id="mCancel" class="btn">Cancelar</button>
-      <button id="mSave" class="btn primary">Guardar renovación</button>
+      <button id="mCancel" class="btn btn-secondary">Cancelar</button>
+      <button id="mSave" class="btn btn-primary">Guardar Renovación</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL PLANES -->
 <div id="plansBack" class="modalBack">
-  <div class="modal" style="width:min(980px,100%);">
+  <div class="modal" style="width:900px;">
     <div class="modalHead">
       <div>
-        <strong>Gestión de Planes</strong>
-        <div class="muted">Edita precios/días y guarda directo en la sheet <b>PLANES</b></div>
+        <h3 style="font-size:16px;">Gestión de Planes</h3>
+        <div class="panel-subtitle">Editar catálogo de precios</div>
       </div>
-      <button id="pClose" class="btn small ghost">✕</button>
+      <button id="pClose" class="btn btn-ghost btn-sm">✕</button>
     </div>
 
     <div class="modalBody">
-      <div class="row">
-        <button id="pAdd" class="btn ok">+ Agregar plan</button>
-        <button id="pReload" class="btn">Recargar</button>
+      <div style="display:flex; gap:10px;">
+        <button id="pAdd" class="btn btn-ok btn-sm">+ Agregar Plan</button>
+        <button id="pReload" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Recargar</button>
       </div>
 
-      <div class="miniTableWrap">
+      <div class="table-container" style="max-height:400px; overflow:auto;">
         <table>
           <thead>
             <tr>
-              <th>PLAN ID</th>
-              <th>NOMBRE</th>
-              <th>TIPO</th>
-              <th>DÍAS</th>
-              <th>PRECIO CLP</th>
-              <th>ACTIVO</th>
-              <th>ORDEN</th>
-              <th>GUARDAR</th>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Días</th>
+              <th>Precio</th>
+              <th>Activo</th>
+              <th>Orden</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="plansTbody"></tbody>
         </table>
       </div>
-
       <div id="pMsg" class="msg"></div>
     </div>
 
     <div class="modalFoot">
-      <button id="pDone" class="btn primary">Listo</button>
+      <button id="pDone" class="btn btn-primary">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL PERFIL -->
 <div id="profileBack" class="modalBack">
-  <div class="modal" style="width:min(980px,100%);">
+  <div class="modal" style="width:800px;">
     <div class="modalHead">
       <div>
-        <strong id="prTitle">Perfil</strong>
-        <div class="muted" id="prSub">—</div>
+        <h3 id="prTitle" style="font-size:16px;">Perfil de Socio</h3>
+        <div class="panel-subtitle" id="prSub">...</div>
       </div>
-      <button id="prClose" class="btn small ghost">✕</button>
+      <button id="prClose" class="btn btn-ghost btn-sm">✕</button>
     </div>
 
     <div class="modalBody">
-      <!-- ✅ Resumen arriba -->
       <div class="summaryGrid">
         <div class="sumCard">
           <div class="sumLabel">Estado</div>
-          <div class="sumValue" id="prSumEstado">—</div>
+          <div id="prSumEstado" class="sumValue">—</div>
         </div>
         <div class="sumCard">
-          <div class="sumLabel">Plan</div>
-          <div class="sumValue" id="prSumPlan">—</div>
+          <div class="sumLabel">Plan Actual</div>
+          <div id="prSumPlan" class="sumValue">—</div>
         </div>
         <div class="sumCard">
           <div class="sumLabel">Vencimiento</div>
-          <div class="sumValue" id="prSumVence">—</div>
+          <div id="prSumVence" class="sumValue">—</div>
         </div>
         <div class="sumCard">
-          <div class="sumLabel">Correo registrado</div>
-          <div class="sumValue" id="prSumEmail">—</div>
+          <div class="sumLabel">Email</div>
+          <div id="prSumEmail" class="sumValue">—</div>
         </div>
       </div>
 
-      <!-- ✅ Acciones de perfil -->
-      <div class="row" style="grid-template-columns: 1fr 1fr 1fr; align-items:center;">
-        <button id="prLoad" class="btn">Cargar perfil</button>
-        <button id="prEdit" class="btn primary">Modificar</button>
-        <button id="prSave" class="btn ok" disabled>Guardar</button>
+      <div style="display:flex; gap:10px; border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:5px;">
+        <button id="prLoad" class="btn btn-secondary btn-sm">Recargar Datos</button>
+        <button id="prEdit" class="btn btn-primary btn-sm">Modificar Datos</button>
+        <button id="prSave" class="btn btn-ok btn-sm" disabled>Guardar Cambios</button>
       </div>
 
-      <div class="divider"></div>
-
-      <!-- ✅ Email editable (nuevo) -->
-      <div class="row">
-        <input id="prEmail" type="email" placeholder="Correo (ej: socio@gmail.com)" />
-        <input id="prTelefono" placeholder="Teléfono (ej: +56 9 1234 5678)" />
+      <div class="form-grid">
+        <input id="prEmail" class="form-control" type="email" placeholder="Correo" />
+        <input id="prTelefono" class="form-control" placeholder="Teléfono" />
       </div>
 
-      <div class="row">
-        <input id="prNacimiento" type="date" />
-        <select id="prSexo">
-          <option value="">Sexo (opcional)</option>
-          <option value="HOMBRE">HOMBRE</option>
-          <option value="MUJER">MUJER</option>
-          <option value="OTRO">OTRO</option>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <input id="prNacimiento" type="date" class="form-control" />
+        <select id="prSexo" class="form-control">
+          <option value="">Sexo</option>
+          <option value="HOMBRE">Hombre</option>
+          <option value="MUJER">Mujer</option>
+          <option value="OTRO">Otro</option>
         </select>
       </div>
 
-      <div class="row">
-        <input id="prDireccion" placeholder="Dirección (opcional)" />
-        <input id="prEmergNombre" placeholder="Contacto emergencia (nombre)" />
+      <div class="form-grid">
+        <input id="prDireccion" class="form-control" placeholder="Dirección" />
       </div>
 
-      <div class="row">
-        <input id="prEmergTel" placeholder="Contacto emergencia (teléfono)" />
-        <input id="prObjetivo" placeholder="Objetivo (ej: bajar grasa, ganar masa)" />
+      <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+      <div style="font-size:11px; color:var(--brand); font-weight:700; margin-bottom:5px;">EMERGENCIA</div>
+
+      <div class="form-grid">
+        <input id="prEmergNombre" class="form-control" placeholder="Nombre Contacto" />
+        <input id="prEmergTel" class="form-control" placeholder="Teléfono Contacto" />
       </div>
 
-      <div class="row">
-        <select id="prNivel">
-          <option value="">Nivel (opcional)</option>
-          <option value="PRINCIPIANTE">PRINCIPIANTE</option>
-          <option value="INTERMEDIO">INTERMEDIO</option>
-          <option value="AVANZADO">AVANZADO</option>
-        </select>
-        <input id="prLesiones" placeholder="Lesiones / limitaciones (texto corto)" />
+      <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+      <div style="font-size:11px; color:var(--brand); font-weight:700; margin-bottom:5px;">FÍSICO / MÉDICO</div>
+
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+         <input id="prObjetivo" class="form-control" placeholder="Objetivo" />
+         <select id="prNivel" class="form-control">
+           <option value="">Nivel</option>
+           <option value="PRINCIPIANTE">Principiante</option>
+           <option value="INTERMEDIO">Intermedio</option>
+           <option value="AVANZADO">Avanzado</option>
+         </select>
+      </div>
+      
+      <div class="form-grid">
+        <input id="prLesiones" class="form-control" placeholder="Lesiones" />
+        <input id="prPatologias" class="form-control" placeholder="Patologías" />
+      </div>
+      
+      <div class="form-grid">
+        <input id="prMedicamentos" class="form-control" placeholder="Medicamentos" />
+        <input id="prAlergias" class="form-control" placeholder="Alergias" />
       </div>
 
-      <div class="row">
-        <input id="prPatologias" placeholder="Patologías (ej: HTA, DM2) (opcional)" />
-        <input id="prMedicamentos" placeholder="Medicamentos (opcional)" />
-      </div>
-
-      <div class="row">
-        <input id="prAlergias" placeholder="Alergias (opcional)" />
-        <input id="prNotas" placeholder="Notas internas (observaciones)" />
-      </div>
-
+      <textarea id="prNotas" class="form-control" placeholder="Notas internas..." rows="2"></textarea>
+      
       <div id="prMsg" class="msg"></div>
     </div>
 
     <div class="modalFoot">
-      <button id="prCancel" class="btn">Cerrar</button>
+      <button id="prCancel" class="btn btn-secondary">Cerrar</button>
     </div>
   </div>
 </div>
 
 <script src="assets/app.js" defer></script>
-
 <script>
   function safe(v, fb=""){ return (v===undefined||v===null) ? fb : String(v); }
 
@@ -799,9 +542,11 @@
     return `<span class="pill">${p.label}</span>`;
   }
 
+  // --- ADAPTACIÓN DE CLASES PARA EL NUEVO ESTILO ---
   function msg(el, text, ok){
     if(!el) return;
-    el.className = "msg " + (ok ? "ok" : "bad");
+    // Map old classes to new style
+    el.className = "msg " + (ok ? "ok" : "err");
     el.textContent = text;
   }
 
@@ -828,7 +573,9 @@
     if(!me) return;
 
     document.getElementById("who").textContent = me.nombre || "Funcionario";
-    document.getElementById("roleBadge").textContent = "FUNCIONARIO";
+    
+    // Sidebar active state logic (simple)
+    // No action needed as this page is the Dashboard itself
 
     const tbody = document.getElementById("usersTbody");
     const searchInput = document.getElementById("userSearch");
@@ -1052,7 +799,12 @@
       prInputs.forEach(el => el.disabled = !profileEditMode);
       prSave.disabled = !profileEditMode;
       prEdit.textContent = profileEditMode ? "Bloquear" : "Modificar";
-      prEdit.className = "btn " + (profileEditMode ? "danger" : "primary");
+      // Update Button Classes for new style
+      if(profileEditMode){
+          prEdit.className = "btn btn-danger btn-sm";
+      } else {
+          prEdit.className = "btn btn-primary btn-sm";
+      }
     }
 
     function renderProfileSummary(u){
@@ -1112,7 +864,7 @@
     function openProfileModal(u){
       currentProfileRut = u.rut;
 
-      prTitle.textContent = "Perfil";
+      prTitle.textContent = "Perfil de Socio";
       prSub.textContent = `${safe(u.nombre,"")} · ${safe(u.rut,"")} · ${safe(u.rol,"")}`;
 
       renderProfileSummary(u);
@@ -1164,6 +916,19 @@
       const users = getUsers();
       const u = users.find(x=>x.rut===currentProfileRut);
       if(!u) return;
+
+      // ✅ Validación RUT antes de guardar (evita error backend "DV inválido")
+      const vRut = (typeof validateRutChile === "function")
+        ? validateRutChile(rutAutoComplete_(u.rut))
+        : { ok:true };
+      if(vRut && vRut.ok === false){
+        msg(prMsg,
+          "No se pudo guardar perfil: RUT inválido (" + (vRut.error||"DV") + ").\n" +
+          "Solución: corrige el RUT en USUARIOS (ej: 19228778-2) y recarga la app.",
+          false
+        );
+        return;
+      }
 
       u.email = String(prEmail.value||"").trim();
       u.telefono = String(prTelefono.value||"").trim();
@@ -1365,12 +1130,17 @@
         });
         e.target.reset();
         await refreshFromServer();
+        await loadQuota_();
         render();
         msg(msgUser, "✅ Usuario creado", true);
       }catch(err){
         msg(msgUser, "❌ " + err.message, false);
       }
     });
+
+    // Revalida cupo si cambias el rol a crear
+    const __rolSel = document.getElementById("newRol");
+    if(__rolSel) __rolSel.addEventListener("change", applyQuotaUI_);
 
     function getFilteredUsers(){
       const users = (getUsers ? getUsers() : []).slice();
@@ -1426,23 +1196,24 @@
           isExpired ? `<span class="pill warn">VENCIDO</span>` :
                      `<span class="pill ok">ACTIVO</span>`;
 
-        const toggleLabel = isInactive ? "Activar" : "Desactivar";
-        const toggleClass = isInactive ? "ok" : "danger";
+        const toggleLabel = isInactive ? "Activar" : "Bloquear";
+        // Updated Classes for Buttons
+        const toggleClass = isInactive ? "btn-ok" : "btn-danger";
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${safe(u.nombre,"")}</td>
+          <td><div style="font-weight:600; font-size:14px; color:#fff;">${safe(u.nombre,"")}</div><div style="font-size:11px; color:var(--text-muted);">${safe(u.email,"")}</div></td>
           <td>${safe(u.rut,"")}</td>
           <td><span class="pill">${rol}</span></td>
           <td>${estadoHtml}</td>
           <td>${planPill(p)}</td>
-          <td>
-            <div class="actions">
-              <button class="btn small ${toggleClass}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
-                ${toggleLabel}
+          <td style="text-align:right">
+            <div style="display:inline-flex; gap:6px;">
+              <button class="btn btn-sm btn-secondary" title="Perfil" data-profile="${safe(u.rut,"")}"><i class="fa-solid fa-id-card"></i></button>
+              <button class="btn btn-sm btn-primary" title="Renovar" data-renew="${safe(u.rut,"")}">Renovar</button>
+              <button class="btn btn-sm ${toggleClass}" title="${toggleLabel}" data-toggle="${safe(u.rut,"")}" data-expired="${isExpired ? "1":"0"}">
+                <i class="fa-solid ${isInactive ? 'fa-check' : 'fa-ban'}"></i>
               </button>
-              <button class="btn small primary" data-renew="${safe(u.rut,"")}">Renovar</button>
-              <button class="btn small" data-profile="${safe(u.rut,"")}">Perfil</button>
             </div>
           </td>
         `;
@@ -1536,19 +1307,19 @@
       sorted.forEach(p=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><input class="miniInp" data-k="planId" value="${safe(p.planId,"")}" disabled></td>
-          <td><input class="miniInp" data-k="nombre" value="${safe(p.nombre,"")}"></td>
-          <td><input class="miniInp" data-k="tipo" value="${safe(p.tipo,"")}" placeholder="MENSUAL/TRIMESTRAL..."></td>
-          <td><input class="miniInp" data-k="dias" type="number" min="0" step="1" value="${Number(p.dias||0)}"></td>
-          <td><input class="miniInp" data-k="precioCLP" type="number" min="0" step="1" value="${Number(p.precioCLP||0)}"></td>
+          <td><input class="form-control" style="padding:4px;" data-k="planId" value="${safe(p.planId,"")}" disabled></td>
+          <td><input class="form-control" style="padding:4px;" data-k="nombre" value="${safe(p.nombre,"")}"></td>
+          <td><input class="form-control" style="padding:4px;" data-k="tipo" value="${safe(p.tipo,"")}" placeholder="TIPO"></td>
+          <td><input class="form-control" style="padding:4px;" data-k="dias" type="number" min="0" step="1" value="${Number(p.dias||0)}"></td>
+          <td><input class="form-control" style="padding:4px;" data-k="precioCLP" type="number" min="0" step="1" value="${Number(p.precioCLP||0)}"></td>
           <td>
-            <select class="miniInp" data-k="activo">
-              <option value="1" ${Number(p.activo??1)===1?"selected":""}>1</option>
-              <option value="0" ${Number(p.activo??1)===0?"selected":""}>0</option>
+            <select class="form-control" style="padding:4px;" data-k="activo">
+              <option value="1" ${Number(p.activo??1)===1?"selected":""}>SI</option>
+              <option value="0" ${Number(p.activo??1)===0?"selected":""}>NO</option>
             </select>
           </td>
-          <td><input class="miniInp" data-k="orden" type="number" min="0" step="1" value="${Number(p.orden||999)}"></td>
-          <td><button class="btn small primary" data-save-plan="${safe(p.planId,"")}">Guardar</button></td>
+          <td><input class="form-control" style="padding:4px;" data-k="orden" type="number" min="0" step="1" value="${Number(p.orden||999)}"></td>
+          <td><button class="btn btn-sm btn-primary" data-save-plan="${safe(p.planId,"")}"><i class="fa-solid fa-save"></i></button></td>
         `;
         plansTbody.appendChild(tr);
       });
@@ -1622,12 +1393,104 @@
     searchInput.addEventListener("input", render);
     roleFilter.addEventListener("change", render);
 
+    // ===================== CUPO SaaS (FUNCIONARIO) =====================
+    let __quota = { max:0, used:0, left:0, ok:false };
+
+    function applyQuotaUI_(){
+      const qt = document.getElementById("quotaText");
+      const qb = document.getElementById("quotaBar");
+      const qm = document.getElementById("quotaMeta");
+      const qa = document.getElementById("quotaAlert");
+      const rolSel = document.getElementById("newRol");
+      const createBtn = document.querySelector("#createUserForm button[type='submit']");
+
+      if(!qt || !qb || !qm || !qa) return;
+
+      const max = Number(__quota.max || 0);
+      if(!__quota.ok){
+        qt.textContent = "—";
+        qb.style.width = "0%";
+        qb.style.background = "var(--brand)";
+        qm.innerHTML = `<span class="pill warn">Cupo: no disponible</span>`;
+        qa.innerHTML = `<span class="pill warn">ℹ No se pudo cargar la cuota. Se permite crear (modo fail-open).</span>`;
+        const isCreatingSocio = (rolSel && String(rolSel.value||"").toUpperCase() === "SOCIO");
+        if(createBtn) createBtn.disabled = false;
+        return;
+      }
+      const used = Number(__quota.used || 0);
+      const left = Math.max(0, Number(__quota.left || 0));
+
+      qt.textContent = (max > 0) ? `${used} / ${max}` : `0 / 0`;
+
+      const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
+      qb.style.width = pct + "%";
+
+      // Meta chips
+      const pill = (cls, txt) => `<span class="pill ${cls}">${txt}</span>`;
+      const chips = [];
+      if(max <= 0){
+        chips.push(pill("bad", "Sin cupo asignado"));
+      } else {
+        chips.push(pill("ok", `Cupo: ${max}`));
+        chips.push(pill("ok", `Usados: ${used}`));
+        chips.push(pill(left <= 3 ? "warn" : "ok", `Libres: ${left}`));
+      }
+      qm.innerHTML = chips.join("");
+
+      // Alert + disable create
+      const isCreatingSocio = (rolSel && String(rolSel.value||"").toUpperCase() === "SOCIO");
+      let disable = false;
+
+      if(max <= 0){
+        qb.style.background = "var(--accent-err)";
+        qa.innerHTML = `<span class="pill bad">🚫 No tienes cupo para crear socios. Pide aumento a administración.</span>`;
+        disable = true;
+      } else if(used >= max){
+        qb.style.background = "var(--accent-err)";
+        qa.innerHTML = `<span class="pill bad">🚫 Límite alcanzado. No puedes crear más socios.</span>`;
+        disable = true;
+      } else if(left <= 3){
+        qb.style.background = "var(--accent-warn)";
+        qa.innerHTML = `<span class="pill warn">⚠ Quedan ${left} cupos disponibles.</span>`;
+      } else {
+        qb.style.background = "var(--accent-ok)";
+        qa.innerHTML = `<span class="pill ok">✅ Puedes crear socios (quedan ${left}).</span>`;
+      }
+
+      if(createBtn){
+        // Solo bloqueamos cuando está intentando crear SOCIO
+        createBtn.disabled = isCreatingSocio && disable;
+      }
+    }
+
+    async function loadQuota_(){
+      try{
+        const res = await apiGet("FUNCIONARIO_QUOTA");
+        if(res && res.ok){
+          __quota = {
+            max: Number(res.maxSocios ?? res.max ?? 0) || 0,
+            used: Number(res.sociosCreados ?? res.used ?? 0) || 0,
+            left: Number(res.restantes ?? res.left ?? 0) || 0,
+            ok: true
+          };
+        } else {
+          __quota = { max:0, used:0, left:0, ok:false };
+        }
+      }catch(e){
+        __quota = { max:0, used:0, left:0, ok:false };
+      }
+      applyQuotaUI_();
+      return __quota;
+    }
+    // ===================================================================
+
     // ARRANQUE
     markConnecting();
     fillPlanSelect("");
     render();
 
     await refreshFromServer();
+    await loadQuota_();
     fillPlanSelect("");
     render();
   });
@@ -1635,14 +1498,3 @@
 
 </body>
 </html>
-
-<div id="bootLoader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-background:#0a0e14;color:#fff;font-weight:900;z-index:9999">
-  Cargando MAH FIT…
-</div>
-<script>
-  window.addEventListener("DOMContentLoaded",()=>{
-    const l=document.getElementById("bootLoader");
-    if(l) l.style.display="none";
-  });
-</script>
