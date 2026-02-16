@@ -76,8 +76,9 @@ function getApiUrl_(){
 
 // ✅ compat: algunas partes llaman getApiUrl() (sin guión bajo)
 function getApiUrl(){
-  return getApiUrl_();
+  return API_URL_DEFAULT; // ✅ sin override por localStorage
 }
+
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
