@@ -37,6 +37,9 @@
     }
     nav button:hover { background: rgba(59, 130, 246, 0.1); color: #fff; transform: translateX(4px); }
     nav button.active { background: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+    /* PF SUB (rol dinámico del funcionario) */
+    #pfSub{ user-select:none; }
     
     .nav-divider { height: 1px; background: var(--border); margin: 12px 0; opacity: 0.5; }
     .footer-nav { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
@@ -103,55 +106,6 @@
     .pill.warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
     .pill.bad { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-    /* --- QUOTA KPI (SaaS) --- */
-    .quotaKpi{
-      display:flex; flex-direction:column; align-items:flex-end; gap:2px;
-      padding:8px 10px; border-radius:12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      min-width: 150px;
-    }
-    .quotaKpiTop{
-      font-size:13px; font-weight:800; letter-spacing:.2px; color:#fff;
-      display:flex; align-items:center; gap:8px;
-    }
-    .quotaKpiTop .sep{ opacity:.55; font-weight:700; }
-    .quotaKpiTop .big{ font-size:14px; }
-    .quotaKpiTop .badge{
-      font-size:11px; font-weight:800; padding:4px 8px; border-radius:999px;
-      border:1px solid var(--border); background: rgba(0,0,0,0.18);
-      color: var(--text-main);
-    }
-    .quotaKpiTop .badge.ok{ border-color: rgba(16,185,129,0.55); color:#34d399; background: rgba(16,185,129,0.08); }
-    .quotaKpiTop .badge.warn{ border-color: rgba(245,158,11,0.55); color:#fbbf24; background: rgba(245,158,11,0.08); }
-    .quotaKpiTop .badge.bad{ border-color: rgba(239,68,68,0.55); color:#f87171; background: rgba(239,68,68,0.08); }
-
-    .quotaKpiBottom{
-      font-size:11px; color: var(--text-muted);
-      display:flex; align-items:center; gap:8px;
-    }
-    .quotaKpiBottom .mut{ opacity:.9; }
-    .quotaShimmer{
-      position:relative; overflow:hidden;
-    }
-    .quotaShimmer::after{
-      content:"";
-      position:absolute; inset:-40% -60%;
-      background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.10), rgba(255,255,255,0.0));
-      transform: translateX(-30%);
-      animation: quotaShimmer 1.2s infinite;
-    }
-    @keyframes quotaShimmer{
-      0%{ transform: translateX(-60%); }
-      100%{ transform: translateX(60%); }
-    }
-    .quotaFlash{ animation: quotaFlash 450ms ease; }
-    @keyframes quotaFlash{
-      0%{ transform: translateY(0); }
-      35%{ transform: translateY(-1px); }
-      100%{ transform: translateY(0); }
-    }
-
     /* --- MODALS --- */
     .modalBack { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal { background: var(--bg); border: 1px solid var(--border); width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 0; display:flex; flex-direction:column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
@@ -195,12 +149,14 @@
   <div class="logo"><i class="fa-solid fa-dumbbell"></i> MAH<span>FIT</span></div>
   <nav>
     <button class="active"><i class="fa-solid fa-users-gear"></i> Panel Funcionario</button>
+    <div id="pfSub" style="margin:-2px 0 10px 40px; font-size:12px; color:var(--text-muted);">—</div>
     
     <div class="nav-divider"></div>
     
     <button id="btnRutinas"><i class="fa-solid fa-book-atlas"></i> Rutinas</button>
     <button id="btnEvaluaciones"><i class="fa-solid fa-ruler-combined"></i> Evaluaciones</button>
     <button id="btnPlanes"><i class="fa-solid fa-credit-card"></i> Planes</button>
+    <button id="btnNutricion" style="display:none"><i class="fa-solid fa-apple-whole"></i> Nutrición</button>
   </nav>
   
   <nav class="footer-nav">
@@ -212,7 +168,7 @@
   <header>
     <div>
         <h2 style="font-size:18px; font-weight:600;">Gestión de Socios</h2>
-        <div style="font-size:12px; color:var(--text-muted)">Hola, <b id="who">...</b> <span id="roleBadge" class="pill" style="margin-left:5px">FUNCIONARIO</span></div>
+        <div style="font-size:12px; color:var(--text-muted)">Hola, <b id="who">...</b> <span id="roleBadge" class="pill" style="margin-left:5px">FUNCIONARIO</span> <span id="roleSubBadge" class="pill" style="margin-left:6px; opacity:.85">—</span></div>
     </div>
     
     <div class="status-badge">
@@ -232,7 +188,7 @@
           <i class="fa-solid fa-chart-simple" style="color:var(--brand)"></i>
           Cupo de socios
         </div>
-        <div id="quotaText" class="quotaKpi"><span class="quotaKpiTop">—</span><span class="quotaKpiBottom">Cargando…</span></div>
+        <div id="quotaText" class="pill">—</div>
       </div>
 
       <div style="background:var(--surface); border-radius:10px; height:12px; overflow:hidden; border:1px solid var(--border);">
@@ -256,8 +212,7 @@
                 <input id="newPass" class="form-control" placeholder="Contraseña" required />
                 <select id="newRol" class="form-control">
                     <option value="SOCIO">Socio</option>
-                    <option value="FUNCIONARIO">Funcionario</option>
-                </select>
+                                    </select>
                 <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Crear</button>
             </div>
         </form>
@@ -622,6 +577,112 @@
     if(!me) return;
 
     document.getElementById("who").textContent = me.nombre || "Funcionario";
+
+    // ✅ SCOPES: pintar badges/menú (Entrenamiento / Nutrición / Full)
+    resolveMeScopes_(me).then(me2=>applyScopesUI_(me2)).catch(()=>applyScopesUI_(me));
+
+    // ===== SIDEBAR: subtítulo dinámico + módulos por scopes =====
+    function parseScopes_(raw){
+      if(!raw) return [];
+      if(Array.isArray(raw)) return raw.map(s=>String(s).trim().toUpperCase()).filter(Boolean);
+      return String(raw).split(/[,\s]+/g).map(s=>s.trim().toUpperCase()).filter(Boolean);
+    }
+    function scopeMeta_(scopes){
+      const hasN = scopes.includes("NUTRITION");
+      const hasT = scopes.includes("TRAINING");
+      if(hasN && hasT) return { key:"FULL", label:"FULL", icon:"fa-layer-group" };
+      if(hasN) return { key:"NUTRITION", label:"NUTRICIÓN", icon:"fa-apple-whole" };
+      if(hasT) return { key:"TRAINING", label:"ENTRENAMIENTO", icon:"fa-thin fa-dumbbell" }; 
+      return { key:"NONE", label:"SIN SCOPES", icon:"fa-light fa-circle-question" };
+    }
+
+    async function resolveMeScopes_(me){
+      // 1) si ya viene, listo
+      if(me && (me.scopes || me.mods || me.permisos)) return me;
+
+      // 2) intenta refrescar perfil desde backend (AUTH_ME)
+      try{
+        if(typeof apiPost === "function"){
+          const r = await apiPost("AUTH_ME", {});
+          const u = (r && (r.user || r.me || r.profile)) ? (r.user || r.me || r.profile) : null;
+          if(u && (u.scopes || u.mods || u.permisos)){
+            return Object.assign({}, me, u);
+          }
+        }
+      }catch(e){}
+
+      try{
+        if(typeof apiGet === "function"){
+          const r = await apiGet("AUTH_ME");
+          const u = (r && (r.user || r.me || r.profile)) ? (r.user || r.me || r.profile) : null;
+          if(u && (u.scopes || u.mods || u.permisos)){
+            return Object.assign({}, me, u);
+          }
+        }
+      }catch(e){}
+
+      // 3) fallback: lee localStorage (si app.js guarda el perfil completo)
+      try{
+        const keys = ["mahfit_me","MAHFIT_ME","mahfit_user","MAHFIT_USER","user","me"];
+        for(const k of keys){
+          const raw = localStorage.getItem(k);
+          if(!raw) continue;
+          const obj = JSON.parse(raw);
+          if(obj && (obj.scopes || obj.mods || obj.permisos)){
+            return Object.assign({}, me, obj);
+          }
+        }
+      }catch(e){}
+      return me;
+    }
+
+    function applyScopesUI_(me){
+      const scopes = parseScopes_(me && (me.scopes || me.mods || me.permisos) || "");
+      const meta = scopeMeta_(scopes);
+
+      // subtítulo bajo "Panel Funcionario"
+      const sub = document.getElementById("pfSub");
+      if(sub){
+        sub.innerHTML = `<i class="fa-solid ${meta.icon}" style="opacity:.9"></i> ${meta.label}`;
+      }
+
+      // Badge superior: FUNCIONARIO + subtipo con icono
+      const rb = document.getElementById("roleBadge");
+      if(rb){
+        rb.textContent = "FUNCIONARIO";
+        rb.title = meta.label;
+      }
+      const rb2 = document.getElementById("roleSubBadge");
+      if(rb2){
+        rb2.innerHTML = `<i class="fa-solid ${meta.icon}"></i> ${meta.label}`;
+      }
+
+      // Módulos visibles según scopes (SaaS vendible)
+      const hasTrain = scopes.includes("TRAINING");
+      const hasNutri = scopes.includes("NUTRITION");
+
+      const btnRut = document.getElementById("btnRutinas");
+      const btnEva = document.getElementById("btnEvaluaciones");
+      if(btnRut) btnRut.style.display = hasTrain ? "" : "none";
+      if(btnEva) btnEva.style.display = hasTrain ? "" : "none";
+
+      const btnPlan = document.getElementById("btnPlanes");
+      if(btnPlan) btnPlan.style.display = "";
+
+      const btnNut = document.getElementById("btnNutricion");
+      if(btnNut) btnNut.style.display = hasNutri ? "" : "none";
+
+      // Seguridad SaaS: el FUNCIONARIO crea SOCIOS, no crea STAFF
+      const selRol = document.getElementById("newRol");
+      if(selRol){
+        Array.from(selRol.options||[]).forEach(opt=>{
+          if(String(opt.value||"").toUpperCase()==="FUNCIONARIO") opt.disabled = true;
+        });
+        selRol.value = "SOCIO";
+      }
+    }
+
+
     
     // Sidebar active state logic (simple)
     // No action needed as this page is the Dashboard itself
@@ -1344,6 +1405,11 @@
     function closePlans(){ plansBack.style.display = "none"; }
 
     document.getElementById("btnPlanes").addEventListener("click", openPlans);
+
+    const __btnNut = document.getElementById("btnNutricion");
+    if(__btnNut) __btnNut.addEventListener("click", ()=>{
+      location.href = "nutricion.html";
+    });
     document.getElementById("pClose").addEventListener("click", closePlans);
     document.getElementById("pDone").addEventListener("click", closePlans);
     plansBack.addEventListener("click", (e)=>{ if(e.target === plansBack) closePlans(); });
@@ -1455,35 +1521,23 @@
 
       if(!qt || !qb || !qm || !qa) return;
 
-      const max = Number(__quota.max || 0);      if(!__quota.ok){
-        qt.classList.remove("quotaShimmer");
-        qt.innerHTML = `<span class="quotaKpiTop"><span class="big">—</span><span class="sep">/</span><span class="big">—</span><span class="badge warn">Cupo no disponible</span></span>
-                        <span class="quotaKpiBottom"><span class="mut">Sin conexión de cuota</span><span class="sep">·</span><span class="mut">Modo fail-open</span></span>`;
+      const max = Number(__quota.max || 0);
+      if(!__quota.ok){
+        qt.textContent = "—";
         qb.style.width = "0%";
         qb.style.background = "var(--brand)";
         qm.innerHTML = `<span class="pill warn">Cupo: no disponible</span>`;
-        qa.innerHTML = `<span class="pill warn">ℹ No se pudo cargar la cuota. Se permite crear (fail-open).</span>`;
+        qa.innerHTML = `<span class="pill warn">ℹ No se pudo cargar la cuota. Se permite crear (modo fail-open).</span>`;
         const isCreatingSocio = (rolSel && String(rolSel.value||"").toUpperCase() === "SOCIO");
         if(createBtn) createBtn.disabled = false;
         return;
-      }      const used = Number(__quota.used || 0);
+      }
+      const used = Number(__quota.used || 0);
       const left = Math.max(0, Number(__quota.left || 0));
 
-      qt.classList.remove("quotaShimmer");
+      qt.textContent = (max > 0) ? `${used} / ${max}` : `0 / 0`;
 
-      const badgeCls = (left<=0 || used>=max || max<=0) ? "bad" : (left<=3 ? "warn" : "ok");
-      const badgeTxt = (max<=0) ? "Sin cupo" : (left<=0 ? "Sin cupos" : (left<=3 ? "Pocos cupos" : "Disponible"));
-
-      qt.innerHTML = `
-        <span class="quotaKpiTop">
-          <span class="big">${used}</span><span class="sep">/</span><span class="big">${max}</span>
-          <span class="badge ${badgeCls}">Disponibles: ${left}</span>
-        </span>
-        <span class="quotaKpiBottom">
-          <span class="mut">Usados: ${used}</span><span class="sep">·</span><span class="mut">Libres: ${left}</span>
-        </span>
-      `;
-const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
+      const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100))) : 0;
       qb.style.width = pct + "%";
 
       // Meta chips
@@ -1522,25 +1576,11 @@ const pct = (max > 0) ? Math.max(0, Math.min(100, Math.round((used / max) * 100)
         // Solo bloqueamos cuando está intentando crear SOCIO
         createBtn.disabled = isCreatingSocio && disable;
       }
-
-      // micro-animación "KPI actualizado"
-      qt.classList.remove("quotaFlash");
-      void qt.offsetWidth;
-      qt.classList.add("quotaFlash");
     }
 
     async function loadQuota_(){
-      // Estado "loading"
-      __quota.ok = false;
-      const qt = document.getElementById("quotaText");
-      if(qt){ qt.classList.add("quotaShimmer"); qt.innerHTML = `<span class="quotaKpiTop"><span class="big">—</span><span class="sep">/</span><span class="big">—</span><span class="badge warn">Cargando</span></span><span class="quotaKpiBottom"><span class="mut">Consultando cuota…</span></span>`; }
       try{
-        let res = null;
-        try{ res = await apiGet("FUNCIONARIO_QUOTA"); }catch(e){ res = null; }
-        // Fallback: algunos backends exponen cuota por POST/action
-        if(!(res && res.ok)){
-          try{ res = await apiPost("FUNCIONARIO_QUOTA", {}); }catch(e){ /* ignore */ }
-        }
+        const res = await apiGet("FUNCIONARIO_QUOTA");
         if(res && res.ok){
           __quota = {
             max: Number(res.maxSocios ?? res.max ?? 0) || 0,
