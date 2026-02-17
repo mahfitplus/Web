@@ -12,7 +12,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzUUOOMu7urgD2LQg8N98POZSIisgs1WuN6SXA07wk8TpCNqWNmfjU2lFnS120aCae4mg/exec";
+const API_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbw0Tsqf8ad-wg5TXSQZ0hRYKG0NqVk8vNGWc3A8Q-l8_uCJIm7oWymYtoytV20tUmSaNQ/exec";
 
 // ================= AUTH TOKEN (MAH FIT PRO) =================
 const TOKEN_KEY = "MAHFIT_TOKEN";
@@ -1807,3 +1807,4 @@ window.mhfNormText = mhfNormText;
     hook();
   }
 })();
+
