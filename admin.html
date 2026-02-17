@@ -386,7 +386,31 @@
 
 
 
-    /* ==========================================================
+    
+    /* ===== Scopes (módulos SaaS) ===== */
+    .scope-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      margin-top:6px;
+      white-space:nowrap;
+    }
+    .scope-pill.full{ border-color: rgba(124,92,255,.35); background: rgba(124,92,255,.14); }
+    .scope-pill.train{ border-color: rgba(59,130,246,.35); background: rgba(59,130,246,.14); }
+    .scope-pill.nutri{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
+    .scope-pill.none{ border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color:#fecaca; }
+
+
+/* ==========================================================
    SELECT DARK FIX DEFINITIVO (sin hover blanco)
    ========================================================== */
 
@@ -547,6 +571,8 @@ select option:focus{
   </style>
 </head>
 <body>
+  <a href="nutricion.html" style="position:fixed;right:14px;bottom:76px;z-index:50;background:rgba(124,92,255,.25);border:1px solid rgba(124,92,255,.45);padding:10px 12px;border-radius:14px;color:#fff;text-decoration:none;font-weight:900;">Nutrición</a>
+
 
   <aside>
     <div class="logo"><i class="fa-solid fa-dumbbell"></i> MAH<span>FIT</span></div>
@@ -606,6 +632,15 @@ select option:focus{
             <option value="SOCIO" selected>SOCIO</option>
             <option value="FUNCIONARIO">FUNCIONARIO</option>
           </select>
+          <div id="qScopesWrap" style="display:none">
+            <select id="qScopes" class="form-control">
+              <option value="TRAINING" selected>Entrenamiento</option>
+              <option value="NUTRITION">Nutrición</option>
+              <option value="NUTRITION,TRAINING">Full (Nutri + Entreno)</option>
+            </select>
+            <div class="hint">Módulos del funcionario (scopes)</div>
+          </div>
+
           <div id="qTenantWrap" style="display:none">
             <input id="qTenant" class="form-control" placeholder="tenantId (auto para FUNCIONARIO)">
             <div class="hint">Generado: <span id="qTenantSug">—</span></div>
@@ -728,7 +763,21 @@ select option:focus{
             <div class="muted">tenantId</div>
             <input id="mTenant" class="form-control" placeholder="TENANT_xxx (opcional)">
           </div>
-          <div id="mMaxSociosWrap" style="display:none;">
+          
+          <div id="mScopesWrap" style="display:none;">
+            <div class="muted">Módulos (scopes) · solo FUNCIONARIO</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
+              <label class="pill" style="cursor:pointer;">
+                <input type="checkbox" id="mScopeTrain" style="width:16px;height:16px;accent-color:#3b82f6;"> Entrenamiento
+              </label>
+              <label class="pill" style="cursor:pointer;">
+                <input type="checkbox" id="mScopeNutri" style="width:16px;height:16px;accent-color:#10b981;"> Nutrición
+              </label>
+            </div>
+            <div class="hint">Full = ambos activados. Si ninguno: sin módulos.</div>
+          </div>
+
+<div id="mMaxSociosWrap" style="display:none;">
             <div class="muted">Máx. Socios (solo FUNCIONARIO)</div>
             <input id="mMaxSocios" type="number" min="0" step="1" class="form-control" placeholder="0 = sin cupo (control total)"/>
           </div>
@@ -1208,6 +1257,7 @@ function renderUsers(){
             <td>${escapeHtml(rutSafe)}</td>
             <td>
               <div class="badge-role ${rcls}">${escapeHtml(rol || "-")}</div>
+              ${(rol === "FUNCIONARIO") ? (()=>{ const sm=scopesMeta_(u.scopes||""); return `<div class="scope-pill ${sm.cls}"><i class="fa-solid ${sm.icon}"></i> ${sm.label}</div>`; })() : ""}
             </td>
             <td>${cupoHtml}</td>
             <td>${estadoHtml}</td>
@@ -1231,7 +1281,27 @@ function renderUsers(){
     }
     function jsEsc(s){ return String(s ?? "").replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
+    
     // =======================
+    // SCOPES (módulos SaaS)
+    // =======================
+    function parseScopes_(raw){
+      if(!raw) return [];
+      if(Array.isArray(raw)) return raw.map(s=>String(s).trim().toUpperCase()).filter(Boolean);
+      return String(raw).split(/[,\s]+/g).map(s=>s.trim().toUpperCase()).filter(Boolean);
+    }
+    function scopesMeta_(raw){
+      const scopes = parseScopes_(raw);
+      const hasN = scopes.includes("NUTRITION");
+      const hasT = scopes.includes("TRAINING");
+      if(hasN && hasT) return { label:"FULL", cls:"full", icon:"fa-layer-group" };
+      if(hasT) return { label:"ENTRENAMIENTO", cls:"train", icon:"fa-dumbbell" };
+      if(hasN) return { label:"NUTRICIÓN", cls:"nutri", icon:"fa-apple-whole" };
+      return { label:"SIN MÓDULOS", cls:"none", icon:"fa-triangle-exclamation" };
+    }
+
+
+// =======================
     // API
     // =======================
     async function refreshAll(showToast){
@@ -1301,6 +1371,8 @@ function renderUsers(){
           }
         }
       } else {
+        const sw = document.getElementById("qScopesWrap");
+        if(sw) sw.style.display = "none";
         if(wrap) wrap.style.display = "none";
         if(input){
           input.readOnly = false;
@@ -1329,6 +1401,7 @@ function renderUsers(){
         const pass = String(document.getElementById("qPass").value||"");
         const rol = String(document.getElementById("qRol").value||"SOCIO").trim().toUpperCase();
         let tenantId = String(document.getElementById("qTenant").value||"").trim();
+        const scopes = String((document.getElementById("qScopes")||{}).value || "").trim();
 
         if(rol === "FUNCIONARIO"){
           // forzamos tenant automático (readOnly), si quedó vacío por algún motivo lo recalculamos
@@ -1347,7 +1420,8 @@ function renderUsers(){
           rut: rutFmt,
           nombre, email, pass,
           rol,
-          tenantId
+          tenantId,
+          scopes
         };
 
         const res = await apiPost("USERS", payload);
@@ -1374,6 +1448,8 @@ function renderUsers(){
       qt.dataset.touched = "";
       qt.readOnly = false;
       const qtw = document.getElementById("qTenantWrap");
+      const qsw = document.getElementById("qScopesWrap");
+      if(qsw) qsw.style.display = "none";
       if(qtw) qtw.style.display = "none";
       const qts = document.getElementById("qTenantSug");
       if(qts) qts.textContent = "—";
@@ -1409,11 +1485,30 @@ function renderUsers(){
       openModal("userModalOv");
     }
 
-    function syncModalRoleUI(){
+    
+    function setModalScopes_(raw){
+      const s = parseScopes_(raw);
+      const t = document.getElementById("mScopeTrain");
+      const n = document.getElementById("mScopeNutri");
+      if(t) t.checked = s.includes("TRAINING");
+      if(n) n.checked = s.includes("NUTRITION");
+    }
+    function getModalScopes_(){
+      const t = document.getElementById("mScopeTrain");
+      const n = document.getElementById("mScopeNutri");
+      const scopes = [];
+      if(t && t.checked) scopes.push("TRAINING");
+      if(n && n.checked) scopes.push("NUTRITION");
+      return scopes.join(",");
+    }
+
+function syncModalRoleUI(){
       const rol = String(document.getElementById("mRol").value||"SOCIO").toUpperCase();
       const wrap = document.getElementById("mMaxSociosWrap");
       const isFunc = (rol === "FUNCIONARIO");
       if(wrap) wrap.style.display = isFunc ? "" : "none";
+      const sw = document.getElementById("mScopesWrap");
+      if(sw) sw.style.display = isFunc ? "" : "none";
       // UX: si no es funcionario, reset a 0 para evitar basura
       if(!isFunc){
         const i = document.getElementById("mMaxSocios");
@@ -1460,6 +1555,7 @@ function renderUsers(){
         if(rol === "FUNCIONARIO"){
           const ms = Number(document.getElementById("mMaxSocios").value || 0);
           payload.maxSocios = (Number.isFinite(ms) && ms >= 0) ? Math.floor(ms) : 0;
+        payload.scopes = getModalScopes_();
         }
         if(pass) payload.pass = pass;
 
