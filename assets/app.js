@@ -12,7 +12,7 @@
    ========================================================= */
 
 // ✅ NUEVO API_URL (tu implementación actual)
-const API_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbwxxetYZHZbHWou4jFE7_yOs-7yaz_jHVuXbHxV87JqU8kc7gk3s9PLrMQ5n0djk5RzdA/exec";
+const API_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzUUOOMu7urgD2LQg8N98POZSIisgs1WuN6SXA07wk8TpCNqWNmfjU2lFnS120aCae4mg/exec";
 
 // ================= AUTH TOKEN (MAH FIT PRO) =================
 const TOKEN_KEY = "MAHFIT_TOKEN";
@@ -26,12 +26,91 @@ function setToken(token, user) {
   if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 function clearToken() {
+  // claves actuales
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  // compatibilidad con versiones antiguas / pruebas
+  localStorage.removeItem("mahfit_token");
+  localStorage.removeItem("mahfit_user");
+  localStorage.removeItem("mahfit_session");
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  try { sessionStorage.clear(); } catch(e){}
 }
 function getUserSession() {
   try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); } catch(e){ return null; }
+
+function normalizeSessionUser_(u){
+  if(!u || typeof u !== "object") return u;
+  const out = Object.assign({}, u);
+  // unifica scope
+  const sc = (out.scope ?? out.scopes ?? out.permisos ?? out.mods ?? out.servicios ?? "").toString().trim().toUpperCase();
+  if(sc) out.scope = sc;
+  // también deja scopes como string sin forzar uppercase (puede traer lista)
+  if(out.scopes == null && sc) out.scopes = sc;
+  return out;
 }
+}
+
+// ================= SCOPES (módulos SaaS) =================
+function getUserScopes(user){
+  const u = user || getUserSession() || {};
+  const raw = String(u.scopes || u.mods || u.permisos || "").trim();
+  if(!raw) return [];
+  return raw.split(/[|,;\s]+/g).map(s=>String(s).trim().toUpperCase()).filter(Boolean);
+}
+function scopesToServicios_(scopesArr){
+  const a = Array.isArray(scopesArr) ? scopesArr : getUserScopes({scopes:scopesArr});
+  const out = [];
+  if(a.includes("NUTRITION")) out.push("NUTRICIONISTA");
+  if(a.includes("TRAINING")) out.push("ENTRENADOR");
+  if(a.includes("NUTRITION") && a.includes("TRAINING")) out.push("FULL");
+  return out;
+}
+
+// ================= SERVICIOS / CAPACIDADES (SaaS) =================
+function _normSvc_(s){
+  return String(s||"").trim().toUpperCase()
+    .replace(/\s+/g,"_")
+    .replace(/NUTRI(CI(Ó|O)N)?/g,"NUTRICIONISTA")
+    .replace(/ENTREN(A(DOR|))?/g,"ENTRENADOR")
+    .replace(/PREMIUM|AMBAS|COMBO/g,"FULL");
+}
+// user.servicios puede venir como "FULL" o "ENTRENADOR,NUTRICIONISTA"
+function getUserServicios(user){
+  const u = user || getUserSession() || {};
+  const raw = String(u.servicios || u.servicio || "").trim();
+  if(!raw){
+    // fallback: map scopes -> servicios
+    const s = getUserScopes(u);
+    if(s && s.length) return scopesToServicios_(s);
+    return [];
+  }
+  return raw.split(/[|,;]/g).map(_normSvc_).filter(Boolean);
+}
+function hasService(need, user){
+  const u = user || getUserSession() || {};
+  const rol = String(u.rol||"").toUpperCase();
+  if(rol === "SUPER_ADMIN") return true;
+  const arr = getUserServicios(u);
+  const n = _normSvc_(need);
+  if(!n) return true;
+  if(arr.includes("FULL")) return true;
+  return arr.includes(n);
+}
+// Bloqueo obligatorio por módulo
+function requireService(need, opts){
+  const o = opts || {};
+  if(!hasService(need)) {
+    const msg = o.message || "Tu cuenta no tiene habilitado este módulo.";
+    try{ alert(msg); }catch(e){}
+    const to = o.redirect || "index.html";
+    try{ location.href = to; }catch(e){}
+    return false;
+  }
+  return true;
+}
+
 
 // ================= COMPAT (admin.html antiguo) =================
 // admin.html / vistas históricas usan estas funciones y la key "mahfit_session".
@@ -76,9 +155,8 @@ function getApiUrl_(){
 
 // ✅ compat: algunas partes llaman getApiUrl() (sin guión bajo)
 function getApiUrl(){
-  return API_URL_DEFAULT; // ✅ sin override por localStorage
+  return getApiUrl_();
 }
-
 
 /* ---------------- small compat ---------------- */
 (function ensureUUID(){
@@ -509,7 +587,14 @@ async function apiLogin(rut, pass) {
 }
 async function apiMe() {
   // AUTH_ME requiere token
-  return apiPost("AUTH_ME", {}, { includeToken:true });
+  const res = await apiPost("AUTH_ME", {}, { includeToken:true });
+  try{
+    if(res && res.ok && res.user){
+      // refresca snapshot de usuario en sesión (incluye scopes)
+      setToken(getToken(), normalizeSessionUser_(res.user));
+    }
+  }catch(e){}
+  return res;
 }
 async function apiLogout() {
   let res = null;
@@ -574,7 +659,26 @@ async function ensureExerciseInBase_(nombre, musculo="", maq=""){
 }
 
 // ---------------- Cache local ----------------
-function getUsers(){ return LS.get("mahfit_users", []); }
+function getUsersRaw(){ return LS.get("mahfit_users", []); }
+
+function getMyScope(){
+  const u = getUserSession();
+  const sc = (u && (u.scope ?? u.scopes ?? u.servicios ?? "")) ? String(u.scope ?? u.scopes ?? u.servicios).trim().toUpperCase() : "";
+  return sc || "FULL";
+}
+
+function withScope_(u){
+  if(!u || typeof u !== "object") return u;
+  if(u.scope) return u;
+  const sc = (u.scopes ?? u.servicios ?? "").toString().trim().toUpperCase();
+  if(sc) u.scope = sc;
+  return u;
+}
+
+function getUsers(){
+  // entrega usuarios con campo scope siempre disponible (compat)
+  return getUsersRaw().map(x=>withScope_(Object.assign({}, x)));
+}
 function setUsers(v){ LS.set("mahfit_users", v); }
 
 function getPlanes(){ return LS.get("mahfit_planes", []); }
@@ -644,12 +748,6 @@ function workoutSetsForExercise(rutSocio, ejercicioId, ejercicioNombre){
 function getEvaluations(){ return LS.get("mahfit_evaluations", []); }
 function setEvaluations(v){ LS.set("mahfit_evaluations", v); }
 
-// ---------------- Session ----------------
-function setSession(user){
-  LS.set("mahfit_session", { rut:user.rut, rol:user.rol, at: nowISO() });
-}
-function getSession(){ return LS.get("mahfit_session", null); }
-function clearSession(){ LS.del("mahfit_session"); }
 
 /* =========================================================
    ✅ LOGS PRO: ID builders (robustos)
@@ -801,6 +899,15 @@ async function syncDownLogin(){
     rol: (x.rol ?? x.role ?? "SOCIO"),
     activo: (x.activo === false || x.activo === 0 || String(x.activo) === "0") ? false : true,
 
+
+    tenantId: x.tenantId ?? "",
+    createdBy: x.createdBy ?? "",
+    servicios: x.servicios ?? "",
+    // ✅ SCOPE: unifica nombres (scope/scopes/servicios)
+    scope: (x.scope ?? x.scopes ?? x.permisos ?? x.mods ?? x.servicios ?? "").toString().trim().toUpperCase(),
+    scopes: (x.scopes ?? x.permisos ?? x.mods ?? x.scope ?? "").toString().trim(),
+    maxSocios: x.maxSocios ?? "",
+    sociosCreados: x.sociosCreados ?? "",
     planTipo: x.planTipo ?? "",
     planInicio: x.planInicio ?? "",
     planFin: x.planFin ?? "",
@@ -1065,6 +1172,15 @@ function requireAuth(expectedRole){
   // 3) Intenta encontrar el usuario completo en cache local (USERS / USERS_LITE)
   const rutN = normalizeRut(s.rut);
   let user = (getUsers() || []).find(u => normalizeRut(u.rut) === rutN) || null;
+  // merge tokUser (LOGIN snapshot) para no perder campos como scopes/servicios
+  if(user && tokUser && normalizeRut(tokUser.rut) === rutN){
+    // si faltan campos en cache, complétalos
+    if(!user.scopes && tokUser.scopes) user.scopes = tokUser.scopes;
+    if(!user.servicios && tokUser.servicios) user.servicios = tokUser.servicios;
+    if(!user.nombre && tokUser.nombre) user.nombre = tokUser.nombre;
+    if(!user.tenantId && tokUser.tenantId) user.tenantId = tokUser.tenantId;
+  }
+
 
   // 4) Fallback: si no existe en cache local, construye un user mínimo desde tokUser (evita rebote)
   if(!user && tokUser && normalizeRut(tokUser.rut) === rutN){
@@ -1645,3 +1761,49 @@ window.uploadEvaluationPhoto = uploadEvaluationPhoto;
 window.uploadEvaluationPhotos3 = uploadEvaluationPhotos3;
 
 window.mhfNormText = mhfNormText;
+
+
+
+// ================= UI HELPERS: Logout button auto-bind =================
+(function bindLogoutButton(){
+  function hook(){
+    const btn =
+      document.getElementById("btnLogout") ||
+      document.getElementById("btnSalir") ||
+      document.querySelector('[data-action="logout"]') ||
+      document.querySelector(".btn-logout") ||
+      null;
+
+    if(!btn || btn.__mahfitLogoutBound) return;
+    btn.__mahfitLogoutBound = true;
+
+    btn.addEventListener("click", async (e)=>{
+      try{ e.preventDefault(); }catch(_){}
+      const old = btn.innerHTML;
+      try{
+        btn.disabled = true;
+        if(old && old.toLowerCase().includes("salir") || old.toLowerCase().includes("logout")){
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saliendo...';
+        }
+      }catch(_){}
+
+      try{
+        if(typeof apiLogout === "function") await apiLogout();
+        else clearToken();
+      }catch(err){
+        try{ clearToken(); }catch(_){}
+      }
+
+      // redirección por defecto
+      try{ window.location.href = "index.html"; }catch(_){}
+      // por si no navega (pwa), restaura
+      try{ btn.innerHTML = old; btn.disabled = false; }catch(_){}
+    }, { passive:false });
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", hook);
+  } else {
+    hook();
+  }
+})();
